@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Wifi, RefreshCcw, MapPin, Video, Database, Settings, Train, Activity, Compass } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, Wifi, MapPin, Video, Database, Train, Activity, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { P10Matrix } from './components/P10Matrix';
 
-const TRAIN_NAMES = ['ARGO BROMO ANGGREK', 'ARGO WILIS', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN'];
-const TRAIN_NUMBERS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
+
+
+// --- Monitor CCTV Component ---
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
@@ -115,36 +115,6 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     );
 };
 
-// --- Monitor GPS Component ---
-const ROUTES = {
-    'ARGO BROMO ANGGREK': {
-        name: 'ARGO BROMO ANGGREK',
-        number: 'KA 1',
-        stations: ['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI'],
-        nodes: [
-            { pos: "M 80 150", label: "GMR", name: "GAMBIR" },
-            { pos: "M 320 150", label: "CN", name: "CIREBON" },
-            { pos: "M 560 150", label: "SMT", name: "SEMARANG TAWANG" },
-            { pos: "M 750 150", label: "SBI", name: "SURABAYA PASARTURI" }
-        ],
-        path: "M 80 150 L 750 150"
-    },
-    'ARGO WILIS': {
-        name: 'ARGO WILIS',
-        number: 'KA 5',
-        stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
-        nodes: [
-            { pos: "M 80 220", label: "BD", name: "BANDUNG" },
-            { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
-            { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
-            { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
-            { pos: "M 620 220", label: "MN", name: "MADIUN" },
-            { pos: "M 750 150", label: "SGU", name: "SURABAYA GUBENG" }
-        ],
-        path: "M 80 220 C 150 220, 180 180, 220 180 S 350 220, 400 220 S 480 180, 520 180 S 580 220, 620 220 S 720 150, 750 150"
-    }
-};
-
 const MonitorGPS = ({ route }: { route: any }) => {
     return (
         <div className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-[#0a0f1e] flex flex-col">
@@ -244,17 +214,14 @@ const MonitorGPS = ({ route }: { route: any }) => {
 };
 
 function App() {
-    const [trainNameIndex, setTrainNameIndex] = useState(0);
-    const [trainNumberIndex, setTrainNumberIndex] = useState(0);
-    const [activeTrainName, setActiveTrainName] = useState('ARGO WILIS');
-    const [activeTrainNumber, setActiveTrainNumber] = useState('01');
     const [activeTab, setActiveTab] = useState('pids');
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [isSaving, setIsSaving] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
 
     // Use the hook for broadcating
     const { data, sendData } = usePidsData();
+
+    const activeTrainName = data.stationName || 'ARGO WILIS';
+    const activeTrainNumber = data.trainNumber || '05';
 
     // Clock Tick
     useEffect(() => {
@@ -262,44 +229,20 @@ function App() {
         return () => clearInterval(timer);
     }, []);
 
-    const handleSetName = () => {
-        setIsSaving(true);
-        setTimeout(() => {
-            const newName = TRAIN_NAMES[trainNameIndex];
-            const routeData = ROUTES[newName as keyof typeof ROUTES];
-            setActiveTrainName(newName);
-            setIsSaving(false);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2000);
-
-            // Broadcast change with realistic stations and route
-            sendData({
-                stationName: newName,
-                stations: routeData?.stations || [],
-                activeRoute: routeData
-            });
-        }, 800);
+    // Derive active route from data or fallback
+    const activeRoute = data.activeRoute || {
+        name: 'ARGO WILIS',
+        stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
+        path: "M 80 220 C 150 220, 180 180, 220 180 S 350 220, 400 220 S 480 180, 520 180 S 580 220, 620 220 S 720 150, 750 150",
+        nodes: [
+            { pos: "M 80 220", label: "BD", name: "BANDUNG" },
+            { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
+            { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
+            { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
+            { pos: "M 620 220", label: "MN", name: "MADIUN" },
+            { pos: "M 750 150", label: "SGU", name: "SURABAYA GUBENG" }
+        ],
     };
-
-    const handleSetNumber = () => {
-        setIsSaving(true);
-        setTimeout(() => {
-            const newNumber = TRAIN_NUMBERS[trainNumberIndex];
-            setActiveTrainNumber(newNumber);
-            setIsSaving(false);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2000);
-
-            // Broadcast change
-            sendData({ trainNumber: newNumber });
-        }, 800);
-    };
-
-    const cycleValue = (setter: React.Dispatch<React.SetStateAction<number>>, current: number, max: number, delta: number) => {
-        setter((current + delta + max) % max);
-    };
-
-    const activeRoute = ROUTES[activeTrainName as keyof typeof ROUTES] || ROUTES['ARGO WILIS'];
 
     return (
         <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden">
@@ -320,8 +263,7 @@ function App() {
                         {[
                             { id: 'pids', icon: LayoutDashboard, label: 'PIDS' },
                             { id: 'tv', icon: Video, label: 'CCTV' },
-                            { id: 'gps', icon: MapPin, label: 'GPS MAP' },
-                            { id: 'settings', icon: Settings, label: 'Settings' }
+                            { id: 'gps', icon: MapPin, label: 'GPS MAP' }
                         ].map((item) => (
                             <li key={item.id}>
                                 <button
@@ -351,20 +293,6 @@ function App() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative">
-                {/* Status Bar */}
-                <AnimatePresence>
-                    {showSuccess && (
-                        <motion.div
-                            initial={{ y: -50, opacity: 0 }}
-                            animate={{ y: 20, opacity: 1 }}
-                            exit={{ y: -50, opacity: 0 }}
-                            className="absolute top-0 left-1/2 -translate-x-1/2 bg-green-500 text-white px-8 py-3 rounded-2xl shadow-2xl flex items-center gap-3 z-50 border border-green-400/50"
-                        >
-                            <CheckCircle2 size={18} />
-                            <span className="font-bold text-sm">Action Successfully Synced</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 {/* Header */}
                 <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10">
@@ -409,92 +337,7 @@ function App() {
                                 transition={{ duration: 0.2 }}
                                 className="max-w-6xl mx-auto space-y-10"
                             >
-                                {/* Live LED Preview Bar */}
-                                <div className="w-full flex justify-center">
-                                    <P10Matrix
-                                        text={`${data.stationName} ${data.trainNumber}   •   NEXT: ${data.nextStation}   •   ${currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                                        color="#ff0000"
-                                        speed={data.ledSpeed || 60}
-                                        columns={138}
-                                    />
-                                </div>
-
-                                {/* Control Cards */}
-                                <div className="grid grid-cols-2 gap-8">
-                                    {/* Selector: Train Name */}
-                                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group">
-                                        <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
-                                            <button
-                                                onClick={() => cycleValue(setTrainNameIndex, trainNameIndex, TRAIN_NAMES.length, -1)}
-                                                className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all active:scale-90"
-                                            >
-                                                <ChevronLeft size={24} />
-                                            </button>
-                                            <span className="text-[#1d2d6a]/40 font-black tracking-[0.2em] text-[10px] uppercase">Service Name Configuration</span>
-                                            <button
-                                                onClick={() => cycleValue(setTrainNameIndex, trainNameIndex, TRAIN_NAMES.length, 1)}
-                                                className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all active:scale-90"
-                                            >
-                                                <ChevronRight size={24} />
-                                            </button>
-                                        </div>
-                                        <div className="p-10 flex flex-col items-center gap-8">
-                                            <motion.div
-                                                key={trainNameIndex}
-                                                initial={{ scale: 0.95, opacity: 0 }}
-                                                animate={{ scale: 1, opacity: 1 }}
-                                                className="text-4xl font-black text-[#1d2d6a] h-16 flex items-center justify-center text-center tracking-tight"
-                                            >
-                                                {TRAIN_NAMES[trainNameIndex]}
-                                            </motion.div>
-                                            <button
-                                                onClick={handleSetName}
-                                                disabled={isSaving}
-                                                className={`w-full py-4 rounded-2xl font-black text-sm shadow-md uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-3 ${isSaving ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-orange-900/10'
-                                                    }`}
-                                            >
-                                                {isSaving ? <RefreshCcw size={20} /> : 'Sync Train Name'}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Selector: Train Number */}
-                                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group">
-                                        <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
-                                            <button
-                                                onClick={() => cycleValue(setTrainNumberIndex, trainNumberIndex, TRAIN_NUMBERS.length, -1)}
-                                                className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all active:scale-90"
-                                            >
-                                                <ChevronLeft size={24} />
-                                            </button>
-                                            <span className="text-[#1d2d6a]/40 font-black tracking-[0.2em] text-[10px] uppercase">Unit Number Configuration</span>
-                                            <button
-                                                onClick={() => cycleValue(setTrainNumberIndex, trainNumberIndex, TRAIN_NUMBERS.length, 1)}
-                                                className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all active:scale-90"
-                                            >
-                                                <ChevronRight size={24} />
-                                            </button>
-                                        </div>
-                                        <div className="p-10 flex flex-col items-center gap-8">
-                                            <motion.div
-                                                key={trainNumberIndex}
-                                                initial={{ scale: 0.95, opacity: 0 }}
-                                                animate={{ scale: 1, opacity: 1 }}
-                                                className="text-6xl font-black text-[#ee6f1f] h-16 flex items-center justify-center font-mono tracking-tighter"
-                                            >
-                                                {TRAIN_NUMBERS[trainNumberIndex]}
-                                            </motion.div>
-                                            <button
-                                                onClick={handleSetNumber}
-                                                disabled={isSaving}
-                                                className={`w-full py-4 rounded-2xl font-black text-sm shadow-md uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-3 ${isSaving ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-[#1d2d6a] text-white hover:bg-[#15204d] shadow-blue-900/10'
-                                                    }`}
-                                            >
-                                                {isSaving ? <RefreshCcw size={20} /> : 'Sync Unit Number'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                {/* Live LED Preview Bar - MOVED TO SELECTOR */}
 
                                 {/* Stampformasi Table */}
                                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
@@ -564,51 +407,6 @@ function App() {
                                 className="h-full w-full max-w-6xl mx-auto"
                             >
                                 <MonitorGPS route={activeRoute} />
-                            </motion.div>
-                        ) : activeTab === 'settings' ? (
-                            <motion.div
-                                key="settings"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="max-w-4xl mx-auto space-y-8"
-                            >
-                                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                                    <h2 className="text-xl font-black text-[#1d2d6a] mb-8 uppercase tracking-tight flex items-center gap-3">
-                                        <Settings className="text-[#ee6f1f]" />
-                                        Display Configuration
-                                    </h2>
-
-                                    <div className="space-y-8">
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <label className="text-sm font-bold text-slate-500 uppercase tracking-widest">LED Scroll Speed</label>
-                                                <span className="text-2xl font-black text-[#1d2d6a] bg-slate-100 px-4 py-1 rounded-lg tabular-nums">
-                                                    {data?.ledSpeed || 60} <span className="text-xs text-slate-400 font-medium">ms</span>
-                                                </span>
-                                            </div>
-                                            <div className="relative pt-1">
-                                                <input
-                                                    type="range"
-                                                    min="10"
-                                                    max="200"
-                                                    step="5"
-                                                    value={data?.ledSpeed || 60}
-                                                    onChange={(e) => sendData({ ledSpeed: Number(e.target.value) })}
-                                                    className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#ee6f1f]"
-                                                />
-                                                <div className="flex justify-between text-xs font-bold text-slate-300 mt-2 uppercase tracking-wider">
-                                                    <span>Fast (10ms)</span>
-                                                    <span>Slow (200ms)</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
-                                                Adjusts the update interval for the running text on the LED display.
-                                                Lower values mean faster scrolling speed. Changes are applied immediately.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
                             </motion.div>
                         ) : (
                             <motion.div

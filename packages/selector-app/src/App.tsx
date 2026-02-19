@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Compass, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Compass, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, Wifi, CheckCircle2, X, Zap, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { P10Matrix } from './components/P10Matrix';
+
 
 function App() {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -11,68 +13,98 @@ function App() {
     const [altitude, setAltitude] = useState(700);
     const [temp, setTemp] = useState(24);
     const [showTVPreview, setShowTVPreview] = useState(false);
+    const [showLedSettings, setShowLedSettings] = useState(false);
+
+    const [isPinging, setIsPinging] = useState(false);
+    const [pingStatus, setPingStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     // Synced State from Master
     const [stations, setStations] = useState(['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI']);
     const [masterSyncedName, setMasterSyncedName] = useState('ARGO BROMO ANGGREK');
     const [masterSyncedNumber, setMasterSyncedNumber] = useState('KA 1');
+    const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
+
+    // Identity Control State (Local to Selector for choosing)
+    const [trainNames, setTrainNames] = useState<string[]>(['ARGO WILIS', 'ARGO BROMO ANGGREK', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN']);
+    const [trainNumbers, setTrainNumbers] = useState<string[]>(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']);
+    const [routes, setRoutes] = useState<any>({
+        'ARGO WILIS': { name: 'ARGO WILIS', stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'] },
+        'ARGO BROMO ANGGREK': { name: 'ARGO BROMO ANGGREK', stations: ['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI'] }
+    });
+    const [trainNameIndex, setTrainNameIndex] = useState(0);
+    const [trainNumberIndex, setTrainNumberIndex] = useState(4); // Default to KA-05
+
+    useEffect(() => {
+        const fetchDb = async () => {
+            try {
+                const res = await fetch('http://localhost:3001/api/db');
+                if (res.ok) {
+                    const dbData = await res.json();
+                    if (dbData.success && dbData.data && dbData.data.trainNames) {
+                        setTrainNames(dbData.data.trainNames);
+                        setTrainNumbers(dbData.data.trainNumbers || []);
+                        setRoutes(dbData.data.routes || {});
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch DB from master API:', e);
+            }
+        };
+        fetchDb();
+    }, []);
 
     // Shared State Sync
-    const SHARED_FILE_NAME = 'eltran-pids-state.json';
-    const getFs = () => {
-        if (window.require) {
-            const fs = window.require('fs');
-            const os = window.require('os');
-            const path = window.require('path');
-            const filePath = path.join(os.tmpdir(), SHARED_FILE_NAME);
-            return { fs, filePath };
-        }
-        return null;
-    };
+    const API_URL = 'http://localhost:3001/api/state';
 
-    const sendData = (newData: any) => {
-        const fsObj = getFs();
-        if (!fsObj) return;
-        const { fs, filePath } = fsObj;
+    const sendData = async (newData: any) => {
         try {
-            let currentData = {};
-            if (fs.existsSync(filePath)) {
-                currentData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-            }
-            const updated = { ...currentData, ...newData };
-            fs.writeFileSync(filePath, JSON.stringify(updated));
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newData)
+            });
         } catch (e) {
-            console.error('Error writing PIDS state:', e);
+            console.error('Error posting PIDS state:', e);
         }
     };
 
     // Continuous Polling for State Sync
     useEffect(() => {
-        const fsObj = getFs();
-        if (!fsObj) return;
-        const { fs, filePath } = fsObj;
-
-        const checkSync = () => {
-            if (fs.existsSync(filePath)) {
-                try {
-                    const content = fs.readFileSync(filePath, 'utf-8');
-                    const parsed = JSON.parse(content);
+        const checkSync = async () => {
+            try {
+                const res = await fetch(API_URL);
+                if (res.ok) {
+                    const parsed = await res.json();
                     if (parsed.stationName) setMasterSyncedName(parsed.stationName);
                     if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
-                    if (parsed.stations && Array.isArray(parsed.stations)) {
-                        setStations(parsed.stations);
+                    if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
+
+                    // Only update stations if they changed and aren't empty
+                    if (parsed.stations && Array.isArray(parsed.stations) && parsed.stations.length > 0) {
+                        if (JSON.stringify(parsed.stations) !== JSON.stringify(stations)) {
+                            setStations(parsed.stations);
+                        }
                     }
 
                     // Sync TV Preview state if master requests it
                     if (parsed.displayMode === 'tv' && !showTVPreview) setShowTVPreview(true);
                     if (parsed.displayMode === 'pids' && showTVPreview) setShowTVPreview(false);
-                } catch (e) { }
-            }
+                }
+            } catch (e) { }
         };
 
         const interval = setInterval(checkSync, 1000);
         return () => clearInterval(interval);
-    }, [showTVPreview]);
+    }, [showTVPreview, stations]);
+
+    // Auto-sync selector indices with master state
+    useEffect(() => {
+        const nameIdx = trainNames.indexOf(masterSyncedName);
+        if (nameIdx !== -1) setTrainNameIndex(nameIdx);
+
+        const numIdx = trainNumbers.indexOf(masterSyncedNumber);
+        if (numIdx !== -1) setTrainNumberIndex(numIdx);
+    }, [masterSyncedName, masterSyncedNumber, trainNames, trainNumbers]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -112,6 +144,31 @@ function App() {
         }
     }, [stations]);
 
+    const handleSetName = () => {
+        const newName = trainNames[trainNameIndex];
+        const routeData = routes[newName];
+        sendData({
+            stationName: newName,
+            stations: routeData?.stations || [],
+            activeRoute: routeData
+        });
+    };
+
+    const handleSetNumber = () => {
+        const newNumber = trainNumbers[trainNumberIndex];
+        sendData({ trainNumber: newNumber });
+    };
+
+    const handleSetLedSpeed = (speedValue: number) => {
+        setMasterSyncedLedSpeed(speedValue);
+        sendData({ ledSpeed: speedValue });
+    };
+
+    const cycleValue = (setter: React.Dispatch<React.SetStateAction<number>>, current: number, max: number, delta: number) => {
+        if (max === 0) return;
+        setter((current + delta + max) % max);
+    };
+
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev - 1 + stations.length) % stations.length);
     };
@@ -120,8 +177,20 @@ function App() {
         setCurrentIndex((prev) => (prev + 1) % stations.length);
     };
 
-    const currentStation = stations[currentIndex] || stations[0] || 'WAITING SYNC...';
-    const nextStation = stations[(currentIndex + 1) % stations.length] || stations[0] || '...';
+    const handlePing = () => {
+        setIsPinging(true);
+        setPingStatus('idle');
+
+        // Simulate a network ping to the controller
+        setTimeout(() => {
+            setIsPinging(false);
+            setPingStatus('success');
+            setTimeout(() => setPingStatus('idle'), 3000);
+        }, 1200);
+    };
+
+    const currentStation = stations[currentIndex] || 'INITIALIZING SYNC...';
+    const nextStation = stations[(currentIndex + 1) % stations.length] || '---';
 
     return (
         <div className="flex flex-col h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden select-none">
@@ -141,6 +210,24 @@ function App() {
                 </div>
 
                 <div className="flex items-center gap-8">
+                    <button
+                        onClick={handlePing}
+                        disabled={isPinging}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isPinging ? 'bg-slate-100 text-slate-400' :
+                            pingStatus === 'success' ? 'bg-green-100 text-green-600 border border-green-200' :
+                                'bg-slate-50 text-[#1d2d6a] hover:bg-slate-100 border border-slate-200'
+                            }`}
+                    >
+                        {isPinging ? (
+                            <RefreshCcw size={14} className="animate-spin" />
+                        ) : pingStatus === 'success' ? (
+                            <CheckCircle2 size={14} />
+                        ) : (
+                            <Wifi size={14} />
+                        )}
+                        {isPinging ? 'Pinging Controller...' : pingStatus === 'success' ? 'Connection OK' : 'Ping Controller'}
+                    </button>
+
                     <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
                         <Clock size={16} className="text-blue-500" />
                         <span className="font-mono font-black text-[#1d2d6a] tracking-tight">
@@ -199,84 +286,176 @@ function App() {
 
                     {/* Main Interface */}
                     <div className="flex-1 grid grid-cols-3 gap-6 min-h-0">
-                        {/* Station Selector Card */}
-                        <div className="col-span-2 bg-[#1d2d6a] rounded-[2.5rem] shadow-2xl relative overflow-hidden group flex flex-col">
-                            {/* Decorative Elements */}
-                            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,#ffffff_0%,transparent_50%)]" />
-                            <div className="absolute top-0 right-0 p-8">
-                                <MapPin size={120} className="text-white opacity-5 -rotate-12 translate-x-12 -translate-y-8" />
+                        {/* Identity & Stations Panel */}
+                        <div className="col-span-2 flex flex-col gap-6">
+
+                            {/* Control Cards (Name & Number) */}
+                            <div className="grid grid-cols-2 gap-6">
+                                {/* Selector: Train Name */}
+                                <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 group">
+                                    <div className="bg-slate-50 border-b border-slate-100 p-3 flex items-center justify-between">
+                                        <button
+                                            onClick={() => cycleValue(setTrainNameIndex, trainNameIndex, trainNames.length, -1)}
+                                            className="p-1.5 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <span className="text-[#1d2d6a]/40 font-black tracking-[0.2em] text-[10px] uppercase">Service Configuration</span>
+                                        <button
+                                            onClick={() => cycleValue(setTrainNameIndex, trainNameIndex, trainNames.length, 1)}
+                                            className="p-1.5 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                    </div>
+                                    <div className="p-4 flex items-center justify-between gap-4">
+                                        <div className="text-xl font-black text-[#1d2d6a] tracking-tight truncate flex-1 text-center">
+                                            {trainNames[trainNameIndex]}
+                                        </div>
+                                        <button
+                                            onClick={handleSetName}
+                                            className="px-4 py-2 rounded-xl text-xs font-black shadow-md uppercase tracking-wide transition-all active:scale-95 bg-[#ee6f1f] text-white hover:bg-[#d45d15]"
+                                        >
+                                            Set
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Selector: Train Number */}
+                                <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 group">
+                                    <div className="bg-slate-50 border-b border-slate-100 p-3 flex items-center justify-between">
+                                        <button
+                                            onClick={() => cycleValue(setTrainNumberIndex, trainNumberIndex, trainNumbers.length, -1)}
+                                            className="p-1.5 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <span className="text-[#1d2d6a]/40 font-black tracking-[0.2em] text-[10px] uppercase">Unit Configuration</span>
+                                        <button
+                                            onClick={() => cycleValue(setTrainNumberIndex, trainNumberIndex, trainNumbers.length, 1)}
+                                            className="p-1.5 hover:bg-slate-200 rounded-full text-slate-400 hover:text-[#1d2d6a] transition-all"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                    </div>
+                                    <div className="p-4 flex items-center justify-between gap-4">
+                                        <div className="text-2xl font-black text-[#ee6f1f] font-mono tracking-tighter truncate flex-1 text-center">
+                                            {trainNumbers[trainNumberIndex]}
+                                        </div>
+                                        <button
+                                            onClick={handleSetNumber}
+                                            className="px-4 py-2 rounded-xl text-xs font-black shadow-md uppercase tracking-wide transition-all active:scale-95 bg-[#1d2d6a] text-white hover:bg-[#15204d]"
+                                        >
+                                            Set
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="relative flex-1 flex flex-col p-12">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-blue-300/60 font-black tracking-[0.4em] text-xs uppercase mb-2">Station Selector</p>
-                                        <h2 className="text-4xl font-black text-white italic tracking-tighter">Current <span className="text-[#ee6f1f]">Position</span></h2>
-                                    </div>
-                                    <div className="bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/10">
-                                        <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest">
-                                            {currentIndex + 1} OF {stations.length} STATIONS
-                                        </span>
-                                    </div>
+                            {/* Station Selector Card */}
+                            <div className="flex-1 bg-[#1d2d6a] rounded-[2.5rem] shadow-2xl relative overflow-hidden group flex flex-col min-h-0">
+                                {/* Decorative Elements */}
+                                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,#ffffff_0%,transparent_50%)]" />
+                                <div className="absolute top-0 right-0 p-8">
+                                    <MapPin size={120} className="text-white opacity-5 -rotate-12 translate-x-12 -translate-y-8" />
                                 </div>
 
-                                <div className="flex-1 flex flex-col items-center justify-center py-8">
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={currentIndex}
-                                            initial={{ y: 20, opacity: 0 }}
-                                            animate={{ y: 0, opacity: 1 }}
-                                            exit={{ y: -20, opacity: 0 }}
-                                            className="text-center"
+                                <div className="relative flex-1 flex flex-col p-12">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-blue-300/60 font-black tracking-[0.4em] text-xs uppercase mb-2">Station Selector</p>
+                                            <h2 className="text-4xl font-black text-white italic tracking-tighter">Current <span className="text-[#ee6f1f]">Position</span></h2>
+                                        </div>
+                                        <div className="bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/10">
+                                            <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest">
+                                                {currentIndex + 1} OF {stations.length} STATIONS
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col items-center justify-center py-8">
+                                        <AnimatePresence mode="wait">
+                                            <motion.div
+                                                key={currentIndex}
+                                                initial={{ y: 20, opacity: 0 }}
+                                                animate={{ y: 0, opacity: 1 }}
+                                                exit={{ y: -20, opacity: 0 }}
+                                                className="text-center"
+                                            >
+                                                <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.6em] mb-4">Departing From</div>
+                                                <h3 className="text-8xl font-black text-white tracking-tighter italic uppercase drop-shadow-2xl">
+                                                    {currentStation}
+                                                </h3>
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </div>
+
+                                    <div className="mt-auto flex items-center justify-between gap-6">
+                                        <button
+                                            onClick={handlePrev}
+                                            className="h-20 w-24 rounded-3xl bg-[#ee6f1f] hover:bg-[#d45d15] text-white shadow-xl flex items-center justify-center transition-all active:scale-95 border-b-4 border-[#c2410c]"
                                         >
-                                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.6em] mb-4">Departing From</div>
-                                            <h3 className="text-8xl font-black text-white tracking-tighter italic uppercase drop-shadow-2xl">
-                                                {currentStation}
-                                            </h3>
-                                        </motion.div>
-                                    </AnimatePresence>
-                                </div>
+                                            <ChevronLeft size={32} />
+                                        </button>
 
-                                <div className="mt-auto flex items-center justify-between gap-6">
-                                    <button
-                                        onClick={handlePrev}
-                                        className="h-20 w-24 rounded-3xl bg-[#ee6f1f] hover:bg-[#d45d15] text-white shadow-xl flex items-center justify-center transition-all active:scale-95 border-b-4 border-[#c2410c]"
-                                    >
-                                        <ChevronLeft size={32} />
-                                    </button>
+                                        <button
+                                            onClick={handleSelectStation}
+                                            className="flex-1 h-20 bg-white text-[#1d2d6a] rounded-3xl font-black text-lg uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-4 border-b-4 border-slate-200"
+                                        >
+                                            <RefreshCcw size={24} />
+                                            Sync Display Status
+                                        </button>
 
-                                    <button
-                                        onClick={handleSelectStation}
-                                        className="flex-1 h-20 bg-white text-[#1d2d6a] rounded-3xl font-black text-lg uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-4 border-b-4 border-slate-200"
-                                    >
-                                        <RefreshCcw size={24} />
-                                        Sync Display Status
-                                    </button>
-
-                                    <button
-                                        onClick={handleNext}
-                                        className="h-20 w-24 rounded-3xl bg-[#ee6f1f] hover:bg-[#d45d15] text-white shadow-xl flex items-center justify-center transition-all active:scale-95 border-b-4 border-[#c2410c]"
-                                    >
-                                        <ChevronRight size={32} />
-                                    </button>
+                                        <button
+                                            onClick={handleNext}
+                                            className="h-20 w-24 rounded-3xl bg-[#ee6f1f] hover:bg-[#d45d15] text-white shadow-xl flex items-center justify-center transition-all active:scale-95 border-b-4 border-[#c2410c]"
+                                        >
+                                            <ChevronRight size={32} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Side Telemetry Panel */}
                         <div className="space-y-6 flex flex-col">
-                            {/* Next Station Info */}
-                            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex-1 flex flex-col justify-center items-center text-center relative overflow-hidden h-full">
-                                <div className="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,#1d2d6a_0%,transparent_60%)]" />
-                                <div className="bg-blue-50 p-6 rounded-full mb-6 relative z-10">
-                                    <MapPin size={48} className="text-[#1d2d6a]" />
+                            {/* LED Speed Configuration */}
+                            <button
+                                onClick={() => setShowLedSettings(true)}
+                                className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-center relative overflow-hidden group hover:border-orange-200 transition-all text-left"
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <Zap size={64} className="text-[#ee6f1f]" />
                                 </div>
                                 <div className="relative z-10">
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Upcoming Stop</p>
-                                    <h4 className="text-4xl font-black text-[#1d2d6a] italic tracking-tighter uppercase mb-6 drop-shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">LED Configuration</p>
+                                    <h4 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-2">Display Settings</h4>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tap to configure speed & preview</p>
+
+                                    <div className="mt-6 flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-widest">Velocity</span>
+                                            <span className="text-2xl font-black text-[#1d2d6a] font-mono">{masterSyncedLedSpeed}<span className="text-xs ml-1 opacity-40">MS</span></span>
+                                        </div>
+                                        <div className="bg-orange-50 p-3 rounded-2xl text-[#ee6f1f] group-hover:scale-110 transition-transform">
+                                            <Settings size={20} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Next Station Info */}
+                            <div className="bg-[#1d2d6a] p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex-1 flex flex-col justify-center items-center text-center relative overflow-hidden h-full">
+                                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,#ffffff_0%,transparent_60%)]" />
+                                <div className="bg-white/10 p-6 rounded-full mb-6 relative z-10">
+                                    <MapPin size={48} className="text-white" />
+                                </div>
+                                <div className="relative z-10">
+                                    <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-2">Upcoming Stop</p>
+                                    <h4 className="text-4xl font-black text-white italic tracking-tighter uppercase mb-6 drop-shadow-sm">
                                         {nextStation}
                                     </h4>
-                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-xl text-blue-600 font-bold text-sm">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl text-blue-200 font-bold text-sm border border-white/5">
                                         <Clock size={16} />
                                         <span>Estimated: 12 mins</span>
                                     </div>
@@ -285,6 +464,95 @@ function App() {
                         </div>
                     </div>
                 </div>
+
+                {/* LED Configuration Modal */}
+                <AnimatePresence>
+                    {showLedSettings && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/60 backdrop-blur-md"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.9, y: 20 }}
+                                className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden"
+                            >
+                                <div className="bg-[#1d2d6a] p-8 text-white flex justify-between items-center">
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-white/10 p-3 rounded-2xl">
+                                            <Zap className="text-[#ee6f1f]" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-black italic tracking-tighter">LED <span className="text-[#ee6f1f]">Configuration</span></h2>
+                                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Visualizer & Velocity Control</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowLedSettings(false)}
+                                        className="p-3 hover:bg-white/10 rounded-2xl transition-colors"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="p-12 space-y-12">
+                                    {/* Preview Section */}
+                                    <div className="space-y-4 text-center">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Live Matrix Preview</p>
+                                        <div className="flex justify-center scale-110 py-6">
+                                            <P10Matrix
+                                                text={`${masterSyncedName} KA-${masterSyncedNumber}   •   NEXT: ${nextStation}   •   ${currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                                color="#ff0000"
+                                                speed={masterSyncedLedSpeed}
+                                                columns={128}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Speed Control */}
+                                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-col gap-8">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h4 className="text-lg font-black text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Adjustment for P10 Outdoor Modules</p>
+                                            </div>
+                                            <div className="text-3xl font-black text-[#ee6f1f] bg-white px-6 py-2 rounded-2xl shadow-sm border border-slate-100 font-mono">
+                                                {masterSyncedLedSpeed}<span className="text-xs ml-1 opacity-40">MS</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative pt-2">
+                                            <input
+                                                type="range"
+                                                min="10"
+                                                max="200"
+                                                step="5"
+                                                value={masterSyncedLedSpeed}
+                                                onChange={(e) => handleSetLedSpeed(parseInt(e.target.value))}
+                                                className="w-full h-4 bg-slate-200 rounded-xl appearance-none cursor-pointer accent-[#ee6f1f]"
+                                            />
+                                            <div className="flex justify-between text-[10px] font-black text-slate-300 mt-4 uppercase tracking-[0.2em]">
+                                                <span>Hyper Fast (10ms)</span>
+                                                <span>Standard (60ms)</span>
+                                                <span>Slow (200ms)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 text-slate-400 text-[10px] leading-relaxed">
+                                        <div className="bg-blue-50 p-2 rounded-lg text-blue-500">
+                                            <Clock size={14} />
+                                        </div>
+                                        <p className="font-bold uppercase tracking-wide">Changes are broadcasted in real-time to all connected LED units and passenger displays.</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Fullscreen TV Monitor Modal */}
                 <AnimatePresence>
