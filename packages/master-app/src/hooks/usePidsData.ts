@@ -14,6 +14,8 @@ export const usePidsData = () => {
         temperature: number;
         airQuality: string;
         displayMode: 'pids' | 'tv';
+        stations?: string[];
+        activeRoute?: any;
     }>({
         stationName: 'ARGO WILIS',
         trainNumber: '01',
@@ -24,7 +26,9 @@ export const usePidsData = () => {
         altitude: 694,
         temperature: 25.1,
         airQuality: 'GOOD NOMINAL',
-        displayMode: 'pids'
+        displayMode: 'pids',
+        stations: [],
+        activeRoute: null
     });
 
     // Helper to get FS access safely
