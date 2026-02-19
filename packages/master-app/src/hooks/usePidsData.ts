@@ -9,12 +9,22 @@ export const usePidsData = () => {
         nextStation: string;
         status: string;
         ledSpeed: number;
+        speed: number;
+        altitude: number;
+        temperature: number;
+        airQuality: string;
+        displayMode: 'pids' | 'tv';
     }>({
         stationName: 'ARGO WILIS',
         trainNumber: '01',
         nextStation: 'BANDUNG',
         status: 'ON TIME',
-        ledSpeed: 60
+        ledSpeed: 60,
+        speed: 15,
+        altitude: 694,
+        temperature: 25.1,
+        airQuality: 'GOOD NOMINAL',
+        displayMode: 'pids'
     });
 
     // Helper to get FS access safely

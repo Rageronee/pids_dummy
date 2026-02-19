@@ -49,22 +49,42 @@ export const P10Matrix = ({ text, color = '#ff0000', speed = 50, columns = 128 }
         const textCtx = textCanvas.getContext('2d', { willReadFrequently: true });
         if (!textCtx) return;
 
-        // 1. Measure
-        textCtx.font = 'bold 12px "Courier New", monospace';
-        const textMetrics = textCtx.measureText(textToRender);
-        const textWidth = Math.ceil(textMetrics.width);
+        // Use a crisp monospace font for "height point" feel
+        const FONT_SIZE = 12; // Adjusted for 16px height
+        const CHAR_GAP = 2; // User requested 1-2 pixels
+        textCtx.font = `${FONT_SIZE}px "Courier New", monospace`;
+
+        // 1. Calculate total width with custom gaps
+        let totalWidth = 0;
+        const charWidths: number[] = [];
+
+        for (let i = 0; i < textToRender.length; i++) {
+            const metrics = textCtx.measureText(textToRender[i]);
+            const w = Math.ceil(metrics.width);
+            charWidths.push(w);
+            totalWidth += w + (i < textToRender.length - 1 ? CHAR_GAP : 0);
+        }
 
         // 2. Resize
         // Ensure width is at least screen width for short text
-        textCanvas.width = textWidth + LED_WIDTH;
+        textCanvas.width = totalWidth + LED_WIDTH;
         textCanvas.height = LED_HEIGHT;
 
-        // 3. Draw
+        // 3. Draw character by character
         textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
-        textCtx.font = 'bold 13px "Courier New", monospace';
+        textCtx.font = `${FONT_SIZE}px "Courier New", monospace`;
         textCtx.fillStyle = '#ffffff';
         textCtx.textBaseline = 'middle';
-        textCtx.fillText(textToRender, 0, LED_HEIGHT / 2 + 1);
+
+        // Use crisp rendering
+        textCtx.imageSmoothingEnabled = false;
+
+        let currentX = 0;
+        for (let i = 0; i < textToRender.length; i++) {
+            // Draw char
+            textCtx.fillText(textToRender[i], currentX, LED_HEIGHT / 2 + 1);
+            currentX += charWidths[i] + CHAR_GAP;
+        }
 
         // 4. Extract Data
         fullTextDataRef.current = textCtx.getImageData(0, 0, textCanvas.width, LED_HEIGHT).data;

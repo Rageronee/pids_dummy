@@ -14,7 +14,7 @@
     "electron:master": "wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron packages/master-app",
     "electron:selector": "wait-on http://localhost:5174 && cross-env VITE_DEV_SERVER_URL=http://localhost:5174 electron packages/selector-app",
     "electron:led": "wait-on http://localhost:5175 && cross-env VITE_DEV_SERVER_URL=http://localhost:5175 electron packages/led-app",
-    "dev:all": "concurrently \"npm run vite:master\" \"npm run vite:selector\" \"npm run vite:led\" \"npm run electron:master\" \"npm run electron:selector\" \"npm run electron:led\"",
+    "dev:all": "concurrently \"npm run vite:master\" \"npm run vite:selector\" \"npm run electron:master\" \"npm run electron:selector\"",
     "build": "npm run build --workspaces"
   },
   "devDependencies": {

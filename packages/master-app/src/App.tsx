@@ -1,12 +1,138 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Wifi, RefreshCcw, MapPin, Video, Database, Settings, Train, Activity } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Wifi, RefreshCcw, MapPin, Video, Database, Settings, Train, Activity, Thermometer, Gauge, Mountain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from './components/P10Matrix';
 
 const TRAIN_NAMES = ['ARGO WILIS', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN'];
 const TRAIN_NUMBERS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
+
+// --- Monitor TV Component ---
+const MonitorTV = ({ data }: { data: any }) => {
+    const images = [
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1920", // Mountain Range
+        "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=1920", // Misty Forest
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1920", // Lake Reflection
+        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1920"  // Sunny Forest
+    ];
+
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prev) => (prev + 1) % images.length);
+        }, 10000);
+        const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => {
+            clearInterval(interval);
+            clearInterval(clockTimer);
+        };
+    }, []);
+
+    return (
+        <div className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-slate-950">
+            {/* Nature Background Carousel */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentImageIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5 }}
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
+                />
+            </AnimatePresence>
+
+            {/* Scanning Line Effect (Subtle) */}
+            <motion.div
+                animate={{ y: ["0%", "100%", "0%"] }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 bg-white/5 h-px z-10 pointer-events-none"
+            />
+
+            {/* Top Layer: Branding & Live Indicator */}
+            <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
+                <div className="flex items-center gap-4">
+                    <div className="bg-white/90 p-3 rounded-xl shadow-2xl">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-6" />
+                    </div>
+                    <div className="flex flex-col text-white">
+                        <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60 leading-none mb-1">Station Feed</span>
+                        <span className="text-xl font-black italic tracking-tighter uppercase leading-none">{data.stationName || 'GAMBIR'}</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-3xl border border-white/20 shadow-2xl flex flex-col items-end">
+                        <div className="text-3xl font-black text-white font-mono tracking-tighter tabular-nums leading-none mb-1">
+                            {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
+                        </div>
+                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                            {currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                    </div>
+                    <div className="bg-red-600 px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+                        <motion.div
+                            animate={{ opacity: [1, 0, 1] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                            className="w-2 h-2 rounded-full bg-white"
+                        />
+                        <span className="text-[10px] font-black text-white uppercase tracking-widest">LIVE</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Layer: Refined Telemetry */}
+            <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end z-20">
+                <div className="flex gap-4">
+                    <div className="bg-black/80 backdrop-blur-2xl px-8 py-6 rounded-[2.5rem] border border-white/10 shadow-2xl text-center min-w-[160px] group transition-all hover:bg-black/90">
+                        <div className="flex items-center justify-center gap-2 mb-2 scale-90 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <Gauge size={14} className="text-orange-500" />
+                            <div className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Speed</div>
+                        </div>
+                        <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-6xl font-black text-white font-mono tracking-tighter leading-none tabular-nums italic">{data.speed || 0}</span>
+                            <span className="text-[10px] font-bold text-white/20 uppercase">km/h</span>
+                        </div>
+                    </div>
+                    <div className="bg-black/80 backdrop-blur-2xl px-8 py-6 rounded-[2.5rem] border border-white/10 shadow-2xl text-center min-w-[160px] group transition-all hover:bg-black/90">
+                        <div className="flex items-center justify-center gap-2 mb-2 scale-90 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <Mountain size={14} className="text-blue-400" />
+                            <div className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Altitude</div>
+                        </div>
+                        <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-6xl font-black text-white font-mono tracking-tighter leading-none tabular-nums italic">{data.altitude || 0}</span>
+                            <span className="text-[10px] font-bold text-white/20 uppercase">mdpl</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-3">
+                    <div className="bg-black/60 backdrop-blur-xl px-6 py-4 rounded-3xl border border-white/10 flex items-center gap-6 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <Thermometer size={20} className="text-orange-500" />
+                            <div>
+                                <div className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Cabin</div>
+                                <div className="text-xl font-black text-white font-mono leading-none">{(data.temperature || 24).toFixed(1)}°</div>
+                            </div>
+                        </div>
+                        <div className="h-8 w-px bg-white/10" />
+                        <div className="text-right">
+                            <div className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Status</div>
+                            <div className="text-xs font-bold text-green-400 uppercase tracking-tighter">Secured Stream</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Vignette Overlay */}
+            <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.6)]" />
+        </div>
+    );
+};
 
 function App() {
     const [trainNameIndex, setTrainNameIndex] = useState(0);
@@ -81,8 +207,8 @@ function App() {
                     <ul className="space-y-2">
                         {[
                             { id: 'pids', icon: LayoutDashboard, label: 'PIDS' },
+                            { id: 'tv', icon: Video, label: 'Monitor TV' },
                             { id: 'gps', icon: MapPin, label: 'GPS' },
-                            { id: 'cctv', icon: Video, label: 'CCTV' },
                             { id: 'settings', icon: Settings, label: 'Settings' }
                         ].map((item) => (
                             <li key={item.id}>
@@ -184,7 +310,7 @@ function App() {
                                 </div>
 
                                 {/* Control Cards */}
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-2    -8">
                                     {/* Selector: Train Name */}
                                     <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group">
                                         <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between">
@@ -307,6 +433,17 @@ function App() {
                                     </div>
                                 </div>
 
+                            </motion.div>
+                        ) : activeTab === 'tv' ? (
+                            <motion.div
+                                key="tv"
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.98 }}
+                                transition={{ duration: 0.3 }}
+                                className="h-full w-full max-w-6xl mx-auto"
+                            >
+                                <MonitorTV data={data} />
                             </motion.div>
                         ) : activeTab === 'settings' ? (
                             <motion.div
