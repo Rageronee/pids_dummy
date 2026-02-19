@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Navigation, Thermometer, ChevronLeft, ChevronRight, Video } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Navigation, Thermometer, ChevronLeft, ChevronRight, Video, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STATIONS = ['GAMBIR', 'BEKASI', 'CIREBON', 'PURWOKERTO', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'];
@@ -248,15 +248,11 @@ function App() {
                             {/* Top Layer: Station Info & Close */}
                             <div className="relative z-20 p-12 flex justify-between items-start">
                                 <div className="flex flex-col">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="w-3 h-3 rounded-full bg-red-600 animate-pulse" />
-                                        <span className="text-white text-xs font-black uppercase tracking-[0.4em]">Live System Feed</span>
-                                    </div>
                                     <h2 className="text-white text-7xl font-black italic tracking-tighter uppercase drop-shadow-2xl">
                                         {currentStation}
                                     </h2>
                                     <div className="text-orange-500 text-sm font-bold uppercase tracking-[0.22em] mt-1 drop-shadow-lg">
-                                        Node Monitoring Zone • Sector 04-A
+                                        ARGO WILIS • GERBONG 05
                                     </div>
                                 </div>
 
@@ -270,58 +266,83 @@ function App() {
                                 </motion.button>
                             </div>
 
-                            {/* Bottom Layer: Cinematic Dashboard */}
-                            <div className="mt-auto relative z-20 p-12 grid grid-cols-12 gap-8 items-end">
-                                {/* Left: Speed & Elevation */}
-                                <div className="col-span-5 flex gap-8">
-                                    <div className="bg-black/60 backdrop-blur-2xl p-10 rounded-[3rem] border border-white/10 flex-1 shadow-2xl group transition-all hover:bg-black/70">
-                                        <div className="flex items-center gap-3 mb-4 opacity-60">
-                                            <Gauge size={20} className="text-orange-500" />
-                                            <span className="text-xs font-black text-white uppercase tracking-widest leading-none">Velocity</span>
-                                        </div>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-9xl font-black text-white font-mono tabular-nums tracking-tighter leading-none">{speed}</span>
-                                            <span className="text-xl font-black text-white/30 uppercase tracking-widest italic">km/h</span>
-                                        </div>
-                                    </div>
-                                    <div className="bg-black/60 backdrop-blur-2xl p-10 rounded-[3rem] border border-white/10 flex-1 shadow-2xl group transition-all hover:bg-black/70">
-                                        <div className="flex items-center gap-3 mb-4 opacity-60">
-                                            <Mountain size={20} className="text-blue-400" />
-                                            <span className="text-xs font-black text-white uppercase tracking-widest leading-none">Elevation</span>
-                                        </div>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-9xl font-black text-white font-mono tabular-nums tracking-tighter leading-none">{altitude}</span>
-                                            <span className="text-xl font-black text-white/30 uppercase tracking-widest italic">mdpl</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Center: Small Telemetry (Temperature) */}
-                                <div className="col-span-3 pb-4">
-                                    <div className="bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/10 flex items-center justify-between mb-4 shadow-xl">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-3 bg-orange-500/20 rounded-2xl">
-                                                <Thermometer size={24} className="text-orange-500" />
+                            {/* Bottom Layer: Proportional Cinematic Dashboard */}
+                            <div className="mt-auto relative z-20 w-full p-12 max-w-[1920px] mx-auto h-[420px]">
+                                <div className="grid grid-cols-4 gap-8 h-full">
+                                    {/* Velocity Pod */}
+                                    <div className="bg-[#1d2d6a]/40 p-10 rounded-[3.5rem] border border-blue-400/20 shadow-[0_0_50px_rgba(29,45,106,0.3)] flex flex-col justify-between group hover:bg-[#1d2d6a]/50 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-orange-500/20 rounded-xl text-orange-500">
+                                                <Gauge size={20} />
                                             </div>
-                                            <div>
-                                                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Cabin Temp</div>
-                                                <div className="text-3xl font-black text-white font-mono leading-none">{temp.toFixed(1)}<span className="text-lg opacity-40">°C</span></div>
+                                            <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">Velocity</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-8xl font-black text-white font-mono tabular-nums tracking-tighter leading-none">{speed}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-lg font-black text-white/20 uppercase tracking-widest italic leading-none">km/h</span>
+                                                <div className="h-1 w-8 bg-orange-500 mt-2" />
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Right: Time & Date (Large) */}
-                                <div className="col-span-4 flex flex-col items-end">
-                                    <div className="bg-white/10 backdrop-blur-xl px-12 py-8 rounded-[3rem] border border-white/20 shadow-2xl flex flex-col items-end group hover:bg-white/15 transition-all">
-                                        <div className="text-7xl font-black text-white font-mono tracking-tighter leading-none mb-2 tabular-nums">
-                                            {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                    {/* Elevation Pod */}
+                                    <div className="bg-[#1d2d6a]/40 p-10 rounded-[3.5rem] border border-blue-400/20 shadow-[0_0_50px_rgba(29,45,106,0.3)] flex flex-col justify-between group hover:bg-[#1d2d6a]/50 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-400/20 rounded-xl text-blue-400">
+                                                <Mountain size={20} />
+                                            </div>
+                                            <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">Elevation</span>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-px w-12 bg-orange-500" />
-                                            <span className="text-2xl font-black text-white/60 tracking-widest uppercase">
-                                                {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                                            </span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-8xl font-black text-white font-mono tabular-nums tracking-tighter leading-none">{altitude}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-lg font-black text-white/20 uppercase tracking-widest italic leading-none">mdpl</span>
+                                                <div className="h-1 w-8 bg-blue-400 mt-2" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Cabin Pod */}
+                                    <div className="bg-[#1d2d6a]/40 p-10 rounded-[3.5rem] border border-blue-400/20 shadow-[0_0_50px_rgba(29,45,106,0.3)] flex flex-col justify-between group hover:bg-[#1d2d6a]/50 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-orange-500/20 rounded-xl text-orange-500">
+                                                <Thermometer size={20} />
+                                            </div>
+                                            <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">Cabin</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-8xl font-black text-white font-mono tabular-nums tracking-tighter leading-none">{temp.toFixed(1)}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-lg font-black text-white/20 uppercase tracking-widest italic leading-none">°C</span>
+                                                <div className="h-1 w-8 bg-orange-500 mt-2" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Time & Date Pod */}
+                                    <div className="bg-[#1d2d6a]/40 p-10 rounded-[3.5rem] border border-blue-400/20 shadow-[0_0_50px_rgba(29,45,106,0.3)] flex flex-col justify-between items-end group hover:bg-[#1d2d6a]/50 transition-all relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                                            <Clock size={120} className="text-white" />
+                                        </div>
+                                        <div className="w-full flex justify-between items-center mb-4 border-b border-white/5 pb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-blue-400/20 rounded-xl text-blue-400">
+                                                    <Clock size={20} />
+                                                </div>
+                                                <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">System Time</span>
+                                            </div>
+                                        </div>
+                                        <div className="relative z-10 text-right w-full">
+                                            <div className="text-7xl font-black text-white font-mono tracking-tighter leading-none mb-4 tabular-nums block">
+                                                {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':')}
+                                            </div>
+                                            <div className="flex items-center justify-end gap-3">
+                                                <div className="h-[2px] w-8 bg-blue-400 shrink-0" />
+                                                <span className="text-lg font-black text-white/50 tracking-tighter uppercase italic whitespace-nowrap">
+                                                    {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
