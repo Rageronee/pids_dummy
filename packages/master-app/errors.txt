@@ -1,0 +1,8 @@
+﻿src/App.tsx(4,45): error TS6133: 'Bell' is declared but its value is never read.
+src/App.tsx(4,51): error TS6133: 'Menu' is declared but its value is never read.
+src/App.tsx(4,57): error TS6133: 'X' is declared but its value is never read.
+src/App.tsx(4,74): error TS6133: 'MapPin' is declared but its value is never read.
+src/App.tsx(4,175): error TS6133: 'Video' is declared but its value is never read.
+src/App.tsx(4,182): error TS6133: 'LocateFixed' is declared but its value is never read.
+src/App.tsx(4,195): error TS6133: 'Terminal' is declared but its value is never read.
+src/App.tsx(17,25): error TS6133: 'setCurrentTime' is declared but its value is never read.

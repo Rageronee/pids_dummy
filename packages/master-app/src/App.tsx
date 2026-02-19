@@ -1,21 +1,9 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import {
-    LayoutDashboard,
-    LocateFixed,
-    Video,
-    Settings,
-    ChevronLeft,
-    ChevronRight,
-    Wifi,
-    Clock,
-    Train,
-    AlertCircle,
-    CheckCircle2
-} from 'lucide-react';
+import { LayoutDashboard, Megaphone, Radio, Train, Clock, Activity, Settings, AlertCircle, Play, Pause, CheckCircle2, ChevronLeft, ChevronRight, Wifi, RefreshCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getNextDepartures, stations } from './data/mockDb';
 
 const TRAIN_NAMES = ['ARGO WILIS', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN'];
 const TRAIN_NUMBERS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
@@ -33,10 +21,50 @@ function App() {
     // Use the hook for broadcating
     const { data, sendData } = usePidsData();
 
+    // Simulation State
+    const [isSimulationMode, setIsSimulationMode] = useState(false);
+    const [selectedStationId, setSelectedStationId] = useState('BD'); // Default: Bandung
+
+    // Clock Tick
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    // Simulation Tick
+    useEffect(() => {
+        if (!isSimulationMode) return;
+
+        const interval = setInterval(() => {
+            const nextTrains = getNextDepartures(selectedStationId);
+
+            if (nextTrains.length > 0) {
+                const nextTrain = nextTrains[0];
+
+                // Only update if changed to avoid spamming writes
+                if (data.trainNumber !== nextTrain.trainNumber || data.status !== 'ON SCHEDULE') {
+                    sendData({
+                        stationName: nextTrain.trainName,
+                        trainNumber: nextTrain.trainNumber,
+                        nextStation: nextTrain.destination,
+                        status: 'ON SCHEDULE',
+                        // checking next train buffer
+                    });
+                }
+            } else {
+                if (data.status !== 'NO SERVICE') {
+                    sendData({
+                        stationName: '---',
+                        trainNumber: '---',
+                        nextStation: '---',
+                        status: 'NO SERVICE'
+                    });
+                }
+            }
+        }, 5000); // Check every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [isSimulationMode, selectedStationId, data, sendData]);
 
     const handleSetName = () => {
         setIsSaving(true);
@@ -85,24 +113,28 @@ function App() {
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1.5">
-                    {[
-                        { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                        { id: 'gps', icon: LocateFixed, label: 'GPS Status' },
-                        { id: 'cctv', icon: Video, label: 'CCTV' },
-                        { id: 'settings', icon: Settings, label: 'Settings' }
-                    ].map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all duration-200 ${activeTab === item.id
-                                ? 'bg-[#ee6f1f] text-white shadow-lg shadow-orange-900/20 translate-x-1'
-                                : 'text-slate-300/70 hover:text-white hover:bg-white/5'
-                                }`}
-                        >
-                            <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-                            <span className={`text-[15px] ${activeTab === item.id ? 'font-bold' : 'font-medium opacity-80'}`}>{item.label}</span>
-                        </button>
-                    ))}
+                    <ul className="space-y-2">
+                        {[
+                            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                            { id: 'announcements', icon: Megaphone, label: 'Announcements' },
+                            { id: 'schedule', icon: Clock, label: 'Train Schedule' },
+                            { id: 'media', icon: Radio, label: 'Media & Ads' },
+                            { id: 'settings', icon: Settings, label: 'Settings' }
+                        ].map((item) => (
+                            <li key={item.id}>
+                                <button
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 font-bold ${activeTab === item.id
+                                        ? 'bg-white text-[#1d2d6a] shadow-lg shadow-blue-900/20 scale-105'
+                                        : 'text-blue-100 hover:bg-white/10 hover:translate-x-1'
+                                        }`}
+                                >
+                                    <item.icon size={22} strokeWidth={2.5} />
+                                    <span>{item.label}</span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
                 </nav>
 
                 <div className="p-6">
@@ -252,23 +284,119 @@ function App() {
                                     </div>
                                 </div>
 
-                                {/* System Info Grid */}
-                                <div className="grid grid-cols-3 gap-6">
-                                    {[
-                                        { label: 'Active IP Address', value: '192.168.100.101', icon: Wifi, color: 'text-blue-500' },
-                                        { label: 'Network Relay', value: 'KAI-MODEM-01', icon: Terminal, color: 'text-orange-500' },
-                                        { label: 'Uptime', value: '14:22:05', icon: Clock, color: 'text-slate-500' }
-                                    ].map((stat, i) => (
-                                        <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-5 hover:border-slate-200 transition-colors">
-                                            <div className={`bg-slate-50 p-3 rounded-xl ${stat.color} border border-slate-100`}>
-                                                <stat.icon size={18} />
-                                            </div>
-                                            <div>
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{stat.label}</div>
-                                                <div className="text-[13px] font-black text-[#1d2d6a] tabular-nums">{stat.value}</div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {/* Simulation Control Card */}
+                                    <motion.div
+                                        whileHover={{ scale: 1.02 }}
+                                        className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between overflow-hidden relative"
+                                    >
+                                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                                            <Activity size={120} className="text-blue-900" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">PIDS Simulation</h3>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-xl ${isSimulationMode ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                    {isSimulationMode ? <Play size={24} fill="currentColor" /> : <Pause size={24} fill="currentColor" />}
+                                                </div>
+                                                <div>
+                                                    <p className={`text-2xl font-black ${isSimulationMode ? 'text-green-600' : 'text-slate-400'}`}>
+                                                        {isSimulationMode ? 'RUNNING' : 'PAUSED'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    ))}
+
+                                        <div className="mt-4 space-y-3 relative z-10">
+                                            <div className="flex items-center justify-between bg-slate-50 p-2 rounded-xl">
+                                                <span className="text-xs font-bold text-slate-400 ml-2">STATION</span>
+                                                <select
+                                                    value={selectedStationId}
+                                                    onChange={(e) => setSelectedStationId(e.target.value)}
+                                                    className="bg-white border-none text-sm font-bold text-[#1d2d6a] py-1 px-3 rounded-lg focus:ring-0 cursor-pointer shadow-sm"
+                                                >
+                                                    {stations.map(s => (
+                                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsSimulationMode(!isSimulationMode)}
+                                                className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${isSimulationMode
+                                                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                    : 'bg-[#1d2d6a] text-white hover:bg-blue-900'
+                                                    }`}
+                                            >
+                                                {isSimulationMode ? 'STOP SIMULATION' : 'START SIMULATION'}
+                                            </button>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* Manual Control Card */}
+                                    <motion.div
+                                        whileHover={{ scale: 1.02 }}
+                                        className={`bg-gradient-to-br from-[#ee6f1f] to-[#d85c10] p-6 rounded-3xl shadow-lg shadow-orange-200 text-white relative overflow-hidden ${isSimulationMode ? 'opacity-50 pointer-events-none grayscale' : ''}`}
+                                    >
+                                        <div className="absolute top-0 right-0 p-4 opacity-20">
+                                            <Megaphone size={120} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-orange-100 uppercase tracking-wider mb-1">Manual Override</h3>
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                                    <Settings size={24} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-3xl font-black tracking-tight">CONTROL</p>
+                                                    <p className="text-sm font-medium text-orange-100">Set Display Manually</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setActiveTab('announcements')}
+                                            className="mt-6 w-full py-3 bg-white text-[#ee6f1f] rounded-xl text-sm font-bold shadow-lg hover:bg-orange-50 transition-colors"
+                                        >
+                                            Configure Display
+                                        </button>
+                                    </motion.div>
+
+                                    {/* Status Card */}
+                                    <motion.div
+                                        whileHover={{ scale: 1.02 }}
+                                        className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between overflow-hidden relative"
+                                    >
+                                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                                            <Activity size={120} className="text-blue-900" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">System Status</h3>
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-green-100 p-2 rounded-xl text-green-600">
+                                                    <CheckCircle2 size={24} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-3xl font-black text-[#1d2d6a] tracking-tight">ONLINE</p>
+                                                    <p className="text-sm font-medium text-slate-400">All Systems Normal</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 flex gap-2">
+                                            <div className="flex-1 bg-slate-50 rounded-xl p-3 text-center">
+                                                <p className="text-xs text-slate-400 font-bold mb-1">LED P10</p>
+                                                <div className="flex justify-center items-center gap-1 text-green-500">
+                                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                                    <span className="text-xs font-black">ACTIVE</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 bg-slate-50 rounded-xl p-3 text-center">
+                                                <p className="text-xs text-slate-400 font-bold mb-1">DATA SYNC</p>
+                                                <div className="flex justify-center items-center gap-1 text-blue-500">
+                                                    <Activity size={10} className="animate-spin" />
+                                                    <span className="text-xs font-black">SYNCING</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
                                 </div>
                             </motion.div>
                         ) : activeTab === 'settings' ? (
@@ -341,19 +469,12 @@ function App() {
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
-            </main>
-        </div>
+                </div >
+            </main >
+        </div >
     );
 }
 
-// Missing component from standard lubide-react for the mock
-function RefreshCcw(props: any) {
-    return <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Video {...props} /></motion.div>;
-}
 
-function Terminal(props: any) {
-    return <LocateFixed {...props} />;
-}
 
 export default App;

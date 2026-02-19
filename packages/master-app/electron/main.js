@@ -13,6 +13,7 @@ function createWindow() {
         },
         backgroundColor: '#0f172a', // Slate-900
         titleBarStyle: 'hidden',
+        resizable: true,
     });
 
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
@@ -21,7 +22,7 @@ function createWindow() {
         win.loadFile(path.join(__dirname, '../dist/index.html'));
     } else {
         win.loadURL(devServerUrl);
-        win.webContents.openDevTools(); // Open DevTools to help debugging
+        // win.webContents.openDevTools(); // Open DevTools to help debugging
     }
 
     win.webContents.on('did-fail-load', () => {

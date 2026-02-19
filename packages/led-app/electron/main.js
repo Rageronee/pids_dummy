@@ -13,6 +13,7 @@ function createWindow() {
         },
         backgroundColor: '#000000',
         titleBarStyle: 'hidden',
+        resizable: true,
     });
 
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5175';
@@ -21,7 +22,7 @@ function createWindow() {
         win.loadFile(path.join(__dirname, '../dist/index.html'));
     } else {
         win.loadURL(devServerUrl);
-        win.webContents.openDevTools();
+        // win.webContents.openDevTools();
     }
 
     win.webContents.on('did-fail-load', () => {
