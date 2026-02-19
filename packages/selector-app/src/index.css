@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* postcss-preset-env */
+
+@layer base {
+    :root {
+        --kai-blue: 29 45 106;
+        /* #1d2d6a */
+        --kai-orange: 238 111 31;
+        /* #ee6f1f */
+    }
+}
+
+body {
+    @apply bg-[#0f172a] text-slate-100 overflow-hidden;
+}
+
+.kai-btn-orange {
+    @apply bg-[#ee6f1f] text-white py-6 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all shadow-[0_4px_0_#c2410c] hover:brightness-110;
+}
+
+.controller-card {
+    @apply bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 shadow-2xl;
+}
