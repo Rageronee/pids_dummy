@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Compass, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from './components/P10Matrix';
 import { LoginScreen } from './components/LoginScreen';
@@ -215,50 +215,50 @@ function App() {
     return (
         <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden select-none">
             {/* Sidebar (Left) */}
-            <aside className="w-[300px] bg-white border-r border-slate-200 flex flex-col py-10 px-8 relative z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.05)]">
+            <aside className="w-[300px] bg-[#1d2d6a] border-r border-blue-900 flex flex-col py-10 px-8 relative z-10 shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)]">
                 {/* Branding */}
                 <div className="mb-14">
                     <img
                         src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
                         alt="KAI Logo"
-                        className="h-8 w-auto mb-4"
+                        className="h-8 w-auto mb-4 brightness-0 invert"
                     />
-                    <h1 className="text-xl font-black text-[#1d2d6a] tracking-tight leading-tight">PIDS SELECTOR</h1>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Control & Monitoring System</p>
+                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS SELECTOR</h1>
+                    <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5">Control & Monitoring System</p>
                 </div>
 
                 {/* Status Items */}
                 <div className="flex flex-col gap-8 mb-auto">
                     {/* Active Train */}
                     <div className="flex items-center gap-5">
-                        <div className="bg-[#1d2d6a] p-3 rounded-xl flex-shrink-0">
+                        <div className="bg-[#ee6f1f] p-3 rounded-xl flex-shrink-0 shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
                             <Train size={24} className="text-white" strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Active Train</span>
-                            <span className="text-lg font-black text-[#1d2d6a] leading-none uppercase">{masterSyncedName}</span>
+                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Active Train</span>
+                            <span className="text-lg font-black text-white leading-none uppercase">{masterSyncedName}</span>
                         </div>
                     </div>
 
                     {/* Unit Number */}
                     <div className="flex items-center gap-5">
-                        <div className="text-[#1d2d6a] p-3 rounded-xl flex-shrink-0">
-                            <Activity size={24} strokeWidth={2} />
+                        <div className="bg-white/10 p-3 rounded-xl flex-shrink-0 border border-white/5">
+                            <Train size={24} className="text-white" strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Unit Number</span>
-                            <span className="text-lg font-black text-[#1d2d6a] leading-none uppercase">KA-{masterSyncedNumber}</span>
+                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Unit Number</span>
+                            <span className="text-lg font-black text-white leading-none uppercase">KA-{masterSyncedNumber}</span>
                         </div>
                     </div>
 
                     {/* Destination */}
                     <div className="flex items-center gap-5">
-                        <div className="text-[#1d2d6a] p-3 rounded-xl flex-shrink-0">
-                            <MapPin size={24} strokeWidth={2} />
+                        <div className="bg-white/10 p-3 rounded-xl flex-shrink-0 border border-white/5">
+                            <MapPin size={24} className="text-white" strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Destination</span>
-                            <span className="text-lg font-black text-[#1d2d6a] leading-none uppercase">{stations[stations.length - 1]}</span>
+                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Destination</span>
+                            <span className="text-lg font-black text-white leading-none uppercase">{stations[stations.length - 1]}</span>
                         </div>
                     </div>
                 </div>
@@ -267,26 +267,26 @@ function App() {
                 <div className="flex flex-col gap-2 mt-12">
                     <button
                         onClick={() => setShowLedSettings(true)}
-                        className="flex items-center gap-4 py-3 px-4 rounded-xl text-[#1d2d6a] hover:bg-slate-50 transition-colors w-full text-left group"
+                        className="flex items-center gap-4 py-3 px-4 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors w-full text-left group"
                     >
-                        <Settings size={20} className="text-slate-400 group-hover:text-[#1d2d6a] transition-colors" />
+                        <Settings size={20} className="text-white/40 group-hover:text-white transition-colors" />
                         <span className="font-bold text-sm tracking-wide uppercase">LED Settings</span>
                     </button>
 
                     <button
                         onClick={handleToggleTV}
-                        className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showTVPreview ? 'bg-[#1d2d6a] text-white' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
+                        className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showTVPreview ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     >
-                        <Video size={20} className={showTVPreview ? 'text-white' : 'text-slate-400 group-hover:text-[#1d2d6a] transition-colors'} />
+                        <Video size={20} className={showTVPreview ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
                         <span className="font-bold text-sm tracking-wide uppercase">Monitor TV</span>
                     </button>
 
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-4 py-3 px-4 rounded-xl text-[#1d2d6a] hover:bg-red-50 transition-colors w-full text-left group mt-4"
+                        className="flex items-center gap-4 py-3 px-4 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors w-full text-left group mt-4"
                     >
-                        <LogOut size={20} className="text-slate-400 group-hover:text-red-500 transition-colors" />
-                        <span className="font-bold text-sm tracking-wide uppercase group-hover:text-red-600">Logout</span>
+                        <LogOut size={20} className="text-white/20 group-hover:text-red-400 transition-colors" />
+                        <span className="font-bold text-sm tracking-wide uppercase">Logout</span>
                     </button>
                 </div>
 
@@ -369,22 +369,17 @@ function App() {
                         </h2>
 
                         <div className="flex gap-6 h-[400px]">
-                            {/* Current Station Control Card (Left) */}
-                            <div className="flex-[2] bg-[#1d2d6a] rounded-3xl shadow-xl border border-blue-900/50 flex flex-col p-8 relative overflow-hidden group">
-                                {/* Background Decorative */}
-                                <div className="absolute top-4 right-4 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                                    <MapPin size={160} />
-                                </div>
+                            <div className="flex-[2] bg-white rounded-3xl border border-slate-200 flex flex-col p-8 relative overflow-hidden group">
 
                                 <div className="flex justify-between items-start mb-6 relative z-10">
-                                    <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/10">CURRENT STATION</span>
-                                    <div className="bg-white/10 text-white rounded-xl p-3 backdrop-blur-sm shadow-sm">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">CURRENT STATION</span>
+                                    <div className="bg-[#1d2d6a]/5 text-[#1d2d6a] rounded-xl p-3 shadow-sm">
                                         <MapPin size={24} />
                                     </div>
                                 </div>
 
                                 <div className="flex flex-col flex-1 justify-center relative z-10 pl-2">
-                                    <p className="text-[11px] font-bold text-blue-300 uppercase tracking-[0.2em] mb-2">Departing From</p>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Departing From</p>
                                     <div className="h-24">
                                         <AnimatePresence mode="wait">
                                             <motion.h3
@@ -392,7 +387,7 @@ function App() {
                                                 initial={{ y: 10, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
                                                 exit={{ y: -10, opacity: 0 }}
-                                                className="text-6xl font-black text-white uppercase tracking-tighter drop-shadow-md"
+                                                className="text-6xl font-black text-[#1d2d6a] uppercase tracking-tighter"
                                             >
                                                 {currentStation}
                                             </motion.h3>
@@ -423,15 +418,10 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Upcoming Stop Card (Right) */}
-                            <div className="flex-1 bg-[#1d2d6a] rounded-3xl shadow-xl border border-blue-900/50 flex flex-col p-8 relative overflow-hidden group">
-                                {/* Background Decorative */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                                    <Compass size={240} />
-                                </div>
+                            <div className="flex-1 bg-white rounded-3xl border border-slate-200 flex flex-col p-8 relative overflow-hidden group">
 
                                 <div className="flex justify-between items-start mb-auto relative z-10">
-                                    <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/10">UPCOMING STOP</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">UPCOMING STOP</span>
                                 </div>
 
                                 <div className="flex flex-col justify-center relative z-10">
@@ -442,14 +432,14 @@ function App() {
                                                 initial={{ y: 5, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
                                                 exit={{ y: -5, opacity: 0 }}
-                                                className="text-4xl font-black text-white uppercase tracking-tighter drop-shadow-md truncate"
+                                                className="text-4xl font-black text-[#1d2d6a] uppercase tracking-tighter truncate"
                                                 title={nextStation}
                                             >
                                                 {nextStation}
                                             </motion.h4>
                                         </AnimatePresence>
                                     </div>
-                                    <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 rounded-xl text-blue-200 font-bold text-sm border border-white/5 w-max">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl text-slate-500 font-bold text-sm border border-slate-200 w-max">
                                         <Clock size={16} />
                                         <span>Estimated: 12 mins</span>
                                     </div>
@@ -621,14 +611,14 @@ function App() {
                                     {/* Service & Train Block */}
                                     <div className="flex items-center justify-center font-sans tracking-wide">
                                         {/* Left Block (Grey Transparent) */}
-                                        <div className="bg-white/30 backdrop-blur-md px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 shadow-lg border-r border-white/20">
-                                            <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-0.5">SERVICE</span>
-                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight">{masterSyncedName}</span>
+                                        <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
+                                            <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">SERVICE</span>
+                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">{masterSyncedName}</span>
                                         </div>
                                         {/* Right Block (Solid Orange) */}
-                                        <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 shadow-lg border-l border-[#d95d19]">
-                                            <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-0.5">TRAIN NO</span>
-                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight">KA-{masterSyncedNumber}</span>
+                                        <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 h-[140px] shadow-lg border-l border-[#d95d19]">
+                                            <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">TRAIN NO</span>
+                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
                                         </div>
                                     </div>
                                 </motion.div>

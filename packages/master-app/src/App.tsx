@@ -272,22 +272,26 @@ function App() {
     return (
         <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden">
             {/* Sidebar */}
-            <aside className="w-72 bg-[#1d2d6a] flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.1)] z-20">
-                <div className="p-8">
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-4 rounded-2xl shadow-sm flex justify-center border border-white/10">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-8" />
-                    </motion.div>
+            <aside className="w-72 bg-[#1d2d6a] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+                <div className="px-10 py-12 mb-4">
+                    <img
+                        src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+                        alt="KAI Logo"
+                        className="h-8 w-auto mb-4 brightness-0 invert"
+                    />
+                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS MASTER</h1>
+                    <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5">Central Processing System</p>
                 </div>
 
                 {/* User info */}
-                <div className="px-6 pb-4">
-                    <div className="bg-white/10 rounded-2xl p-4 border border-white/10 flex items-center gap-3">
-                        <div className="bg-[#ee6f1f] p-2 rounded-xl">
+                <div className="px-6 pb-6">
+                    <div className="bg-white/10 rounded-2xl p-4 border border-white/5 flex items-center gap-3">
+                        <div className="bg-[#ee6f1f] p-2 rounded-xl shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
                             <ShieldCheck size={16} className="text-white" />
                         </div>
                         <div>
                             <div className="text-white font-black text-sm leading-none mb-0.5">{authUser.nama}</div>
-                            <div className="text-blue-300/60 text-[10px] font-bold uppercase tracking-widest">{authUser.role}</div>
+                            <div className="text-blue-200/40 text-[10px] font-bold uppercase tracking-widest">{authUser.role}</div>
                         </div>
                     </div>
                 </div>
@@ -297,7 +301,7 @@ function App() {
                         {NAV_ITEMS.map((item) => (
                             <li key={item.id}>
                                 <button onClick={() => setActiveTab(item.id)}
-                                    className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 font-bold ${activeTab === item.id ? 'bg-white text-[#1d2d6a] shadow-lg shadow-blue-900/20 scale-105' : 'text-blue-100 hover:bg-white/10 hover:translate-x-1'}`}>
+                                    className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 font-bold ${activeTab === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] scale-[1.02]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
                                     <item.icon size={22} strokeWidth={2.5} />
                                     <span>{item.label}</span>
                                 </button>

@@ -194,18 +194,18 @@ function DashboardPage({ token }: { token: string }) {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-2xl font-black text-white tracking-tight mb-1">Dashboard Overview</h2>
-                <p className="text-white/30 text-sm font-medium">Status sistem PIDS secara real-time</p>
+                <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Dashboard Overview</h2>
+                <p className="text-slate-500 text-sm font-medium">Status sistem PIDS secara real-time</p>
             </div>
             <div className="grid grid-cols-4 gap-6">
-                {loading ? [...Array(4)].map((_, i) => <div key={i} className="h-32 bg-white/5 rounded-3xl animate-pulse" />) : cards.map((c, i) => (
+                {loading ? [...Array(4)].map((_, i) => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse" />) : cards.map((c, i) => (
                     <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                        className="bg-white/5 border border-white/8 rounded-3xl p-6 flex flex-col gap-4 hover:bg-white/8 transition-colors">
-                        <div className={`w-10 h-10 ${c.color} rounded-2xl flex items-center justify-center`}><c.icon size={20} className="text-white" /></div>
+                        className="bg-white border border-slate-200 rounded-[2rem] p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className={`w-12 h-12 ${c.color} rounded-2xl flex items-center justify-center shadow-sm`}><c.icon size={24} className="text-white" /></div>
                         <div>
-                            <div className="text-3xl font-black text-white tracking-tight">{String(c.value)}</div>
-                            <div className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">{c.label}</div>
-                            <div className="text-white/25 text-[10px] font-medium mt-0.5">{c.sub}</div>
+                            <div className="text-3xl font-black text-[#1d2d6a] tracking-tight">{String(c.value)}</div>
+                            <div className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">{c.label}</div>
+                            <div className="text-slate-400/80 text-[10px] font-medium mt-0.5">{c.sub}</div>
                         </div>
                     </motion.div>
                 ))}
@@ -213,30 +213,30 @@ function DashboardPage({ token }: { token: string }) {
 
             {/* Latest log */}
             {status?.lastLog && (
-                <div className="bg-white/5 border border-white/8 rounded-3xl p-6">
-                    <h3 className="text-sm font-black text-white/60 uppercase tracking-widest mb-4 flex items-center gap-2"><Activity size={14} /> Log Terakhir</h3>
+                <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Activity size={16} className="text-[#ee6f1f]" /> Log Terakhir</h3>
                     <div className="flex items-start gap-4">
-                        <div className={`text-sm font-black ${ACTION_COLOR[status.lastLog.action] || 'text-white/40'}`}>{status.lastLog.action}</div>
-                        <div className="text-white/40 text-sm">{status.lastLog.details}</div>
-                        <div className="ml-auto text-white/25 text-xs font-mono whitespace-nowrap">{new Date(status.lastLog.timestamp).toLocaleTimeString('id-ID')}</div>
+                        <div className={`text-sm font-black ${ACTION_COLOR[status.lastLog.action] || 'text-slate-400'}`}>{status.lastLog.action}</div>
+                        <div className="text-slate-600 text-sm font-medium flex-1">{status.lastLog.details}</div>
+                        <div className="text-slate-400 text-xs font-mono font-medium whitespace-nowrap">{new Date(status.lastLog.timestamp).toLocaleTimeString('id-ID')}</div>
                     </div>
                 </div>
             )}
 
             {/* Connection status */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-6">
                 {[
                     { name: 'Master API Server', port: '3001', ok: !!status },
                     { name: 'Selector App', port: '5174', ok: true },
                     { name: 'LED Display App', port: '5175', ok: true },
                 ].map((unit, i) => (
-                    <div key={i} className="bg-white/5 border border-white/8 rounded-2xl p-5 flex items-center gap-4">
-                        <div className={`w-2 h-2 rounded-full ${unit.ok ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+                    <div key={i} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
+                        <div className={`w-3 h-3 rounded-full ${unit.ok ? 'bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
                         <div>
-                            <div className="text-white font-bold text-sm">{unit.name}</div>
-                            <div className="text-white/30 text-xs font-mono">:{unit.port}</div>
+                            <div className="text-[#1d2d6a] font-bold text-sm tracking-wide">{unit.name}</div>
+                            <div className="text-slate-400 text-xs font-mono font-medium mt-0.5">Port: {unit.port}</div>
                         </div>
-                        <Wifi size={16} className={`ml-auto ${unit.ok ? 'text-green-400' : 'text-red-400'}`} />
+                        <Wifi size={20} className={`ml-auto ${unit.ok ? 'text-green-500' : 'text-red-500'}`} />
                     </div>
                 ))}
             </div>
@@ -291,40 +291,40 @@ function TrainsPage({ token }: { token: string }) {
         <div className="space-y-8">
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight mb-1">Manajemen Kereta</h2>
-                    <p className="text-white/30 text-sm">{trains.length} kereta terdaftar dalam sistem</p>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Kereta</h2>
+                    <p className="text-slate-500 text-sm font-medium">{trains.length} kereta terdaftar dalam sistem</p>
                 </div>
-                <button onClick={fetchTrains} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-white/40 hover:text-white transition-all"><RefreshCcw size={16} /></button>
+                <button onClick={fetchTrains} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
             </div>
 
             {/* Add new */}
-            <div className="bg-white/5 border border-white/8 rounded-3xl p-6 flex gap-4">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 flex gap-4 shadow-sm">
                 <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()}
                     placeholder="Nama kereta baru (e.g. GAJAYANA)" maxLength={50}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/20 font-medium text-sm focus:outline-none focus:border-[#ee6f1f]/60 transition-all uppercase" />
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all uppercase" />
                 <button onClick={handleAdd} disabled={adding || !newName.trim()}
-                    className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-white/10 disabled:text-white/20 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all flex items-center gap-2 active:scale-95">
+                    className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all flex items-center gap-2 active:scale-95 shadow-[0_8px_20px_rgba(238,111,31,0.25)] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] disabled:shadow-none">
                     <Plus size={18} />{adding ? 'Menambahkan...' : 'Tambah'}
                 </button>
             </div>
 
             {/* List */}
-            <div className="bg-white/5 border border-white/8 rounded-3xl overflow-hidden">
-                {loading ? <div className="p-8 text-center text-white/30 text-sm">Memuat data...</div> : trains.length === 0 ? (
-                    <div className="p-8 text-center text-white/30 text-sm">Belum ada kereta terdaftar.</div>
+            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                {loading ? <div className="p-8 text-center text-slate-500 text-sm font-medium">Memuat data...</div> : trains.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500 text-sm font-medium">Belum ada kereta terdaftar.</div>
                 ) : (
-                    <div className="divide-y divide-white/5">
+                    <div className="divide-y divide-slate-100">
                         {trains.map((name, i) => (
                             <motion.div key={name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
-                                className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors group">
-                                <div className="w-8 h-8 bg-[#1d2d6a] rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <Train size={15} className="text-blue-300" />
+                                className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors group">
+                                <div className="w-10 h-10 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                                    <Train size={18} className="text-[#1d2d6a]" />
                                 </div>
-                                <span className="text-white font-bold flex-1 tracking-wide">{name}</span>
-                                <span className="text-white/20 text-[10px] font-bold uppercase tracking-widest">#{String(i + 1).padStart(2, '0')}</span>
+                                <span className="text-[#1d2d6a] font-black flex-1 tracking-wide text-base">{name}</span>
+                                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">#{String(i + 1).padStart(2, '0')}</span>
                                 <button onClick={() => handleDelete(name)}
-                                    className="opacity-0 group-hover:opacity-100 p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all active:scale-95">
-                                    <Trash2 size={15} />
+                                    className="opacity-0 group-hover:opacity-100 p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95">
+                                    <Trash2 size={16} />
                                 </button>
                             </motion.div>
                         ))}
@@ -335,7 +335,7 @@ function TrainsPage({ token }: { token: string }) {
             {/* Toast */}
             <AnimatePresence>
                 {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold ${toast.ok ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold ${toast.ok ? 'bg-green-500 text-white shadow-[0_8px_20px_rgba(34,197,94,0.25)]' : 'bg-red-500 text-white shadow-[0_8px_20px_rgba(239,68,68,0.25)]'}`}>
                     {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
                 </motion.div>}
             </AnimatePresence>
@@ -394,10 +394,10 @@ function RoutesPage({ token }: { token: string }) {
         <div className="space-y-8">
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight mb-1">Manajemen Rute & Stasiun</h2>
-                    <p className="text-white/30 text-sm">{routeList.length} rute terdaftar</p>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Rute & Stasiun</h2>
+                    <p className="text-slate-500 text-sm font-medium">{routeList.length} rute terdaftar</p>
                 </div>
-                <button onClick={() => setShowForm(v => !v)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm uppercase tracking-wide transition-all active:scale-95 ${showForm ? 'bg-white/10 text-white/60' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15]'}`}>
+                <button onClick={() => setShowForm(v => !v)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm uppercase tracking-wide transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
                     {showForm ? <><X size={16} />Batal</> : <><Plus size={16} />Tambah Rute</>}
                 </button>
             </div>
@@ -405,44 +405,44 @@ function RoutesPage({ token }: { token: string }) {
             {/* Add form */}
             <AnimatePresence>
                 {showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                    className="bg-white/5 border border-[#ee6f1f]/20 rounded-3xl p-6 space-y-4 overflow-hidden">
-                    <h3 className="text-white font-black text-sm uppercase tracking-widest">Rute Baru</h3>
+                    className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden mb-8">
+                    <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">Rute Baru</h3>
                     <input value={newRouteName} onChange={e => setNewRouteName(e.target.value)} placeholder="Nama rute (e.g. GAJAYANA)" maxLength={60}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/20 font-medium text-sm focus:outline-none focus:border-[#ee6f1f]/60 transition-all uppercase" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all uppercase" />
                     <textarea value={newStations} onChange={e => setNewStations(e.target.value)} rows={3} placeholder="Stasiun dipisah koma: MALANG, BLITAR, KEDIRI, MADIUN, YOGYAKARTA, BANDUNG"
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/20 font-medium text-sm focus:outline-none focus:border-[#ee6f1f]/60 transition-all resize-none" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all resize-none uppercase" />
                     <div className="flex gap-3">
-                        <button onClick={handleSave} disabled={saving} className="px-6 py-3 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-white/10 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2">
-                            {saving ? 'Menyimpan...' : <><CheckCircle2 size={16} />Simpan Rute</>}
+                        <button onClick={handleSave} disabled={saving} className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
+                            {saving ? 'Menyimpan...' : <><CheckCircle2 size={18} />Simpan Rute</>}
                         </button>
-                        <p className="text-white/25 text-xs self-center flex-1">SVG path rute akan digenerate otomatis</p>
+                        <p className="text-slate-400 text-xs self-center flex-1 font-medium">SVG path rute akan digenerate otomatis</p>
                     </div>
                 </motion.div>}
             </AnimatePresence>
 
             {/* Routes list */}
-            {loading ? <div className="p-8 text-center text-white/30">Memuat rute...</div> : (
+            {loading ? <div className="p-8 text-center text-slate-500 font-medium">Memuat rute...</div> : (
                 <div className="grid grid-cols-1 gap-4">
                     {routeList.map((route: any, i) => (
                         <motion.div key={route.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                            className="bg-white/5 border border-white/8 rounded-3xl p-6 group hover:bg-white/8 transition-colors">
+                            className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 group hover:shadow-md transition-all">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 bg-[#1d2d6a] rounded-xl flex items-center justify-center"><MapPin size={15} className="text-blue-300" /></div>
-                                        <h3 className="text-white font-black tracking-wide">{route.name}</h3>
-                                        <span className="text-white/25 text-[10px] font-bold">{route.stations?.length || 0} STASIUN</span>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm text-[#1d2d6a]"><MapPin size={18} /></div>
+                                        <h3 className="text-[#1d2d6a] font-black tracking-wide text-lg">{route.name}</h3>
+                                        <span className="text-slate-400 text-[10px] font-bold tracking-widest uppercase">{route.stations?.length || 0} STASIUN</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {route.stations?.map((s: string, j: number) => (
-                                            <span key={j} className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg text-white/60 text-[11px] font-bold">
-                                                {j > 0 && <ChevronRight size={10} className="text-white/20" />}{s}
+                                            <span key={j} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-600 text-[11px] font-bold">
+                                                {j > 0 && <ChevronRight size={12} className="text-slate-300" />}{s}
                                             </span>
                                         ))}
                                     </div>
                                 </div>
-                                <button onClick={() => handleDelete(route.name)} className="opacity-0 group-hover:opacity-100 p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex-shrink-0 active:scale-95">
-                                    <Trash2 size={15} />
+                                <button onClick={() => handleDelete(route.name)} className="opacity-0 group-hover:opacity-100 p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all flex-shrink-0 active:scale-95 border border-transparent hover:border-red-200">
+                                    <Trash2 size={16} />
                                 </button>
                             </div>
                         </motion.div>
@@ -452,7 +452,7 @@ function RoutesPage({ token }: { token: string }) {
 
             <AnimatePresence>
                 {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold ${toast.ok ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold ${toast.ok ? 'bg-green-500 shadow-[0_8px_20px_rgba(34,197,94,0.25)]' : 'bg-red-500 shadow-[0_8px_20px_rgba(239,68,68,0.25)]'} text-white`}>
                     {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
                 </motion.div>}
             </AnimatePresence>
@@ -476,27 +476,27 @@ function UsersPage({ token }: { token: string }) {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-2xl font-black text-white tracking-tight mb-1">Manajemen Pengguna</h2>
-                <p className="text-white/30 text-sm">Daftar pengguna terdaftar dalam sistem PIDS</p>
+                <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Pengguna</h2>
+                <p className="text-slate-500 text-sm font-medium">Daftar pengguna terdaftar dalam sistem PIDS</p>
             </div>
-            <div className="bg-white/5 border border-white/8 rounded-3xl overflow-hidden">
-                <div className="grid grid-cols-4 gap-0 px-6 py-3 bg-white/5 border-b border-white/5 text-white/30 text-[10px] font-black uppercase tracking-widest">
+            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                <div className="grid grid-cols-4 gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest">
                     <span>ID</span><span>Nama</span><span>Username</span><span>Role</span>
                 </div>
-                {loading ? <div className="p-8 text-center text-white/30 text-sm">Memuat pengguna...</div> : users.map((u, i) => (
+                {loading ? <div className="p-8 text-center text-slate-500 text-sm font-medium">Memuat pengguna...</div> : users.map((u, i) => (
                     <motion.div key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.06 }}
-                        className="grid grid-cols-4 gap-0 px-6 py-5 border-b border-white/5 hover:bg-white/5 transition-colors items-center">
-                        <span className="text-white/30 font-mono text-sm">{u.id}</span>
-                        <span className="text-white font-bold">{u.nama}</span>
-                        <span className="text-white/60 font-mono text-sm">{u.username}</span>
-                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[11px] font-black uppercase w-fit ${u.role === 'Admin' ? 'bg-[#ee6f1f]/20 text-[#ee6f1f]' : 'bg-blue-500/20 text-blue-400'}`}>
-                            <Shield size={10} />{u.role}
+                        className="grid grid-cols-4 gap-0 px-6 py-5 border-b border-slate-100 hover:bg-slate-50 transition-colors items-center">
+                        <span className="text-slate-400 font-mono text-sm">{u.id}</span>
+                        <span className="text-[#1d2d6a] font-black">{u.nama}</span>
+                        <span className="text-slate-500 font-mono text-sm font-medium">{u.username}</span>
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[11px] font-black uppercase w-fit ${u.role === 'Admin' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'bg-blue-500/10 text-blue-500'}`}>
+                            <Shield size={12} />{u.role}
                         </span>
                     </motion.div>
                 ))}
             </div>
-            <div className="bg-white/5 border border-white/8 rounded-2xl p-5 text-white/30 text-xs font-medium">
-                <strong className="text-white/50">Catatan:</strong> Manajemen pengguna (tambah/hapus/edit) pada implementasi produksi memerlukan endpoint tambahan dan UI form yang terpisah. Pada dummy ini, user dikelola melalui seed data di api.js.
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-500 text-xs font-medium shadow-sm leading-relaxed">
+                <strong className="text-[#1d2d6a] font-black mr-1">Catatan:</strong> Manajemen pengguna (tambah/hapus/edit) pada implementasi produksi memerlukan endpoint tambahan dan UI form yang terpisah. Pada iterasi dummy PIDS Webapp UI ini, user dikelola melalui seed data di backend `api.js`.
             </div>
         </div>
     );
@@ -511,14 +511,14 @@ function LogsPage({ token }: { token: string }) {
     const [filter, setFilter] = useState('ALL');
 
     const ACTION_META: Record<string, { label: string; color: string }> = {
-        LOGIN: { label: 'Login', color: 'text-green-400 bg-green-500/10 border-green-500/20' },
-        LOGIN_FAILED: { label: 'Login Gagal', color: 'text-red-400 bg-red-500/10 border-red-500/20' },
-        LOGOUT: { label: 'Logout', color: 'text-slate-400 bg-white/5 border-white/10' },
-        STATE_UPDATE: { label: 'Update State', color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
-        DISPLAY_MODE: { label: 'Mode Display', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
-        LED_CONFIG: { label: 'LED Config', color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
-        ADMIN_CRUD: { label: 'Admin CRUD', color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
-        SYSTEM: { label: 'Sistem', color: 'text-slate-500 bg-white/5 border-white/8' },
+        LOGIN: { label: 'Login', color: 'text-green-600 bg-green-500/10 border-green-500/20' },
+        LOGIN_FAILED: { label: 'Login Gagal', color: 'text-red-500 bg-red-500/10 border-red-500/20' },
+        LOGOUT: { label: 'Logout', color: 'text-slate-500 bg-slate-100 border-slate-200' },
+        STATE_UPDATE: { label: 'Update State', color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+        DISPLAY_MODE: { label: 'Mode Display', color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
+        LED_CONFIG: { label: 'LED Config', color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
+        ADMIN_CRUD: { label: 'Admin CRUD', color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
+        SYSTEM: { label: 'Sistem', color: 'text-slate-500 bg-slate-100 border-slate-200' },
     };
 
     const fetchLogs = useCallback(async () => {
@@ -538,52 +538,52 @@ function LogsPage({ token }: { token: string }) {
         <div className="space-y-8">
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight mb-1">Log Sistem</h2>
-                    <p className="text-white/30 text-sm">{logs.length} entri total · Auto-refresh setiap 5 detik</p>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Log Sistem</h2>
+                    <p className="text-slate-500 text-sm font-medium">{logs.length} entri total · Auto-refresh setiap 5 detik</p>
                 </div>
-                <button onClick={fetchLogs} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-white/40 hover:text-white transition-all"><RefreshCcw size={16} /></button>
+                <button onClick={fetchLogs} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
             </div>
 
             {/* Filters */}
             <div className="flex gap-2 flex-wrap">
                 {filterOptions.map(opt => (
                     <button key={opt} onClick={() => setFilter(opt)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${filter === opt ? 'bg-[#ee6f1f] text-white border-[#ee6f1f]' : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20 hover:text-white/60'}`}>
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${filter === opt ? 'bg-[#ee6f1f] text-white border-[#ee6f1f] shadow-[0_4px_12px_rgba(238,111,31,0.25)]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-[#1d2d6a] shadow-sm hover:shadow-md'}`}>
                         {opt === 'ALL' ? 'Semua' : ACTION_META[opt]?.label || opt}
-                        {opt !== 'ALL' && <span className="ml-2 text-white/40">{logs.filter(l => l.action === opt).length}</span>}
+                        {opt !== 'ALL' && <span className={`ml-2 ${filter === opt ? 'text-white/60' : 'text-slate-400'}`}>{logs.filter(l => l.action === opt).length}</span>}
                     </button>
                 ))}
             </div>
 
             {/* Table */}
-            {loading ? <div className="p-8 text-center text-white/30">Memuat log...</div> : filtered.length === 0 ? (
-                <div className="p-8 text-center text-white/30">Tidak ada log untuk filter ini.</div>
+            {loading ? <div className="p-8 text-center text-slate-500 font-medium">Memuat log...</div> : filtered.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 font-medium bg-white rounded-3xl border border-slate-200 shadow-sm">Tidak ada log untuk filter ini.</div>
             ) : (
-                <div className="bg-white/5 border border-white/8 rounded-3xl overflow-hidden">
-                    <div className="grid grid-cols-[140px_120px_100px_80px_1fr] gap-0 px-6 py-3 bg-white/5 border-b border-white/5 text-white/30 text-[10px] font-black uppercase tracking-widest">
+                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                    <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest">
                         <span>Waktu</span><span>Aksi</span><span>Pengguna</span><span>Role</span><span>Keterangan</span>
                     </div>
-                    <div className="divide-y divide-white/5 max-h-[520px] overflow-y-auto">
+                    <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
                         {filtered.map((log, i) => {
-                            const meta = ACTION_META[log.action] || { label: log.action, color: 'text-white/40 bg-white/5 border-white/8' };
+                            const meta = ACTION_META[log.action] || { label: log.action, color: 'text-slate-400 bg-slate-50 border-slate-200' };
                             const dt = new Date(log.timestamp);
                             return (
                                 <motion.div key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i * 0.02, 0.5) }}
-                                    className="grid grid-cols-[140px_120px_100px_80px_1fr] gap-0 px-6 py-3.5 hover:bg-white/5 transition-colors items-start">
-                                    <div className="font-mono text-[11px]">
-                                        <div className="text-white/50">{dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</div>
-                                        <div className="text-white/30">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
+                                    className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-3.5 hover:bg-slate-50 transition-colors items-start">
+                                    <div className="font-mono text-[11px] font-medium pt-1">
+                                        <div className="text-slate-500">{dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</div>
+                                        <div className="text-slate-400">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
                                     </div>
-                                    <div><span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border ${meta.color}`}>{meta.label}</span></div>
-                                    <span className="text-white/70 text-sm font-bold self-center">{log.user}</span>
-                                    <span className="text-white/30 text-xs font-medium self-center">{log.role}</span>
-                                    <span className="text-white/50 text-xs self-center leading-relaxed">{log.details}</span>
+                                    <div><span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border mt-0.5 ${meta.color}`}>{meta.label}</span></div>
+                                    <span className="text-[#1d2d6a] text-sm font-black tracking-tight self-center">{log.user}</span>
+                                    <span className="text-slate-400 text-xs font-bold uppercase self-center">{log.role}</span>
+                                    <span className="text-slate-600 text-sm font-medium self-center leading-relaxed pr-6">{log.details}</span>
                                 </motion.div>
                             );
                         })}
                     </div>
-                    <div className="px-6 py-3 bg-white/3 border-t border-white/5 text-white/20 text-[10px] font-medium">
-                        Menampilkan {filtered.length} entri {filter !== 'ALL' && `(filter: ${ACTION_META[filter]?.label || filter})`}
+                    <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                        Menampilkan {filtered.length} entri {filter !== 'ALL' && `— Filter Aktif: ${ACTION_META[filter]?.label || filter}`}
                     </div>
                 </div>
             )}
@@ -650,27 +650,25 @@ export default function App() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#070c18] text-white font-sans overflow-hidden">
+        <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
             {/* Sidebar */}
-            <aside className="w-72 bg-[#0a0f1e] border-r border-white/5 flex flex-col">
+            <aside className="w-72 bg-[#1d2d6a] border-r border-blue-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] relative z-10">
                 {/* Logo */}
-                <div className="p-8">
-                    <div className="bg-[#1d2d6a] p-4 rounded-2xl flex items-center gap-3 border border-[#253d90]">
-                        <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI" className="h-6" />
-                        </div>
-                        <div>
-                            <div className="text-white font-black text-sm tracking-tight leading-none">Command Center</div>
-                            <div className="text-blue-400/60 text-[10px] font-bold uppercase tracking-widest leading-none mt-1">PIDS Admin</div>
-                        </div>
-                    </div>
+                <div className="p-8 pb-10">
+                    <img
+                        src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+                        alt="KAI Logo"
+                        className="h-8 w-auto mb-4 brightness-0 invert"
+                    />
+                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">COMMAND CENTER</h1>
+                    <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5">Admin & Control Panel</p>
                 </div>
 
                 {/* Nav */}
                 <nav className="flex-1 px-4 space-y-1">
                     {NAV.map(item => (
                         <button key={item.id} onClick={() => setActivePage(item.id)}
-                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold text-sm ${activePage === item.id ? 'bg-[#ee6f1f] text-white shadow-lg shadow-orange-900/30' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
+                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold text-sm ${activePage === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
                             <item.icon size={20} strokeWidth={2.5} />
                             {item.label}
                         </button>
@@ -679,30 +677,30 @@ export default function App() {
 
                 {/* Bottom: user + time + logout */}
                 <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-2 text-white/20 text-xs font-mono">
-                        <Clock size={12} />
+                    <div className="flex items-center justify-center gap-2 text-blue-200/40 font-bold text-xs uppercase tracking-widest mb-1.5">
+                        <Clock size={12} className="text-[#ee6f1f]" />
                         {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
                     </div>
-                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                    <div className="bg-white/10 rounded-2xl p-4 border border-white/5">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#ee6f1f] rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-white/5">
                                 <Shield size={14} className="text-white" />
                             </div>
-                            <div>
-                                <div className="text-white font-black text-sm leading-none mb-0.5">{authUser.nama}</div>
-                                <div className="text-white/30 text-[10px] font-bold uppercase tracking-widest">{authUser.role}</div>
+                            <div className="overflow-hidden">
+                                <div className="text-white font-black text-sm leading-none mb-0.5 truncate">{authUser.nama}</div>
+                                <div className="text-blue-200/40 text-[10px] font-bold uppercase tracking-widest truncate">{authUser.role}</div>
                             </div>
                         </div>
                     </div>
                     <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/15 hover:text-red-400 transition-all font-bold text-sm border border-white/5">
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-sm border border-white/5">
                         <LogOut size={16} />Logout
                     </button>
                 </div>
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 overflow-auto p-10 bg-[#070c18]">
+            <main className="flex-1 overflow-auto p-10 relative">
                 <AnimatePresence mode="wait">
                     <motion.div key={activePage} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                         {pages[activePage]}
