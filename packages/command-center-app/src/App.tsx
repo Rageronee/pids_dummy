@@ -27,11 +27,15 @@ function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token: string) => vo
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!username || !password) {
+            setError('Username dan password wajib diisi.');
+            return;
+        }
         setLoading(true); setError('');
         try {
             const res = await fetch(`${API}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             const d = await res.json();
-            if (!d.success) { setError(d.error || 'Login gagal'); return; }
+            if (!d.success) { setError(d.error || 'Login gagal.'); return; }
             if (d.user.role !== 'Admin') { setError('Akses ditolak. Command Center hanya untuk Admin.'); return; }
             sessionStorage.setItem('cc_token', d.token);
             sessionStorage.setItem('cc_user', JSON.stringify(d.user));
@@ -41,51 +45,118 @@ function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token: string) => vo
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#1d2d6a08 1px,transparent 1px),linear-gradient(90deg,#1d2d6a08 1px,transparent 1px)', backgroundSize: '60px 60px' }} />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#1d2d6a25_0%,transparent_65%)]" />
-            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="relative z-10 w-full max-w-md mx-4">
-                <div className="bg-[#0d1526]/95 backdrop-blur-xl rounded-[2.5rem] border border-white/5 shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden">
-                    <div className="bg-gradient-to-br from-[#1d2d6a] to-[#0d1a4a] p-10 text-center relative">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-2xl mb-6">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI" className="h-10" />
+        <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white font-sans">
+            {/* Background Image with blur and overlay */}
+            <div
+                className="absolute inset-0 z-0 scale-105"
+                style={{
+                    backgroundImage: "url('https://ik.trn.asia/uploads/2022/11/1669271102786.jpeg')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'blur(3px) brightness(1.1)'
+                }}
+            />
+            <div className="absolute inset-0 z-0 bg-white/60 backdrop-blur-sm" />
+
+            <div className="relative z-10 flex w-full items-center justify-center px-4">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="w-full max-w-[440px] rounded-[2rem] bg-white/95 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] flex flex-col items-center"
+                >
+                    {/* Branding */}
+                    <div className="mb-10 flex flex-col items-center text-center">
+                        <div className="relative mb-5">
+                            <div className="absolute inset-0 bg-white/40 blur-2xl rounded-full scale-150" />
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+                                alt="KAI Logo"
+                                className="relative h-16 drop-shadow-xl"
+                            />
                         </div>
-                        <h1 className="text-2xl font-black text-white tracking-tight mb-1">PIDS Command Center</h1>
-                        <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full mt-2">
-                            <Shield size={12} className="text-[#ee6f1f]" />
-                            <p className="text-[#ee6f1f] text-[10px] font-black uppercase tracking-[0.3em]">Admin Access Only</p>
+                        <h1 className="text-3xl leading-tight font-black tracking-tight text-[#1d2d6a] drop-shadow-sm">
+                            PIDS Command Center
+                        </h1>
+                        <p className="mt-2 text-[10px] font-bold tracking-[0.2em] text-[#1d2d6a] uppercase opacity-90">
+                            Passenger Information Display System
+                        </p>
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={submit} className="flex w-full flex-col space-y-7">
+                        {/* Username Input */}
+                        <div className="relative w-full">
+                            <input
+                                type="text"
+                                placeholder="Username"
+                                value={username}
+                                onChange={e => setUsername(e.target.value)}
+                                className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                                disabled={loading}
+                                autoComplete="username"
+                            />
                         </div>
-                    </div>
-                    <div className="p-10">
-                        <form onSubmit={submit} className="space-y-5">
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"><UserIcon size={18} /></div>
-                                <input type="text" placeholder="Username Admin" value={username} onChange={e => setUsername(e.target.value)} disabled={loading}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-white/20 text-sm font-medium focus:outline-none focus:border-[#ee6f1f]/60 transition-all" />
-                            </div>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"><Lock size={18} /></div>
-                                <input type={showPass ? 'text' : 'password'} placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} disabled={loading}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-12 py-4 text-white placeholder-white/20 text-sm font-medium focus:outline-none focus:border-[#ee6f1f]/60 transition-all" />
-                                <button type="button" onClick={() => setShowPass(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                            </div>
-                            <AnimatePresence>
-                                {error && <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3">
-                                    <AlertCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
-                                    <p className="text-red-400 text-xs font-medium">{error}</p>
-                                </motion.div>}
-                            </AnimatePresence>
-                            <motion.button type="submit" disabled={loading} whileTap={{ scale: 0.98 }}
-                                className="w-full py-4 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-white/10 disabled:text-white/30 text-white font-black rounded-2xl text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3">
-                                {loading ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Verifikasi...</> : <><Shield size={18} />Masuk Command Center</>}
-                            </motion.button>
-                        </form>
-                        <p className="text-center text-white/20 text-[10px] font-bold uppercase tracking-widest mt-8">Demo: admin / admin123</p>
-                    </div>
-                </div>
-            </motion.div>
+
+                        {/* Password Input */}
+                        <div className="relative w-full">
+                            <input
+                                type={showPass ? 'text' : 'password'}
+                                placeholder="Password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                                disabled={loading}
+                                autoComplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPass(!showPass)}
+                                className="absolute right-0 top-[10px] text-slate-400 hover:text-slate-600 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Error Message */}
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="flex w-full items-center gap-2 text-red-500 text-xs font-semibold pt-1"
+                                >
+                                    <AlertCircle size={14} className="shrink-0" />
+                                    <span>{error}</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+                        >
+                            {loading ? 'Memproses...' : 'Masuk Ke Sistem'}
+                        </button>
+
+                        {/* Hint Info */}
+                        <p className="text-center w-full text-[10px] uppercase tracking-widest text-slate-400 font-medium mt-6">
+                            Demo: admin / admin123
+                        </p>
+                    </form>
+                </motion.div>
+            </div>
+
+            {/* Footer */}
+            <div className="absolute bottom-6 w-full text-center z-10">
+                <p className="text-[10px] font-bold tracking-[0.1em] text-slate-500/70">
+                    © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
+                </p>
+            </div>
         </div>
     );
 }

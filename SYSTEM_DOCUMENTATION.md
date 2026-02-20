@@ -87,3 +87,139 @@ In a physical train carriage, these applications will be deployed across constra
 ### Final Recommendation for Deployment
 
 Build the applications using `npm run build` locally, then package them as standalone executables using tools like `electron-builder`. Install the `master-app` on the main train carriage IPC, open port `3001` on the train's local LAN, and connect the physical Tablets and Displays to that network.
+
+---
+
+## 6. Walkthrough: Command Center, Auth & Logging
+
+Implementasi selesai! Berikut ringkasan semua fitur tambahan.
+
+---
+
+### 6.1 Autentikasi & Keamanan
+
+**Credentials default:**
+
+| Username | Password | Role |
+| --- | --- | --- |
+| `operator` | `operator123` | Operator |
+| `admin` | `admin123` | Admin |
+
+#### Bagaimana Cara Kerjanya
+
+- Setiap app (master, selector, command-center) memiliki **halaman Login** tersendiri sebelum bisa diakses
+- Setelah login, token disimpan di `sessionStorage` dan dikirim sebagai `Authorization: Bearer <token>` pada setiap request
+- Token diverifikasi via `GET /api/auth/verify` saat app dimuat ulang
+- Tombol **Logout** tersedia di setiap app
+
+#### File yang Diubah/Dibuat
+
+- [`api.js`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/master-app/electron/api.js) — `POST /api/auth/login`, `GET /api/auth/verify`, `POST /api/auth/logout`
+- [`master-app/src/components/LoginScreen.tsx`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/master-app/src/components/LoginScreen.tsx) — UI Login Operator (dark KAI theme)
+- [`selector-app/src/components/LoginScreen.tsx`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/selector-app/src/components/LoginScreen.tsx) — UI Login touchscreen-friendly
+- [`master-app/src/App.tsx`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/master-app/src/App.tsx) — Auth guard + info user di sidebar
+- [`selector-app/src/App.tsx`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/selector-app/src/App.tsx) — Auth guard + logout button
+
+---
+
+### 6.2 Logging (Audit Trail)
+
+Log disimpan otomatis ke file `eltran-pids-logs.json` di `app.getPath('userData')`.
+
+#### Aksi yang Dicatat Otomatis
+
+| Action | Kapan Dicatat |
+| --- | --- |
+| `SYSTEM` | Saat API server start |
+| `LOGIN` | Setiap login berhasil |
+| `LOGIN_FAILED` | Percobaan login gagal |
+| `LOGOUT` | Setiap logout |
+| `STATE_UPDATE` | Saat nama/nomor/stasiun kereta berubah |
+| `DISPLAY_MODE` | Saat mode display diubah (PIDS/TV) |
+| `LED_CONFIG` | Saat kecepatan LED diubah |
+| `ADMIN_CRUD` | Tambah/hapus kereta, rute dari Command Center |
+
+#### Cara Melihat Log
+
+- **Master App** → Sidebar → tab **"Log Aktivitas"** (100 entri terbaru, auto-refresh 5 detik)
+- **Command Center** → Halaman **"Log Sistem"** (semua entri, filter per action, auto-refresh 5 detik)
+
+#### File yang Diubah/Dibuat (Command Center)
+
+- [`api.js`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/master-app/electron/api.js) — `writeLog()` helper + `GET /api/logs` + `POST /api/logs` + logging middleware
+- [`pids-core/index.ts`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/pids-core/index.ts) — Type `LogEntry`, `LogAction`, `AuthUser`, `AuthSession`
+
+---
+
+### 6.3 Command Center (Package Baru)
+
+Package Electron baru yang berjalan di port **5176**, diakses terpisah dari Master App.
+
+#### Halaman & Fitur
+
+```text
+command-center-app/
+├── 🔐 Login        — Admin-only (role check ketat)
+├── 📊 Dashboard    — 4 stats card + connection status + log terakhir
+├── 🚂 Kereta       — CRUD nama kereta (tambah/hapus, sync ke selector-app)
+├── 🗺  Rute        — CRUD rute + stasiun (auto-generate SVG path)
+├── 👥 Users        — List pengguna dengan role
+└── 📋 Log Sistem   — Full log viewer dengan 8 filter action
+```
+
+#### Cara Menjalankan
+
+> [!IMPORTANT]
+> Command Center **wajib** dijalankan bersama Master App karena menggunakan API server yang sama (port 3001).
+
+```bash
+# Jalankan semua sekaligus (Master + Selector + Command Center)
+npm run dev:all
+
+# Hanya Command Center saja (butuh Master aktif untuk API)
+npm run dev:cc           # Vite
+npm run electron:cc      # Electron Window
+```
+
+#### File yang Dibuat
+
+- [`packages/command-center-app/`](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/packages/command-center-app/) — Package baru
+  - `package.json`, `vite.config.ts`, `tailwind.config.js`, `postcss.config.js`, `index.html`, `tsconfig.json`
+  - `electron/main.js` — Electron window (port 5176)
+  - `src/main.tsx`, `src/index.css`, `src/App.tsx` — Semua 6 halaman dalam satu file
+- [`package.json` (root)](file:///f:/Muhammad%20Afnan%20Risandi/Projects/Magang/Eltran/PIDS/Dummy/Eltran-PIDS-Dummy/package.json) — Scripts baru: `dev:cc`, `electron:cc`, `dev:all` diperbarui
+
+---
+
+### 6.4 Alur Lengkap
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as selector-app
+    participant M as master-app (API)
+    participant C as command-center
+
+    U->>S: Buka Selector App
+    S->>U: Tampil LoginScreen
+    U->>S: Login (operator/operator123)
+    S->>M: POST /api/auth/login
+    M->>S: { token, user }
+    M->>M: writeLog(LOGIN)
+    S->>U: Tampil UI Selector
+
+    U->>S: Ganti nama kereta "TURANGGA"
+    S->>M: POST /api/state { stationName: TURANGGA, Authorization: token }
+    M->>M: writeLog(STATE_UPDATE)
+    M->>U: Master App tampil nama baru
+
+    U->>C: Buka Command Center
+    C->>U: Tampil LoginPage (Admin)
+    U->>C: Login (admin/admin123)
+    C->>M: POST /api/auth/login
+    M->>C: { token, role: Admin }
+    C->>U: Tampil Dashboard
+    U->>C: Halaman Log Sistem
+    C->>M: GET /api/logs
+    M->>C: [LOGIN, STATE_UPDATE, ...]
+```

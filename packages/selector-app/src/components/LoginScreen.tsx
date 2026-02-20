@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Lock, User, AlertCircle, Fingerprint } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import type { AuthUser } from '@eltran/pids-core';
 
 interface LoginScreenProps {
@@ -46,159 +46,118 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     };
 
     return (
-        <div className="min-h-screen w-full bg-[#1d2d6a] flex flex-col items-center justify-center relative overflow-hidden select-none">
-            {/* Background radial */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#253d90_0%,#1d2d6a_40%,#0d1526_100%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,#ee6f1f15_0%,transparent_60%)]" />
+        <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white font-sans">
+            {/* Background Image with blur and overlay */}
+            <div
+                className="absolute inset-0 z-0 scale-105"
+                style={{
+                    backgroundImage: "url('https://ik.trn.asia/uploads/2022/11/1669271102786.jpeg')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'blur(3px) brightness(1.1)'
+                }}
+            />
+            <div className="absolute inset-0 z-0 bg-white/60 backdrop-blur-sm" />
 
-            {/* Moving dots decoration */}
-            <div className="absolute inset-0 pointer-events-none">
-                {[...Array(12)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute rounded-full"
-                        style={{
-                            width: i % 3 === 0 ? 8 : 4,
-                            height: i % 3 === 0 ? 8 : 4,
-                            background: i % 4 === 0 ? '#ee6f1f' : '#ffffff',
-                            opacity: 0.1,
-                            left: `${(i * 8.3) % 100}%`,
-                            top: `${(i * 13.7) % 100}%`
-                        }}
-                        animate={{
-                            y: [-10, 10, -10],
-                            opacity: [0.05, 0.2, 0.05]
-                        }}
-                        transition={{
-                            duration: 4 + i * 0.5,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                            delay: i * 0.3
-                        }}
-                    />
-                ))}
-            </div>
-
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 w-full max-w-sm mx-6"
-            >
-                {/* Logo & Title */}
-                <div className="text-center mb-10">
-                    <motion.div
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 }}
-                        className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-[2rem] shadow-2xl mb-6"
-                    >
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
-                            alt="KAI"
-                            className="h-12"
-                        />
-                    </motion.div>
-                    <motion.div
-                        initial={{ y: -10, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <h1 className="text-3xl font-black text-white tracking-tight mb-1">PIDS Selector</h1>
-                        <p className="text-white/40 text-xs font-bold uppercase tracking-[0.4em]">Operator Login</p>
-                    </motion.div>
-                </div>
-
-                {/* Form Card */}
+            <div className="relative z-10 flex w-full items-center justify-center px-4">
                 <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/15 p-8 shadow-2xl"
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="w-full max-w-[440px] rounded-[2rem] bg-white/95 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] flex flex-col items-center"
                 >
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Username */}
-                        <div className="relative">
-                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40">
-                                <User size={22} />
-                            </div>
+                    {/* Branding */}
+                    <div className="mb-10 flex flex-col items-center text-center">
+                        <div className="relative mb-5">
+                            <div className="absolute inset-0 bg-white/40 blur-2xl rounded-full scale-150" />
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+                                alt="KAI Logo"
+                                className="relative h-16 drop-shadow-xl"
+                            />
+                        </div>
+                        <h1 className="text-3xl leading-tight font-black tracking-tight text-[#1d2d6a] drop-shadow-sm">
+                            PIDS Selector App
+                        </h1>
+                        <p className="mt-2 text-[10px] font-bold tracking-[0.2em] text-[#1d2d6a] uppercase opacity-90">
+                            Passenger Information Display System
+                        </p>
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="flex w-full flex-col space-y-7">
+                        {/* Username Input */}
+                        <div className="relative w-full">
                             <input
                                 type="text"
                                 placeholder="Username"
                                 value={username}
                                 onChange={e => setUsername(e.target.value)}
-                                className="w-full bg-white/10 border border-white/20 rounded-2xl pl-14 pr-5 py-5 text-white placeholder-white/30 font-bold text-base focus:outline-none focus:border-[#ee6f1f]/80 focus:bg-white/15 transition-all"
-                                autoComplete="username"
+                                className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
                                 disabled={isLoading}
+                                autoComplete="username"
                             />
                         </div>
 
-                        {/* Password */}
-                        <div className="relative">
-                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40">
-                                <Lock size={22} />
-                            </div>
+                        {/* Password Input */}
+                        <div className="relative w-full">
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                className="w-full bg-white/10 border border-white/20 rounded-2xl pl-14 pr-14 py-5 text-white placeholder-white/30 font-bold text-base focus:outline-none focus:border-[#ee6f1f]/80 focus:bg-white/15 transition-all"
-                                autoComplete="current-password"
+                                className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
                                 disabled={isLoading}
+                                autoComplete="current-password"
                             />
                             <button
                                 type="button"
-                                onClick={() => setShowPassword(v => !v)}
-                                className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-0 top-[10px] text-slate-400 hover:text-slate-600 transition-colors"
+                                tabIndex={-1}
                             >
-                                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
 
-                        {/* Error */}
+                        {/* Error Message */}
                         <AnimatePresence>
                             {error && (
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="flex items-start gap-3 bg-red-500/15 border border-red-500/30 rounded-2xl px-5 py-4"
+                                    className="flex w-full items-center gap-2 text-red-500 text-xs font-semibold pt-1"
                                 >
-                                    <AlertCircle size={18} className="text-red-400 mt-0.5 shrink-0" />
-                                    <p className="text-red-300 text-sm font-medium">{error}</p>
+                                    <AlertCircle size={14} className="shrink-0" />
+                                    <span>{error}</span>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        {/* Submit */}
-                        <motion.button
+                        {/* Submit Button */}
+                        <button
                             type="submit"
                             disabled={isLoading}
-                            whileTap={{ scale: 0.97 }}
-                            className="w-full mt-2 py-6 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-white/20 disabled:text-white/30 text-white font-black rounded-2xl text-lg uppercase tracking-widest transition-all shadow-xl shadow-orange-900/40 flex items-center justify-center gap-3 active:scale-95"
+                            className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
                         >
-                            {isLoading ? (
-                                <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifikasi...</>
-                            ) : (
-                                <><Fingerprint size={22} /> Masuk</>
-                            )}
-                        </motion.button>
+                            {isLoading ? 'Memproses...' : 'Masuk Ke Sistem'}
+                        </button>
+
+                        {/* Hint Info */}
+                        <p className="text-center w-full text-[10px] uppercase tracking-widest text-slate-400 font-medium mt-6">
+                            Demo: operator / operator123
+                        </p>
                     </form>
                 </motion.div>
+            </div>
 
-                {/* Demo hint */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="mt-6 text-center"
-                >
-                    <p className="text-white/25 text-[11px] font-bold uppercase tracking-widest">
-                        Demo: operator / operator123
-                    </p>
-                </motion.div>
-            </motion.div>
+            {/* Footer */}
+            <div className="absolute bottom-6 w-full text-center z-10">
+                <p className="text-[10px] font-bold tracking-[0.1em] text-slate-500/70">
+                    © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
+                </p>
+            </div>
         </div>
     );
 }
