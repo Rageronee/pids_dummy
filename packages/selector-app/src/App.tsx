@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Compass, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, Wifi, CheckCircle2, X, Zap, Settings } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Compass, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, Wifi, CheckCircle2, X, Zap, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from './components/P10Matrix';
+import { LoginScreen } from './components/LoginScreen';
+import type { AuthUser } from '@eltran/pids-core';
 
 
 function App() {
+    const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+    const [authToken, setAuthToken] = useState<string>('');
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -56,11 +61,41 @@ function App() {
     // Shared State Sync
     const API_URL = 'http://localhost:3001/api/state';
 
+    // Auth handlers
+    const handleLogin = (user: AuthUser, token: string) => {
+        setAuthUser(user);
+        setAuthToken(token);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await fetch('http://localhost:3001/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${authToken}` } });
+        } catch { }
+        sessionStorage.removeItem('pids_token');
+        sessionStorage.removeItem('pids_user');
+        setAuthUser(null);
+        setAuthToken('');
+    };
+
+    // Check persisted session
+    useEffect(() => {
+        const token = sessionStorage.getItem('pids_token');
+        const userStr = sessionStorage.getItem('pids_user');
+        if (token && userStr) {
+            fetch('http://localhost:3001/api/auth/verify', { headers: { Authorization: `Bearer ${token}` } })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) { setAuthToken(token); setAuthUser(JSON.parse(userStr)); }
+                    else { sessionStorage.removeItem('pids_token'); sessionStorage.removeItem('pids_user'); }
+                }).catch(() => { setAuthToken(token); setAuthUser(JSON.parse(userStr)); });
+        }
+    }, []);
+
     const sendData = async (newData: any) => {
         try {
             await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
                 body: JSON.stringify(newData)
             });
         } catch (e) {
@@ -192,6 +227,10 @@ function App() {
     const currentStation = stations[currentIndex] || 'INITIALIZING SYNC...';
     const nextStation = stations[(currentIndex + 1) % stations.length] || '---';
 
+    if (!authUser) {
+        return <LoginScreen onLogin={handleLogin} />;
+    }
+
     return (
         <div className="flex flex-col h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden select-none">
             {/* ... Header ... */}
@@ -234,6 +273,9 @@ function App() {
                             {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
                         </span>
                     </div>
+                    <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 border border-slate-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all">
+                        <LogOut size={14} />Logout
+                    </button>
                     <button
                         onClick={handleToggleTV}
                         className={`flex items-center gap-3 px-6 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all active:scale-95 ${showTVPreview
@@ -672,8 +714,8 @@ function App() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 }
 
