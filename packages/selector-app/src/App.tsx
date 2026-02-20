@@ -22,7 +22,7 @@ function App() {
 
     // Synced State from Master
     const [stations, setStations] = useState(['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI']);
-    const [masterSyncedName, setMasterSyncedName] = useState('ARGO BROMO ANGGREK');
+    const [masterSyncedServiceName, setMasterSyncedServiceName] = useState('ARGO BROMO ANGGREK');
     const [masterSyncedNumber, setMasterSyncedNumber] = useState('KA 1');
     const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
 
@@ -107,7 +107,7 @@ function App() {
                 const res = await fetch(API_URL);
                 if (res.ok) {
                     const parsed = await res.json();
-                    if (parsed.stationName) setMasterSyncedName(parsed.stationName);
+                    if (parsed.serviceName) setMasterSyncedServiceName(parsed.serviceName);
                     if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
                     if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
 
@@ -131,12 +131,12 @@ function App() {
 
     // Auto-sync selector indices with master state
     useEffect(() => {
-        const nameIdx = trainNames.indexOf(masterSyncedName);
+        const nameIdx = trainNames.indexOf(masterSyncedServiceName);
         if (nameIdx !== -1) setTrainNameIndex(nameIdx);
 
         const numIdx = trainNumbers.indexOf(masterSyncedNumber);
         if (numIdx !== -1) setTrainNumberIndex(numIdx);
-    }, [masterSyncedName, masterSyncedNumber, trainNames, trainNumbers]);
+    }, [masterSyncedServiceName, masterSyncedNumber, trainNames, trainNumbers]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -157,7 +157,7 @@ function App() {
     const handleSelectStation = () => {
         setShowTVPreview(false);
         sendData({
-            stationName: stations[currentIndex],
+            currentStation: stations[currentIndex],
             nextStation: stations[(currentIndex + 1) % stations.length],
             isSyncing: true
         });
@@ -179,9 +179,17 @@ function App() {
     const handleSetName = () => {
         const newName = trainNames[trainNameIndex];
         const routeData = routes[newName];
+        const newStations = routeData?.stations || [];
+
+        // Update local stations immediately so carousel refreshes
+        if (newStations.length > 0) {
+            setStations(newStations);
+            setCurrentIndex(0);
+        }
+
         sendData({
-            stationName: newName,
-            stations: routeData?.stations || [],
+            serviceName: newName,
+            stations: newStations,
             activeRoute: routeData
         });
     };
@@ -235,8 +243,8 @@ function App() {
                             <Train size={24} className="text-white" strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Active Train</span>
-                            <span className="text-lg font-black text-white leading-none uppercase">{masterSyncedName}</span>
+                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Active Service</span>
+                            <span className="text-lg font-black text-white leading-none uppercase">{masterSyncedServiceName}</span>
                         </div>
                     </div>
 
@@ -283,25 +291,44 @@ function App() {
 
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-4 py-3 px-4 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors w-full text-left group mt-4"
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] uppercase tracking-widest border border-white/5 active:scale-95 group mt-4"
                     >
-                        <LogOut size={20} className="text-white/20 group-hover:text-red-400 transition-colors" />
-                        <span className="font-bold text-sm tracking-wide uppercase">Logout</span>
+                        <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
+                        <span>Logout dari Sistem</span>
                     </button>
                 </div>
 
-                {/* Active Indicator Line on the left side of the screen */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-32 w-1.5 bg-[#ee6f1f] rounded-r-lg" />
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 p-8 overflow-hidden relative">
+            <main className="flex-1 overflow-hidden flex flex-col relative">
+                {/* Standardized Header */}
+                <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Zap className="text-[#1d2d6a]" size={20} /></div>
+                        <div>
+                            <h1 className="text-lg font-black text-[#1d2d6a] uppercase tracking-tight leading-none mb-1">Selector Console</h1>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Control Interface</span>
+                                <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active session</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-3 text-[#1d2d6a]">
+                            <div className="bg-slate-50 p-2 rounded-lg text-slate-400"><Clock size={18} /></div>
+                            <span className="text-2xl font-black font-mono tracking-tighter opacity-90">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</span>
+                        </div>
+                    </div>
+                </header>
+
                 {/* Selection Control Container */}
-                <div className="flex-1 min-h-0 relative overflow-y-auto pr-2 pb-10">
+                <div className="flex-1 min-h-0 relative overflow-y-auto p-8 pr-10 pb-10">
                     {/* Section: Train Configuration */}
                     <div className="mb-10">
                         <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight uppercase mb-6 flex items-center gap-3">
-                            <Activity className="text-[#ee6f1f]" size={24} /> Train Configuration
+                            <Activity className="text-[#ee6f1f]" size={24} /> Service Configuration
                         </h2>
                         <div className="flex items-end gap-12">
                             {/* Service Config */}
@@ -418,21 +445,19 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="flex-1 bg-white rounded-3xl border border-slate-200 flex flex-col p-8 relative overflow-hidden group">
+                            <div className="flex-1 bg-white rounded-3xl border border-slate-200 flex flex-col items-center justify-center p-8 relative overflow-hidden group">
 
-                                <div className="flex justify-between items-start mb-auto relative z-10">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">UPCOMING STOP</span>
-                                </div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 mb-4">UPCOMING STOP</span>
 
-                                <div className="flex flex-col justify-center relative z-10">
-                                    <div className="h-16 mb-2">
+                                <div className="flex flex-col items-center justify-center relative z-10">
+                                    <div className="h-16 mb-2 flex items-center justify-center">
                                         <AnimatePresence mode="wait">
                                             <motion.h4
                                                 key={currentIndex}
                                                 initial={{ y: 5, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
                                                 exit={{ y: -5, opacity: 0 }}
-                                                className="text-4xl font-black text-[#1d2d6a] uppercase tracking-tighter truncate"
+                                                className="text-4xl font-black text-[#1d2d6a] uppercase tracking-tighter truncate text-center"
                                                 title={nextStation}
                                             >
                                                 {nextStation}
@@ -488,7 +513,7 @@ function App() {
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Live Matrix Preview</p>
                                         <div className="flex justify-center scale-110 py-6">
                                             <P10Matrix
-                                                text={`${masterSyncedName} KA-${masterSyncedNumber}   •   NEXT: ${nextStation}   •   ${currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                                text={`${masterSyncedServiceName} KA-${masterSyncedNumber}   •   NEXT: ${nextStation}   •   ${currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                                                 color="#ff0000"
                                                 speed={masterSyncedLedSpeed}
                                                 columns={128}
@@ -613,7 +638,7 @@ function App() {
                                         {/* Left Block (Grey Transparent) */}
                                         <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
                                             <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">SERVICE</span>
-                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">{masterSyncedName}</span>
+                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">{masterSyncedServiceName}</span>
                                         </div>
                                         {/* Right Block (Solid Orange) */}
                                         <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 h-[140px] shadow-lg border-l border-[#d95d19]">

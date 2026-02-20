@@ -25,7 +25,7 @@ export function startApiServer() {
     const sessions = new Map();
 
     // --- SEED: USERS ---
-    const USERS = [
+    const DEFAULT_USERS = [
         { id: 'USR001', username: 'admin', password: 'admin123', role: 'Admin', nama: 'Administrator' },
         { id: 'USR002', username: 'operator', password: 'operator123', role: 'Operator', nama: 'Operator Kereta' },
     ];
@@ -33,6 +33,13 @@ export function startApiServer() {
     // --- SEED: TRAIN DATA ---
     const TRAIN_NAMES = ['ARGO BROMO ANGGREK', 'ARGO WILIS', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN'];
     const TRAIN_NUMBERS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
+    const DEFAULT_UNITS = [
+        { id: 'U001', name: 'K1-01', type: 'Eksekutif', active: true },
+        { id: 'U002', name: 'K1-02', type: 'Eksekutif', active: true },
+        { id: 'U003', name: 'K1-03', type: 'Eksekutif', active: true },
+        { id: 'U004', name: 'M1-01', type: 'Makan', active: true },
+        { id: 'U005', name: 'P-01', type: 'Pembangkit', active: true },
+    ];
     const ROUTES = {
         'ARGO BROMO ANGGREK': {
             name: 'ARGO BROMO ANGGREK',
@@ -113,7 +120,8 @@ export function startApiServer() {
 
     // --- DEFAULT PIDS STATE ---
     let pidsState = {
-        stationName: 'ARGO WILIS',
+        serviceName: 'ARGO WILIS',
+        currentStation: 'BANDUNG',
         trainNumber: '05',
         nextStation: 'TASIKMALAYA',
         status: 'ON TIME',
@@ -195,19 +203,44 @@ export function startApiServer() {
             if (fs.existsSync(dbPath)) {
                 const raw = fs.readFileSync(dbPath, 'utf8');
                 const data = JSON.parse(raw);
-                if (data && data.trainNames && data.trainNames.length > 0) return data;
+                if (data && data.trainNames && data.trainNames.length > 0) {
+                    // Ensure users field exists (migration)
+                    if (!data.users || data.users.length === 0) {
+                        data.users = DEFAULT_USERS;
+                    }
+                    return data;
+                }
             }
         } catch (e) { }
-        return { trainNames: TRAIN_NAMES, trainNumbers: TRAIN_NUMBERS, routes: ROUTES };
+        return { trainNames: TRAIN_NAMES, trainNumbers: TRAIN_NUMBERS, routes: ROUTES, users: DEFAULT_USERS, units: DEFAULT_UNITS };
     };
 
     const writeDb = (data) => {
         fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
     };
 
+    // Helper: get users from DB
+    const getUsers = () => {
+        const db = readDb();
+        return db.users || DEFAULT_USERS;
+    };
+
     // Ensure DB file exists
     if (!fs.existsSync(dbPath)) {
-        writeDb({ trainNames: TRAIN_NAMES, trainNumbers: TRAIN_NUMBERS, routes: ROUTES });
+        writeDb({ trainNames: TRAIN_NAMES, trainNumbers: TRAIN_NUMBERS, routes: ROUTES, users: DEFAULT_USERS, units: DEFAULT_UNITS });
+    } else {
+        // Migration: add fields to existing DB if missing
+        const db = readDb();
+        let changed = false;
+        if (!db.users) {
+            db.users = DEFAULT_USERS;
+            changed = true;
+        }
+        if (!db.units || !Array.isArray(db.units) || db.units.length === 0) {
+            db.units = DEFAULT_UNITS;
+            changed = true;
+        }
+        if (changed) writeDb(db);
     }
 
     // ========================================
@@ -217,7 +250,8 @@ export function startApiServer() {
     // POST /api/auth/login
     apiApp.post('/api/auth/login', (req, res) => {
         const { username, password } = req.body;
-        const user = USERS.find(u => u.username === username && u.password === password);
+        const users = getUsers();
+        const user = users.find(u => u.username === username && u.password === password);
         if (!user) {
             writeLog({ action: 'LOGIN_FAILED', user: username || 'unknown', role: '-', details: `Percobaan login gagal untuk username: ${username}` });
             return res.status(401).json({ success: false, error: 'Username atau password salah' });
@@ -269,14 +303,17 @@ export function startApiServer() {
         const username = user?.username || 'system';
         const role = user?.role || 'System';
 
-        if (updates.stationName && updates.stationName !== prevState.stationName) {
-            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Nama kereta diubah: ${prevState.stationName} → ${updates.stationName}` });
+        if (updates.serviceName && updates.serviceName !== prevState.serviceName) {
+            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Nama Kereta (Service) diubah: ${prevState.serviceName} → ${updates.serviceName}` });
+        }
+        if (updates.currentStation && updates.currentStation !== prevState.currentStation) {
+            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Posisi stasiun diperbarui: ${prevState.currentStation} → ${updates.currentStation}` });
         }
         if (updates.trainNumber && updates.trainNumber !== prevState.trainNumber) {
             writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Nomor kereta diubah: ${prevState.trainNumber} → ${updates.trainNumber}` });
         }
         if (updates.nextStation && updates.nextStation !== prevState.nextStation) {
-            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Stasiun berikutnya diperbarui: ${updates.nextStation}`, data: { stationName: pidsState.stationName } });
+            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Stasiun berikutnya diperbarui: ${updates.nextStation}`, data: { serviceName: pidsState.serviceName } });
         }
         if (updates.displayMode && updates.displayMode !== prevState.displayMode) {
             writeLog({ action: 'DISPLAY_MODE', user: username, role, details: `Mode display diubah ke: ${updates.displayMode?.toUpperCase()}` });
@@ -341,8 +378,43 @@ export function startApiServer() {
 
     // GET /api/admin/users
     apiApp.get('/api/admin/users', requireAdmin, (req, res) => {
-        const safeUsers = USERS.map(({ password: _p, ...u }) => u);
+        const users = getUsers();
+        const safeUsers = users.map(({ password: _p, ...u }) => u);
         res.json({ success: true, users: safeUsers });
+    });
+
+    // POST /api/admin/users — Add new user
+    apiApp.post('/api/admin/users', requireAdmin, (req, res) => {
+        const { username, password, role, nama } = req.body;
+        if (!username || !password || !role || !nama) return res.status(400).json({ success: false, error: 'All fields required (username, password, role, nama)' });
+        const db = readDb();
+        const users = db.users || DEFAULT_USERS;
+        if (users.find(u => u.username === username)) return res.status(409).json({ success: false, error: 'Username already exists' });
+        const newUser = { id: `USR${String(users.length + 1).padStart(3, '0')}`, username, password, role, nama };
+        users.push(newUser);
+        db.users = users;
+        writeDb(db);
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User baru ditambahkan: ${nama} (${role})` });
+        const { password: _p, ...safeUser } = newUser;
+        res.json({ success: true, user: safeUser });
+    });
+
+    // DELETE /api/admin/users/:id
+    apiApp.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+        const id = req.params.id;
+        if (id === req.user.id) return res.status(400).json({ success: false, error: 'Cannot delete yourself' });
+        const db = readDb();
+        const users = db.users || DEFAULT_USERS;
+        const target = users.find(u => u.id === id);
+        if (!target) return res.status(404).json({ success: false, error: 'User not found' });
+        db.users = users.filter(u => u.id !== id);
+        // Also invalidate sessions
+        for (const [token, sessionUser] of sessions.entries()) {
+            if (sessionUser.id === id) sessions.delete(token);
+        }
+        writeDb(db);
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User dihapus: ${target.nama} (${target.role})` });
+        res.json({ success: true });
     });
 
     // GET /api/admin/trains
@@ -423,6 +495,53 @@ export function startApiServer() {
         db.trainNames = db.trainNames.filter(t => t !== name);
         writeDb(db);
         writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Rute dihapus: ${name}` });
+        res.json({ success: true });
+    });
+
+    // --- UNIT (STAMPFORMASI) ENDPOINTS ---
+
+    // GET /api/admin/units
+    apiApp.get('/api/admin/units', requireAuth, (req, res) => {
+        const db = readDb();
+        res.json({ success: true, units: db.units || DEFAULT_UNITS });
+    });
+
+    // POST /api/admin/units — Add/update unit
+    apiApp.post('/api/admin/units', requireAdmin, (req, res) => {
+        const { id, name, type, active } = req.body;
+        if (!name || !type) return res.status(400).json({ success: false, error: 'name and type required' });
+        const db = readDb();
+        const units = db.units || DEFAULT_UNITS;
+        const normalized = name.trim().toUpperCase();
+
+        if (id) {
+            // Update
+            const idx = units.findIndex(u => u.id === id);
+            if (idx === -1) return res.status(404).json({ success: false, error: 'Unit not found' });
+            units[idx] = { ...units[idx], name: normalized, type, active: active !== undefined ? active : true };
+            writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit diperbarui: ${normalized}` });
+        } else {
+            // Add new
+            const newUnit = { id: `U${String(units.length + 1).padStart(3, '0')}`, name: normalized, type, active: true };
+            units.push(newUnit);
+            writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit baru ditambahkan: ${normalized}` });
+        }
+
+        db.units = units;
+        writeDb(db);
+        res.json({ success: true, units });
+    });
+
+    // DELETE /api/admin/units/:id
+    apiApp.delete('/api/admin/units/:id', requireAdmin, (req, res) => {
+        const unitId = req.params.id;
+        const db = readDb();
+        const units = db.units || DEFAULT_UNITS;
+        const target = units.find(u => u.id === unitId);
+        if (!target) return res.status(404).json({ success: false, error: 'Unit not found' });
+        db.units = units.filter(u => u.id !== unitId);
+        writeDb(db);
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit dihapus: ${target.name}` });
         res.json({ success: true });
     });
 

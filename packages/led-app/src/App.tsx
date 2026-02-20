@@ -34,7 +34,7 @@ function App() {
 
             <div className={`${ledScale} origin-center transition-transform duration-1000 ease-out`}>
                 <P10Matrix
-                    text={`${data.stationName} KA-${data.trainNumber}   •   NEXT: ${data.nextStation}   •   ${timeString.replace(/\./g, ':')}`}
+                    text={`SERVICE: ${data.serviceName}    KA-${data.trainNumber}    POSISI: ${data.currentStation}    NEXT: ${data.nextStation}    JAM: ${timeString.replace(/\./g, ':')}`}
                     color={ledColor}
                     speed={data.ledSpeed || 60}
                 />

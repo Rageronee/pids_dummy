@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, Wifi, MapPin, Video, Database, Train, Activity, Compass, ScrollText, LogOut, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, Compass, ScrollText, LogOut, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import type { AuthUser, LogEntry } from '@eltran/pids-core';
@@ -11,10 +11,10 @@ const API_URL = 'http://localhost:3001';
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
     const cameras = [
-        { id: 'CAM-01', location: 'GERBONG 05 - DEPAN', url: "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?auto=format&fit=crop&q=80&w=1920" },
-        { id: 'CAM-02', location: 'GERBONG 05 - BELAKANG', url: "https://images.unsplash.com/photo-1474487022159-5a4ce599d030?auto=format&fit=crop&q=80&w=1920" },
-        { id: 'CAM-03', location: 'AREA BORDES - KIRI', url: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=1920" },
-        { id: 'CAM-04', location: 'AREA BORDES - KANAN', url: "https://images.unsplash.com/photo-1495312040802-a929cd14a6ab?auto=format&fit=crop&q=80&w=1920" }
+        { id: 'CAM-01', location: 'GERBONG 05 - DEPAN', url: "https://img.harianjogja.com/posts/2024/03/26/1169359/kereta-api-ekonomi-generasi-baru.jpg" },
+        { id: 'CAM-02', location: 'GERBONG 05 - BELAKANG', url: "https://image.fortuneidn.com/post/20250821/upload_e179f189ddfbf16b0482c14a7295b474_2940c5af-a990-4232-ad05-4c52dd5d0431.jpg" },
+        { id: 'CAM-03', location: 'AREA BORDES - KIRI', url: "https://awsimages.detik.net.id/visual/2022/12/25/kereta-panoramic-kini-bisa-dicoba-oleh-masyarakat-umum-setelah-soft-launching-yang-dilakukan-pt-kereta-api-indonesia-pada-24-d-2_169.jpeg?w=1200" },
+        { id: 'CAM-04', location: 'AREA BORDES - KANAN', url: "https://asset.kompas.com/crops/RRMwhqmwIwdwA3xhcoXZY6wdHjE=/0x0:999x666/1200x800/data/photo/2022/07/15/62d0ce5c7389a.jpeg" }
     ];
     const [currentCamIndex, setCurrentCamIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -194,7 +194,7 @@ function App() {
     const [authToken, setAuthToken] = useState<string>('');
 
     const { data } = usePidsData();
-    const activeTrainName = data.stationName || 'ARGO WILIS';
+    const activeTrainName = data.serviceName || 'ARGO WILIS';
     const activeTrainNumber = data.trainNumber || '05';
     const activeRoute = data.activeRoute || {
         name: 'ARGO WILIS',
@@ -240,6 +240,7 @@ function App() {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
 
     const handleLogin = (user: AuthUser, token: string) => {
         setAuthUser(user);
@@ -287,7 +288,7 @@ function App() {
                 <div className="px-6 pb-6">
                     <div className="bg-white/10 rounded-2xl p-4 border border-white/5 flex items-center gap-3">
                         <div className="bg-[#ee6f1f] p-2 rounded-xl shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
-                            <ShieldCheck size={16} className="text-white" />
+                            <Shield size={16} className="text-white" />
                         </div>
                         <div>
                             <div className="text-white font-black text-sm leading-none mb-0.5">{authUser.nama}</div>
@@ -310,17 +311,11 @@ function App() {
                     </ul>
                 </nav>
 
-                <div className="p-6 space-y-3">
-                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                        <div className="flex items-center gap-2 text-blue-300 text-[10px] font-bold uppercase tracking-widest mb-1.5">
-                            <Wifi size={12} className="animate-pulse" /> System Online
-                        </div>
-                        <div className="text-white/40 font-mono text-[11px] font-medium uppercase tracking-tight">KAI-MASTER-V1.2.0</div>
-                    </div>
+                <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-black/5">
                     <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/5 text-blue-200 hover:bg-red-500/20 hover:text-red-300 transition-all font-bold text-sm border border-white/5 hover:border-red-500/20">
-                        <LogOut size={16} />
-                        <span>Logout</span>
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] uppercase tracking-widest border border-white/5 active:scale-95 group">
+                        <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
+                        <span>Logout dari Sistem</span>
                     </button>
                 </div>
             </aside>
@@ -365,26 +360,26 @@ function App() {
                                                 <tr>
                                                     <th className="p-4 border-b border-slate-200">No Rangkaian</th>
                                                     <th className="p-4 border-b border-slate-200">No Aset</th>
-                                                    <th className="p-4 border-b border-slate-200">Nama Kereta</th>
+                                                    <th className="p-4 border-b border-slate-200">Nama Layanan (Service)</th>
                                                     <th className="p-4 border-b border-slate-200">IP Address</th>
                                                     <th className="p-4 border-b border-slate-200">Last Report</th>
                                                     <th className="p-4 border-b border-slate-200 text-center">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100">
-                                                {[
-                                                    { rangkaian: 'K1-01', aset: 'K101887', nama: 'TURANGGA', ip: '192.168.1.107', time: '17:42:12', status: 'Active' },
-                                                    { rangkaian: 'K1-02', aset: 'K1018143', nama: 'TURANGGA', ip: '192.168.1.108', time: '17:42:11', status: 'Active' },
-                                                    { rangkaian: 'K1-03', aset: 'K1018144', nama: 'TURANGGA', ip: '192.168.1.109', time: '17:42:13', status: 'Active' },
-                                                    { rangkaian: 'M1-01', aset: 'M101801', nama: 'TURANGGA (DINING)', ip: '192.168.1.111', time: '17:42:12', status: 'Active' },
-                                                ].map((row, idx) => (
+                                                {(data.stations || activeRoute?.stations || []).map((_station: string, idx: number) => (
                                                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                                        <td className="p-4 font-bold text-slate-700">{row.rangkaian}</td>
-                                                        <td className="p-4 font-mono text-slate-500">{row.aset}</td>
-                                                        <td className="p-4 font-bold text-[#1d2d6a]">{row.nama}</td>
-                                                        <td className="p-4 font-mono text-slate-500">{row.ip}</td>
-                                                        <td className="p-4 font-mono text-slate-500">{row.time}</td>
-                                                        <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-wide border border-green-100"><div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />{row.status}</span></td>
+                                                        <td className="p-4 font-bold text-slate-700">K1-{String(idx + 1).padStart(2, '0')}</td>
+                                                        <td className="p-4 font-mono text-slate-500">K1{String(idx + 1).padStart(2, '0')}{String(800 + idx)}</td>
+                                                        <td className="p-4 font-bold text-[#1d2d6a]">{activeTrainName}</td>
+                                                        <td className="p-4 font-mono text-slate-500">192.168.1.{100 + idx}</td>
+                                                        <td className="p-4 font-mono text-slate-500">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</td>
+                                                        <td className="p-4 text-center">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-wide border border-green-100">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                                Active
+                                                            </span>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>

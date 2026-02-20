@@ -24,7 +24,8 @@ export interface RouteData {
 }
 
 export interface PidsState {
-    stationName: string;
+    serviceName: string;
+    currentStation: string;
     trainNumber: string;
     nextStation: string;
     status: string;

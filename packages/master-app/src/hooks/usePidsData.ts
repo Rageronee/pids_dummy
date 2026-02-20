@@ -5,7 +5,8 @@ const API_URL = 'http://localhost:3001/api/state';
 
 export const usePidsData = () => {
     const [data, setData] = useState<PidsState>({
-        stationName: 'ARGO WILIS',
+        serviceName: 'ARGO WILIS',
+        currentStation: 'BANDUNG',
         trainNumber: '05',
         nextStation: 'TASIKMALAYA',
         status: 'ON TIME',
