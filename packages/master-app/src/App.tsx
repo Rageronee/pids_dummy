@@ -4,6 +4,7 @@ import { usePidsData } from './hooks/usePidsData';
 import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, Compass, ScrollText, LogOut, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
+import { MasterConsolePanel } from './components/MasterConsolePanel';
 import type { AuthUser, LogEntry } from '@eltran/pids-core';
 
 const API_URL = 'http://localhost:3001';
@@ -265,6 +266,7 @@ function App() {
 
     const NAV_ITEMS = [
         { id: 'pids', icon: LayoutDashboard, label: 'PIDS' },
+        { id: 'stampformasi', icon: Database, label: 'STAMPFORMASI' },
         { id: 'tv', icon: Video, label: 'CCTV' },
         { id: 'gps', icon: MapPin, label: 'GPS MAP' },
         { id: 'logs', icon: ScrollText, label: 'Log Aktivitas' },
@@ -349,7 +351,11 @@ function App() {
                 <div className="flex-1 overflow-auto p-10 bg-[#f8fafc]">
                     <AnimatePresence mode="wait">
                         {activeTab === 'pids' ? (
-                            <motion.div key="pids" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto space-y-10">
+                            <motion.div key="pids" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-7xl mx-auto">
+                                <MasterConsolePanel route={activeRoute} data={data} />
+                            </motion.div>
+                        ) : activeTab === 'stampformasi' ? (
+                            <motion.div key="stampformasi" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto space-y-10">
                                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                                     <h2 className="text-xl font-black text-[#1d2d6a] mb-8 uppercase tracking-tight flex items-center gap-3">
                                         <Database className="text-[#ee6f1f]" />Stampformasi
