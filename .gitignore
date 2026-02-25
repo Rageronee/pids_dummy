@@ -31,3 +31,4 @@ pkg/
 gui/
 electron-builder-debug.yml
 postinstall.js
+.electron/
