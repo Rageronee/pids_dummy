@@ -4,7 +4,7 @@ import {
     Train, Settings, Save, RefreshCw, Volume2,
     MapPin, MonitorPlay, Mic, Play, Pause,
     ChevronDown, ChevronRight, RadioTower, Video, Satellite, Info,
-    ListVideo, Disc
+    ListVideo, Disc, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
 // Reusable Accordion Component
@@ -79,6 +79,12 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
     const activeTrainName = data?.serviceName || 'ARGO WILIS';
     const activeTrainNumber = data?.trainNumber || '05';
     const [jumlahKereta, setJumlahKereta] = useState(5);
+    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+    const showToast = (msg: string, ok: boolean = true) => {
+        setToast({ msg, ok });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-full pb-32">
@@ -155,7 +161,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             TANGGAL: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </span>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">108.086736</div>
@@ -166,14 +172,17 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">-7.07608</div>
                             <div className="text-[9px] text-slate-400 mt-1">Garis Lintang Selatan</div>
                         </div>
-                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm lg:col-span-2 relative overflow-hidden group flex items-center justify-between">
-                            <div className="absolute right-0 top-0 bottom-0 w-32 bg-blue-100/50 group-hover:bg-blue-200/50 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
+                        <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="absolute right-0 top-0 bottom-0 w-48 bg-blue-100/50 group-hover:bg-blue-200/50 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
                             <div className="relative z-10 flex flex-col">
-                                <div className="text-[12px] text-blue-500 font-bold uppercase tracking-widest mb-1">Kecepatan</div>
-                                <div className="text-[10px] text-blue-400">Realtime Speed</div>
+                                <div className="text-sm text-blue-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                    Kecepatan
+                                </div>
+                                <div className="text-xs text-blue-400 font-medium">Realtime Speed (GPS)</div>
                             </div>
-                            <div className="text-4xl font-mono font-black text-blue-600 leading-none relative z-10 text-right drop-shadow-sm">
-                                41.8<span className="text-sm font-sans tracking-widest ml-1.5 text-blue-500">km/h</span>
+                            <div className="text-5xl font-mono font-black text-blue-600 leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
+                                41.8<span className="text-base font-sans tracking-widest ml-2 text-blue-500 font-bold">km/h</span>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
@@ -247,17 +256,6 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                     </select>
                                 </div>
                             </div>
-
-                            <div className="h-10 w-px bg-slate-200 hidden sm:block" />
-
-                            <div className="flex items-center gap-2">
-                                <label className="flex items-center gap-2 text-xs font-black text-slate-600 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
-                                    <input type="checkbox" className="w-4 h-4 rounded text-[#1d2d6a]" defaultChecked /> IN
-                                </label>
-                                <label className="flex items-center gap-2 text-xs font-black text-slate-600 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
-                                    <input type="checkbox" className="w-4 h-4 rounded text-[#1d2d6a]" defaultChecked /> OUT
-                                </label>
-                            </div>
                         </div>
 
                         {/* Toggles */}
@@ -273,48 +271,58 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                     </div>
 
                     {/* Visualizer */}
-                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
+                    <div className="flex items-center gap-0 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
                         {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
-                            <div key={item} className="flex flex-col shrink-0 min-w-[140px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all snap-start">
-                                <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-100 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
-                                    <span className="text-sm font-black uppercase tracking-widest">{item}</span>
-                                </div>
-                                <div className="p-3 bg-slate-50 flex flex-col gap-3">
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{i === 0 ? 'ID' : 'Kereta'}</span>
-                                        {i === 0 ? (
-                                            <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center bg-slate-100/50 rounded border border-slate-200">LOKOMOTIF</div>
-                                        ) : (
-                                            <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center shadow-sm transition-all" />
-                                        )}
+                            <div key={item} className="flex items-center shrink-0 snap-start">
+                                {/* Rail Connector */}
+                                {i !== 0 && (
+                                    <div className="flex flex-col items-center justify-center px-1">
+                                        <div className="w-8 h-2 bg-slate-300 rounded-full border border-slate-400 shadow-inner overflow-hidden relative">
+                                            <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_2px,rgba(0,0,0,0.1)_2px,rgba(0,0,0,0.1)_4px)]" />
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IP Node</span>
-                                            {i !== 0 && (
-                                                <select className="text-[8px] font-black text-blue-500 bg-transparent border-none appearance-none cursor-pointer focus:outline-none" defaultValue="auto">
-                                                    <option value="auto">AUTO</option>
-                                                    <option value="custom">CUSTOM</option>
-                                                </select>
+                                )}
+                                <div className="flex flex-col w-[140px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all">
+                                    <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-100 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
+                                        <span className="text-sm font-black uppercase tracking-widest">{item}</span>
+                                    </div>
+                                    <div className="p-3 bg-slate-50 flex flex-col gap-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{i === 0 ? 'ID' : 'Kereta'}</span>
+                                            {i === 0 ? (
+                                                <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center bg-slate-100/50 rounded border border-slate-200">LOKOMOTIF</div>
+                                            ) : (
+                                                <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center shadow-sm transition-all" />
                                             )}
                                         </div>
-                                        <div className="flex items-center justify-center bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all">
-                                            {i === 0 ? (
-                                                <div className="flex items-center gap-1 w-full justify-center">
-                                                    <span className="text-[10px] font-mono font-bold text-slate-300">.</span>
-                                                    <input type="number" defaultValue={10} className="text-xs font-mono font-black text-emerald-600 bg-transparent focus:outline-none w-full text-center" />
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-0.5 w-full justify-center">
-                                                    <input type="text" defaultValue="192" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                    <span className="text-slate-300 text-[8px]">.</span>
-                                                    <input type="text" defaultValue="168" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                    <span className="text-slate-300 text-[8px]">.</span>
-                                                    <input type="text" defaultValue="1" className="w-[12px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                    <span className="text-slate-300 text-[8px]">.</span>
-                                                    <input type="text" defaultValue={50 + i} className="w-[18px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                </div>
-                                            )}
+                                        <div className="flex flex-col">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IP Node</span>
+                                                {i !== 0 && (
+                                                    <select className="text-[8px] font-black text-blue-500 bg-transparent border-none appearance-none cursor-pointer focus:outline-none" defaultValue="auto">
+                                                        <option value="auto">AUTO</option>
+                                                        <option value="custom">CUSTOM</option>
+                                                    </select>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-center bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all">
+                                                {i === 0 ? (
+                                                    <div className="flex items-center gap-1 w-full justify-center">
+                                                        <span className="text-[10px] font-mono font-bold text-slate-300">.</span>
+                                                        <input type="number" defaultValue={10} className="text-xs font-mono font-black text-emerald-600 bg-transparent focus:outline-none w-full text-center" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-0.5 w-full justify-center">
+                                                        <input type="text" defaultValue="192" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                        <span className="text-slate-300 text-[8px]">.</span>
+                                                        <input type="text" defaultValue="168" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                        <span className="text-slate-300 text-[8px]">.</span>
+                                                        <input type="text" defaultValue="1" className="w-[12px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                        <span className="text-slate-300 text-[8px]">.</span>
+                                                        <input type="text" defaultValue={50 + i} className="w-[18px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -336,7 +344,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
                         <span className="text-sm font-black text-[#1d2d6a]">Rute_Utama_Bandung_Surabaya.json</span>
                     </div>
-                    <button className="text-xs font-black uppercase tracking-widest text-[#1d2d6a] bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors">
+                    <button onClick={() => showToast('Membuka file dialog...')} className="text-xs font-black uppercase tracking-widest text-[#1d2d6a] bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors">
                         <RefreshCw size={14} className="text-blue-500" /> Import File
                     </button>
                 </div>
@@ -426,10 +434,10 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         </div>
 
                         <div className="flex justify-end gap-3 pt-2">
-                            <button className="text-xs font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
+                            <button onClick={() => showToast('Audio dinonaktifkan')} className="text-xs font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
                                 Reset
                             </button>
-                            <button className="text-xs font-black uppercase tracking-widest text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
+                            <button onClick={() => showToast('Memainkan Audio Announcer')} className="text-xs font-black uppercase tracking-widest text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
                                 <Volume2 size={14} /> Mainkan
                             </button>
                         </div>
@@ -495,9 +503,9 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
 
                                 {/* Center Play Controls */}
                                 <div className="flex items-center gap-2 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-100 shadow-inner">
-                                    <button className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="rotate-90" /></button>
-                                    <button className="text-white bg-[#1d2d6a] hover:bg-[#152355] p-3.5 mx-2 rounded-full shadow-lg transition-all active:scale-90 hover:scale-105"><Pause size={20} fill="currentColor" /></button>
-                                    <button className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="-rotate-90" /></button>
+                                    <button onClick={() => showToast('Memutar video sebelumnya')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="rotate-90" /></button>
+                                    <button onClick={() => showToast('Video dijeda')} className="text-white bg-[#1d2d6a] hover:bg-[#152355] p-3.5 mx-2 rounded-full shadow-lg transition-all active:scale-90 hover:scale-105"><Pause size={20} fill="currentColor" /></button>
+                                    <button onClick={() => showToast('Memutar video selanjutnya')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="-rotate-90" /></button>
                                 </div>
 
                                 {/* Right Side Tools */}
@@ -505,7 +513,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                     <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-500 hover:text-[#1d2d6a] bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 transition-all shadow-sm">
                                         <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-[#1d2d6a] focus:ring-[#1d2d6a]" /> DVD
                                     </label>
-                                    <button className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 transition-all shadow-sm">
+                                    <button onClick={() => showToast('Membuka pengaturan modul media')} className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 transition-all shadow-sm">
                                         <Settings size={14} />
                                     </button>
                                 </div>
@@ -523,26 +531,42 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
-                    <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
+                    <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
                         <MapPin size={16} className="text-blue-500" /> Cek GPS
                     </button>
-                    <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
+                    <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
                         <Settings size={16} className="text-slate-400" /> Warna
                     </button>
-                    <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
+                    <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
                         <MonitorPlay size={16} className="text-green-500" /> Outdoor
                     </button>
-                    <button className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
+                    <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
                         <RefreshCw size={16} className="text-[#ee6f1f]" /> Arah
                     </button>
 
                     <div className="w-full md:w-px md:h-8 bg-slate-200 mx-1 hidden md:block" />
 
-                    <button className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-95 w-full md:w-auto">
+                    <button onClick={() => showToast('Konfigurasi baru berhasil disimpan')} className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-95 w-full md:w-auto">
                         <Save size={16} /> Simpan Konfig
                     </button>
                 </div>
             </div>
+
+            {/* TOAST SYSTEM */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className={`fixed bottom-24 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl z-[70] text-sm font-bold ${toast.ok ? 'bg-[#1d2d6a] text-white shadow-[0_8px_24px_rgba(29,45,106,0.25)]' : 'bg-red-500 text-white shadow-[0_8px_24px_rgba(239,68,68,0.25)]'
+                            }`}
+                    >
+                        {toast.ok ? <CheckCircle2 size={18} className="shrink-0" /> : <AlertCircle size={18} className="shrink-0" />}
+                        {toast.msg}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </div>
     );
