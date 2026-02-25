@@ -78,6 +78,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
 
     const activeTrainName = data?.serviceName || 'ARGO WILIS';
     const activeTrainNumber = data?.trainNumber || '05';
+    const [jumlahKereta, setJumlahKereta] = useState(5);
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-full pb-32">
@@ -120,11 +121,11 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="flex justify-between items-center">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">POI Terdekat</span>
-                                    <span className="text-sm font-black text-emerald-600">BUMIWALIYA</span>
+                                    <span className="text-sm font-black text-[#ee6f1f]">BUMIWALIYA</span>
                                 </div>
                                 <div className="flex flex-col text-right">
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Jarak ke POI</span>
-                                    <span className="text-xs font-black text-rose-500">&lt; 10 km (2518 m)</span>
+                                    <span className="text-xs font-black text-[#ee6f1f]">&lt; 10 km (2518 m)</span>
                                 </div>
                             </div>
 
@@ -150,54 +151,53 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600 shadow-inner"><Satellite size={24} /></div>
                             <h3 className="font-black text-[#1d2d6a] uppercase tracking-widest text-sm">Telemetri Satelit (GPS)</h3>
                         </div>
-                        <span className="text-[10px] font-black bg-green-100 text-green-700 px-3 py-1.5 rounded-lg border border-green-200 shadow-sm hidden sm:flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" /> GPS 3D FIX
+                        <span className="text-[10px] font-black bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2 tracking-widest">
+                            TANGGAL: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </span>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">108.086736</div>
                             <div className="text-[9px] text-slate-400 mt-1">Garis Bujur Timur</div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">-7.07608</div>
                             <div className="text-[9px] text-slate-400 mt-1">Garis Lintang Selatan</div>
                         </div>
-                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden group">
-                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-blue-100/50 group-hover:bg-blue-200/50 transition-colors" />
-                            <div className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-1 relative z-10">Kecepatan</div>
-                            <div className="text-2xl font-mono font-black text-blue-600 leading-none relative z-10">41.8<span className="text-[10px] font-sans tracking-widest ml-1 text-blue-500">km/h</span></div>
-                            <div className="text-[9px] text-blue-400 mt-1 relative z-10">Realtime Speed</div>
+                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm lg:col-span-2 relative overflow-hidden group flex items-center justify-between">
+                            <div className="absolute right-0 top-0 bottom-0 w-32 bg-blue-100/50 group-hover:bg-blue-200/50 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
+                            <div className="relative z-10 flex flex-col">
+                                <div className="text-[12px] text-blue-500 font-bold uppercase tracking-widest mb-1">Kecepatan</div>
+                                <div className="text-[10px] text-blue-400">Realtime Speed</div>
+                            </div>
+                            <div className="text-4xl font-mono font-black text-blue-600 leading-none relative z-10 text-right drop-shadow-sm">
+                                41.8<span className="text-sm font-sans tracking-widest ml-1.5 text-blue-500">km/h</span>
+                            </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">141.88&deg;</div>
                             <div className="text-[9px] text-slate-400 mt-1">Arah Orientasi KA</div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Ketinggian <Info size={12} /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">125 <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
                             <div className="text-[9px] text-slate-400 mt-1">Elevasi Permukaan</div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm col-span-1 hover:border-slate-300 transition-colors">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Tanggal<Info size={12} /></div>
-                            <div className="text-[13px] font-mono font-black text-[#1d2d6a]">31/3/2017</div>
-                            <div className="text-[9px] text-slate-400 mt-1">Waktu Sistem Server</div>
-                        </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} /></div>
                             <div className="flex items-end gap-2 mt-2">
                                 <input type="number" defaultValue={750} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" defaultValue={250} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black text-[#ee6f1f] focus:outline-none focus:border-blue-400 shadow-sm" />
-                                <span className="text-[10px] text-[#ee6f1f] font-bold tracking-wider mb-2">METER</span>
+                                <input type="number" defaultValue={250} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                         </div>
                     </div>
@@ -240,7 +240,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Jumlah Kereta</span>
                                 <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
                                     <Train size={14} className="text-slate-400" />
-                                    <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[70px]" defaultValue="5">
+                                    <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[70px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
                                         {[...Array(15)].map((_, i) => (
                                             <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
                                         ))}
@@ -267,14 +267,14 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             </label>
                             <div className="w-px h-5 bg-slate-200" />
                             <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-2 hover:bg-slate-50 rounded-md transition-colors">
-                                <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> 9x16
+                                <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> LED 9x16
                             </label>
                         </div>
                     </div>
 
                     {/* Visualizer */}
                     <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
-                        {['LOK', '1', '2', '3', '4', '5'].map((item, i) => (
+                        {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
                             <div key={item} className="flex flex-col shrink-0 min-w-[140px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all snap-start">
                                 <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-100 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
                                     <span className="text-sm font-black uppercase tracking-widest">{item}</span>

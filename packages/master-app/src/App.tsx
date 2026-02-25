@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, Compass, ScrollText, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, Compass, ScrollText, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
@@ -286,20 +286,9 @@ function App() {
                     <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5">Central Processing System</p>
                 </div>
 
-                {/* User info */}
-                <div className="px-6 pb-6">
-                    <div className="bg-white/10 rounded-2xl p-4 border border-white/5 flex items-center gap-3">
-                        <div className="bg-[#ee6f1f] p-2 rounded-xl shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
-                            <Shield size={16} className="text-white" />
-                        </div>
-                        <div>
-                            <div className="text-white font-black text-sm leading-none mb-0.5">{authUser.nama}</div>
-                            <div className="text-blue-200/40 text-[10px] font-bold uppercase tracking-widest">{authUser.role}</div>
-                        </div>
-                    </div>
-                </div>
+                {/* User info was removed here */}
 
-                <nav className="flex-1 px-4 space-y-1.5">
+                <nav className="flex-1 px-4 space-y-1.5 pt-6">
                     <ul className="space-y-2">
                         {NAV_ITEMS.map((item) => (
                             <li key={item.id}>
