@@ -162,16 +162,6 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         </span>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} /></div>
-                            <div className="text-lg font-mono font-black text-[#1d2d6a]">108.086736</div>
-                            <div className="text-[9px] text-slate-400 mt-1">Garis Bujur Timur</div>
-                        </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} /></div>
-                            <div className="text-lg font-mono font-black text-[#1d2d6a]">-7.07608</div>
-                            <div className="text-[9px] text-slate-400 mt-1">Garis Lintang Selatan</div>
-                        </div>
                         <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="absolute right-0 top-0 bottom-0 w-48 bg-blue-100/50 group-hover:bg-blue-200/50 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
                             <div className="relative z-10 flex flex-col">
@@ -185,6 +175,17 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                 41.8<span className="text-base font-sans tracking-widest ml-2 text-blue-500 font-bold">km/h</span>
                             </div>
                         </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} /></div>
+                            <div className="text-lg font-mono font-black text-[#1d2d6a]">108.086736</div>
+                            <div className="text-[9px] text-slate-400 mt-1">Garis Bujur Timur</div>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} /></div>
+                            <div className="text-lg font-mono font-black text-[#1d2d6a]">-7.07608</div>
+                            <div className="text-[9px] text-slate-400 mt-1">Garis Lintang Selatan</div>
+                        </div>
+
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">141.88&deg;</div>
