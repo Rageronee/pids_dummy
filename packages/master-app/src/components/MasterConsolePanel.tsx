@@ -214,56 +214,48 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="text-5xl font-mono font-black text-slate-50  leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
                                 41.8<span className="text-base font-sans tracking-widest ml-2 text-slate-50 font-bold">km/h</span>
                             </div>
-                            {/* Tooltip */}
-                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-white text-[#ee6f1f] text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
-                                Kecepatan Aktual Operasional
-                            </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-lg font-mono font-black text-[#1d2d6a]">108.086736</div>
-                            <div className="text-[9px] text-slate-400 mt-1">Garis Bujur Timur</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">108.086736</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
-                                Titik Koordinat Horizontal
+                                Garis Bujur Timur
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-lg font-mono font-black text-[#1d2d6a]">-7.07608</div>
-                            <div className="text-[9px] text-slate-400 mt-1">Garis Lintang Selatan</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">-7.07608</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
-                                Titik Koordinat Vertikal
+                                Garis Lintang Selatan
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
 
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-lg font-mono font-black text-[#1d2d6a]">141.88&deg;</div>
-                            <div className="text-[9px] text-slate-400 mt-1">Arah Orientasi KA</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">141.88&deg;</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
-                                Derajat Arah Orientasi
+                                Arah Orientasi KA
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Ketinggian <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-lg font-mono font-black text-[#1d2d6a]">125 <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
-                            <div className="text-[9px] text-slate-400 mt-1">Elevasi Permukaan</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">125 <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
-                                Elevasi Dari Atas Laut
+                                Elevasi Permukaan
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" defaultValue={750} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <input type="number" defaultValue={750} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
@@ -275,7 +267,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" defaultValue={250} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <input type="number" defaultValue={250} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
@@ -317,33 +309,34 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
 
                             <div className="h-10 w-px bg-slate-200 hidden sm:block" />
 
+                            {/* Toggles */}
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Jumlah Kereta</span>
-                                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
-                                    <Train size={14} className="text-slate-400" />
-                                    <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[70px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
-                                        {[...Array(15)].map((_, i) => (
-                                            <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
-                                        ))}
-                                    </select>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center sm:text-left">Tampilkan</span>
+                                <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                        <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No. KA
+                                    </label>
+                                    <div className="w-px h-5 bg-slate-200" />
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                        <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> LED 9×16
+                                    </label>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Toggles */}
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center sm:text-left">Tampilkan</span>
-                            <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
-                                    <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No. KA
-                                </label>
-                                <div className="w-px h-5 bg-slate-200" />
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
-                                    <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> LED 9×16
-                                </label>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Jumlah Kereta</span>
+                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
+                                <Train size={14} className="text-slate-400" />
+                                <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[70px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
+                                    {[...Array(15)].map((_, i) => (
+                                        <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
+
+
 
                     {/* Visualizer */}
                     <div className="flex items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
@@ -475,7 +468,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
                         </h4>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
                                 <label className="text-[10px] font-bold uppercase tracking-widest">Sumber Output</label>
                                 <select
@@ -487,17 +480,8 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                     <option value="Internal">Internal Storage</option>
                                 </select>
                             </div>
-                            <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
-                                <label className="text-[10px] font-bold uppercase tracking-widest">Pilihan Suara</label>
-                                <select
-                                    className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
-                                >
-                                    <option value="pria1">Pria (Standar)</option>
-                                    <option value="wanita1">Wanita (Formal)</option>
-                                    <option value="wanita2">Wanita (Santai)</option>
-                                </select>
-                            </div>
-                            <div className="flex items-end pb-[1px] sm:col-span-2 lg:col-span-1">
+
+                            <div className="flex items-end pb-[1px]">
                                 <label className="flex items-center justify-center gap-3 text-sm font-black text-slate-600 uppercase tracking-wider cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
                                     <input type="checkbox" className="w-4 h-4 rounded text-[#1d2d6a] focus:ring-[#1d2d6a]" /> Enable Broadcast
                                 </label>
@@ -511,7 +495,17 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                 placeholder="Ketik pesan darurat/info..."
                             />
                         </div>
-
+                        <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
+                            <label className="text-[10px] font-bold uppercase tracking-widest">Pilihan Suara</label>
+                            <select
+                                className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
+                            >
+                                <option value="audio1">Pengumuman_Kedatangan.mp3</option>
+                                <option value="audio2">Safety_Briefing_KAI.wav</option>
+                                <option value="audio3">Emergency_Alert_01.mp3</option>
+                                <option value="audio4">Jingle_KAI.mp3</option>
+                            </select>
+                        </div>
                         <div className="flex justify-end gap-3 pt-2">
                             <button onClick={() => showToast('Audio dinonaktifkan')} className="text-xs font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
                                 Reset
@@ -613,16 +607,16 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
 
                 <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
                     <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <MapPin size={16} className="text-blue-400" /> Cek GPS
+                        <MapPin size={16} className="text-slate-200" /> Cek GPS
                     </button>
                     <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <Settings size={16} className="text-blue-200" /> Warna
+                        <Settings size={16} className="text-slate-200" /> Warna
                     </button>
                     <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <MonitorPlay size={16} className="text-green-400" /> Outdoor
+                        <MonitorPlay size={16} className="text-slate-200" /> Outdoor
                     </button>
                     <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <RefreshCw size={16} className="text-[#ee6f1f]" /> Arah
+                        <RefreshCw size={16} className="text-slate-200" /> Arah
                     </button>
 
                     <div className="w-full md:w-px md:h-8 bg-[#2a3b7a] mx-1 hidden md:block" />
