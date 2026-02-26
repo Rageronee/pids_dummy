@@ -8,25 +8,40 @@ import {
     Repeat, Shuffle
 } from 'lucide-react';
 
-// Modern Toggle Switch Component
-function ToggleSwitch({ value, onChange }: { value: string, onChange?: (val: string) => void }) {
+// Modern Toggle Switch Component (REFINED: Single Toggle Button)
+function StateToggle({ value, label1 = "auto", label2 = "custom", onChange }: { value: string, label1?: string, label2?: string, onChange?: (val: string) => void }) {
+    const [internalValue, setInternalValue] = useState(value.toLowerCase());
+    const isFirst = internalValue === label1.toLowerCase();
     return (
-        <div className="flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 shadow-inner overflow-hidden">
-            <button
-                type="button"
-                className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-md transition-all ${value === 'auto' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-500'}`}
-                onClick={() => onChange?.('auto')}
-            >
-                Auto
-            </button>
-            <button
-                type="button"
-                className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-md transition-all ${value === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-500'}`}
-                onClick={() => onChange?.('custom')}
-            >
-                Custom
-            </button>
-        </div>
+        <button
+            type="button"
+            onClick={() => {
+                const navVal = isFirst ? label2.toLowerCase() : label1.toLowerCase();
+                setInternalValue(navVal);
+                onChange?.(navVal);
+            }}
+            className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all border shadow-sm ${isFirst
+                ? 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700'
+                : 'bg-[#ee6f1f] text-white border-[#d8631c] hover:bg-[#f87a2c]'
+                }`}
+        >
+            {internalValue.toUpperCase()}
+        </button>
+    );
+}
+
+// Text-Only Toggle for Carriages
+function TextToggle({ value, label1 = "auto", label2 = "custom" }: { value: string, label1?: string, label2?: string }) {
+    const [internalValue, setInternalValue] = useState(value.toLowerCase());
+    const isFirst = internalValue === label1.toLowerCase();
+    return (
+        <button
+            type="button"
+            onClick={() => setInternalValue(isFirst ? label2.toLowerCase() : label1.toLowerCase())}
+            className={`text-[9px] font-black uppercase tracking-widest transition-colors ${isFirst ? 'text-blue-500 hover:text-blue-600' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
+        >
+            {internalValue.toUpperCase()}
+        </button>
     );
 }
 
@@ -199,40 +214,74 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="text-5xl font-mono font-black text-slate-50  leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
                                 41.8<span className="text-base font-sans tracking-widest ml-2 text-slate-50 font-bold">km/h</span>
                             </div>
+                            {/* Tooltip */}
+                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-white text-[#ee6f1f] text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                                Kecepatan Aktual Operasional
+                            </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} /></div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">108.086736</div>
                             <div className="text-[9px] text-slate-400 mt-1">Garis Bujur Timur</div>
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                                Titik Koordinat Horizontal
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
+                            </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} /></div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">-7.07608</div>
                             <div className="text-[9px] text-slate-400 mt-1">Garis Lintang Selatan</div>
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                                Titik Koordinat Vertikal
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
+                            </div>
                         </div>
 
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} /></div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">141.88&deg;</div>
                             <div className="text-[9px] text-slate-400 mt-1">Arah Orientasi KA</div>
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                                Derajat Arah Orientasi
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
+                            </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Ketinggian <Info size={12} /></div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Ketinggian <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="text-lg font-mono font-black text-[#1d2d6a]">125 <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
                             <div className="text-[9px] text-slate-400 mt-1">Elevasi Permukaan</div>
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                                Elevasi Dari Atas Laut
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
+                            </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} /></div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
                                 <input type="number" defaultValue={750} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                                Batas Jarak Toleransi
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
+                            </div>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} /></div>
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
                                 <input type="number" defaultValue={250} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-lg font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
+                            </div>
+                            {/* Tooltip */}
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                                Batas Presisi Target
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                     </div>
@@ -262,7 +311,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                     <span className="text-slate-300">.</span>
                                     <input type="text" defaultValue="48" className="w-[24px] text-[11px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <div className="w-px h-4 bg-slate-200 mx-1" />
-                                    <ToggleSwitch value="auto" />
+                                    <StateToggle value="auto" />
                                 </div>
                             </div>
 
@@ -286,7 +335,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center sm:text-left">Tampilkan</span>
                             <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
                                 <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
-                                    <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No KA
+                                    <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No. KA
                                 </label>
                                 <div className="w-px h-5 bg-slate-200" />
                                 <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
@@ -297,24 +346,24 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                     </div>
 
                     {/* Visualizer */}
-                    <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
+                    <div className="flex items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
                         {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
-                            <div key={item} className={`flex items-center shrink-0 snap-start ${i === 0 ? 'min-w-[150px]' : 'min-w-[150px] max-w-[160px] flex-1'}`}>
-                                <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all bg-white relative">
-                                    <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-50 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
+                            <div key={item} className={`flex shrink-0 snap-start ${i === 0 ? 'w-[150px]' : 'w-[150px] flex-1'}`}>
+                                <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all relative">
+                                    <div className={`flex items-center justify-center h-10 shrink-0 ${i === 0 ? 'bg-slate-50 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
                                         <span className="text-sm font-black uppercase tracking-widest">{item}</span>
                                     </div>
-                                    <div className="p-4 bg-white flex flex-col gap-4">
+                                    <div className="p-4 bg-white flex flex-col gap-4 flex-1">
                                         {i === 0 ? (
-                                            <>
+                                            <div className="flex flex-col gap-4 flex-1 justify-center">
                                                 {/* Specialized Locomotive Style based on Image */}
-                                                <div className="text-xs font-black text-slate-500 h-[45px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
+                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
                                                     ID KERETA
                                                 </div>
-                                                <div className="text-xs font-black text-slate-500 h-[45px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
+                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
                                                     IP KERETA
                                                 </div>
-                                            </>
+                                            </div>
                                         ) : (
                                             <>
                                                 <div className="flex flex-col">
@@ -322,9 +371,9 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                                     <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <div className="flex justify-between items-center mb-1">
+                                                    <div className="flex items-center gap-2 mb-1">
                                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IP Node</span>
-                                                        <ToggleSwitch value="auto" />
+                                                        <TextToggle value="auto" />
                                                     </div>
                                                     <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
                                                         <div className="flex items-center gap-0.5 w-full justify-center">
@@ -426,7 +475,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
                         </h4>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
                                 <label className="text-[10px] font-bold uppercase tracking-widest">Sumber Output</label>
                                 <select
@@ -438,7 +487,17 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                     <option value="Internal">Internal Storage</option>
                                 </select>
                             </div>
-                            <div className="flex items-end pb-[1px]">
+                            <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
+                                <label className="text-[10px] font-bold uppercase tracking-widest">Pilihan Suara</label>
+                                <select
+                                    className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
+                                >
+                                    <option value="pria1">Pria (Standar)</option>
+                                    <option value="wanita1">Wanita (Formal)</option>
+                                    <option value="wanita2">Wanita (Santai)</option>
+                                </select>
+                            </div>
+                            <div className="flex items-end pb-[1px] sm:col-span-2 lg:col-span-1">
                                 <label className="flex items-center justify-center gap-3 text-sm font-black text-slate-600 uppercase tracking-wider cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
                                     <input type="checkbox" className="w-4 h-4 rounded text-[#1d2d6a] focus:ring-[#1d2d6a]" /> Enable Broadcast
                                 </label>
