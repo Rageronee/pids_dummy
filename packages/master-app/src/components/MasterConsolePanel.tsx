@@ -8,6 +8,28 @@ import {
     Repeat, Shuffle
 } from 'lucide-react';
 
+// Modern Toggle Switch Component
+function ToggleSwitch({ value, onChange }: { value: string, onChange?: (val: string) => void }) {
+    return (
+        <div className="flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 shadow-inner overflow-hidden">
+            <button
+                type="button"
+                className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-md transition-all ${value === 'auto' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-500'}`}
+                onClick={() => onChange?.('auto')}
+            >
+                Auto
+            </button>
+            <button
+                type="button"
+                className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-md transition-all ${value === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-500'}`}
+                onClick={() => onChange?.('custom')}
+            >
+                Custom
+            </button>
+        </div>
+    );
+}
+
 // Reusable Accordion Component
 function SectionAccordion({
     title, icon: Icon, defaultOpen = false, children, summary
@@ -165,17 +187,17 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         </span>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-                        <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 shadow-sm lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="absolute right-0 top-0 bottom-0 w-48 bg-blue-100/50 group-hover:bg-blue-200/50 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
+                        <div className="bg-[#ee6f1f] p-5 rounded-2xl border border-[#ee6f1f] shadow-sm lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="absolute right-0 top-0 bottom-0 w-48 bg-[#ee6f1f]/50 group-hover:bg-[#ee6f1f]/20 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
                             <div className="relative z-10 flex flex-col">
-                                <div className="text-sm text-blue-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                <div className="text-sm text-slate-50 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-slate-100 animate-pulse" />
                                     Kecepatan
                                 </div>
-                                <div className="text-xs text-blue-400 font-medium">Realtime Speed (GPS)</div>
+                                <div className="text-xs text-slate-200 font-medium">Realtime Speed (GPS)</div>
                             </div>
-                            <div className="text-5xl font-mono font-black text-blue-600 leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
-                                41.8<span className="text-base font-sans tracking-widest ml-2 text-blue-500 font-bold">km/h</span>
+                            <div className="text-5xl font-mono font-black text-slate-50  leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
+                                41.8<span className="text-base font-sans tracking-widest ml-2 text-slate-50 font-bold">km/h</span>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-slate-300 transition-colors flex flex-col justify-center">
@@ -240,10 +262,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                     <span className="text-slate-300">.</span>
                                     <input type="text" defaultValue="48" className="w-[24px] text-[11px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <div className="w-px h-4 bg-slate-200 mx-1" />
-                                    <select className="text-[10px] font-bold text-blue-600 bg-transparent cursor-pointer focus:outline-none" defaultValue="auto">
-                                        <option value="auto">Auto</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
+                                    <ToggleSwitch value="auto" />
                                 </div>
                             </div>
 
@@ -280,45 +299,47 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                     {/* Visualizer */}
                     <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
                         {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
-                            <div key={item} className={`flex items-center shrink-0 snap-start ${i === 0 ? 'min-w-[180px]' : 'min-w-[170px] flex-1'}`}>
-                                <div className="flex flex-col w-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all">
-                                    <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-100 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
+                            <div key={item} className={`flex items-center shrink-0 snap-start ${i === 0 ? 'min-w-[150px]' : 'min-w-[150px] max-w-[160px] flex-1'}`}>
+                                <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all bg-white relative">
+                                    <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-50 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
                                         <span className="text-sm font-black uppercase tracking-widest">{item}</span>
                                     </div>
-                                    <div className="p-3 bg-slate-50 flex flex-col gap-3">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{i === 0 ? ' ' : 'Kereta'}</span>
-                                            {i === 0 ? (
-                                                <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center bg-slate-100/50 rounded border border-slate-200">ID KERETA</div>
-                                            ) : (
-                                                <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center shadow-sm transition-all" />
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <div className="flex justify-between items-center mb-1 min-h-[16px]">
-                                                {i !== 0 && (
-                                                    <select className="text-[8px] font-black text-blue-500 bg-transparent border-none appearance-none cursor-pointer focus:outline-none" defaultValue="auto">
-                                                        <option value="auto">AUTO</option>
-                                                        <option value="custom">CUSTOM</option>
-                                                    </select>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all">
-                                                {i === 0 ? (
-                                                    <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center border-slate-500">IP KERETA</div>
-                                                ) : (
-                                                    <div className="flex items-center gap-0.5 w-full justify-center">
-                                                        <input type="text" defaultValue="192" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                        <span className="text-slate-300 text-[8px]">.</span>
-                                                        <input type="text" defaultValue="168" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                        <span className="text-slate-300 text-[8px]">.</span>
-                                                        <input type="text" defaultValue="1" className="w-[12px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                        <span className="text-slate-300 text-[8px]">.</span>
-                                                        <input type="text" defaultValue={50 + i} className="w-[18px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                    <div className="p-4 bg-white flex flex-col gap-4">
+                                        {i === 0 ? (
+                                            <>
+                                                {/* Specialized Locomotive Style based on Image */}
+                                                <div className="text-xs font-black text-slate-500 h-[45px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
+                                                    ID KERETA
+                                                </div>
+                                                <div className="text-xs font-black text-slate-500 h-[45px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
+                                                    IP KERETA
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Kereta</span>
+                                                    <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IP Node</span>
+                                                        <ToggleSwitch value="auto" />
                                                     </div>
-                                                )}
-                                            </div>
-                                        </div>
+                                                    <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
+                                                        <div className="flex items-center gap-0.5 w-full justify-center">
+                                                            <input type="text" defaultValue="192" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                            <span className="text-slate-300 text-[8px]">.</span>
+                                                            <input type="text" defaultValue="168" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                            <span className="text-slate-300 text-[8px]">.</span>
+                                                            <input type="text" defaultValue="1" className="w-[12px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                            <span className="text-slate-300 text-[8px]">.</span>
+                                                            <input type="text" defaultValue={50 + i} className="w-[18px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
