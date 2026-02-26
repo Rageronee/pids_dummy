@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Train, Settings, Save, RefreshCw, Volume2,
     MapPin, MonitorPlay, Mic, Play, Pause,
-    ChevronDown, ChevronRight, RadioTower, Video, Satellite, Info,
-    ListVideo, Disc, CheckCircle2, AlertCircle
+    ChevronDown, ChevronRight, RadioTower, Video, Info,
+    ListVideo, Disc, CheckCircle2, AlertCircle, Satellite,
+    Repeat
 } from 'lucide-react';
 
 // Reusable Accordion Component
@@ -93,7 +94,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col xl:flex-row">
                 <div className="p-6 xl:w-1/3 bg-slate-50 border-b xl:border-b-0 xl:border-r border-slate-200 flex flex-col">
                     <div className="flex items-center gap-3 mb-5 shrink-0">
-                        <div className="bg-[#1d2d6a] p-2.5 rounded-xl text-white shadow-md"><Train size={24} /></div>
+                        <div className="text-[#ee6f1f]"><Train size={24} /></div>
                         <h3 className="font-black text-[#1d2d6a] uppercase tracking-widest text-sm">Status Perjalanan</h3>
                     </div>
 
@@ -140,7 +141,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="flex justify-between items-center bg-blue-50/50 p-2.5 rounded-xl border border-blue-100/50">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Status Aktual</span>
-                                    <span className="text-sm font-black text-[#1d2d6a]">Menuju ke CIPEUNDEUY</span>
+                                    <span className="text-xs font-black text-[#1d2d6a]">Menuju ke CIPEUNDEUY</span>
                                 </div>
                                 <div className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100 text-center">
                                     <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-0.5">ETA</span>
@@ -154,7 +155,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 <div className="p-6 xl:w-2/3 bg-white flex flex-col">
                     <div className="flex items-center justify-between mb-5 shrink-0">
                         <div className="flex items-center gap-3">
-                            <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600 shadow-inner"><Satellite size={24} /></div>
+                            <div className="text-[#ee6f1f]"><Satellite size={24} /></div>
                             <h3 className="font-black text-[#1d2d6a] uppercase tracking-widest text-sm">Telemetri Satelit (GPS)</h3>
                         </div>
                         <span className="text-[10px] font-black bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2 tracking-widest">
@@ -260,30 +261,25 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         </div>
 
                         {/* Toggles */}
-                        <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                            <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-2 hover:bg-slate-50 rounded-md transition-colors">
-                                <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No KA
-                            </label>
-                            <div className="w-px h-5 bg-slate-200" />
-                            <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-2 hover:bg-slate-50 rounded-md transition-colors">
-                                <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> LED 9x16
-                            </label>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center sm:text-left">Tampilkan</span>
+                            <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                    <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No KA
+                                </label>
+                                <div className="w-px h-5 bg-slate-200" />
+                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                    <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> LED 9×16
+                                </label>
+                            </div>
                         </div>
                     </div>
 
                     {/* Visualizer */}
-                    <div className="flex items-center gap-0 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
+                    <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
                         {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
                             <div key={item} className="flex items-center shrink-0 snap-start">
-                                {/* Rail Connector */}
-                                {i !== 0 && (
-                                    <div className="flex flex-col items-center justify-center px-1">
-                                        <div className="w-8 h-2 bg-slate-300 rounded-full border border-slate-400 shadow-inner overflow-hidden relative">
-                                            <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_2px,rgba(0,0,0,0.1)_2px,rgba(0,0,0,0.1)_4px)]" />
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="flex flex-col w-[140px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all">
+                                <div className="flex flex-col w-[160px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all">
                                     <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-100 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
                                         <span className="text-sm font-black uppercase tracking-widest">{item}</span>
                                     </div>
@@ -453,8 +449,14 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             </h4>
                             <div className="flex items-center gap-3">
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
-                                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" defaultChecked /> Standby
+                                    <input type="checkbox" className="w-3.5 h-6 rounded border-slate-300 text-blue-600 focus:ring-blue-500" defaultChecked /> Standby
                                 </label>
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-500 hover:text-[#1d2d6a] bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 transition-all shadow-sm">
+                                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-[#1d2d6a] focus:ring-[#1d2d6a]" /> DVD
+                                </label>
+                                <button onClick={() => showToast('Membuka pengaturan modul media')} className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 transition-all shadow-sm">
+                                    <Settings size={14} />
+                                </button>
                             </div>
                         </div>
 
@@ -499,11 +501,11 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             <div className="flex items-center justify-between gap-4 relative min-h-[50px]">
                                 {/* Left Side Tools */}
                                 <div className="flex items-center gap-2">
-                                    <button className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Volume2 size={18} /></button>
+                                    <button onClick={() => showToast('Mengulang playlist')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Repeat size={18} /></button>
                                 </div>
 
                                 {/* Center Play Controls */}
-                                <div className="flex items-center gap-2 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-100 shadow-inner">
+                                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-100 shadow-inner">
                                     <button onClick={() => showToast('Memutar video sebelumnya')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="rotate-90" /></button>
                                     <button onClick={() => showToast('Video dijeda')} className="text-white bg-[#1d2d6a] hover:bg-[#152355] p-3.5 mx-2 rounded-full shadow-lg transition-all active:scale-90 hover:scale-105"><Pause size={20} fill="currentColor" /></button>
                                     <button onClick={() => showToast('Memutar video selanjutnya')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="-rotate-90" /></button>
@@ -511,12 +513,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
 
                                 {/* Right Side Tools */}
                                 <div className="flex items-center gap-2">
-                                    <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-500 hover:text-[#1d2d6a] bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 transition-all shadow-sm">
-                                        <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-[#1d2d6a] focus:ring-[#1d2d6a]" /> DVD
-                                    </label>
-                                    <button onClick={() => showToast('Membuka pengaturan modul media')} className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 transition-all shadow-sm">
-                                        <Settings size={14} />
-                                    </button>
+                                    <button onClick={() => showToast('Mengatur volume')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Volume2 size={18} /></button>
                                 </div>
                             </div>
                         </div>

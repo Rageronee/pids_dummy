@@ -315,7 +315,7 @@ function App() {
             <main className="flex-1 flex flex-col overflow-hidden relative">
                 <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10">
                     <div className="flex items-center gap-4">
-                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Train className="text-[#1d2d6a]" size={20} /></div>
+                        <div className="bg-[#1d2d6a] p-2.5 rounded-xl border border-slate-100"><Train className="text-slate-50" size={20} /></div>
                         <div>
                             <h1 className="text-lg font-black text-[#1d2d6a] uppercase tracking-tight leading-none mb-1">Master Controller</h1>
                             <div className="flex items-center gap-2">
