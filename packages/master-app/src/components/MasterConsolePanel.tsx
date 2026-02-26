@@ -5,7 +5,7 @@ import {
     MapPin, MonitorPlay, Mic, Play, Pause,
     ChevronDown, ChevronRight, RadioTower, Video, Info,
     ListVideo, Disc, CheckCircle2, AlertCircle, Satellite,
-    Repeat
+    Repeat, Shuffle
 } from 'lucide-react';
 
 // Reusable Accordion Component
@@ -23,8 +23,8 @@ function SectionAccordion({
                 className="w-full text-left px-6 py-5 lg:px-8 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors focus:outline-none"
             >
                 <div className="flex items-center gap-4">
-                    <div className="bg-slate-100 text-[#1d2d6a] p-2.5 rounded-xl border border-slate-200 shadow-inner">
-                        <Icon size={22} strokeWidth={2.5} />
+                    <div className="text-[#ee6f1f]">
+                        <Icon size={24} strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-sm lg:text-base font-black text-[#1d2d6a] uppercase tracking-wider">{title}</span>
@@ -80,6 +80,8 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
     const activeTrainName = data?.serviceName || 'ARGO WILIS';
     const activeTrainNumber = data?.trainNumber || '05';
     const [jumlahKereta, setJumlahKereta] = useState(5);
+    const [mediaSource, setMediaSource] = useState('Line In');
+    const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
     const showToast = (msg: string, ok: boolean = true) => {
@@ -220,7 +222,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 title="1. Konfigurasi Aset & Jaringan"
                 icon={Settings}
                 defaultOpen={true}
-                summary="13 Kereta Tersambung • IP Global: 192.168.1.48"
+                summary={`${jumlahKereta} Kereta Tersambung • IP Global: 192.168.1.48`}
             >
                 <div className="bg-white p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-6">
                     {/* Header Controls: Global IP & Controls */}
@@ -278,23 +280,22 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                     {/* Visualizer */}
                     <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
                         {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
-                            <div key={item} className="flex items-center shrink-0 snap-start">
-                                <div className="flex flex-col w-[160px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all">
+                            <div key={item} className={`flex items-center shrink-0 snap-start ${i === 0 ? 'min-w-[180px]' : 'min-w-[170px] flex-1'}`}>
+                                <div className="flex flex-col w-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all">
                                     <div className={`flex items-center justify-center h-10 ${i === 0 ? 'bg-slate-100 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
                                         <span className="text-sm font-black uppercase tracking-widest">{item}</span>
                                     </div>
                                     <div className="p-3 bg-slate-50 flex flex-col gap-3">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{i === 0 ? 'ID' : 'Kereta'}</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{i === 0 ? ' ' : 'Kereta'}</span>
                                             {i === 0 ? (
-                                                <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center bg-slate-100/50 rounded border border-slate-200">LOKOMOTIF</div>
+                                                <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center bg-slate-100/50 rounded border border-slate-200">ID KERETA</div>
                                             ) : (
                                                 <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-white border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center shadow-sm transition-all" />
                                             )}
                                         </div>
                                         <div className="flex flex-col">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IP Node</span>
+                                            <div className="flex justify-between items-center mb-1 min-h-[16px]">
                                                 {i !== 0 && (
                                                     <select className="text-[8px] font-black text-blue-500 bg-transparent border-none appearance-none cursor-pointer focus:outline-none" defaultValue="auto">
                                                         <option value="auto">AUTO</option>
@@ -302,12 +303,9 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                                     </select>
                                                 )}
                                             </div>
-                                            <div className="flex items-center justify-center bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all">
+                                            <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all">
                                                 {i === 0 ? (
-                                                    <div className="flex items-center gap-1 w-full justify-center">
-                                                        <span className="text-[10px] font-mono font-bold text-slate-300">.</span>
-                                                        <input type="number" defaultValue={10} className="text-xs font-mono font-black text-emerald-600 bg-transparent focus:outline-none w-full text-center" />
-                                                    </div>
+                                                    <div className="text-xs font-black text-slate-500 h-[28px] flex items-center justify-center border-slate-500">IP KERETA</div>
                                                 ) : (
                                                     <div className="flex items-center gap-0.5 w-full justify-center">
                                                         <input type="text" defaultValue="192" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
@@ -334,7 +332,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 title="2. Rute & Checkpoint Navigasi"
                 icon={MapPin}
                 defaultOpen={true}
-                summary="Detail 16 POI Navigasi • Target Utama CIPEUNDEUY"
+                summary={`Detail ${NAV_DATA.length} POI Navigasi • Target Utama ${NAV_DATA.find(x => x.status === "BERHENTI")?.name || 'SGU'}`}
             >
                 <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
@@ -397,7 +395,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 title="3. Sistem Media & Penyiaran"
                 icon={RadioTower}
                 defaultOpen={true}
-                summary="Audio Line-In • Layar DVD Standby"
+                summary={`Audio ${mediaSource} • Layar ${tvStandby ? 'Standby' : 'Aktif'}`}
             >
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
 
@@ -410,9 +408,13 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
                                 <label className="text-[10px] font-bold uppercase tracking-widest">Sumber Output</label>
-                                <select className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer">
-                                    <option>Line In / Default Audio</option>
-                                    <option>Internal Storage</option>
+                                <select
+                                    value={mediaSource}
+                                    onChange={(e) => setMediaSource(e.target.value)}
+                                    className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
+                                >
+                                    <option value="Line In">Line In / Default Audio</option>
+                                    <option value="Internal">Internal Storage</option>
                                 </select>
                             </div>
                             <div className="flex items-end pb-[1px]">
@@ -449,7 +451,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             </h4>
                             <div className="flex items-center gap-3">
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
-                                    <input type="checkbox" className="w-3.5 h-6 rounded border-slate-300 text-blue-600 focus:ring-blue-500" defaultChecked /> Standby
+                                    <input type="checkbox" checked={tvStandby} onChange={(e) => setTvStandby(e.target.checked)} className="w-3.5 h-6 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> Standby
                                 </label>
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-500 hover:text-[#1d2d6a] bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 transition-all shadow-sm">
                                     <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-[#1d2d6a] focus:ring-[#1d2d6a]" /> DVD
@@ -502,6 +504,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                 {/* Left Side Tools */}
                                 <div className="flex items-center gap-2">
                                     <button onClick={() => showToast('Mengulang playlist')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Repeat size={18} /></button>
+                                    <button onClick={() => showToast('Mengacak playlist')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Shuffle size={18} /></button>
                                 </div>
 
                                 {/* Center Play Controls */}
@@ -522,29 +525,29 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
             </SectionAccordion>
 
             {/* FIXED BOTTOM TOOLBAR */}
-            <div className="fixed bottom-0 left-0 lg:left-72 right-0 z-[60] bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-15px_40px_rgba(0,0,0,0.04)] px-6 py-4 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="fixed bottom-0 left-0 lg:left-72 right-0 z-[60] bg-[#1d2d6a]/95 backdrop-blur-xl border-t border-[#152355] shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 py-4 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex flex-col text-center md:text-left">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Action Toolbar</span>
-                    <span className="text-sm font-black text-[#1d2d6a] uppercase tracking-wider">Console PIDS</span>
+                    <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest">Global Action Toolbar</span>
+                    <span className="text-sm font-black text-white uppercase tracking-wider">Console PIDS</span>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
-                    <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
-                        <MapPin size={16} className="text-blue-500" /> Cek GPS
+                    <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                        <MapPin size={16} className="text-blue-400" /> Cek GPS
                     </button>
-                    <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
-                        <Settings size={16} className="text-slate-400" /> Warna
+                    <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                        <Settings size={16} className="text-blue-200" /> Warna
                     </button>
-                    <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
-                        <MonitorPlay size={16} className="text-green-500" /> Outdoor
+                    <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                        <MonitorPlay size={16} className="text-green-400" /> Outdoor
                     </button>
-                    <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-600 hover:text-[#1d2d6a] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-100 flex-1 md:flex-none">
+                    <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
                         <RefreshCw size={16} className="text-[#ee6f1f]" /> Arah
                     </button>
 
-                    <div className="w-full md:w-px md:h-8 bg-slate-200 mx-1 hidden md:block" />
+                    <div className="w-full md:w-px md:h-8 bg-[#2a3b7a] mx-1 hidden md:block" />
 
-                    <button onClick={() => showToast('Konfigurasi baru berhasil disimpan')} className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-95 w-full md:w-auto">
+                    <button onClick={() => showToast('Konfigurasi baru berhasil disimpan')} className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#ee6f1f]/50 active:scale-95 w-full md:w-auto">
                         <Save size={16} /> Simpan Konfig
                     </button>
                 </div>
