@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { P10Matrix } from './components/P10Matrix';
+import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
 import { io, Socket } from 'socket.io-client';
 import type { AuthUser } from '@eltran/pids-core';
@@ -517,8 +517,9 @@ function App() {
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Live Matrix Preview</p>
                                         <div className="flex justify-center scale-110 py-6">
                                             <P10Matrix
-                                                text={`${masterSyncedServiceName} KA-${masterSyncedNumber}   •   NEXT: ${nextStation}   •   ${currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                                                color="#ff0000"
+                                                text={`~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
+                                                fixedText={`${masterSyncedNumber} `}
+                                                color="#ee6f1f"
                                                 speed={masterSyncedLedSpeed}
                                                 columns={128}
                                             />

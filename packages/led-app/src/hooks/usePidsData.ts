@@ -10,13 +10,15 @@ export const usePidsData = () => {
         nextStation: string;
         status: string;
         ledSpeed: number;
+        stations?: string[];
     }>({
         serviceName: 'ARGO WILIS',
         currentStation: 'BANDUNG',
         trainNumber: '01',
         nextStation: 'BANDUNG',
         status: 'ON TIME',
-        ledSpeed: 60
+        ledSpeed: 60,
+        stations: ['BANDUNG']
     });
 
     useEffect(() => {

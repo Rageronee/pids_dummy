@@ -1,27 +1,18 @@
-import { useState, useEffect } from 'react';
-import { P10Matrix } from './components/P10Matrix';
+
+import { P10Matrix } from '@eltran/shared';
 import { usePidsData } from './hooks/usePidsData';
 
 
 function App() {
     const { data } = usePidsData();
-    const [timeString, setTimeString] = useState(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 
     // Parse mode from URL parameters
     const queryParams = new URLSearchParams(window.location.search);
     const mode = queryParams.get('mode') || 'outdoor';
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeString(new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
-
     const isIndoor = mode === 'indoor';
 
     // Distinguish styling based on LED type (P10 Outdoor vs P4 Indoor)
-    const ledColor = isIndoor ? '#ffbf00' : '#ff0000'; // Amber for indoor, Red for outdoor
     const ledScale = isIndoor ? 'scale-[1.8]' : 'scale-[2.8]';
     const bgColor = isIndoor ? 'bg-zinc-900' : 'bg-black';
 
@@ -34,9 +25,10 @@ function App() {
 
             <div className={`${ledScale} origin-center transition-transform duration-1000 ease-out`}>
                 <P10Matrix
-                    text={`SERVICE: ${data.serviceName}    KA-${data.trainNumber}    POSISI: ${data.currentStation}    NEXT: ${data.nextStation}    JAM: ${timeString.replace(/\./g, ':')}`}
-                    color={ledColor}
-                    speed={data.ledSpeed || 60}
+                    text={`~ TUJUAN AKHIR STASIUN ${(data.stations || [])[(data.stations || []).length - 1]} ~ BERHENTI DI: ${(data.stations || []).join(', ')}`}
+                    fixedText={`${data.trainNumber} `}
+                    color="#ff0000"
+                    speed={data.ledSpeed}
                 />
             </div>
         </div>

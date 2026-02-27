@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Train, Settings, Save, RefreshCw, Volume2,
@@ -93,24 +93,6 @@ function SectionAccordion({
     );
 }
 
-const NAV_DATA = [
-    { name: "BUMIWALIYA", type: "ANTARA", lng: "108.070918", lat: "-7.058636", eta: "11h02m", status: "", next: "CIPEUNDEUY" },
-    { name: "CIPEUNDEUY", type: "ANTARA", lng: "108.101101", lat: "-7.093671", eta: "10h42m", status: "BERHENTI", next: "CIRAHAYU" },
-    { name: "CIRAHAYU", type: "ANTARA", lng: "108.118015", lat: "-7.134352", eta: "10h29m", status: "", next: "CIAWI" },
-    { name: "CIAWI", type: "ANTARA", lng: "108.145597", lat: "-7.157336", eta: "10h21m", status: "", next: "RAJAPOLAH" },
-    { name: "RAJAPOLAH", type: "ANTARA", lng: "108.191212", lat: "-7.219572", eta: "10h11m", status: "", next: "INDIHIANG" },
-    { name: "INDIHIANG", type: "ANTARA", lng: "108.200866", lat: "-7.286719", eta: "10h03m", status: "", next: "TASIKMALAYA" },
-    { name: "TASIKMALAYA", type: "ANTARA", lng: "108.223987", lat: "-7.322173", eta: "09h45m", status: "BERHENTI", next: "AWIPARI" },
-    { name: "AWIPARI", type: "ANTARA", lng: "108.2739", lat: "-7.353214", eta: "09h33m", status: "", next: "MANONJAYA" },
-    { name: "MANONJAYA", type: "ANTARA", lng: "108.301533", lat: "-7.352557", eta: "09h35m", status: "", next: "CIAMIS" },
-    { name: "CIAMIS", type: "ANTARA", lng: "108.355974", lat: "-7.329194", eta: "09h23m", status: "", next: "BOJONG" },
-    { name: "BOJONG", type: "ANTARA", lng: "108.429231", lat: "-7.346821", eta: "09h14m", status: "", next: "KARANGPUCUNG" },
-    { name: "KARANGPUCUNG", type: "ANTARA", lng: "108.493974", lat: "-7.352676", eta: "09h05m", status: "", next: "BANJAR" },
-    { name: "BANJAR", type: "ANTARA", lng: "108.54225", lat: "-7.375799", eta: "08h43m", status: "BERHENTI", next: "LANGEN" },
-    { name: "LANGEN", type: "ANTARA", lng: "108.636473", lat: "-7.360249", eta: "08h32m", status: "", next: "MELUWUNG" },
-    { name: "MELUWUNG", type: "ANTARA", lng: "108.699579", lat: "-7.394573", eta: "08h25m", status: "", next: "CIPARI" },
-    { name: "CIPARI", type: "ANTARA", lng: "108.761616", lat: "-7.440424", eta: "08h18m", status: "", next: "SIDAREJA" }
-];
 
 export function MasterConsolePanel({ route: _route, data }: { route: any, data: any }) {
 
@@ -120,6 +102,33 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
     const [mediaSource, setMediaSource] = useState('Line In');
     const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const [stationsData, setStationsData] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetch('http://localhost:3001/api/stations')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.stations) {
+                    setStationsData(res.stations);
+                }
+            })
+            .catch(console.error);
+    }, []);
+
+    const activeRouteStations = data?.activeRoute?.stations || data?.stations || [];
+    const navData = activeRouteStations.map((stationName: string, idx: number) => {
+        const station = stationsData.find(s => s.name === stationName) || {};
+        return {
+            name: stationName,
+            type: "ANTARA",
+            lng: station.longitude?.toString() || "-",
+            lat: station.latitude?.toString() || "-",
+            eta: "-",
+            status: stationName === data?.currentStation ? "BERHENTI" : "",
+            next: activeRouteStations[idx + 1] || "-"
+        };
+    });
+
 
     const showToast = (msg: string, ok: boolean = true) => {
         setToast({ msg, ok });
@@ -395,7 +404,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 title="2. Rute & Checkpoint Navigasi"
                 icon={MapPin}
                 defaultOpen={true}
-                summary={`Detail ${NAV_DATA.length} POI Navigasi • Target Utama ${NAV_DATA.find(x => x.status === "BERHENTI")?.name || 'SGU'}`}
+                summary={`Detail ${navData.length} POI Navigasi • Target Utama ${navData.find((x: any) => x.status === "BERHENTI")?.name || 'SGU'}`}
             >
                 <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
@@ -421,7 +430,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
-                                {NAV_DATA.map((item, idx) => {
+                                {navData.map((item: any, idx: number) => {
                                     const isBerhenti = item.status === 'BERHENTI';
                                     return (
                                         <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/50' : 'bg-white'}`}>
