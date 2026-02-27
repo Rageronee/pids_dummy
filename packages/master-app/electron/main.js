@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startApiServer } from './api.js';
+import { closeDatabase } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,9 +37,9 @@ function createWindow() {
     });
 }
 
-app.whenReady().then(() => {
-    // Start the local PIDS API backend
-    startApiServer();
+app.whenReady().then(async () => {
+    // Start the local PIDS API backend (SQLite + Socket.IO)
+    await startApiServer();
 
     createWindow();
 
@@ -53,4 +54,9 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+});
+
+// Cleanup on quit
+app.on('before-quit', () => {
+    closeDatabase();
 });

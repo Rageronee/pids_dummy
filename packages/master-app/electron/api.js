@@ -1,178 +1,44 @@
+/**
+ * PIDS KAI — API Server with Socket.IO Real-time Sync
+ * Refactored from JSON flat-file to SQLite database.
+ * Socket.IO replaces HTTP polling for instant state synchronization.
+ */
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { app } from 'electron';
-import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import {
+    initDatabase, startAutoSave,
+    getState, updateState,
+    getLogs, writeLog,
+    findUser, getUsers as dbGetUsers, addUser, deleteUser,
+    getTrainNames, getTrainNumbers, addTrainName, deleteTrainName,
+    getRoutes, saveRoute, deleteRoute,
+    getUnits, addUnit, updateUnit, deleteUnit,
+    getStations, getSchedules,
+    getDbDump,
+    closeDatabase,
+} from './database.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export async function startApiServer() {
+    // --- Initialize Database (async for sql.js) ---
+    await initDatabase();
+    startAutoSave();
 
-export function startApiServer() {
     const apiApp = express();
+    const httpServer = createServer(apiApp);
+
+    // --- Socket.IO Server ---
+    const io = new SocketIOServer(httpServer, {
+        cors: { origin: '*', methods: ['GET', 'POST'] },
+    });
+
     apiApp.use(cors());
     apiApp.use(express.json());
 
-    // --- FILE PATHS ---
-    const statePath = path.join(app.getPath('userData'), 'eltran-pids-state.json');
-    const logsPath = path.join(app.getPath('userData'), 'eltran-pids-logs.json');
-    const dbPath = process.env.NODE_ENV === 'development'
-        ? path.join(__dirname, '../src/data/eltran-pids-db.json')
-        : path.join(app.getPath('userData'), 'eltran-pids-db.json');
-
     // --- IN-MEMORY SESSIONS: token -> user ---
     const sessions = new Map();
-
-    // --- SEED: USERS ---
-    const DEFAULT_USERS = [
-        { id: 'USR001', username: 'admin', password: 'admin123', role: 'Admin', nama: 'Administrator' },
-        { id: 'USR002', username: 'operator', password: 'operator123', role: 'Operator', nama: 'Operator Kereta' },
-    ];
-
-    // --- SEED: TRAIN DATA ---
-    const TRAIN_NAMES = ['ARGO BROMO ANGGREK', 'ARGO WILIS', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN'];
-    const TRAIN_NUMBERS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
-    const DEFAULT_UNITS = [
-        { id: 'U001', name: 'K1-01', type: 'Eksekutif', active: true },
-        { id: 'U002', name: 'K1-02', type: 'Eksekutif', active: true },
-        { id: 'U003', name: 'K1-03', type: 'Eksekutif', active: true },
-        { id: 'U004', name: 'M1-01', type: 'Makan', active: true },
-        { id: 'U005', name: 'P-01', type: 'Pembangkit', active: true },
-    ];
-    const ROUTES = {
-        'ARGO BROMO ANGGREK': {
-            name: 'ARGO BROMO ANGGREK',
-            stations: ['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI'],
-            path: "M 80 150 L 250 150 L 500 200 L 750 200",
-            nodes: [
-                { pos: "M 80 150", label: "GMR", name: "GAMBIR" },
-                { pos: "M 250 150", label: "CN", name: "CIREBON" },
-                { pos: "M 500 200", label: "SMT", name: "SEMARANG TAWANG" },
-                { pos: "M 750 200", label: "SBI", name: "SURABAYA PASARTURI" }
-            ]
-        },
-        'ARGO WILIS': {
-            name: 'ARGO WILIS',
-            stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
-            path: "M 80 220 C 150 220, 180 180, 220 180 S 350 220, 400 220 S 480 180, 520 180 S 580 220, 620 220 S 720 150, 750 150",
-            nodes: [
-                { pos: "M 80 220", label: "BD", name: "BANDUNG" },
-                { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
-                { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
-                { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
-                { pos: "M 620 220", label: "MN", name: "MADIUN" },
-                { pos: "M 750 150", label: "SGU", name: "SURABAYA GUBENG" }
-            ],
-        },
-        'TURANGGA': {
-            name: 'TURANGGA',
-            stations: ['SURABAYA GUBENG', 'MADIUN', 'SOLO BALAPAN', 'YOGYAKARTA', 'TASIKMALAYA', 'BANDUNG'],
-            path: "M 750 150 C 720 150, 620 220, 580 220 S 520 180, 480 180 S 400 220, 350 220 S 220 180, 180 180 S 150 220, 80 220",
-            nodes: [
-                { pos: "M 750 150", label: "SGU", name: "SURABAYA GUBENG" },
-                { pos: "M 620 220", label: "MN", name: "MADIUN" },
-                { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
-                { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
-                { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
-                { pos: "M 80 220", label: "BD", name: "BANDUNG" }
-            ]
-        },
-        'LODAYA': {
-            name: 'LODAYA',
-            stations: ['SOLO BALAPAN', 'YOGYAKARTA', 'KUTOARJO', 'TASIKMALAYA', 'BANDUNG'],
-            path: "M 520 180 L 400 220 L 300 200 L 220 180 L 80 220",
-            nodes: [
-                { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
-                { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
-                { pos: "M 300 200", label: "KTA", name: "KUTOARJO" },
-                { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
-                { pos: "M 80 220", label: "BD", name: "BANDUNG" }
-            ]
-        },
-        'MALABAR': {
-            name: 'MALABAR',
-            stations: ['MALANG', 'BLITAR', 'KEDIRI', 'MADIUN', 'SOLO BALAPAN', 'YOGYAKARTA', 'TASIKMALAYA', 'BANDUNG'],
-            path: "M 750 250 L 680 250 L 620 250 L 580 220 L 520 180 L 400 220 L 220 180 L 80 220",
-            nodes: [
-                { pos: "M 750 250", label: "ML", name: "MALANG" },
-                { pos: "M 680 250", label: "BL", name: "BLITAR" },
-                { pos: "M 620 250", label: "KD", name: "KEDIRI" },
-                { pos: "M 580 220", label: "MN", name: "MADIUN" },
-                { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
-                { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
-                { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
-                { pos: "M 80 220", label: "BD", name: "BANDUNG" }
-            ]
-        },
-        'ARGO PARAHYANGAN': {
-            name: 'ARGO PARAHYANGAN',
-            stations: ['GAMBIR', 'BEKASI', 'CIMAHI', 'BANDUNG'],
-            path: "M 80 100 L 150 100 L 250 180 L 300 220",
-            nodes: [
-                { pos: "M 80 100", label: "GMR", name: "GAMBIR" },
-                { pos: "M 150 100", label: "BKS", name: "BEKASI" },
-                { pos: "M 250 180", label: "CMI", name: "CIMAHI" },
-                { pos: "M 300 220", label: "BD", name: "BANDUNG" }
-            ]
-        }
-    };
-
-    // --- DEFAULT PIDS STATE ---
-    let pidsState = {
-        serviceName: 'ARGO WILIS',
-        currentStation: 'BANDUNG',
-        trainNumber: '05',
-        nextStation: 'TASIKMALAYA',
-        status: 'ON TIME',
-        ledSpeed: 60,
-        speed: 15,
-        altitude: 694,
-        temperature: 25.1,
-        airQuality: 'GOOD NOMINAL',
-        displayMode: 'pids',
-        stations: ROUTES['ARGO WILIS'].stations,
-        activeRoute: ROUTES['ARGO WILIS']
-    };
-
-    // Load persisted PIDS state
-    if (fs.existsSync(statePath)) {
-        try {
-            const raw = fs.readFileSync(statePath, 'utf-8');
-            const saved = JSON.parse(raw);
-            if (saved.stations && saved.stations.length > 0) {
-                pidsState = { ...pidsState, ...saved };
-            } else {
-                fs.writeFileSync(statePath, JSON.stringify(pidsState));
-            }
-        } catch (e) {
-            console.error('[PIDS-API] Failed to load state:', e);
-        }
-    } else {
-        fs.writeFileSync(statePath, JSON.stringify(pidsState));
-    }
-
-    // --- LOGS HELPERS ---
-    const readLogs = () => {
-        try {
-            if (fs.existsSync(logsPath)) {
-                return JSON.parse(fs.readFileSync(logsPath, 'utf-8'));
-            }
-        } catch (e) { }
-        return [];
-    };
-
-    const writeLog = (entry) => {
-        try {
-            const logs = readLogs();
-            logs.unshift({ id: crypto.randomUUID(), timestamp: new Date().toISOString(), ...entry });
-            // Keep max 1000 log entries
-            if (logs.length > 1000) logs.splice(1000);
-            fs.writeFileSync(logsPath, JSON.stringify(logs));
-        } catch (e) {
-            console.error('[PIDS-API] Failed to write log:', e);
-        }
-    };
 
     // --- AUTH HELPERS ---
     const getSessionUser = (req) => {
@@ -197,51 +63,29 @@ export function startApiServer() {
         next();
     };
 
-    // --- DB HELPERS ---
-    const readDb = () => {
-        try {
-            if (fs.existsSync(dbPath)) {
-                const raw = fs.readFileSync(dbPath, 'utf8');
-                const data = JSON.parse(raw);
-                if (data && data.trainNames && data.trainNames.length > 0) {
-                    // Ensure users field exists (migration)
-                    if (!data.users || data.users.length === 0) {
-                        data.users = DEFAULT_USERS;
-                    }
-                    return data;
-                }
-            }
-        } catch (e) { }
-        return { trainNames: TRAIN_NAMES, trainNumbers: TRAIN_NUMBERS, routes: ROUTES, users: DEFAULT_USERS, units: DEFAULT_UNITS };
+    // ========================================
+    // Socket.IO CONNECTION HANDLING
+    // ========================================
+
+    io.on('connection', (socket) => {
+        console.log(`[Socket.IO] Client connected: ${socket.id}`);
+
+        // Send current state on connect
+        socket.emit('state:update', getState());
+
+        socket.on('disconnect', () => {
+            console.log(`[Socket.IO] Client disconnected: ${socket.id}`);
+        });
+    });
+
+    // Helper: broadcast state to all connected clients
+    const broadcastState = () => {
+        io.emit('state:update', getState());
     };
 
-    const writeDb = (data) => {
-        fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+    const broadcastDbUpdate = () => {
+        io.emit('db:update', { trainNames: getTrainNames(), routes: getRoutes() });
     };
-
-    // Helper: get users from DB
-    const getUsers = () => {
-        const db = readDb();
-        return db.users || DEFAULT_USERS;
-    };
-
-    // Ensure DB file exists
-    if (!fs.existsSync(dbPath)) {
-        writeDb({ trainNames: TRAIN_NAMES, trainNumbers: TRAIN_NUMBERS, routes: ROUTES, users: DEFAULT_USERS, units: DEFAULT_UNITS });
-    } else {
-        // Migration: add fields to existing DB if missing
-        const db = readDb();
-        let changed = false;
-        if (!db.users) {
-            db.users = DEFAULT_USERS;
-            changed = true;
-        }
-        if (!db.units || !Array.isArray(db.units) || db.units.length === 0) {
-            db.units = DEFAULT_UNITS;
-            changed = true;
-        }
-        if (changed) writeDb(db);
-    }
 
     // ========================================
     // AUTH ENDPOINTS
@@ -250,8 +94,7 @@ export function startApiServer() {
     // POST /api/auth/login
     apiApp.post('/api/auth/login', (req, res) => {
         const { username, password } = req.body;
-        const users = getUsers();
-        const user = users.find(u => u.username === username && u.password === password);
+        const user = findUser(username, password);
         if (!user) {
             writeLog({ action: 'LOGIN_FAILED', user: username || 'unknown', role: '-', details: `Percobaan login gagal untuk username: ${username}` });
             return res.status(401).json({ success: false, error: 'Username atau password salah' });
@@ -285,7 +128,7 @@ export function startApiServer() {
 
     // GET /api/state
     apiApp.get('/api/state', (req, res) => {
-        res.json(pidsState);
+        res.json(getState());
     });
 
     // POST /api/state
@@ -294,11 +137,11 @@ export function startApiServer() {
         if (updates.stations && (!Array.isArray(updates.stations) || updates.stations.length === 0)) {
             delete updates.stations;
         }
-        const prevState = { ...pidsState };
-        pidsState = { ...pidsState, ...updates };
-        try { fs.writeFileSync(statePath, JSON.stringify(pidsState)); } catch (e) { }
 
-        // Log meaningful state changes (not telemetry noise like speed/altitude)
+        const prevState = getState();
+        const newState = updateState(updates);
+
+        // Log meaningful state changes (not telemetry noise)
         const user = getSessionUser(req);
         const username = user?.username || 'system';
         const role = user?.role || 'System';
@@ -313,7 +156,7 @@ export function startApiServer() {
             writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Nomor kereta diubah: ${prevState.trainNumber} → ${updates.trainNumber}` });
         }
         if (updates.nextStation && updates.nextStation !== prevState.nextStation) {
-            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Stasiun berikutnya diperbarui: ${updates.nextStation}`, data: { serviceName: pidsState.serviceName } });
+            writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Stasiun berikutnya diperbarui: ${updates.nextStation}` });
         }
         if (updates.displayMode && updates.displayMode !== prevState.displayMode) {
             writeLog({ action: 'DISPLAY_MODE', user: username, role, details: `Mode display diubah ke: ${updates.displayMode?.toUpperCase()}` });
@@ -322,16 +165,31 @@ export function startApiServer() {
             writeLog({ action: 'LED_CONFIG', user: username, role, details: `Kecepatan LED diubah: ${prevState.ledSpeed}ms → ${updates.ledSpeed}ms` });
         }
 
-        res.json({ success: true, state: pidsState });
+        // Broadcast to all connected clients via Socket.IO
+        broadcastState();
+
+        res.json({ success: true, state: newState });
     });
 
-    // GET /api/db
+    // GET /api/db (backward compatible — returns full DB dump)
     apiApp.get('/api/db', (req, res) => {
         try {
-            res.json({ success: true, data: readDb() });
+            res.json({ success: true, data: getDbDump() });
         } catch (e) {
             res.status(500).json({ success: false, error: 'Database read failed' });
         }
+    });
+
+    // ========================================
+    // NEW ENDPOINTS: Stations & Schedules
+    // ========================================
+
+    apiApp.get('/api/stations', (req, res) => {
+        res.json({ success: true, stations: getStations() });
+    });
+
+    apiApp.get('/api/schedules', (req, res) => {
+        res.json({ success: true, schedules: getSchedules() });
     });
 
     // ========================================
@@ -340,15 +198,15 @@ export function startApiServer() {
 
     // GET /api/logs
     apiApp.get('/api/logs', (req, res) => {
-        const logs = readLogs();
         const { limit, action } = req.query;
-        let filtered = logs;
-        if (action) filtered = filtered.filter(l => l.action === action);
-        if (limit) filtered = filtered.slice(0, parseInt(limit));
-        res.json({ success: true, logs: filtered, total: filtered.length });
+        const filter = {};
+        if (action) filter.action = action;
+        if (limit) filter.limit = parseInt(limit);
+        const logs = getLogs(filter);
+        res.json({ success: true, logs, total: logs.length });
     });
 
-    // POST /api/logs (manual log entry from frontend)
+    // POST /api/logs
     apiApp.post('/api/logs', (req, res) => {
         const { action, user, role, details, data } = req.body;
         if (!action || !user) return res.status(400).json({ success: false, error: 'action and user are required' });
@@ -357,198 +215,141 @@ export function startApiServer() {
     });
 
     // ========================================
-    // ADMIN ENDPOINTS (Admin role only)
+    // ADMIN ENDPOINTS
     // ========================================
 
     // GET /api/admin/status
     apiApp.get('/api/admin/status', requireAuth, (req, res) => {
-        const logs = readLogs();
+        const logs = getLogs({ limit: 1 });
         res.json({
             success: true,
             status: {
                 uptime: process.uptime(),
-                currentState: pidsState,
-                totalLogs: logs.length,
+                currentState: getState(),
+                totalLogs: getLogs({}).length,
                 lastLog: logs[0] || null,
                 activeSessions: sessions.size,
-                serverTime: new Date().toISOString()
-            }
+                serverTime: new Date().toISOString(),
+            },
         });
     });
 
-    // GET /api/admin/users
+    // --- USER MANAGEMENT ---
     apiApp.get('/api/admin/users', requireAdmin, (req, res) => {
-        const users = getUsers();
-        const safeUsers = users.map(({ password: _p, ...u }) => u);
-        res.json({ success: true, users: safeUsers });
+        res.json({ success: true, users: dbGetUsers() });
     });
 
-    // POST /api/admin/users — Add new user
     apiApp.post('/api/admin/users', requireAdmin, (req, res) => {
         const { username, password, role, nama } = req.body;
         if (!username || !password || !role || !nama) return res.status(400).json({ success: false, error: 'All fields required (username, password, role, nama)' });
-        const db = readDb();
-        const users = db.users || DEFAULT_USERS;
-        if (users.find(u => u.username === username)) return res.status(409).json({ success: false, error: 'Username already exists' });
-        const newUser = { id: `USR${String(users.length + 1).padStart(3, '0')}`, username, password, role, nama };
-        users.push(newUser);
-        db.users = users;
-        writeDb(db);
+        const result = addUser({ username, password, role, nama });
+        if (result.error) return res.status(409).json({ success: false, error: result.error });
         writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User baru ditambahkan: ${nama} (${role})` });
-        const { password: _p, ...safeUser } = newUser;
-        res.json({ success: true, user: safeUser });
+        res.json({ success: true, user: result });
     });
 
-    // DELETE /api/admin/users/:id
     apiApp.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
         const id = req.params.id;
         if (id === req.user.id) return res.status(400).json({ success: false, error: 'Cannot delete yourself' });
-        const db = readDb();
-        const users = db.users || DEFAULT_USERS;
-        const target = users.find(u => u.id === id);
-        if (!target) return res.status(404).json({ success: false, error: 'User not found' });
-        db.users = users.filter(u => u.id !== id);
-        // Also invalidate sessions
+        const result = deleteUser(id);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        // Invalidate sessions for deleted user
         for (const [token, sessionUser] of sessions.entries()) {
             if (sessionUser.id === id) sessions.delete(token);
         }
-        writeDb(db);
-        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User dihapus: ${target.nama} (${target.role})` });
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User dihapus: ${result.user.nama} (${result.user.role})` });
         res.json({ success: true });
     });
 
-    // GET /api/admin/trains
+    // --- TRAIN MANAGEMENT ---
     apiApp.get('/api/admin/trains', requireAdmin, (req, res) => {
-        const db = readDb();
-        res.json({ success: true, trains: db.trainNames, trainNumbers: db.trainNumbers });
+        res.json({ success: true, trains: getTrainNames(), trainNumbers: getTrainNumbers() });
     });
 
-    // POST /api/admin/trains — Add new train name
     apiApp.post('/api/admin/trains', requireAdmin, (req, res) => {
         const { name } = req.body;
         if (!name || typeof name !== 'string') return res.status(400).json({ success: false, error: 'name required' });
-        const db = readDb();
-        const normalized = name.trim().toUpperCase();
-        if (db.trainNames.includes(normalized)) return res.status(409).json({ success: false, error: 'Kereta sudah ada' });
-        db.trainNames.push(normalized);
-        writeDb(db);
-        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Kereta baru ditambahkan: ${normalized}` });
-        res.json({ success: true, trains: db.trainNames });
+        const result = addTrainName(name);
+        if (result.error) return res.status(409).json({ success: false, error: result.error });
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Kereta baru ditambahkan: ${name.trim().toUpperCase()}` });
+        broadcastDbUpdate();
+        res.json({ success: true, trains: result.trains });
     });
 
-    // DELETE /api/admin/trains/:name
     apiApp.delete('/api/admin/trains/:name', requireAdmin, (req, res) => {
         const name = decodeURIComponent(req.params.name).toUpperCase();
-        const db = readDb();
-        if (!db.trainNames.includes(name)) return res.status(404).json({ success: false, error: 'Kereta tidak ditemukan' });
-        db.trainNames = db.trainNames.filter(t => t !== name);
-        delete db.routes[name];
-        writeDb(db);
+        const result = deleteTrainName(name);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
         writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Kereta dihapus: ${name}` });
-        res.json({ success: true, trains: db.trainNames });
+        broadcastDbUpdate();
+        res.json({ success: true, trains: result.trains });
     });
 
-    // GET /api/admin/routes
+    // --- ROUTE MANAGEMENT ---
     apiApp.get('/api/admin/routes', requireAdmin, (req, res) => {
-        const db = readDb();
-        res.json({ success: true, routes: db.routes });
+        res.json({ success: true, routes: getRoutes() });
     });
 
-    // POST /api/admin/routes — Add/update route
     apiApp.post('/api/admin/routes', requireAdmin, (req, res) => {
         const { name, stations } = req.body;
         if (!name || !Array.isArray(stations) || stations.length < 2) {
             return res.status(400).json({ success: false, error: 'name dan stations (min 2) diperlukan' });
         }
-        const db = readDb();
-        const normalized = name.trim().toUpperCase();
-        const isNew = !db.routes[normalized];
-
-        // Auto-generate simple SVG path for new routes
-        const nodeCount = stations.length;
-        const spacing = 700 / (nodeCount - 1);
-        const nodes = stations.map((s, i) => ({
-            pos: `M ${80 + Math.round(i * spacing)} ${i % 2 === 0 ? 200 : 150}`,
-            label: s.substring(0, 3).toUpperCase(),
-            name: s.toUpperCase()
-        }));
-        const pathPoints = nodes.map(n => n.pos.replace('M ', '')).join(' L ');
-
-        db.routes[normalized] = {
-            name: normalized,
-            stations: stations.map(s => s.toUpperCase()),
-            path: `M ${pathPoints}`,
-            nodes
-        };
-        if (!db.trainNames.includes(normalized)) db.trainNames.push(normalized);
-        writeDb(db);
-        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Rute ${isNew ? 'ditambahkan' : 'diperbarui'}: ${normalized} (${stations.length} stasiun)` });
-        res.json({ success: true, route: db.routes[normalized] });
+        const route = saveRoute(name, stations);
+        const isNew = !getRoutes()[name.trim().toUpperCase()];
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Rute ${isNew ? 'ditambahkan' : 'diperbarui'}: ${name.trim().toUpperCase()} (${stations.length} stasiun)` });
+        broadcastDbUpdate();
+        res.json({ success: true, route });
     });
 
-    // DELETE /api/admin/routes/:name
     apiApp.delete('/api/admin/routes/:name', requireAdmin, (req, res) => {
         const name = decodeURIComponent(req.params.name).toUpperCase();
-        const db = readDb();
-        if (!db.routes[name]) return res.status(404).json({ success: false, error: 'Rute tidak ditemukan' });
-        delete db.routes[name];
-        db.trainNames = db.trainNames.filter(t => t !== name);
-        writeDb(db);
+        const result = deleteRoute(name);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
         writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Rute dihapus: ${name}` });
+        broadcastDbUpdate();
         res.json({ success: true });
     });
 
-    // --- UNIT (STAMPFORMASI) ENDPOINTS ---
-
-    // GET /api/admin/units
+    // --- UNIT (STAMPFORMASI) MANAGEMENT ---
     apiApp.get('/api/admin/units', requireAuth, (req, res) => {
-        const db = readDb();
-        res.json({ success: true, units: db.units || DEFAULT_UNITS });
+        res.json({ success: true, units: getUnits() });
     });
 
-    // POST /api/admin/units — Add/update unit
     apiApp.post('/api/admin/units', requireAdmin, (req, res) => {
         const { id, name, type, active } = req.body;
         if (!name || !type) return res.status(400).json({ success: false, error: 'name and type required' });
-        const db = readDb();
-        const units = db.units || DEFAULT_UNITS;
-        const normalized = name.trim().toUpperCase();
 
+        let units;
         if (id) {
-            // Update
-            const idx = units.findIndex(u => u.id === id);
-            if (idx === -1) return res.status(404).json({ success: false, error: 'Unit not found' });
-            units[idx] = { ...units[idx], name: normalized, type, active: active !== undefined ? active : true };
-            writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit diperbarui: ${normalized}` });
+            units = updateUnit(id, { name, type, active });
+            writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit diperbarui: ${name.trim().toUpperCase()}` });
         } else {
-            // Add new
-            const newUnit = { id: `U${String(units.length + 1).padStart(3, '0')}`, name: normalized, type, active: true };
-            units.push(newUnit);
-            writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit baru ditambahkan: ${normalized}` });
+            units = addUnit({ name, type, active: active !== undefined ? active : true });
+            writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit baru ditambahkan: ${name.trim().toUpperCase()}` });
         }
 
-        db.units = units;
-        writeDb(db);
         res.json({ success: true, units });
     });
 
-    // DELETE /api/admin/units/:id
     apiApp.delete('/api/admin/units/:id', requireAdmin, (req, res) => {
         const unitId = req.params.id;
-        const db = readDb();
-        const units = db.units || DEFAULT_UNITS;
-        const target = units.find(u => u.id === unitId);
-        if (!target) return res.status(404).json({ success: false, error: 'Unit not found' });
-        db.units = units.filter(u => u.id !== unitId);
-        writeDb(db);
-        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit dihapus: ${target.name}` });
+        const result = deleteUnit(unitId);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Unit dihapus: ${unitId}` });
         res.json({ success: true });
     });
 
-    // Start Server
+    // ========================================
+    // START SERVER
+    // ========================================
+
     const port = 3001;
-    apiApp.listen(port, () => {
+    httpServer.listen(port, () => {
         console.log(`[PIDS-CORE] Local Core API Gateway running on http://localhost:${port}`);
-        writeLog({ action: 'SYSTEM', user: 'system', role: 'System', details: 'PIDS API Server started' });
+        console.log(`[PIDS-CORE] Socket.IO real-time sync enabled`);
+        writeLog({ action: 'SYSTEM', user: 'system', role: 'System', details: 'PIDS API Server started (SQLite + Socket.IO)' });
     });
+
+    return httpServer;
 }

@@ -1,67 +1,90 @@
-import { useState, useEffect } from 'react';
-import { PidsState } from '@eltran/pids-core';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
+import type { PidsState } from '@eltran/pids-core';
 
-const API_URL = 'http://localhost:3001/api/state';
+const API_URL = 'http://localhost:3001';
 
-export const usePidsData = () => {
-    const [data, setData] = useState<PidsState>({
-        serviceName: 'ARGO WILIS',
-        currentStation: 'BANDUNG',
-        trainNumber: '05',
-        nextStation: 'TASIKMALAYA',
-        status: 'ON TIME',
-        ledSpeed: 60,
-        speed: 15,
-        altitude: 694,
-        temperature: 25.1,
-        airQuality: 'GOOD NOMINAL',
-        displayMode: 'pids',
-        stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
-        activeRoute: null
-    });
+const INITIAL_STATE: PidsState = {
+    serviceName: 'ARGO WILIS',
+    currentStation: 'BANDUNG',
+    trainNumber: '05',
+    nextStation: 'TASIKMALAYA',
+    status: 'ON TIME',
+    ledSpeed: 60,
+    speed: 15,
+    altitude: 694,
+    temperature: 25.1,
+    airQuality: 'GOOD NOMINAL',
+    displayMode: 'pids',
+    stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
+    activeRoute: null,
+};
+
+export function usePidsData() {
+    const [data, setData] = useState<PidsState>(INITIAL_STATE);
+    const [connected, setConnected] = useState(false);
+    const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        const fetchState = async () => {
-            try {
-                const res = await fetch(API_URL);
-                if (res.ok) {
-                    const parsed = await res.json();
-                    setData(prev => {
-                        if (JSON.stringify(prev) !== JSON.stringify(parsed)) {
-                            return { ...prev, ...parsed };
-                        }
-                        return prev;
-                    });
+        // Connect to Socket.IO server
+        const socket = io(API_URL, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: Infinity,
+        });
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+            console.log('[Socket.IO] Connected to PIDS server');
+            setConnected(true);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('[Socket.IO] Disconnected from PIDS server');
+            setConnected(false);
+        });
+
+        // Receive real-time state updates
+        socket.on('state:update', (newState: PidsState) => {
+            setData(prev => {
+                // Only update if data actually changed
+                if (JSON.stringify(prev) === JSON.stringify(newState)) return prev;
+                return newState;
+            });
+        });
+
+        // Fallback: initial fetch in case Socket.IO hasn't sent state yet
+        fetch(`${API_URL}/api/state`)
+            .then(r => r.json())
+            .then(state => {
+                if (state && state.serviceName) {
+                    setData(state);
                 }
-            } catch (e) {
-                console.error('Failed to fetch PIDS state:', e);
-            }
+            })
+            .catch(() => { });
+
+        return () => {
+            socket.disconnect();
+            socketRef.current = null;
         };
-
-        fetchState();
-        const interval = setInterval(fetchState, 500);
-
-        return () => clearInterval(interval);
     }, []);
 
-    const sendData = async (newData: Partial<PidsState>) => {
+    const sendData = useCallback(async (updates: Partial<PidsState>) => {
         try {
-            const res = await fetch(API_URL, {
+            const response = await fetch(`${API_URL}/api/state`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newData)
+                body: JSON.stringify(updates),
             });
-
-            if (res.ok) {
-                const updated = await res.json();
-                if (updated.success && updated.state) {
-                    setData(updated.state);
-                }
+            const result = await response.json();
+            if (result.success && result.state) {
+                setData(result.state);
             }
-        } catch (e) {
-            console.error('Error posting PIDS state:', e);
+        } catch (err) {
+            console.error('[PIDS] Failed to send data:', err);
         }
-    };
+    }, []);
 
-    return { data, sendData };
-};
+    return { data, sendData, connected };
+}

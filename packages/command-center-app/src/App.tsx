@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, Train, MapPin, Users, ScrollText,
@@ -6,6 +6,7 @@ import {
     AlertCircle, CheckCircle2, Activity, Clock, Shield,
     ChevronRight, RefreshCcw, X, Server, Wifi
 } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 
 const API = 'http://localhost:3001';
 
@@ -212,7 +213,14 @@ function DashboardPage({ token }: { token: string }) {
         } catch { } finally { setLoading(false); }
     }, [token]);
 
-    useEffect(() => { fetch_(); const t = setInterval(fetch_, 5000); return () => clearInterval(t); }, [fetch_]);
+    useEffect(() => {
+        fetch_();
+        // Connect Socket.IO for real-time dashboard updates
+        const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
+        socket.on('state:update', () => fetch_());
+        socket.on('connect', () => console.log('[Socket.IO] Command Center dashboard connected'));
+        return () => { socket.disconnect(); };
+    }, [fetch_]);
 
     const ACTION_COLOR: Record<string, string> = {
         LOGIN: 'text-green-400', LOGIN_FAILED: 'text-red-400', LOGOUT: 'text-slate-400',
@@ -705,8 +713,11 @@ function LogsPage({ token }: { token: string }) {
 
     useEffect(() => {
         fetchLogs();
-        const t = setInterval(fetchLogs, 5000);
-        return () => clearInterval(t);
+        // Socket.IO for real-time log updates
+        const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
+        socket.on('state:update', () => fetchLogs());
+        socket.on('db:update', () => fetchLogs());
+        return () => { socket.disconnect(); };
     }, [fetchLogs]);
 
     const filterOptions = ['ALL', ...Object.keys(ACTION_META)];
@@ -717,7 +728,7 @@ function LogsPage({ token }: { token: string }) {
             <div className="flex items-end justify-between">
                 <div>
                     <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Log Sistem</h2>
-                    <p className="text-slate-500 text-sm font-medium">{logs.length} entri total · Auto-refresh setiap 5 detik</p>
+                    <p className="text-slate-500 text-sm font-medium">{logs.length} entri total · Real-time via Socket.IO</p>
                 </div>
                 <button onClick={fetchLogs} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
             </div>

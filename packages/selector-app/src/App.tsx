@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from './components/P10Matrix';
 import { LoginScreen } from './components/LoginScreen';
+import { io, Socket } from 'socket.io-client';
 import type { AuthUser } from '@eltran/pids-core';
 
 
@@ -36,10 +37,15 @@ function App() {
     const [trainNameIndex, setTrainNameIndex] = useState(0);
     const [trainNumberIndex, setTrainNumberIndex] = useState(4); // Default to KA-05
 
+    const socketRef = useRef<Socket | null>(null);
+    const API_URL = 'http://localhost:3001';
+
+    // Socket.IO connection for real-time sync
     useEffect(() => {
+        // Initial DB fetch
         const fetchDb = async () => {
             try {
-                const res = await fetch('http://localhost:3001/api/db');
+                const res = await fetch(`${API_URL}/api/db`);
                 if (res.ok) {
                     const dbData = await res.json();
                     if (dbData.success && dbData.data && dbData.data.trainNames) {
@@ -53,10 +59,37 @@ function App() {
             }
         };
         fetchDb();
-    }, []);
 
-    // Shared State Sync
-    const API_URL = 'http://localhost:3001/api/state';
+        // Connect Socket.IO
+        const socket = io(API_URL, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+        });
+        socketRef.current = socket;
+
+        socket.on('connect', () => console.log('[Socket.IO] Selector connected'));
+
+        // Real-time state updates (replaces polling)
+        socket.on('state:update', (parsed: any) => {
+            if (parsed.serviceName) setMasterSyncedServiceName(parsed.serviceName);
+            if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
+            if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
+            if (parsed.stations && Array.isArray(parsed.stations) && parsed.stations.length > 0) {
+                setStations(parsed.stations);
+            }
+            if (parsed.displayMode === 'tv') setShowTVPreview(true);
+            if (parsed.displayMode === 'pids') setShowTVPreview(false);
+        });
+
+        // Real-time DB updates (routes/trains changed by Command Center)
+        socket.on('db:update', (dbUpdate: any) => {
+            if (dbUpdate.trainNames) setTrainNames(dbUpdate.trainNames);
+            if (dbUpdate.routes) setRoutes(dbUpdate.routes);
+        });
+
+        return () => { socket.disconnect(); socketRef.current = null; };
+    }, []);
 
     // Auth handlers
     const handleLogin = (user: AuthUser, token: string) => {
@@ -66,7 +99,7 @@ function App() {
 
     const handleLogout = async () => {
         try {
-            await fetch('http://localhost:3001/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${authToken}` } });
+            await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${authToken}` } });
         } catch { }
         sessionStorage.removeItem('pids_token');
         sessionStorage.removeItem('pids_user');
@@ -79,7 +112,7 @@ function App() {
         const token = sessionStorage.getItem('pids_token');
         const userStr = sessionStorage.getItem('pids_user');
         if (token && userStr) {
-            fetch('http://localhost:3001/api/auth/verify', { headers: { Authorization: `Bearer ${token}` } })
+            fetch(`${API_URL}/api/auth/verify`, { headers: { Authorization: `Bearer ${token}` } })
                 .then(r => r.json())
                 .then(d => {
                     if (d.success) { setAuthToken(token); setAuthUser(JSON.parse(userStr)); }
@@ -90,7 +123,7 @@ function App() {
 
     const sendData = async (newData: any) => {
         try {
-            await fetch(API_URL, {
+            await fetch(`${API_URL}/api/state`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
                 body: JSON.stringify(newData)
@@ -99,35 +132,6 @@ function App() {
             console.error('Error posting PIDS state:', e);
         }
     };
-
-    // Continuous Polling for State Sync
-    useEffect(() => {
-        const checkSync = async () => {
-            try {
-                const res = await fetch(API_URL);
-                if (res.ok) {
-                    const parsed = await res.json();
-                    if (parsed.serviceName) setMasterSyncedServiceName(parsed.serviceName);
-                    if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
-                    if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
-
-                    // Only update stations if they changed and aren't empty
-                    if (parsed.stations && Array.isArray(parsed.stations) && parsed.stations.length > 0) {
-                        if (JSON.stringify(parsed.stations) !== JSON.stringify(stations)) {
-                            setStations(parsed.stations);
-                        }
-                    }
-
-                    // Sync TV Preview state if master requests it
-                    if (parsed.displayMode === 'tv' && !showTVPreview) setShowTVPreview(true);
-                    if (parsed.displayMode === 'pids' && showTVPreview) setShowTVPreview(false);
-                }
-            } catch (e) { }
-        };
-
-        const interval = setInterval(checkSync, 1000);
-        return () => clearInterval(interval);
-    }, [showTVPreview, stations]);
 
     // Auto-sync selector indices with master state
     useEffect(() => {
