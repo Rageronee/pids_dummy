@@ -187,26 +187,23 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
     useEffect(() => {
         if (!map.current || !markerRef.current) return;
 
-        // Update Marker Exact Location
-        markerRef.current.setLngLat([simGps.lng, simGps.lat]);
+        const lng = simGps.lng === 0 ? 107.6036 : simGps.lng;
+        const lat = simGps.lat === 0 ? -6.9125 : simGps.lat;
 
-        // Update Geofencing Zones Exact Location
-        try {
-            const centerPt = turf.point([simGps.lng, simGps.lat]);
-            if (map.current.getSource('geofencing-outer')) {
-                const outerG = turf.circle(centerPt, outerRadius, { steps: 64, units: 'meters' });
-                outerG.properties = { label: `OUTER RADIUS: ${outerRadius} METERS` };
-                (map.current.getSource('geofencing-outer') as maplibregl.GeoJSONSource).setData(outerG);
-            }
-            if (map.current.getSource('geofencing-inner')) {
-                const innerG = turf.circle(centerPt, innerRadius, { steps: 64, units: 'meters' });
-                innerG.properties = { label: `INNER RADIUS: ${innerRadius} METERS` };
-                (map.current.getSource('geofencing-inner') as maplibregl.GeoJSONSource).setData(innerG);
-            }
-        } catch (e) {
-            console.error("Geofencing rings update error:", e);
+        // Update Marker Exact Location
+        markerRef.current.setLngLat([lng, lat]);
+
+        // Smoothly move map to the new location
+        if (simGps.lng !== 0 && simGps.lat !== 0) {
+            map.current.easeTo({
+                center: [lng, lat],
+                zoom: 15,
+                duration: 1000
+            });
         }
-    }, [simGps, innerRadius, outerRadius]);
+
+        // No geofencing circles update in PIDS tab
+    }, [simGps]);
 
     const activeRouteStations = data?.activeRoute?.stations || data?.stations || [];
 
@@ -418,22 +415,30 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
             }]
         };
 
+        const initialCenterLng = simGpsRef.current.lng || 107.6036;
+        const initialCenterLat = simGpsRef.current.lat || -6.9125;
+
         map.current = new maplibregl.Map({
             container: mapContainer.current,
             style: darkStyle,
-            center: [107.6098, -6.9147],
-            zoom: 11,
+            center: [initialCenterLng, initialCenterLat],
+            zoom: 15,
             pitch: 45,
             attributionControl: false
         });
 
         const el = document.createElement('div');
         el.className = 'w-6 h-6 bg-orange-500 rounded-full border-4 border-white shadow-[0_0_15px_rgba(238,111,31,0.8)]';
+        const initialMapLng = simGpsRef.current.lng || 107.6036;
+        const initialMapLat = simGpsRef.current.lat || -6.9125;
         markerRef.current = new maplibregl.Marker({ element: el })
-            .setLngLat([107.6036, -6.9125])
+            .setLngLat([initialMapLng, initialMapLat])
             .addTo(map.current!);
 
         map.current.on('load', () => {
+            // Removed geofencing initialization from PIDS Tab
+
+
             if (!route?.geojson) return;
 
             try {
@@ -485,110 +490,21 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                 const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
                 const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
 
+                if (!map.current) return;
+
+                // Removed static geofencing layers from PIDS Tab as per user request
+
+
                 if (coordinates && coordinates.length > 0) {
                     const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
                         return bounds.extend(coord);
                     }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-                    map.current?.fitBounds(bounds, { padding: 50 });
+
+                    // Only fit bounds if we don't have a valid train location
+                    if (!simGpsRef.current.lng) {
+                        map.current?.fitBounds(bounds, { padding: 50 });
+                    }
                 }
-
-                // Add sources and layers for geofencing
-                if (!map.current?.getSource('geofencing-outer')) {
-                    const currentGps = simGpsRef.current;
-                    const initialOuter = turf.circle(turf.point([currentGps.lng || 107.6036, currentGps.lat || -6.9125]), radiusRef.current.outer, { steps: 64, units: 'meters' });
-                    initialOuter.properties = { label: `OUTER RADIUS: ${radiusRef.current.outer} METERS` };
-
-                    map.current?.addSource('geofencing-outer', {
-                        type: 'geojson',
-                        data: initialOuter
-                    });
-                    map.current?.addLayer({
-                        id: 'geofencing-outer-line',
-                        type: 'line',
-                        source: 'geofencing-outer',
-                        paint: {
-                            'line-color': '#3b82f6',
-                            'line-width': 2,
-                            'line-dasharray': [2, 2],
-                            'line-opacity': 0.8
-                        }
-                    });
-                    map.current?.addLayer({
-                        id: 'geofencing-outer-fill',
-                        type: 'fill',
-                        source: 'geofencing-outer',
-                        paint: {
-                            'fill-color': '#3b82f6',
-                            'fill-opacity': 0.1
-                        }
-                    });
-                    map.current?.addLayer({
-                        id: 'geofencing-outer-label',
-                        type: 'symbol',
-                        source: 'geofencing-outer',
-                        layout: {
-                            'symbol-placement': 'line',
-                            'text-field': ['get', 'label'],
-                            'text-size': 12,
-                            'text-offset': [0, -1],
-                            'text-keep-upright': true
-                        },
-                        paint: {
-                            'text-color': '#93c5fd',
-                            'text-halo-color': '#1e3a8a',
-                            'text-halo-width': 2
-                        }
-                    });
-                }
-
-                if (!map.current?.getSource('geofencing-inner')) {
-                    const currentGps = simGpsRef.current;
-                    const initialInner = turf.circle(turf.point([currentGps.lng || 107.6036, currentGps.lat || -6.9125]), radiusRef.current.inner, { steps: 64, units: 'meters' });
-                    initialInner.properties = { label: `INNER RADIUS: ${radiusRef.current.inner} METERS` };
-
-                    map.current?.addSource('geofencing-inner', {
-                        type: 'geojson',
-                        data: initialInner
-                    });
-                    map.current?.addLayer({
-                        id: 'geofencing-inner-line',
-                        type: 'line',
-                        source: 'geofencing-inner',
-                        paint: {
-                            'line-color': '#2563eb',
-                            'line-width': 2,
-                            'line-dasharray': [4, 4],
-                            'line-opacity': 0.9
-                        }
-                    });
-                    map.current?.addLayer({
-                        id: 'geofencing-inner-fill',
-                        type: 'fill',
-                        source: 'geofencing-inner',
-                        paint: {
-                            'fill-color': '#2563eb',
-                            'fill-opacity': 0.15
-                        }
-                    });
-                    map.current?.addLayer({
-                        id: 'geofencing-inner-label',
-                        type: 'symbol',
-                        source: 'geofencing-inner',
-                        layout: {
-                            'symbol-placement': 'line',
-                            'text-field': ['get', 'label'],
-                            'text-size': 12,
-                            'text-offset': [0, -1],
-                            'text-keep-upright': true
-                        },
-                        paint: {
-                            'text-color': '#bfdbfe',
-                            'text-halo-color': '#1e40af',
-                            'text-halo-width': 2
-                        }
-                    });
-                }
-
 
             } catch (err) {
                 console.error("Failed to render GeoJSON:", err);

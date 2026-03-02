@@ -4,153 +4,617 @@
     {
       "type": "Feature",
       "properties": {
+        "colour": "orange",
+        "from": "Malang",
         "name": "Malabar Route",
+        "network": "KAI",
+        "network:wikidata": "Q2745027",
+        "operator": "KAI",
+        "public_transport:version": "2",
         "ref": "Malabar",
-        "from": "Bandung",
-        "to": "Malang",
-        "algorithm": "Douglas-Peucker",
-        "epsilon_tolerance": 0.01,
-        "original_nodes_processed": 55,
-        "simplified_nodes": 34
+        "route": "train",
+        "to": "Bandung",
+        "type": "route",
+        "wikidata": "Q12491164",
+        "wikipedia": "id:Kereta api Malabar",
+        "algorithm": "Douglas-Peucker (Flattened & Rounded)",
+        "epsilon": 0.006,
+        "points": 148
       },
       "geometry": {
         "type": "LineString",
         "coordinates": [
           [
-            107.60313,
-            -6.914226
+            112.637455,
+            -7.979463
           ],
           [
-            107.8402,
-            -6.9822
+            112.571338,
+            -8.13488
           ],
           [
-            107.9123,
-            -7.039
+            112.526659,
+            -8.152829
           ],
           [
-            107.9048,
-            -7.0673
+            112.539331,
+            -8.153038
           ],
           [
-            107.9863,
-            -7.1008
+            112.453805,
+            -8.156062
           ],
           [
-            108.0351,
-            -7.0854
+            112.462209,
+            -8.163572
           ],
           [
-            108.1062,
-            -7.0954
+            112.447587,
+            -8.149474
           ],
           [
-            108.1754,
-            -7.155
+            112.436894,
+            -8.15524
           ],
           [
-            108.2238,
-            -7.3235
+            112.443537,
+            -8.158981
           ],
           [
-            108.351,
-            -7.3284
+            112.397219,
+            -8.162601
           ],
           [
-            108.6854,
-            -7.425
+            112.36705,
+            -8.154001
           ],
           [
-            109.115,
-            -7.625
+            112.374248,
+            -8.165061
           ],
           [
-            109.2458,
-            -7.63
+            112.391642,
+            -8.160851
           ],
           [
-            109.5133,
-            -7.6083
+            112.342177,
+            -8.139764
           ],
           [
-            109.6644,
-            -7.6713
+            112.336413,
+            -8.103447
           ],
           [
-            109.9056,
-            -7.7262
+            112.341265,
+            -8.137953
           ],
           [
-            110.035,
-            -7.82
+            112.331108,
+            -8.096909
           ],
           [
-            110.1504,
-            -7.8601
+            112.315801,
+            -8.086171
           ],
           [
-            110.6041,
-            -7.7121
+            112.274784,
+            -8.090686
           ],
           [
-            110.8213,
-            -7.5571
+            112.213935,
+            -8.073668
           ],
           [
-            110.95,
-            -7.49
+            112.171891,
+            -8.103141
           ],
           [
-            111.0227,
-            -7.4265
+            112.104747,
+            -8.085725
           ],
           [
-            111.2263,
-            -7.3912
+            112.098336,
+            -8.094572
           ],
           [
-            111.4368,
-            -7.4526
+            112.101184,
+            -8.085146
           ],
           [
-            111.5244,
-            -7.6186
+            112.103707,
+            -8.105025
           ],
           [
-            111.65,
-            -7.58
+            112.09411,
+            -8.118294
           ],
           [
-            111.9016,
-            -7.6009
+            112.077859,
+            -8.121395
           ],
           [
-            112.1005,
-            -7.5898
+            111.907768,
+            -8.069909
           ],
           [
-            111.9053,
-            -8.0617
+            111.904788,
+            -8.051198
           ],
           [
-            112.02,
-            -8.1
+            112.006928,
+            -7.857955
           ],
           [
-            112.3163,
-            -8.0863
+            112.034969,
+            -7.74832
           ],
           [
-            112.45,
-            -8.15
+            112.076961,
+            -7.704152
           ],
           [
-            112.5719,
-            -8.1316
+            112.111634,
+            -7.596516
           ],
           [
-            112.6366,
-            -7.9774
+            112.096923,
+            -7.591363
+          ],
+          [
+            111.996702,
+            -7.605931
+          ],
+          [
+            111.9017,
+            -7.600246
+          ],
+          [
+            111.834793,
+            -7.558387
+          ],
+          [
+            111.822334,
+            -7.557652
+          ],
+          [
+            111.8134,
+            -7.569132
+          ],
+          [
+            111.79837,
+            -7.557024
+          ],
+          [
+            111.761287,
+            -7.560473
+          ],
+          [
+            111.736628,
+            -7.547209
+          ],
+          [
+            111.650974,
+            -7.551643
+          ],
+          [
+            111.535061,
+            -7.617771
+          ],
+          [
+            111.514105,
+            -7.618507
+          ],
+          [
+            111.444709,
+            -7.55594
+          ],
+          [
+            111.393402,
+            -7.444543
+          ],
+          [
+            111.258444,
+            -7.404029
+          ],
+          [
+            111.160301,
+            -7.389267
+          ],
+          [
+            111.000248,
+            -7.432954
+          ],
+          [
+            110.942037,
+            -7.472616
+          ],
+          [
+            110.879682,
+            -7.566243
+          ],
+          [
+            110.865642,
+            -7.570197
+          ],
+          [
+            110.823542,
+            -7.556339
+          ],
+          [
+            110.777488,
+            -7.566079
+          ],
+          [
+            110.715817,
+            -7.609828
+          ],
+          [
+            110.676107,
+            -7.668125
+          ],
+          [
+            110.518805,
+            -7.757751
+          ],
+          [
+            110.492523,
+            -7.756481
+          ],
+          [
+            110.449786,
+            -7.784
+          ],
+          [
+            110.341318,
+            -7.787826
+          ],
+          [
+            110.245273,
+            -7.804515
+          ],
+          [
+            110.221905,
+            -7.826818
+          ],
+          [
+            110.208489,
+            -7.865127
+          ],
+          [
+            110.162882,
+            -7.857902
+          ],
+          [
+            110.09281,
+            -7.879096
+          ],
+          [
+            110.027287,
+            -7.854492
+          ],
+          [
+            110.012513,
+            -7.814325
+          ],
+          [
+            109.921537,
+            -7.727531
+          ],
+          [
+            109.736642,
+            -7.717641
+          ],
+          [
+            109.653772,
+            -7.676065
+          ],
+          [
+            109.630633,
+            -7.676622
+          ],
+          [
+            109.577682,
+            -7.635068
+          ],
+          [
+            109.511003,
+            -7.61059
+          ],
+          [
+            109.370331,
+            -7.613181
+          ],
+          [
+            109.249255,
+            -7.63067
+          ],
+          [
+            109.204335,
+            -7.626778
+          ],
+          [
+            109.245911,
+            -7.631064
+          ],
+          [
+            109.119334,
+            -7.61742
+          ],
+          [
+            109.025614,
+            -7.626292
+          ],
+          [
+            108.926578,
+            -7.604961
+          ],
+          [
+            108.935971,
+            -7.614214
+          ],
+          [
+            109.012374,
+            -7.616935
+          ],
+          [
+            108.926555,
+            -7.604929
+          ],
+          [
+            108.863165,
+            -7.531982
+          ],
+          [
+            108.795975,
+            -7.480723
+          ],
+          [
+            108.765373,
+            -7.442611
+          ],
+          [
+            108.707083,
+            -7.406025
+          ],
+          [
+            108.719502,
+            -7.409674
+          ],
+          [
+            108.66673,
+            -7.358626
+          ],
+          [
+            108.546343,
+            -7.376478
+          ],
+          [
+            108.499024,
+            -7.359301
+          ],
+          [
+            108.535062,
+            -7.375922
+          ],
+          [
+            108.488289,
+            -7.350835
+          ],
+          [
+            108.431642,
+            -7.347566
+          ],
+          [
+            108.456483,
+            -7.355439
+          ],
+          [
+            108.373888,
+            -7.328835
+          ],
+          [
+            108.393929,
+            -7.332819
+          ],
+          [
+            108.318492,
+            -7.337669
+          ],
+          [
+            108.322873,
+            -7.347531
+          ],
+          [
+            108.31164,
+            -7.354609
+          ],
+          [
+            108.262644,
+            -7.350677
+          ],
+          [
+            108.225414,
+            -7.324135
+          ],
+          [
+            108.187072,
+            -7.265918
+          ],
+          [
+            108.191349,
+            -7.216955
+          ],
+          [
+            108.183244,
+            -7.187707
+          ],
+          [
+            108.16334,
+            -7.166145
+          ],
+          [
+            108.128293,
+            -7.154385
+          ],
+          [
+            108.116401,
+            -7.138332
+          ],
+          [
+            108.129901,
+            -7.148159
+          ],
+          [
+            108.116906,
+            -7.135759
+          ],
+          [
+            108.114689,
+            -7.105516
+          ],
+          [
+            108.109904,
+            -7.122141
+          ],
+          [
+            108.120138,
+            -7.122157
+          ],
+          [
+            108.108906,
+            -7.098964
+          ],
+          [
+            108.075921,
+            -7.059943
+          ],
+          [
+            108.081671,
+            -7.075904
+          ],
+          [
+            108.072487,
+            -7.058503
+          ],
+          [
+            108.039473,
+            -7.065899
+          ],
+          [
+            108.049157,
+            -7.057142
+          ],
+          [
+            108.038969,
+            -7.066196
+          ],
+          [
+            108.012421,
+            -7.062565
+          ],
+          [
+            108.01836,
+            -7.057183
+          ],
+          [
+            108.038814,
+            -7.066267
+          ],
+          [
+            108.005688,
+            -7.065339
+          ],
+          [
+            107.984676,
+            -7.097461
+          ],
+          [
+            107.993683,
+            -7.096858
+          ],
+          [
+            108.004988,
+            -7.066311
+          ],
+          [
+            107.981879,
+            -7.099114
+          ],
+          [
+            107.939046,
+            -7.103845
+          ],
+          [
+            107.947369,
+            -7.103655
+          ],
+          [
+            107.932387,
+            -7.101029
+          ],
+          [
+            107.925202,
+            -7.08778
+          ],
+          [
+            107.885827,
+            -7.079509
+          ],
+          [
+            107.893953,
+            -7.067247
+          ],
+          [
+            107.882859,
+            -7.078566
+          ],
+          [
+            107.896844,
+            -7.06604
+          ],
+          [
+            107.892417,
+            -7.050715
+          ],
+          [
+            107.899548,
+            -7.062688
+          ],
+          [
+            107.890521,
+            -7.020366
+          ],
+          [
+            107.902108,
+            -7.033059
+          ],
+          [
+            107.834109,
+            -6.983132
+          ],
+          [
+            107.841164,
+            -6.996178
+          ],
+          [
+            107.862319,
+            -6.99754
+          ],
+          [
+            107.884571,
+            -7.01742
+          ],
+          [
+            107.601367,
+            -6.914374
+          ],
+          [
+            110.829801,
+            -7.556805
+          ],
+          [
+            107.780848,
+            -6.973907
           ]
         ]
       }
@@ -158,32 +622,40 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Bandung",
-        "ref": "BD",
-        "isCheckpoint": true,
-        "role": "stop_entry_only"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.60313,
-          -6.914226
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Tasikmalaya",
-        "ref": "TSM",
+        "name": "Solo Balapan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SLO",
+        "train": "yes",
         "isCheckpoint": true,
         "role": "stop"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          108.2238,
-          -7.3235
+          110.8199548,
+          -7.557157
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kiaracondong",
+        "network": "KAI",
+        "operator": "KAI",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KAC",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop_exit_only"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
         ]
       }
     },
@@ -191,31 +663,60 @@
       "type": "Feature",
       "properties": {
         "name": "Yogyakarta",
-        "ref": "YK",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "YK",
+        "ref": "JS05",
+        "train": "yes",
         "isCheckpoint": true,
         "role": "stop"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          110.3622,
-          -7.7895
+          110.3622182,
+          -7.7889579
         ]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "name": "Kertosono",
-        "ref": "KTS",
+        "name": "Kutoarjo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KTA",
+        "ref": "JS07",
+        "train": "yes",
         "isCheckpoint": true,
-        "role": "via_branching_point"
+        "role": "stop"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112.1005,
-          -7.5898
+          109.9062994,
+          -7.7259759
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sidareja",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SDR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.8068569,
+          -7.4860693
         ]
       }
     },
@@ -223,15 +724,466 @@
       "type": "Feature",
       "properties": {
         "name": "Malang",
-        "ref": "ML",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "ML",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop_entry_only"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.6373464,
+          -7.9790275
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ciamis",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CI",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.3554701,
+          -7.3293001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Leles",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "C26",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.8997164,
+          -7.0838873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cipeundeuy",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "CPD",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.0998045,
+          -7.0931934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Maos",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KD12;JC01",
+        "ref": "MA",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.1388631,
+          -7.6189981
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tasikmalaya",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "TSM",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2231253,
+          -7.3213073
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "local_ref": "4",
+        "name": "Bandung",
+        "name:ja": "バンドン",
+        "network": "KAI Commuter",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "B16;C16",
+        "train": "yes",
         "isCheckpoint": true,
         "role": "stop_exit_only"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112.6366,
-          -7.9774
+          107.6013675,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tulungagung",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "TA",
+        "ref": "D25",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.9046015,
+          -8.0625633
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kediri",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KD",
+        "ref": "D21",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0157311,
+          -7.8162448
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Blitar",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BL",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.1613948,
+          -8.101126
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kroya",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KYA",
+        "ref": "JS12",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.2529649,
+          -7.6301526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Malang Kotalama",
+        "network": "KAI",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MLK",
+        "ref": "P25",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.6319415,
+          -7.9954465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Banjar",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "BJR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.5419504,
+          -7.3762944
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gombong",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "GB",
+        "ref": "JS10",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.504688,
+          -7.6110809
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebumen",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KM",
+        "ref": "JS09",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.6617364,
+          -7.681689
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Klaten",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KT",
+        "ref": "Y06;AS01;JS02",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.6023249,
+          -7.7127524
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ngawi",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NGW",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.3860743,
+          -7.4419921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Madiun",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.5238865,
+          -7.6185833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nganjuk",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.9017,
+          -7.6002457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kertosono",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KTS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0999248,
+          -7.5918335
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wlingi",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WG",
+        "ref": "P32",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.3194641,
+          -8.0879868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumberpucung",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SBP",
+        "ref": "P29",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.4780531,
+          -8.1583792
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kepanjen",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KPN",
+        "ref": "P27",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.5728812,
+          -8.132748
         ]
       }
     }

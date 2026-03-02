@@ -155,11 +155,28 @@ const MonitorGPS = ({ route }: { route: any }) => {
             attributionControl: false
         });
 
-        map.current.on('load', () => {
+        map.current.on('load', async () => {
             if (!route?.geojson) return;
 
             try {
-                const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+                let geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+
+                // Fallback: If no Polygons are found (likely old state in DB), try to fetch latest from public/geojson/
+                const feats = geojson.features || (geojson.type === 'Feature' ? [geojson] : []);
+                const hasPolygons = feats.some((f: any) => f.geometry?.type === 'Polygon' || f.type === 'Polygon');
+
+                if (!hasPolygons && route.name) {
+                    try {
+                        const filename = route.name.toLowerCase().replace(/\s+/g, '_') + '.geojson';
+                        const response = await fetch(`/geojson/${filename}`);
+                        if (response.ok) {
+                            const latestGeojson = await response.json();
+                            geojson = latestGeojson;
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch latest geojson file fallback:", e);
+                    }
+                }
 
                 map.current?.addSource('route-path', {
                     type: 'geojson',
@@ -201,6 +218,39 @@ const MonitorGPS = ({ route }: { route: any }) => {
                         'circle-stroke-color': '#ee6f1f'
                     },
                     filter: ['==', '$type', 'Point']
+                });
+
+                // Add static geofencing layers (Polygon features in route geojson)
+                map.current?.addLayer({
+                    id: 'route-static-geofencing-outer',
+                    type: 'fill',
+                    source: 'route-path',
+                    filter: ['all',
+                        ['==', '$type', 'Polygon'],
+                        ['==', ['get', 'style'], 'outer']
+                    ],
+                    layout: {},
+                    paint: {
+                        'fill-color': '#0080ff',
+                        'fill-opacity': 0.15,
+                        'fill-outline-color': '#0080ff'
+                    }
+                });
+
+                map.current?.addLayer({
+                    id: 'route-static-geofencing-inner',
+                    type: 'fill',
+                    source: 'route-path',
+                    filter: ['all',
+                        ['==', '$type', 'Polygon'],
+                        ['==', ['get', 'style'], 'inner']
+                    ],
+                    layout: {},
+                    paint: {
+                        'fill-color': '#00ffff',
+                        'fill-opacity': 0.25,
+                        'fill-outline-color': '#00ffff'
+                    }
                 });
 
                 // Fit map to route bounds
