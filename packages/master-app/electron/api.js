@@ -422,6 +422,16 @@ export async function startApiServer() {
         res.json({ success: true });
     });
 
+    apiApp.delete('/api/admin/routes/:name/geojson', requireAuth, (req, res) => {
+        const name = decodeURIComponent(req.params.name).toUpperCase();
+        const result = updateRouteGeoJSON(name, ""); // Clear it
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `GeoJSON dihapus untuk rute: ${name}` });
+        broadcastDbUpdate();
+        broadcastState();
+        res.json({ success: true });
+    });
+
     // --- UNIT (STAMPFORMASI) MANAGEMENT ---
     apiApp.get('/api/admin/units', requireAuth, (req, res) => {
         res.json({ success: true, units: getUnits() });

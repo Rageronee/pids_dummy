@@ -1,0 +1,239 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Malabar Route",
+        "ref": "Malabar",
+        "from": "Bandung",
+        "to": "Malang",
+        "algorithm": "Douglas-Peucker",
+        "epsilon_tolerance": 0.01,
+        "original_nodes_processed": 55,
+        "simplified_nodes": 34
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            107.60313,
+            -6.914226
+          ],
+          [
+            107.8402,
+            -6.9822
+          ],
+          [
+            107.9123,
+            -7.039
+          ],
+          [
+            107.9048,
+            -7.0673
+          ],
+          [
+            107.9863,
+            -7.1008
+          ],
+          [
+            108.0351,
+            -7.0854
+          ],
+          [
+            108.1062,
+            -7.0954
+          ],
+          [
+            108.1754,
+            -7.155
+          ],
+          [
+            108.2238,
+            -7.3235
+          ],
+          [
+            108.351,
+            -7.3284
+          ],
+          [
+            108.6854,
+            -7.425
+          ],
+          [
+            109.115,
+            -7.625
+          ],
+          [
+            109.2458,
+            -7.63
+          ],
+          [
+            109.5133,
+            -7.6083
+          ],
+          [
+            109.6644,
+            -7.6713
+          ],
+          [
+            109.9056,
+            -7.7262
+          ],
+          [
+            110.035,
+            -7.82
+          ],
+          [
+            110.1504,
+            -7.8601
+          ],
+          [
+            110.6041,
+            -7.7121
+          ],
+          [
+            110.8213,
+            -7.5571
+          ],
+          [
+            110.95,
+            -7.49
+          ],
+          [
+            111.0227,
+            -7.4265
+          ],
+          [
+            111.2263,
+            -7.3912
+          ],
+          [
+            111.4368,
+            -7.4526
+          ],
+          [
+            111.5244,
+            -7.6186
+          ],
+          [
+            111.65,
+            -7.58
+          ],
+          [
+            111.9016,
+            -7.6009
+          ],
+          [
+            112.1005,
+            -7.5898
+          ],
+          [
+            111.9053,
+            -8.0617
+          ],
+          [
+            112.02,
+            -8.1
+          ],
+          [
+            112.3163,
+            -8.0863
+          ],
+          [
+            112.45,
+            -8.15
+          ],
+          [
+            112.5719,
+            -8.1316
+          ],
+          [
+            112.6366,
+            -7.9774
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bandung",
+        "ref": "BD",
+        "isCheckpoint": true,
+        "role": "stop_entry_only"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60313,
+          -6.914226
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tasikmalaya",
+        "ref": "TSM",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2238,
+          -7.3235
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Yogyakarta",
+        "ref": "YK",
+        "isCheckpoint": true,
+        "role": "stop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.3622,
+          -7.7895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kertosono",
+        "ref": "KTS",
+        "isCheckpoint": true,
+        "role": "via_branching_point"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.1005,
+          -7.5898
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Malang",
+        "ref": "ML",
+        "isCheckpoint": true,
+        "role": "stop_exit_only"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.6366,
+          -7.9774
+        ]
+      }
+    }
+  ]
+}

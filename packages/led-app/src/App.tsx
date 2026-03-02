@@ -25,7 +25,7 @@ function App() {
 
             <div className={`${ledScale} origin-center transition-transform duration-1000 ease-out`}>
                 <P10Matrix
-                    text={`~ TUJUAN AKHIR STASIUN ${(data.stations || [])[(data.stations || []).length - 1]} ~ BERHENTI DI: ${(data.stations || []).join(', ')}`}
+                    text={`~ POSISI SAAT INI: ${data.currentStation} ~ TUJUAN AKHIR STASIUN ${(data.stations || [])[(data.stations || []).length - 1]} ~ BERHENTI DI: ${(data.stations || []).join(', ')}`}
                     fixedText={`${data.trainNumber} `}
                     color="#ff0000"
                     speed={data.ledSpeed}

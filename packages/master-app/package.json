@@ -15,7 +15,6 @@
         "@types/mapbox__point-geometry": "^0.1.4",
         "@types/mapbox__vector-tile": "^1.2.4",
         "@types/mapbox-gl": "^3.4.1",
-        "@types/turf": "^3.5.32",
         "clsx": "^2.1.0",
         "cors": "^2.8.6",
         "express": "^5.2.1",

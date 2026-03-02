@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, ScrollText, LogOut } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, ScrollText, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
@@ -20,13 +20,27 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     ];
     const [currentCamIndex, setCurrentCamIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
+
     useEffect(() => {
         const interval = setInterval(() => setCurrentCamIndex((prev) => (prev + 1) % cameras.length), 5000);
+        return () => clearInterval(interval);
+    }, [currentCamIndex]);
+
+    useEffect(() => {
         const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => { clearInterval(interval); clearInterval(clockTimer); };
+        return () => clearInterval(clockTimer);
     }, []);
+
+    const handlePrevCam = () => {
+        setCurrentCamIndex((prev) => (prev - 1 + cameras.length) % cameras.length);
+    };
+
+    const handleNextCam = () => {
+        setCurrentCamIndex((prev) => (prev + 1) % cameras.length);
+    };
+
     return (
-        <div className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black">
+        <div className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black group">
             <AnimatePresence mode="wait">
                 <motion.div key={currentCamIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${cameras[currentCamIndex].url})` }}>
                     <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
@@ -44,6 +58,19 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                 </div>
             </div>
             <div className="absolute top-1/2 left-8 -translate-y-1/2 z-20"><div className="text-white/20 font-mono text-[80px] font-black leading-none select-none">{cameras[currentCamIndex].id}</div></div>
+
+            {/* Manual Navigation Overlay (appears on hover) */}
+            <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <button onClick={handlePrevCam} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110">
+                    <ChevronLeft size={36} />
+                </button>
+            </div>
+            <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <button onClick={handleNextCam} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110">
+                    <ChevronRight size={36} />
+                </button>
+            </div>
+
             <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end z-20">
                 <div className="bg-black/80 backdrop-blur-3xl px-10 py-6 rounded-[2.5rem] border border-white/10 shadow-2xl flex items-center gap-6">
                     <div className="bg-blue-600 p-4 rounded-2xl shadow-lg"><Activity size={24} className="text-white" /></div>

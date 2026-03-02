@@ -8,7 +8,8 @@ import {
     MapPin, MonitorPlay, Mic, Play, Pause,
     ChevronDown, ChevronRight, RadioTower, Video, Info,
     ListVideo, Disc, CheckCircle2, AlertCircle, Satellite,
-    Repeat, Shuffle
+    Repeat, Shuffle,
+    Upload, X
 } from 'lucide-react';
 
 // Modern Toggle Switch Component (REFINED: Single Toggle Button)
@@ -102,7 +103,11 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
     const activeTrainName = data?.serviceName || 'Belum Dikonfigurasi';
     const activeTrainNumber = data?.trainNumber || '-';
     const [jumlahKereta, setJumlahKereta] = useState(5);
+    const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
     const [mediaSource, setMediaSource] = useState('Line In');
+    const [outerRadius, setOuterRadius] = useState(750);
+    const [innerRadius, setInnerRadius] = useState(250);
+    const radiusRef = useRef({ inner: 250, outer: 750 });
     const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
     const [stationsData, setStationsData] = useState<any[]>([]);
@@ -112,7 +117,6 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
-    const mockGpsInterval = useRef<number | null>(null);
 
     // Fetch stations
     useEffect(() => {
@@ -138,18 +142,65 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
             .catch(console.error);
     }, [activeTrainName]);
 
-    // Simulate GPS coordinates from the current station
+    // Fetch gerbong counts from db
+    useEffect(() => {
+        fetch('http://localhost:3001/api/db')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.data?.gerbongCounts) {
+                    setGerbongCounts(res.data.gerbongCounts);
+                }
+            })
+            .catch(console.error);
+    }, []);
+
+    // Update jumlah kereta when activeTrainName or gerbongCounts changes
+    useEffect(() => {
+        if (activeTrainName && gerbongCounts[activeTrainName]) {
+            setJumlahKereta(gerbongCounts[activeTrainName]);
+        }
+    }, [activeTrainName, gerbongCounts]);
+
+    // Keep radiusRef in sync to avoid stale closures in requestAnimationFrame
+    useEffect(() => {
+        radiusRef.current = { inner: innerRadius, outer: outerRadius };
+    }, [innerRadius, outerRadius]);
+
+    // Sync GPS coordinates perfectly, preventing random jitter. Coordinates act as primary anchor.
     useEffect(() => {
         if (!stationsData.length || !data?.currentStation) return;
         const currentStn = stationsData.find(s => s.name === data.currentStation);
         if (currentStn) {
             setSimGps({
-                lng: currentStn.longitude + (Math.random() - 0.5) * 0.01,
-                lat: currentStn.latitude + (Math.random() - 0.5) * 0.01,
-                heading: Math.round(Math.random() * 360 * 100) / 100
+                lng: currentStn.longitude,
+                lat: currentStn.latitude,
+                heading: data.heading || 0
             });
         }
     }, [stationsData, data?.currentStation]);
+
+    // Update map marker and geofencing circles whenever telemetry aligns with the selector.
+    useEffect(() => {
+        if (!map.current || !markerRef.current) return;
+
+        // Update Marker Exact Location
+        markerRef.current.setLngLat([simGps.lng, simGps.lat]);
+
+        // Update Geofencing Zones Exact Location
+        try {
+            const centerPt = turf.point([simGps.lng, simGps.lat]);
+            if (map.current.getSource('geofencing-outer')) {
+                const outerG = turf.circle(centerPt, outerRadius, { steps: 64, units: 'meters' });
+                (map.current.getSource('geofencing-outer') as maplibregl.GeoJSONSource).setData(outerG);
+            }
+            if (map.current.getSource('geofencing-inner')) {
+                const innerG = turf.circle(centerPt, innerRadius, { steps: 64, units: 'meters' });
+                (map.current.getSource('geofencing-inner') as maplibregl.GeoJSONSource).setData(innerG);
+            }
+        } catch (e) {
+            console.error("Geofencing rings update error:", e);
+        }
+    }, [simGps, innerRadius, outerRadius]);
 
     const activeRouteStations = data?.activeRoute?.stations || data?.stations || [];
 
@@ -209,6 +260,39 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
     const showToast = (msg: string, ok: boolean = true) => {
         setToast({ msg, ok });
         setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleDeleteGeoJSON = async () => {
+        if (!route?.name) return;
+        if (!window.confirm(`Hapus GeoJSON untuk rute ${route.name}?`)) return;
+
+        try {
+            setUploading(true);
+            const token = sessionStorage.getItem('pids_token');
+            const res = await fetch(`http://localhost:3001/api/admin/routes/${encodeURIComponent(route.name)}/geojson`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (res.ok) {
+                showToast('GeoJSON rute berhasil dihapus.');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                let msg = 'Gagal menghapus GeoJSON';
+                try {
+                    const err = await res.json();
+                    msg = err.error || err.message || msg;
+                } catch (e) { }
+                showToast(msg, false);
+            }
+        } catch (e) {
+            console.error('[GeoJSON Delete] Error:', e);
+            showToast('Kesalahan koneksi saat menghapus GeoJSON. Pastikan server aktif.', false);
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleUploadGeoJSON = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -396,22 +480,63 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         return bounds.extend(coord);
                     }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
                     map.current?.fitBounds(bounds, { padding: 50 });
-
-                    const line = turf.lineString(coordinates);
-                    const lineDistance = (turf as any).length(line);
-                    let distanceTraveled = 0;
-
-                    const animateMarker = () => {
-                        if (distanceTraveled >= lineDistance) distanceTraveled = 0;
-                        const alongPath = turf.along(line, distanceTraveled);
-                        const coords = alongPath.geometry.coordinates as [number, number];
-                        markerRef.current?.setLngLat(coords);
-                        distanceTraveled += lineDistance / 500;
-                        mockGpsInterval.current = requestAnimationFrame(animateMarker);
-                    };
-
-                    animateMarker();
                 }
+
+                // Add sources and layers for geofencing
+                if (!map.current?.getSource('geofencing-outer')) {
+                    map.current?.addSource('geofencing-outer', {
+                        type: 'geojson',
+                        data: turf.circle(turf.point([107.6036, -6.9125]), radiusRef.current.outer, { steps: 64, units: 'meters' })
+                    });
+                    map.current?.addLayer({
+                        id: 'geofencing-outer-line',
+                        type: 'line',
+                        source: 'geofencing-outer',
+                        paint: {
+                            'line-color': '#ee6f1f',
+                            'line-width': 2,
+                            'line-dasharray': [2, 2],
+                            'line-opacity': 0.8
+                        }
+                    });
+                    map.current?.addLayer({
+                        id: 'geofencing-outer-fill',
+                        type: 'fill',
+                        source: 'geofencing-outer',
+                        paint: {
+                            'fill-color': '#ee6f1f',
+                            'fill-opacity': 0.1
+                        }
+                    });
+                }
+
+                if (!map.current?.getSource('geofencing-inner')) {
+                    map.current?.addSource('geofencing-inner', {
+                        type: 'geojson',
+                        data: turf.circle(turf.point([107.6036, -6.9125]), radiusRef.current.inner, { steps: 64, units: 'meters' })
+                    });
+                    map.current?.addLayer({
+                        id: 'geofencing-inner-line',
+                        type: 'line',
+                        source: 'geofencing-inner',
+                        paint: {
+                            'line-color': '#1d2d6a',
+                            'line-width': 2,
+                            'line-dasharray': [4, 4],
+                            'line-opacity': 0.9
+                        }
+                    });
+                    map.current?.addLayer({
+                        id: 'geofencing-inner-fill',
+                        type: 'fill',
+                        source: 'geofencing-inner',
+                        paint: {
+                            'fill-color': '#1d2d6a',
+                            'fill-opacity': 0.15
+                        }
+                    });
+                }
+
 
             } catch (err) {
                 console.error("Failed to render GeoJSON:", err);
@@ -419,8 +544,8 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
         });
 
         return () => {
-            if (mockGpsInterval.current !== null) cancelAnimationFrame(mockGpsInterval.current);
             map.current?.remove();
+            map.current = null;
         }
     }, [route?.geojson]);
 
@@ -515,7 +640,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
+                            <div id="gps-lng" className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Bujur Timur
@@ -524,7 +649,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
+                            <div id="gps-lat" className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Lintang Selatan
@@ -553,7 +678,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" defaultValue={750} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <input type="number" value={outerRadius} onChange={(e) => setOuterRadius(Number(e.target.value))} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
@@ -565,7 +690,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" defaultValue={250} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <input type="number" value={innerRadius} onChange={(e) => setInnerRadius(Number(e.target.value))} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
@@ -581,10 +706,14 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         <div ref={mapContainer} className="absolute inset-0" />
 
                         {!route?.geojson && (
-                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
-                                <MapPin size={48} className="text-white/30 mb-4" />
-                                <span className="text-white font-bold text-xl mb-1 drop-shadow-md">Peta Belum Dikonfigurasi</span>
-                                <span className="text-white/70 text-sm font-medium drop-shadow-md">Gunakan tombol 'Import GeoJSON' di bawah pada bagian Rute untuk memuat peta rute.</span>
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0b1437]/80 backdrop-blur-md">
+                                <div className="bg-white/10 p-6 rounded-3xl border border-white/20 mb-6 shadow-2xl">
+                                    <MapPin size={56} className="text-orange-400 animate-pulse" />
+                                </div>
+                                <h3 className="text-white font-black text-2xl mb-2 uppercase tracking-widest drop-shadow-lg">Peta Belum Dikonfigurasi</h3>
+                                <p className="text-slate-300 text-center max-w-md px-6 text-sm font-bold uppercase tracking-tight leading-relaxed">
+                                    Gunakan tombol <span className="text-[#ee6f1f] border-b-2 border-[#ee6f1f]">Import GeoJSON</span> di bawah pada bagian Rute untuk memuat koordinat navigasi dan visualisasi perjalanan.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -639,7 +768,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                             <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
                                 <Train size={14} className="text-slate-400" />
                                 <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[70px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
-                                    {[...Array(15)].map((_, i) => (
+                                    {[...Array(gerbongCounts[activeTrainName] || 15)].map((_, i) => (
                                         <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
                                     ))}
                                 </select>
@@ -706,64 +835,103 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                 title="2. Rute & Checkpoint Navigasi"
                 icon={MapPin}
                 defaultOpen={true}
-                summary={`Detail ${navData.length} POI Navigasi • Target Utama ${navData.find((x: any) => x.status === "BERHENTI")?.name || 'SGU'}`}
+                summary={!route?.name ? "Pilih Rute di Selector" : `Detail ${navData.length} POI Navigasi • Target Utama ${navData.find((x: any) => x.status === "BERHENTI")?.name || 'SGU'}`}
             >
-                <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
-                        <span className="text-sm font-black text-[#1d2d6a]">{route?.geojson ? 'Rute_Utama.json (Ada)' : 'Belum Ada GeoJSON'}</span>
+                {!route?.name || route.name === '-' ? (
+                    <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl mt-4">
+                        <div className="bg-white p-4 rounded-2xl shadow-sm mb-4">
+                            <MapPin size={32} className="text-slate-300" />
+                        </div>
+                        <h4 className="text-sm font-black text-[#1d2d6a] uppercase tracking-widest mb-1">Rute Belum Dipilih</h4>
+                        <p className="text-xs font-bold text-slate-400 text-center max-w-xs uppercase tracking-tighter">Silakan pilih rute perjalanan pada aplikasi Selector untuk memulai konfigurasi navigasi.</p>
                     </div>
-                    <label className={`text-xs font-black uppercase tracking-widest text-[#1d2d6a] bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading || !route?.name ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <RefreshCw size={14} className={`text-blue-500 ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import GeoJSON'}
-                        <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading || !route?.name} />
-                    </label>
-                </div>
-                <div className="mt-3 border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left whitespace-nowrap">
-                            <thead className="bg-[#1d2d6a] text-white">
-                                <tr>
-                                    <th className="py-3 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Nama Stasiun</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Ket</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-right">Longitude</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-right">Latitude</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-center">TTA</th>
-                                    <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-center">Status</th>
-                                    <th className="py-3 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Next Stasiun</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-sm">
-                                {navData.map((item: any, idx: number) => {
-                                    const isBerhenti = item.status === 'BERHENTI';
-                                    return (
-                                        <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/50' : 'bg-white'}`}>
-                                            <td className={`py-3 px-6 font-black flex items-center gap-2 ${isBerhenti ? 'text-[#ee6f1f]' : 'text-slate-700'}`}>
-                                                {isBerhenti && <ChevronRight size={16} className="text-[#ee6f1f]" />}
-                                                {item.name}
-                                            </td>
-                                            <td className="py-3 px-4 font-bold text-slate-500 text-xs">{item.type}</td>
-                                            <td className="py-3 px-4 font-mono font-bold text-slate-600 text-xs text-right">{item.lng}</td>
-                                            <td className="py-3 px-4 font-mono font-bold text-slate-600 text-xs text-right">{item.lat}</td>
-                                            <td className="py-3 px-4 font-mono font-black text-[#1d2d6a] text-center text-xs">{item.eta}</td>
-                                            <td className="py-3 px-4 text-center">
-                                                {item.status ? (
-                                                    <span className={`text-[9px] font-black px-2.5 py-1 rounded tracking-widest uppercase shadow-sm ${isBerhenti ? 'bg-[#1d2d6a] text-white' : 'bg-slate-200 text-slate-500'
-                                                        }`}>
-                                                        {item.status}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-slate-300 text-xs">-</span>
-                                                )}
-                                            </td>
-                                            <td className="py-3 px-6 font-bold text-slate-500 text-[11px] uppercase tracking-wider">{item.next}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                ) : (
+                    <>
+                        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
+                                <span className="text-sm font-black text-[#1d2d6a]">
+                                    {route?.geojson ? `${route.name.replace(/\s+/g, '_')}.json` : 'Belum Ada GeoJSON'}
+                                    {route?.geojson && <span className="ml-2 text-[10px] text-green-500 font-black uppercase tracking-widest bg-green-50 px-1.5 py-0.5 rounded border border-green-100 italic">Aktif</span>}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {route?.geojson && (
+                                    <button
+                                        onClick={handleDeleteGeoJSON}
+                                        disabled={uploading}
+                                        className="text-xs font-black uppercase tracking-widest text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors"
+                                    >
+                                        <X size={14} /> {uploading ? '...' : 'Close'}
+                                    </button>
+                                )}
+                                <label className={`text-xs font-black uppercase tracking-widest text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    <Upload size={14} className={`text-white ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import'}
+                                    <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading} />
+                                </label>
+                            </div>
+                        </div>
 
+                        {navData.length === 0 ? (
+                            <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-100 to-transparent" />
+                                <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                    <Info size={40} className="text-slate-300" />
+                                </div>
+                                <h4 className="text-sm font-black text-[#1d2d6a] uppercase tracking-[0.2em] mb-2">Data Navigasi Kosong</h4>
+                                <p className="text-[11px] font-bold text-slate-400 text-center max-w-[280px] uppercase tracking-tight leading-relaxed">
+                                    Silakan <span className="text-[#ee6f1f]">Impor GeoJSON</span> untuk memuat daftar stasiun, koordinat GPS, dan estimasi waktu kedatangan.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="mt-3 border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left whitespace-nowrap">
+                                        <thead className="bg-[#1d2d6a] text-white">
+                                            <tr>
+                                                <th className="py-3 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Nama Stasiun</th>
+                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Ket</th>
+                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-right">Longitude</th>
+                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-right">Latitude</th>
+                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-center">TTA</th>
+                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-center">Status</th>
+                                                <th className="py-3 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Next Stasiun</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 text-sm">
+                                            {navData.map((item: any, idx: number) => {
+                                                const isBerhenti = item.status === 'BERHENTI';
+                                                return (
+                                                    <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/50' : 'bg-white'}`}>
+                                                        <td className={`py-3 px-6 font-black flex items-center gap-2 ${isBerhenti ? 'text-[#ee6f1f]' : 'text-slate-700'}`}>
+                                                            {isBerhenti && <ChevronRight size={16} className="text-[#ee6f1f]" />}
+                                                            {item.name}
+                                                        </td>
+                                                        <td className="py-3 px-4 font-bold text-slate-500 text-xs">{item.type}</td>
+                                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 text-xs text-right">{item.lng}</td>
+                                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 text-xs text-right">{item.lat}</td>
+                                                        <td className="py-3 px-4 font-mono font-black text-[#1d2d6a] text-center text-xs">{item.eta}</td>
+                                                        <td className="py-3 px-4 text-center">
+                                                            {item.status ? (
+                                                                <span className={`text-[9px] font-black px-2.5 py-1 rounded tracking-widest uppercase shadow-sm ${isBerhenti ? 'bg-[#1d2d6a] text-white' : 'bg-slate-200 text-slate-500'
+                                                                    }`}>
+                                                                    {item.status}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-slate-300 text-xs">-</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-3 px-6 font-bold text-slate-500 text-[11px] uppercase tracking-wider">{item.next}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
             </SectionAccordion>
 
             {/* 3. SISTEM MEDIA & PENYIARAN */}

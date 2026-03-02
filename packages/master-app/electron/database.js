@@ -868,54 +868,60 @@ export function updateRouteGeoJSON(name, geojsonString) {
     }
 
     // Save GeoJSON string
-    const stringified = typeof geojsonString === 'string' ? geojsonString : JSON.stringify(geojsonString);
+    const stringified = (geojsonString === "" || geojsonString === null) ? "" : (typeof geojsonString === 'string' ? geojsonString : JSON.stringify(geojsonString));
     db.run('UPDATE routes SET geojson = ? WHERE id = ?', [stringified, route.id]);
 
-    // Parse GeoJSON and automatically populate route_stations
-    try {
-        const geojson = typeof geojsonString === 'string' ? JSON.parse(geojsonString) : geojsonString;
-        const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+    if (stringified === "") {
+        // Clear stations if GeoJSON is cleared
+        db.run('DELETE FROM route_stations WHERE route_id = ?', [route.id]);
+        db.run('UPDATE routes SET svg_path = "" WHERE id = ?', [route.id]);
+    } else {
+        // Parse GeoJSON and automatically populate route_stations
+        try {
+            const geojson = typeof geojsonString === 'string' ? JSON.parse(geojsonString) : geojsonString;
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
 
-        // Find all points to act as stations
-        const stations = features.filter(f => f.geometry?.type === 'Point' || f.properties?.type === 'station');
+            // Find all points to act as stations
+            const stations = features.filter(f => f.geometry?.type === 'Point' || f.properties?.type === 'station');
 
-        if (stations.length > 0) {
-            // Clear existing stations for this route
-            db.run('DELETE FROM route_stations WHERE route_id = ?', [route.id]);
+            if (stations.length > 0) {
+                // Clear existing stations for this route
+                db.run('DELETE FROM route_stations WHERE route_id = ?', [route.id]);
 
-            stations.forEach((stnFeature, i) => {
-                const stnName = (stnFeature.properties?.name || `Station ${i + 1}`).toUpperCase();
-                const coords = stnFeature.geometry?.coordinates || [0, 0];
+                stations.forEach((stnFeature, i) => {
+                    const stnName = (stnFeature.properties?.name || `Station ${i + 1}`).toUpperCase();
+                    const coords = stnFeature.geometry?.coordinates || [0, 0];
 
-                // create an ID for the station (short code or uppercase name)
-                const stnIdArr = stnName.split(' ');
-                let stnLabel = stnIdArr.length === 1 ? stnName.substring(0, 3) : stnIdArr.map(w => w[0]).join('');
-                if (stnLabel.length < 2) stnLabel = stnName.substring(0, 3);
-                stnLabel = stnLabel.toUpperCase();
+                    // create an ID for the station (short code or uppercase name)
+                    const stnIdArr = stnName.split(' ');
+                    let stnLabel = stnIdArr.length === 1 ? stnName.substring(0, 3) : stnIdArr.map(w => w[0]).join('');
+                    if (stnLabel.length < 2) stnLabel = stnName.substring(0, 3);
+                    stnLabel = stnLabel.toUpperCase();
 
-                // Insert or ignore into master stations
-                db.run('INSERT OR IGNORE INTO stations (id, name, city, longitude, latitude) VALUES (?, ?, ?, ?, ?)',
-                    [stnLabel, stnName, stnName, coords[0], coords[1]]);
+                    // Insert or ignore into master stations
+                    db.run('INSERT OR IGNORE INTO stations (id, name, city, longitude, latitude) VALUES (?, ?, ?, ?, ?)',
+                        [stnLabel, stnName, stnName, coords[0], coords[1]]);
 
-                // Update coordinates in case they shifted
-                db.run('UPDATE stations SET longitude = ?, latitude = ? WHERE id = ?', [coords[0], coords[1], stnLabel]);
+                    // Update coordinates in case they shifted
+                    db.run('UPDATE stations SET longitude = ?, latitude = ? WHERE id = ?', [coords[0], coords[1], stnLabel]);
 
-                // Generate a dummy SVG position for UI backward compatibility
-                const svgPos = `M ${80 + Math.round(i * 100)} 200`;
+                    // Generate a dummy SVG position for UI backward compatibility
+                    const svgPos = `M ${80 + Math.round(i * 100)} 200`;
 
-                // Add to route_stations
-                db.run('INSERT INTO route_stations (route_id, station_id, sequence_order, svg_position, svg_label) VALUES (?, ?, ?, ?, ?)',
-                    [route.id, stnLabel, i + 1, svgPos, stnLabel]);
-            });
+                    // Add to route_stations
+                    db.run('INSERT INTO route_stations (route_id, station_id, sequence_order, svg_position, svg_label) VALUES (?, ?, ?, ?, ?)',
+                        [route.id, stnLabel, i + 1, svgPos, stnLabel]);
+                });
 
-            // Also generate a basic SVG path for compatibility
-            if (stations.length > 1) {
-                const pathPoints = stations.map((_, i) => `${80 + Math.round(i * 100)} 200`).join(' L ');
-                db.run('UPDATE routes SET svg_path = ? WHERE id = ?', [`M ${pathPoints}`, route.id]);
+                // Also generate a basic SVG path for compatibility
+                if (stations.length > 1) {
+                    const pathPoints = stations.map((_, i) => `${80 + Math.round(i * 100)} 200`).join(' L ');
+                    db.run('UPDATE routes SET svg_path = ? WHERE id = ?', [`M ${pathPoints}`, route.id]);
+                }
             }
+        } catch (e) {
+            console.error("[PIDS-DB] Error parsing GeoJSON for stations extraction:", e);
         }
-    } catch (e) {
-        console.error("[PIDS-DB] Error parsing GeoJSON for stations extraction:", e);
     }
 
     saveDb();
@@ -926,8 +932,8 @@ export function updateRouteGeoJSON(name, geojsonString) {
         if (currentState && currentState.service_name.toUpperCase() === normalized) {
             const freshRoute = buildRouteJson(normalized);
             if (freshRoute) {
-                const firstStation = freshRoute.stations[0] || currentState.current_station;
-                const secondStation = freshRoute.stations[1] || currentState.next_station;
+                const firstStation = freshRoute.stations[0] || '-';
+                const secondStation = freshRoute.stations[1] || '-';
                 db.run(`UPDATE pids_state SET active_route_json = ?, current_station = ?, next_station = ? WHERE id = 1`,
                     [JSON.stringify(freshRoute), firstStation, secondStation]);
                 saveDb();
@@ -1198,12 +1204,26 @@ export function getGpsGerbong(keretaId) {
 // ============================================================
 
 export function getDbDump() {
+    // Calculate gerbong counts per train service
+    const gerbongCountsRaw = getAll(`
+        SELECT ts.name, COUNT(g.id) as count
+        FROM train_services ts
+        LEFT JOIN gerbong g ON ts.id = g.id_kereta
+        GROUP BY ts.id, ts.name
+    `);
+
+    const gerbongCounts = {};
+    gerbongCountsRaw.forEach(row => {
+        gerbongCounts[row.name] = row.count;
+    });
+
     return {
         trainNames: getTrainNames(),
         trainNumbers: getTrainNumbers(),
         routes: getRoutes(),
         users: getUsersWithPassword(),
         units: getUnits(),
+        gerbongCounts: gerbongCounts
     };
 }
 

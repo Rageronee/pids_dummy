@@ -20,6 +20,7 @@ function App() {
     const [temp, setTemp] = useState(24);
     const [showTVPreview, setShowTVPreview] = useState(false);
     const [showLedSettings, setShowLedSettings] = useState(false);
+    const [tvDisplayMode, setTvDisplayMode] = useState<'current' | 'next'>('current');
 
     // Synced State from Master
     const [stations, setStations] = useState(['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI']);
@@ -28,9 +29,9 @@ function App() {
     const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
     const [data, setData] = useState<PidsState | null>(null);
 
-    // Identity Control State (Local to Selector for choosing)
     const [trainNames, setTrainNames] = useState<string[]>(['ARGO WILIS', 'ARGO BROMO ANGGREK', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN']);
-    const [trainNumbers, setTrainNumbers] = useState<string[]>(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']);
+    const [trainNumbers, setTrainNumbers] = useState<string[]>(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15']);
+    const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
     const [routes, setRoutes] = useState<any>({
         'ARGO WILIS': { name: 'ARGO WILIS', stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'] },
         'ARGO BROMO ANGGREK': { name: 'ARGO BROMO ANGGREK', stations: ['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI'] }
@@ -53,6 +54,7 @@ function App() {
                         setTrainNames(dbData.data.trainNames);
                         setTrainNumbers(dbData.data.trainNumbers || []);
                         setRoutes(dbData.data.routes || {});
+                        if (dbData.data.gerbongCounts) setGerbongCounts(dbData.data.gerbongCounts);
                     }
                 }
             } catch (e) {
@@ -110,6 +112,7 @@ function App() {
         socket.on('db:update', (dbUpdate: any) => {
             if (dbUpdate.trainNames) setTrainNames(dbUpdate.trainNames);
             if (dbUpdate.routes) setRoutes(dbUpdate.routes);
+            if (dbUpdate.gerbongCounts) setGerbongCounts(dbUpdate.gerbongCounts);
         });
 
         return () => { socket.disconnect(); socketRef.current = null; };
@@ -181,6 +184,13 @@ function App() {
         }, 1000);
         return () => clearInterval(timer);
     }, [speed, altitude, temp]);
+
+    useEffect(() => {
+        const toggleTimer = setInterval(() => {
+            setTvDisplayMode(prev => prev === 'current' ? 'next' : 'current');
+        }, 15000);
+        return () => clearInterval(toggleTimer);
+    }, []);
 
     const handleSelectStation = () => {
         setShowTVPreview(false);
@@ -396,9 +406,14 @@ function App() {
                                             onChange={(e) => setTrainNumberIndex(parseInt(e.target.value))}
                                             className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-3.5 text-base font-bold text-[#1d2d6a] shadow-sm focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12"
                                         >
-                                            {trainNumbers.map((num, idx) => (
-                                                <option key={num} value={idx}>{num.replace('KA-', '')}</option>
-                                            ))}
+                                            {(() => {
+                                                const currentTrainName = trainNames[trainNameIndex] || masterSyncedServiceName;
+                                                const maxWagons = gerbongCounts[currentTrainName] || 15;
+                                                const availableNumbers = trainNumbers.slice(0, maxWagons);
+                                                return availableNumbers.map((num, idx) => (
+                                                    <option key={num} value={idx}>{num.replace('KA-', '')}</option>
+                                                ));
+                                            })()}
                                         </select>
                                         <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
                                             <ChevronDown size={20} strokeWidth={2.5} />
@@ -541,7 +556,7 @@ function App() {
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Live Matrix Preview</p>
                                         <div className="flex justify-center scale-110 py-6">
                                             <P10Matrix
-                                                text={`~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
+                                                text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
                                                 fixedText={`${masterSyncedNumber} `}
                                                 color="#ee6f1f"
                                                 speed={masterSyncedLedSpeed}
@@ -658,8 +673,11 @@ function App() {
                                     className="text-center w-full max-w-5xl"
                                 >
                                     {/* Huge Station Text */}
-                                    <h3 className="text-[9vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] uppercase mb-6">
-                                        {currentStation}
+                                    <h3 className="text-[1.5vw] font-bold text-white/80 tracking-widest uppercase mb-2 drop-shadow-md">
+                                        {tvDisplayMode === 'current' ? 'STASIUN SAAT INI' : 'STASIUN BERIKUTNYA'}
+                                    </h3>
+                                    <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] uppercase mb-6">
+                                        {tvDisplayMode === 'current' ? currentStation : nextStation}
                                     </h3>
 
                                     {/* Service & Train Block */}
