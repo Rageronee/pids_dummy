@@ -5,18 +5,18 @@ import type { PidsState } from '@eltran/pids-core';
 const API_URL = 'http://localhost:3001';
 
 const INITIAL_STATE: PidsState = {
-    serviceName: 'ARGO WILIS',
-    currentStation: 'BANDUNG',
-    trainNumber: '05',
-    nextStation: 'TASIKMALAYA',
-    status: 'ON TIME',
+    serviceName: '',
+    currentStation: '-',
+    trainNumber: '-',
+    nextStation: '-',
+    status: 'STANDBY',
     ledSpeed: 60,
-    speed: 15,
-    altitude: 694,
-    temperature: 25.1,
-    airQuality: 'GOOD NOMINAL',
+    speed: 0,
+    altitude: 0,
+    temperature: 0,
+    airQuality: '-',
     displayMode: 'pids',
-    stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
+    stations: [],
     activeRoute: null,
 };
 

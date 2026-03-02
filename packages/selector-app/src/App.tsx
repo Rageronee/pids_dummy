@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
 import { io, Socket } from 'socket.io-client';
-import type { AuthUser } from '@eltran/pids-core';
+import type { AuthUser, PidsState } from '@eltran/pids-core';
 
 
 function App() {
@@ -26,6 +26,7 @@ function App() {
     const [masterSyncedServiceName, setMasterSyncedServiceName] = useState('ARGO BROMO ANGGREK');
     const [masterSyncedNumber, setMasterSyncedNumber] = useState('KA 1');
     const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
+    const [data, setData] = useState<PidsState | null>(null);
 
     // Identity Control State (Local to Selector for choosing)
     const [trainNames, setTrainNames] = useState<string[]>(['ARGO WILIS', 'ARGO BROMO ANGGREK', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN']);
@@ -60,6 +61,28 @@ function App() {
         };
         fetchDb();
 
+        // Initial State fetch
+        const fetchState = async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/state`);
+                if (res.ok) {
+                    const stateData = await res.json();
+                    if (stateData) {
+                        setData(stateData);
+                        if (stateData.serviceName) setMasterSyncedServiceName(stateData.serviceName);
+                        if (stateData.trainNumber) setMasterSyncedNumber(stateData.trainNumber);
+                        if (stateData.ledSpeed !== undefined) setMasterSyncedLedSpeed(stateData.ledSpeed);
+                        if (stateData.stations && Array.isArray(stateData.stations) && stateData.stations.length > 0) {
+                            setStations(stateData.stations);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch State from master API:', e);
+            }
+        };
+        fetchState();
+
         // Connect Socket.IO
         const socket = io(API_URL, {
             transports: ['websocket', 'polling'],
@@ -72,6 +95,7 @@ function App() {
 
         // Real-time state updates (replaces polling)
         socket.on('state:update', (parsed: any) => {
+            setData(parsed);
             if (parsed.serviceName) setMasterSyncedServiceName(parsed.serviceName);
             if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
@@ -470,7 +494,7 @@ function App() {
                                     </div>
                                     <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl text-slate-500 font-bold text-sm border border-slate-200 w-max">
                                         <Clock size={16} />
-                                        <span>Estimated: 12 mins</span>
+                                        <span>Status: {data?.status || 'STANDBY'}</span>
                                     </div>
                                 </div>
                             </div>

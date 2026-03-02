@@ -99,19 +99,22 @@ function SectionAccordion({
 
 export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
 
-    const activeTrainName = data?.serviceName || 'ARGO WILIS';
-    const activeTrainNumber = data?.trainNumber || '05';
+    const activeTrainName = data?.serviceName || 'Belum Dikonfigurasi';
+    const activeTrainNumber = data?.trainNumber || '-';
     const [jumlahKereta, setJumlahKereta] = useState(5);
     const [mediaSource, setMediaSource] = useState('Line In');
     const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
     const [stationsData, setStationsData] = useState<any[]>([]);
+    const [scheduleData, setScheduleData] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [simGps, setSimGps] = useState({ lng: 0, lat: 0, heading: 0 });
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
     const mockGpsInterval = useRef<number | null>(null);
 
+    // Fetch stations
     useEffect(() => {
         fetch('http://localhost:3001/api/stations')
             .then(res => res.json())
@@ -123,15 +126,80 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
             .catch(console.error);
     }, []);
 
+    // Fetch schedules for the active service
+    useEffect(() => {
+        fetch('http://localhost:3001/api/schedules')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.schedules) {
+                    setScheduleData(res.schedules);
+                }
+            })
+            .catch(console.error);
+    }, [activeTrainName]);
+
+    // Simulate GPS coordinates from the current station
+    useEffect(() => {
+        if (!stationsData.length || !data?.currentStation) return;
+        const currentStn = stationsData.find(s => s.name === data.currentStation);
+        if (currentStn) {
+            setSimGps({
+                lng: currentStn.longitude + (Math.random() - 0.5) * 0.01,
+                lat: currentStn.latitude + (Math.random() - 0.5) * 0.01,
+                heading: Math.round(Math.random() * 360 * 100) / 100
+            });
+        }
+    }, [stationsData, data?.currentStation]);
+
     const activeRouteStations = data?.activeRoute?.stations || data?.stations || [];
+
+    // Derived: relasi (first station code - last station code)
+    const firstStation = activeRouteStations[0] || '-';
+    const lastStation = activeRouteStations[activeRouteStations.length - 1] || '-';
+    const firstStationObj = stationsData.find(s => s.name === firstStation);
+    const lastStationObj = stationsData.find(s => s.name === lastStation);
+    const relasiCode = `${firstStationObj?.id || firstStation.substring(0, 3)} - ${lastStationObj?.id || lastStation.substring(0, 3)}`;
+
+    // Derived: schedule for the active service
+    const activeSchedule = scheduleData.find(s => s.train_name === activeTrainName);
+    const firstStop = activeSchedule?.stops?.[0];
+    const lastStop = activeSchedule?.stops?.[activeSchedule.stops.length - 1];
+    const departureTime = firstStop?.departure_time || '-';
+    const arrivalTime = lastStop?.arrival_time || '-';
+    const departureLabel = `${firstStationObj?.id || firstStation.substring(0, 3)} ${departureTime}`;
+    const arrivalLabel = `${lastStationObj?.id || lastStation.substring(0, 3)} ${arrivalTime}`;
+
+    // Derived: nearest POI = currentStation
+    const nearestPoi = data?.currentStation || '-';
+    const nextStationName = data?.nextStation || (activeRouteStations.length > 1 ? activeRouteStations[1] : '-');
+
+    // Derived: ETA to next station from schedule
+    const nextStopSchedule = activeSchedule?.stops?.find((s: any) => s.station_name === nextStationName);
+    const etaTime = nextStopSchedule?.arrival_time || '-';
+
+    // Derived: distance to nearest POI (approximate)
+    const currentStnObj = stationsData.find(s => s.name === data?.currentStation);
+    const nextStnObj = stationsData.find(s => s.name === nextStationName);
+    let distToNext = '-';
+    if (currentStnObj && nextStnObj) {
+        const R = 6371;
+        const dLat = (nextStnObj.latitude - currentStnObj.latitude) * Math.PI / 180;
+        const dLon = (nextStnObj.longitude - currentStnObj.longitude) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(currentStnObj.latitude * Math.PI / 180) * Math.cos(nextStnObj.latitude * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c;
+        distToNext = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
+    }
+
     const navData = activeRouteStations.map((stationName: string, idx: number) => {
         const station = stationsData.find(s => s.name === stationName) || {};
+        const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === stationName);
         return {
             name: stationName,
-            type: "ANTARA",
-            lng: station.longitude?.toString() || "-",
-            lat: station.latitude?.toString() || "-",
-            eta: "-",
+            type: idx === 0 ? 'ASAL' : idx === activeRouteStations.length - 1 ? 'TUJUAN' : 'ANTARA',
+            lng: station.longitude?.toFixed(6) || "-",
+            lat: station.latitude?.toFixed(6) || "-",
+            eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
             status: stationName === data?.currentStation ? "BERHENTI" : "",
             next: activeRouteStations[idx + 1] || "-"
         };
@@ -376,7 +444,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                             </div>
                             <div className="flex flex-col text-right">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Relasi</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">BD - SGU</span>
+                                <span className="text-xs font-black text-[#1d2d6a]">{relasiCode}</span>
                             </div>
                         </div>
 
@@ -384,11 +452,11 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-white px-4 py-2.5 rounded-xl border border-slate-100 shadow-sm">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Berangkat</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">BD 19:00</span>
+                                <span className="text-xs font-black text-[#1d2d6a]">{departureLabel}</span>
                             </div>
                             <div className="bg-white px-4 py-2.5 rounded-xl border border-slate-100 shadow-sm">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Tiba</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">SGU 07:31</span>
+                                <span className="text-xs font-black text-[#1d2d6a]">{arrivalLabel}</span>
                             </div>
                         </div>
 
@@ -397,11 +465,11 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                             <div className="flex justify-between items-center">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">POI Terdekat</span>
-                                    <span className="text-sm font-black text-[#ee6f1f]">BUMIWALIYA</span>
+                                    <span className="text-sm font-black text-[#ee6f1f]">{nearestPoi}</span>
                                 </div>
                                 <div className="flex flex-col text-right">
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Jarak ke POI</span>
-                                    <span className="text-xs font-black text-[#ee6f1f]">&lt; 10 km (2518 m)</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Jarak ke Tujuan</span>
+                                    <span className="text-xs font-black text-[#ee6f1f]">{distToNext}</span>
                                 </div>
                             </div>
 
@@ -410,11 +478,11 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                             <div className="flex justify-between items-center bg-blue-50/50 p-2.5 rounded-xl border border-blue-100/50">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Status Aktual</span>
-                                    <span className="text-xs font-black text-[#1d2d6a]">Menuju ke CIPEUNDEUY</span>
+                                    <span className="text-xs font-black text-[#1d2d6a]">Menuju ke {nextStationName}</span>
                                 </div>
                                 <div className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100 text-center">
                                     <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-0.5">ETA</span>
-                                    <span className="text-xs font-black text-blue-700">23:04</span>
+                                    <span className="text-xs font-black text-blue-700">{etaTime}</span>
                                 </div>
                             </div>
                         </div>
@@ -442,12 +510,12 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                                 <div className="text-xs text-slate-200 font-medium">Realtime Speed (GPS)</div>
                             </div>
                             <div className="text-5xl font-mono font-black text-slate-50  leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
-                                41.8<span className="text-base font-sans tracking-widest ml-2 text-slate-50 font-bold">km/h</span>
+                                {(data?.speed || 0).toFixed(1)}<span className="text-base font-sans tracking-widest ml-2 text-slate-50 font-bold">km/h</span>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">108.086736</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Bujur Timur
@@ -456,7 +524,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">-7.07608</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Lintang Selatan
@@ -466,7 +534,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
 
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">141.88&deg;</div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.heading.toFixed(2)}&deg;</div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Arah Orientasi KA
@@ -475,7 +543,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Ketinggian <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">125 <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{data?.altitude || 0} <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
                             {/* Tooltip */}
                             <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Elevasi Permukaan

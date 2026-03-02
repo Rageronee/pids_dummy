@@ -402,20 +402,13 @@ function App() {
     const [authToken, setAuthToken] = useState<string>('');
 
     const { data } = usePidsData();
-    const activeTrainName = data.serviceName || 'ARGO WILIS';
-    const activeTrainNumber = data.trainNumber || '05';
+    const activeTrainName = data.serviceName || 'Belum Dikonfigurasi';
+    const activeTrainNumber = data.trainNumber || '-';
     const activeRoute = data.activeRoute || {
-        name: 'ARGO WILIS',
-        stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
-        path: "M 80 220 C 150 220, 180 180, 220 180 S 350 220, 400 220 S 480 180, 520 180 S 580 220, 620 220 S 720 150, 750 150",
-        nodes: [
-            { pos: "M 80 220", label: "BD", name: "BANDUNG" },
-            { pos: "M 220 180", label: "TSM", name: "TASIKMALAYA" },
-            { pos: "M 400 220", label: "YK", name: "YOGYAKARTA" },
-            { pos: "M 520 180", label: "SLO", name: "SOLO BALAPAN" },
-            { pos: "M 620 220", label: "MN", name: "MADIUN" },
-            { pos: "M 750 150", label: "SGU", name: "SURABAYA GUBENG" }
-        ],
+        name: data.serviceName || '-',
+        stations: data.stations || [],
+        path: '',
+        nodes: [],
     };
 
     // Check persisted session on mount
