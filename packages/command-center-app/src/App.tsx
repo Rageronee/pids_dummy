@@ -527,7 +527,7 @@ function RoutesPage({ token }: { token: string }) {
             <ConfirmModal
                 isOpen={!!deleteTarget}
                 title="Hapus Rute"
-                message={`Apakah Anda yakin ingin menghapus rute "${deleteTarget}"? Aksi ini tidak dapat dibatalkan.`}
+                message={`Apakah Anda yakin ingin menutup rute "${deleteTarget}"? Aksi ini tidak dapat dibatalkan.`}
                 onConfirm={confirmDelete}
                 onCancel={() => setDeleteTarget(null)}
                 loading={saving}

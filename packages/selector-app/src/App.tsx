@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
@@ -21,6 +21,12 @@ function App() {
     const [showTVPreview, setShowTVPreview] = useState(false);
     const [showLedSettings, setShowLedSettings] = useState(false);
     const [tvDisplayMode, setTvDisplayMode] = useState<'current' | 'next'>('current');
+    const [toastMsg, setToastMsg] = useState<{ title: string, message: string } | null>(null);
+
+    const showNotification = (title: string, message: string) => {
+        setToastMsg({ title, message });
+        setTimeout(() => setToastMsg(null), 3000);
+    };
 
     // Synced State from Master
     const [stations, setStations] = useState(['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI']);
@@ -199,6 +205,7 @@ function App() {
             nextStation: stations[(currentIndex + 1) % stations.length],
             isSyncing: true
         });
+        showNotification('Sync Completed', 'Station display status updated.');
     };
 
     const handleToggleTV = () => {
@@ -230,16 +237,19 @@ function App() {
             stations: newStations,
             activeRoute: routeData
         });
+        showNotification('Configuration Saved', `Service name set to ${newName}`);
     };
 
     const handleSetNumber = () => {
         const newNumber = trainNumbers[trainNumberIndex];
         sendData({ trainNumber: newNumber });
+        showNotification('Configuration Saved', `Unit number set to ${newNumber}`);
     };
 
     const handleSetLedSpeed = (speedValue: number) => {
         setMasterSyncedLedSpeed(speedValue);
         sendData({ ledSpeed: speedValue });
+        showNotification('Configuration Saved', `LED scroll speed set to ${speedValue}ms`);
     };
 
 
@@ -674,7 +684,7 @@ function App() {
                                 >
                                     {/* Huge Station Text */}
                                     <h3 className="text-[1.5vw] font-bold text-white/80 tracking-widest uppercase mb-2 drop-shadow-md">
-                                        {tvDisplayMode === 'current' ? 'STASIUN SAAT INI' : 'STASIUN BERIKUTNYA'}
+                                        {tvDisplayMode === 'current' ? 'CURRENT STATION' : 'NEXT STATION'}
                                     </h3>
                                     <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] uppercase mb-6">
                                         {tvDisplayMode === 'current' ? currentStation : nextStation}
@@ -733,6 +743,26 @@ function App() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Toast Notification */}
+                <AnimatePresence>
+                    {toastMsg && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 50 }}
+                            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 bg-[#1d2d6a] text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-blue-900/50 min-w-[320px]"
+                        >
+                            <div className="bg-[#ee6f1f] p-2 rounded-full">
+                                <CheckCircle2 size={24} className="text-white" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-black text-sm uppercase tracking-widest">{toastMsg.title}</span>
+                                <span className="text-blue-200/80 text-xs font-medium">{toastMsg.message}</span>
                             </div>
                         </motion.div>
                     )}

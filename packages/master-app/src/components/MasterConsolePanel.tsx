@@ -9,7 +9,7 @@ import {
     ChevronDown, ChevronRight, RadioTower, Video, Info,
     ListVideo, Disc, CheckCircle2, AlertCircle, Satellite,
     Repeat, Shuffle,
-    Upload, X
+    Upload, X, Trash2, Loader2
 } from 'lucide-react';
 
 // Modern Toggle Switch Component (REFINED: Single Toggle Button)
@@ -113,10 +113,12 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
     const [stationsData, setStationsData] = useState<any[]>([]);
     const [scheduleData, setScheduleData] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [simGps, setSimGps] = useState({ lng: 0, lat: 0, heading: 0 });
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
+    const simGpsRef = useRef(simGps);
 
     // Fetch stations
     useEffect(() => {
@@ -171,11 +173,13 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
         if (!stationsData.length || !data?.currentStation) return;
         const currentStn = stationsData.find(s => s.name === data.currentStation);
         if (currentStn) {
-            setSimGps({
+            const newGps = {
                 lng: currentStn.longitude,
                 lat: currentStn.latitude,
                 heading: data.heading || 0
-            });
+            };
+            setSimGps(newGps);
+            simGpsRef.current = newGps;
         }
     }, [stationsData, data?.currentStation]);
 
@@ -191,10 +195,12 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
             const centerPt = turf.point([simGps.lng, simGps.lat]);
             if (map.current.getSource('geofencing-outer')) {
                 const outerG = turf.circle(centerPt, outerRadius, { steps: 64, units: 'meters' });
+                outerG.properties = { label: `OUTER RADIUS: ${outerRadius} METERS` };
                 (map.current.getSource('geofencing-outer') as maplibregl.GeoJSONSource).setData(outerG);
             }
             if (map.current.getSource('geofencing-inner')) {
                 const innerG = turf.circle(centerPt, innerRadius, { steps: 64, units: 'meters' });
+                innerG.properties = { label: `INNER RADIUS: ${innerRadius} METERS` };
                 (map.current.getSource('geofencing-inner') as maplibregl.GeoJSONSource).setData(innerG);
             }
         } catch (e) {
@@ -220,9 +226,10 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
     const departureLabel = `${firstStationObj?.id || firstStation.substring(0, 3)} ${departureTime}`;
     const arrivalLabel = `${lastStationObj?.id || lastStation.substring(0, 3)} ${arrivalTime}`;
 
-    // Derived: nearest POI = currentStation
-    const nearestPoi = data?.currentStation || '-';
     const nextStationName = data?.nextStation || (activeRouteStations.length > 1 ? activeRouteStations[1] : '-');
+
+    // Derived: nearest POI = nextStation
+    const nearestPoi = nextStationName;
 
     // Derived: ETA to next station from schedule
     const nextStopSchedule = activeSchedule?.stops?.find((s: any) => s.station_name === nextStationName);
@@ -262,10 +269,13 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const handleDeleteGeoJSON = async () => {
+    const handleDeleteClick = () => {
         if (!route?.name) return;
-        if (!window.confirm(`Hapus GeoJSON untuk rute ${route.name}?`)) return;
+        setShowDeleteModal(true);
+    };
 
+    const confirmDeleteGeoJSON = async () => {
+        setShowDeleteModal(false);
         try {
             setUploading(true);
             const token = sessionStorage.getItem('pids_token');
@@ -277,8 +287,8 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
             });
 
             if (res.ok) {
+                await new Promise(r => setTimeout(r, 1500));
                 showToast('GeoJSON rute berhasil dihapus.');
-                setTimeout(() => window.location.reload(), 1000);
             } else {
                 let msg = 'Gagal menghapus GeoJSON';
                 try {
@@ -367,9 +377,9 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
 
                 const apiData = await res.json();
                 if (apiData.success) {
+                    await new Promise(r => setTimeout(r, 1500));
                     showToast('GeoJSON rute berhasil diunggah! Data stasiun otomatis diperbarui.');
                     if (e.target) e.target.value = ''; // Reset input
-                    setTimeout(() => window.location.reload(), 1500);
                 } else {
                     showToast(`Gagal: ${apiData.error}`, false);
                 }
@@ -484,16 +494,20 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
 
                 // Add sources and layers for geofencing
                 if (!map.current?.getSource('geofencing-outer')) {
+                    const currentGps = simGpsRef.current;
+                    const initialOuter = turf.circle(turf.point([currentGps.lng || 107.6036, currentGps.lat || -6.9125]), radiusRef.current.outer, { steps: 64, units: 'meters' });
+                    initialOuter.properties = { label: `OUTER RADIUS: ${radiusRef.current.outer} METERS` };
+
                     map.current?.addSource('geofencing-outer', {
                         type: 'geojson',
-                        data: turf.circle(turf.point([107.6036, -6.9125]), radiusRef.current.outer, { steps: 64, units: 'meters' })
+                        data: initialOuter
                     });
                     map.current?.addLayer({
                         id: 'geofencing-outer-line',
                         type: 'line',
                         source: 'geofencing-outer',
                         paint: {
-                            'line-color': '#ee6f1f',
+                            'line-color': '#3b82f6',
                             'line-width': 2,
                             'line-dasharray': [2, 2],
                             'line-opacity': 0.8
@@ -504,23 +518,44 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         type: 'fill',
                         source: 'geofencing-outer',
                         paint: {
-                            'fill-color': '#ee6f1f',
+                            'fill-color': '#3b82f6',
                             'fill-opacity': 0.1
+                        }
+                    });
+                    map.current?.addLayer({
+                        id: 'geofencing-outer-label',
+                        type: 'symbol',
+                        source: 'geofencing-outer',
+                        layout: {
+                            'symbol-placement': 'line',
+                            'text-field': ['get', 'label'],
+                            'text-size': 12,
+                            'text-offset': [0, -1],
+                            'text-keep-upright': true
+                        },
+                        paint: {
+                            'text-color': '#93c5fd',
+                            'text-halo-color': '#1e3a8a',
+                            'text-halo-width': 2
                         }
                     });
                 }
 
                 if (!map.current?.getSource('geofencing-inner')) {
+                    const currentGps = simGpsRef.current;
+                    const initialInner = turf.circle(turf.point([currentGps.lng || 107.6036, currentGps.lat || -6.9125]), radiusRef.current.inner, { steps: 64, units: 'meters' });
+                    initialInner.properties = { label: `INNER RADIUS: ${radiusRef.current.inner} METERS` };
+
                     map.current?.addSource('geofencing-inner', {
                         type: 'geojson',
-                        data: turf.circle(turf.point([107.6036, -6.9125]), radiusRef.current.inner, { steps: 64, units: 'meters' })
+                        data: initialInner
                     });
                     map.current?.addLayer({
                         id: 'geofencing-inner-line',
                         type: 'line',
                         source: 'geofencing-inner',
                         paint: {
-                            'line-color': '#1d2d6a',
+                            'line-color': '#2563eb',
                             'line-width': 2,
                             'line-dasharray': [4, 4],
                             'line-opacity': 0.9
@@ -531,8 +566,25 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         type: 'fill',
                         source: 'geofencing-inner',
                         paint: {
-                            'fill-color': '#1d2d6a',
+                            'fill-color': '#2563eb',
                             'fill-opacity': 0.15
+                        }
+                    });
+                    map.current?.addLayer({
+                        id: 'geofencing-inner-label',
+                        type: 'symbol',
+                        source: 'geofencing-inner',
+                        layout: {
+                            'symbol-placement': 'line',
+                            'text-field': ['get', 'label'],
+                            'text-size': 12,
+                            'text-offset': [0, -1],
+                            'text-keep-upright': true
+                        },
+                        paint: {
+                            'text-color': '#bfdbfe',
+                            'text-halo-color': '#1e40af',
+                            'text-halo-width': 2
                         }
                     });
                 }
@@ -858,7 +910,7 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                             <div className="flex items-center gap-2">
                                 {route?.geojson && (
                                     <button
-                                        onClick={handleDeleteGeoJSON}
+                                        onClick={handleDeleteClick}
                                         disabled={uploading}
                                         className="text-xs font-black uppercase tracking-widest text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors"
                                     >
@@ -1112,14 +1164,81 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
             <AnimatePresence>
                 {toast && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className={`fixed bottom-24 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl z-[70] text-sm font-bold ${toast.ok ? 'bg-[#1d2d6a] text-white shadow-[0_8px_24px_rgba(29,45,106,0.25)]' : 'bg-red-500 text-white shadow-[0_8px_24px_rgba(239,68,68,0.25)]'
+                        exit={{ opacity: 0, y: 50 }}
+                        className={`fixed bottom-24 right-8 z-[70] text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px] ${toast.ok
+                            ? 'bg-[#1d2d6a] border border-blue-900/50'
+                            : 'bg-red-600 border border-red-700/50'
                             }`}
                     >
-                        {toast.ok ? <CheckCircle2 size={18} className="shrink-0" /> : <AlertCircle size={18} className="shrink-0" />}
-                        {toast.msg}
+                        <div className={`p-2 rounded-full flex items-center justify-center shrink-0 ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-800'}`}>
+                            {toast.ok ? <CheckCircle2 size={24} className="text-white" /> : <AlertCircle size={24} className="text-white" />}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-black text-sm uppercase tracking-widest">
+                                {toast.ok ? 'Notifikasi' : 'Kesalahan'}
+                            </span>
+                            <span className="text-blue-100/90 text-xs font-medium">{toast.msg}</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Custom Delete Confirmation Modal */}
+            <AnimatePresence>
+                {showDeleteModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200"
+                        >
+                            <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner">
+                                    <Trash2 size={32} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1d2d6a] uppercase tracking-widest text-center">Hapus GeoJSON?</h3>
+                            </div>
+                            <div className="p-6 text-center text-slate-500 text-sm font-bold uppercase tracking-wide leading-relaxed">
+                                Anda yakin ingin menghapus data rute <span className="text-[#1d2d6a] font-black">{route?.name}</span>? Tindakan ini tidak dapat dibatalkan.
+                            </div>
+                            <div className="p-6 pt-0 flex gap-3">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={confirmDeleteGeoJSON}
+                                    className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.3)]"
+                                >
+                                    Ya, Hapus
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Full-screen Loading Overlay for GeoJSON operations */}
+            <AnimatePresence>
+                {uploading && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-[#0b1437]/80 backdrop-blur-md"
+                    >
+                        <div className="bg-white/10 p-8 rounded-3xl mb-6 shadow-2xl border border-white/20 flex items-center justify-center">
+                            <Loader2 size={64} className="text-[#ee6f1f] animate-spin" />
+                        </div>
+                        <h3 className="text-white font-black text-2xl mb-2 uppercase tracking-widest drop-shadow-lg">Memproses Data Peta</h3>
+                        <p className="text-slate-300 text-center max-w-sm px-6 text-sm font-bold uppercase tracking-tight leading-relaxed">
+                            Mohon tunggu sebentar. Sistem sedang mensinkronisasi rute dan waypoint navigasi.
+                        </p>
                     </motion.div>
                 )}
             </AnimatePresence>
