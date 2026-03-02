@@ -17,6 +17,8 @@
         "socket.io-client": "^4.8.3"
     },
     "devDependencies": {
+        "@types/mapbox__point-geometry": "^0.1.4",
+        "@types/mapbox__vector-tile": "^1.2.4",
         "@types/react": "^18.2.55",
         "@types/react-dom": "^18.2.19",
         "@vitejs/plugin-react": "^4.2.1",

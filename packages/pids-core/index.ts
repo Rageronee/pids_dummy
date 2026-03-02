@@ -15,6 +15,18 @@ export interface Station {
     lon?: number;
     latitude?: number;
     longitude?: number;
+    ip_address?: string;
+    nama_pic?: string;
+    kontak_pic?: string;
+    kode_kota?: string;
+    alamat?: string;
+    provinsi?: string;
+    kabupaten_kota?: string;
+    kecamatan?: string;
+    kelurahan_desa?: string;
+    kode_pos?: string;
+    poi?: string;
+    media?: string;
 }
 
 export type DisplayMode = 'pids' | 'tv';
@@ -78,13 +90,17 @@ export type LogAction =
     | 'ADMIN_CRUD'
     | 'SYSTEM';
 
-// ---- SQL Entity Types (New) ----
+// ---- SQL Entity Types (SRS-compliant) ----
 
 export interface TrainService {
     id: number;
     name: string;
     class: string; // EKSEKUTIF, BISNIS, EKONOMI
     ka_number: string; // KA 1, KA 5, etc.
+    ip_address?: string;
+    nama_pic?: string;
+    kontak_pic?: string;
+    media?: string;
 }
 
 export interface Schedule {
@@ -93,6 +109,8 @@ export interface Schedule {
     schedule_date: string;
     status: 'ON_TIME' | 'LATE' | 'CANCELLED';
     notes: string;
+    catatan?: string;
+    media?: string;
     train_name?: string;
     train_class?: string;
     ka_number?: string;
@@ -106,6 +124,12 @@ export interface ScheduleStop {
     route_station_id: number;
     arrival_time: string;
     departure_time: string;
+    realisasi_datang?: string;
+    realisasi_berangkat?: string;
+    selisih_datang?: number;
+    selisih_berangkat?: number;
+    status_datang?: string;
+    status_berangkat?: string;
     platform: number;
     stop_status: 'SCHEDULED' | 'ARRIVED' | 'DEPARTED' | 'SKIPPED';
     station_name?: string;
@@ -127,6 +151,92 @@ export interface Announcement {
     priority: number;
     active: number | boolean;
     created_at: string;
+}
+
+// ---- NEW SRS Entities ----
+
+export interface Gerbong {
+    id: string;
+    ip_address?: string;
+    nama_gerbong: string;
+    no_urut_gerbong: number;
+    id_kereta: number;
+    kereta_name?: string;
+}
+
+export interface Sensor {
+    id: string;
+    ip_address?: string;
+    nama_device: string;
+    tipe_sensor: 'GPS' | 'Suhu' | 'AQ';
+    status: 'Aktif' | 'Nonaktif';
+    is_main: number | boolean;
+    id_gerbong: string;
+}
+
+export interface SensorData {
+    id: string;
+    latitude: number;
+    longitude: number;
+    altitude: number;
+    kecepatan: number;
+    suhu: number;
+    poi?: string;
+    waktu_rekam: string;
+    id_sensor: string;
+}
+
+export interface LogMaintenance {
+    id: string;
+    mulai: string;
+    selesai?: string;
+    status: 'Open' | 'On Going' | 'Closed';
+    prioritas: 'Low' | 'Medium' | 'High';
+    deskripsi?: string;
+    id_kereta: number;
+    kereta_name?: string;
+}
+
+export interface LogOperasional {
+    id: string;
+    waktu: string;
+    catatan?: string;
+    id_kereta: number;
+    id_jadwal?: number;
+    kereta_name?: string;
+}
+
+// ---- GPS Fleet Types ----
+
+export interface GpsFleetEntry {
+    kereta_id: number;
+    kereta_name: string;
+    ka_number: string;
+    gerbong_id: string;
+    nama_gerbong: string;
+    latitude: number;
+    longitude: number;
+    altitude: number;
+    kecepatan: number;
+    suhu: number;
+    poi?: string;
+    waktu_rekam: string;
+}
+
+export interface GpsGerbongEntry {
+    gerbong_id: string;
+    nama_gerbong: string;
+    no_urut_gerbong: number;
+    sensor_id: string;
+    tipe_sensor: string;
+    sensor_status: string;
+    latitude: number;
+    longitude: number;
+    altitude: number;
+    kecepatan: number;
+    suhu: number;
+    poi?: string;
+    waktu_rekam: string;
 }
 
 // ---- Socket.IO Event Types ----

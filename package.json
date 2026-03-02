@@ -24,6 +24,8 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "cross-env": "^10.1.0",
-    "wait-on": "^7.2.0"
+    "wait-on": "^7.2.0",
+    "@types/mapbox__point-geometry": "^0.1.4",
+    "@types/mapbox__vector-tile": "^1.2.4"
   }
 }

@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
+import maplibregl from 'maplibre-gl';
+import * as turf from '@turf/turf';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Train, Settings, Save, RefreshCw, Volume2,
@@ -94,7 +97,7 @@ function SectionAccordion({
 }
 
 
-export function MasterConsolePanel({ route: _route, data }: { route: any, data: any }) {
+export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
 
     const activeTrainName = data?.serviceName || 'ARGO WILIS';
     const activeTrainNumber = data?.trainNumber || '05';
@@ -103,6 +106,11 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
     const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
     const [stationsData, setStationsData] = useState<any[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const mapContainer = useRef<HTMLDivElement>(null);
+    const map = useRef<maplibregl.Map | null>(null);
+    const markerRef = useRef<maplibregl.Marker | null>(null);
+    const mockGpsInterval = useRef<number | null>(null);
 
     useEffect(() => {
         fetch('http://localhost:3001/api/stations')
@@ -134,6 +142,219 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
         setToast({ msg, ok });
         setTimeout(() => setToast(null), 3000);
     };
+
+    const handleUploadGeoJSON = async (e: ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+            try {
+                setUploading(true);
+                const jsonStr = event.target?.result as string;
+                let parsed;
+                try {
+                    parsed = JSON.parse(jsonStr);
+                } catch (e) {
+                    throw new Error('File bukan format JSON/GeoJSON yang valid.');
+                }
+
+                // Validate basic GeoJSON structure
+                if (!parsed.type || (parsed.type !== 'FeatureCollection' && parsed.type !== 'Feature' && !parsed.coordinates)) {
+                    throw new Error('File bukan GeoJSON yang valid. Pastikan file memiliki "type": "FeatureCollection" atau "Feature".');
+                }
+
+                if (!route?.name) {
+                    showToast('Tidak ada rute kereta yang aktif. Pilih rute terlebih dahulu.', false);
+                    setUploading(false);
+                    return;
+                }
+
+                const token = sessionStorage.getItem('pids_token');
+                if (!token) {
+                    showToast('Sesi login tidak ditemukan. Silakan login ulang.', false);
+                    setUploading(false);
+                    return;
+                }
+
+                console.log(`[GeoJSON Upload] Uploading to route: ${route.name}, file size: ${jsonStr.length} chars`);
+
+                let res: Response;
+                try {
+                    res = await fetch(`http://localhost:3001/api/admin/routes/${encodeURIComponent(route.name)}/geojson`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ geojson: parsed })
+                    });
+                } catch (networkErr) {
+                    throw new Error('Tidak dapat terhubung ke API server (port 3001). Pastikan Electron sudah berjalan.');
+                }
+
+                // Check HTTP status before parsing JSON
+                if (!res.ok) {
+                    // Try to get error message from response
+                    let errMsg = `Server error (HTTP ${res.status})`;
+                    try {
+                        const errBody = await res.json();
+                        errMsg = errBody.error || errBody.message || errMsg;
+                    } catch {
+                        // Response is not JSON (e.g. HTML error page)
+                        if (res.status === 413) {
+                            errMsg = 'File GeoJSON terlalu besar. Coba kurangi ukuran file.';
+                        } else if (res.status === 401) {
+                            errMsg = 'Sesi login expired. Silakan login ulang.';
+                        } else if (res.status === 404) {
+                            errMsg = `Rute "${route.name}" tidak ditemukan di database.`;
+                        }
+                    }
+                    throw new Error(errMsg);
+                }
+
+                const apiData = await res.json();
+                if (apiData.success) {
+                    showToast('GeoJSON rute berhasil diunggah! Data stasiun otomatis diperbarui.');
+                    if (e.target) e.target.value = ''; // Reset input
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast(`Gagal: ${apiData.error}`, false);
+                }
+            } catch (err: any) {
+                console.error('[GeoJSON Upload] Error:', err);
+                showToast(err.message || 'Format file GeoJSON tidak valid.', false);
+            } finally {
+                setUploading(false);
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    useEffect(() => {
+        if (!mapContainer.current) return;
+
+        // Free dark tile style (no API key needed)
+        const darkStyle: maplibregl.StyleSpecification = {
+            version: 8,
+            sources: {
+                'carto-dark': {
+                    type: 'raster',
+                    tiles: [
+                        'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+                }
+            },
+            layers: [{
+                id: 'carto-dark-layer',
+                type: 'raster',
+                source: 'carto-dark',
+                minzoom: 0,
+                maxzoom: 19
+            }]
+        };
+
+        map.current = new maplibregl.Map({
+            container: mapContainer.current,
+            style: darkStyle,
+            center: [107.6098, -6.9147],
+            zoom: 11,
+            pitch: 45,
+            attributionControl: false
+        });
+
+        const el = document.createElement('div');
+        el.className = 'w-6 h-6 bg-orange-500 rounded-full border-4 border-white shadow-[0_0_15px_rgba(238,111,31,0.8)]';
+        markerRef.current = new maplibregl.Marker({ element: el })
+            .setLngLat([107.6036, -6.9125])
+            .addTo(map.current!);
+
+        map.current.on('load', () => {
+            if (!route?.geojson) return;
+
+            try {
+                const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+
+                map.current?.addSource('route-path', {
+                    type: 'geojson',
+                    data: geojson
+                });
+
+                map.current?.addLayer({
+                    id: 'route-line',
+                    type: 'line',
+                    source: 'route-path',
+                    paint: {
+                        'line-color': '#1d2d6a',
+                        'line-width': 6,
+                        'line-opacity': 0.8
+                    },
+                    filter: ['==', '$type', 'LineString']
+                });
+
+                map.current?.addLayer({
+                    id: 'route-line-glow',
+                    type: 'line',
+                    source: 'route-path',
+                    paint: {
+                        'line-color': '#ee6f1f',
+                        'line-width': 2,
+                        'line-opacity': 1
+                    },
+                    filter: ['==', '$type', 'LineString']
+                });
+
+                map.current?.addLayer({
+                    id: 'station-points',
+                    type: 'circle',
+                    source: 'route-path',
+                    paint: {
+                        'circle-radius': 6,
+                        'circle-color': '#ffffff',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ee6f1f'
+                    },
+                    filter: ['==', '$type', 'Point']
+                });
+
+                const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+                const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
+                const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
+
+                if (coordinates && coordinates.length > 0) {
+                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
+                        return bounds.extend(coord);
+                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+                    map.current?.fitBounds(bounds, { padding: 50 });
+
+                    const line = turf.lineString(coordinates);
+                    const lineDistance = (turf as any).length(line);
+                    let distanceTraveled = 0;
+
+                    const animateMarker = () => {
+                        if (distanceTraveled >= lineDistance) distanceTraveled = 0;
+                        const alongPath = turf.along(line, distanceTraveled);
+                        const coords = alongPath.geometry.coordinates as [number, number];
+                        markerRef.current?.setLngLat(coords);
+                        distanceTraveled += lineDistance / 500;
+                        mockGpsInterval.current = requestAnimationFrame(animateMarker);
+                    };
+
+                    animateMarker();
+                }
+
+            } catch (err) {
+                console.error("Failed to render GeoJSON:", err);
+            }
+        });
+
+        return () => {
+            if (mockGpsInterval.current !== null) cancelAnimationFrame(mockGpsInterval.current);
+            map.current?.remove();
+        }
+    }, [route?.geojson]);
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-full pb-32">
@@ -286,6 +507,19 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                             </div>
                         </div>
                     </div>
+
+                    {/* Mapbox Direct Render (GPS View) */}
+                    <div className="mt-5 relative w-full h-[300px] lg:h-[400px] overflow-hidden rounded-2xl shadow-inner border border-slate-200 bg-[#0a0f1e] flex-1">
+                        <div ref={mapContainer} className="absolute inset-0" />
+
+                        {!route?.geojson && (
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+                                <MapPin size={48} className="text-white/30 mb-4" />
+                                <span className="text-white font-bold text-xl mb-1 drop-shadow-md">Peta Belum Dikonfigurasi</span>
+                                <span className="text-white/70 text-sm font-medium drop-shadow-md">Gunakan tombol 'Import GeoJSON' di bawah pada bagian Rute untuk memuat peta rute.</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -409,11 +643,12 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                 <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
-                        <span className="text-sm font-black text-[#1d2d6a]">Rute_Utama_Bandung_Surabaya.json</span>
+                        <span className="text-sm font-black text-[#1d2d6a]">{route?.geojson ? 'Rute_Utama.json (Ada)' : 'Belum Ada GeoJSON'}</span>
                     </div>
-                    <button onClick={() => showToast('Membuka file dialog...')} className="text-xs font-black uppercase tracking-widest text-[#1d2d6a] bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors">
-                        <RefreshCw size={14} className="text-blue-500" /> Import File
-                    </button>
+                    <label className={`text-xs font-black uppercase tracking-widest text-[#1d2d6a] bg-white hover:bg-slate-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading || !route?.name ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <RefreshCw size={14} className={`text-blue-500 ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import GeoJSON'}
+                        <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading || !route?.name} />
+                    </label>
                 </div>
                 <div className="mt-3 border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
                     <div className="overflow-x-auto">
@@ -460,6 +695,7 @@ export function MasterConsolePanel({ route: _route, data }: { route: any, data: 
                         </table>
                     </div>
                 </div>
+
             </SectionAccordion>
 
             {/* 3. SISTEM MEDIA & PENYIARAN */}

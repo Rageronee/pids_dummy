@@ -4,7 +4,8 @@ import {
     LayoutDashboard, Train, MapPin, Users, ScrollText,
     LogOut, Plus, Trash2, Eye, EyeOff, Lock, User as UserIcon,
     AlertCircle, CheckCircle2, Activity, Clock, Shield,
-    ChevronRight, RefreshCcw, X, Server, Wifi
+    ChevronRight, RefreshCcw, X, Server, Wifi,
+    Building2, Calendar, Navigation, MapPinned, Thermometer
 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 
@@ -284,6 +285,56 @@ function DashboardPage({ token }: { token: string }) {
                     </div>
                 ))}
             </div>
+
+            {/* GPS Fleet Monitoring */}
+            <GpsFleetPanel />
+        </div>
+    );
+}
+
+function GpsFleetPanel() {
+    const [fleet, setFleet] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchFleet = async () => {
+            try {
+                const res = await fetch(`${API}/api/gps/fleet`);
+                const d = await res.json();
+                if (d.success) setFleet(d.fleet);
+            } catch { } finally { setLoading(false); }
+        };
+        fetchFleet();
+        const interval = setInterval(fetchFleet, 10000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+                <Navigation size={16} className="text-[#ee6f1f]" /> GPS Fleet Monitoring
+                <span className="ml-auto text-[10px] font-bold text-slate-300 tracking-normal normal-case">Auto-refresh 10s</span>
+            </h3>
+            {loading ? <div className="text-slate-400 text-sm text-center py-6">Memuat data GPS...</div> : (
+                <div className="grid grid-cols-3 gap-4">
+                    {fleet.map((train, i) => (
+                        <motion.div key={train.kereta_id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                            className="bg-slate-50 border border-slate-100 rounded-2xl p-4 hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                                <span className="text-[#1d2d6a] font-black text-sm tracking-wide flex-1">{train.kereta_name}</span>
+                                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{train.ka_number}</span>
+                            </div>
+                            <div className="space-y-1.5 text-xs">
+                                <div className="flex justify-between"><span className="text-slate-400 font-bold">Lokasi</span><span className="text-slate-600 font-medium">{train.poi || 'N/A'}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-400 font-bold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{train.latitude?.toFixed(4)}, {train.longitude?.toFixed(4)}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-400 font-bold">Kecepatan</span><span className="text-[#ee6f1f] font-black">{train.kecepatan?.toFixed(1) || '0'} km/h</span></div>
+                                <div className="flex justify-between"><span className="text-slate-400 font-bold">Suhu</span><span className="text-slate-600 font-medium">{train.suhu?.toFixed(1) || '-'}°C</span></div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -777,12 +828,282 @@ function LogsPage({ token }: { token: string }) {
 
 
 // ============================================================
+// STATIONS PAGE (SRS: CRUD Stasiun)
+// ============================================================
+function StationsPage({ token }: { token: string }) {
+    const [stations, setStations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<any>(null);
+    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const [search, setSearch] = useState('');
+
+    const [form, setForm] = useState({
+        id: '', name: '', city: '', latitude: '', longitude: '',
+        ip_address: '', nama_pic: '', kontak_pic: '', kode_kota: '',
+        alamat: '', provinsi: '', kabupaten_kota: '', kecamatan: '',
+        kelurahan_desa: '', kode_pos: ''
+    });
+
+    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
+    const resetForm = () => setForm({ id: '', name: '', city: '', latitude: '', longitude: '', ip_address: '', nama_pic: '', kontak_pic: '', kode_kota: '', alamat: '', provinsi: '', kabupaten_kota: '', kecamatan: '', kelurahan_desa: '', kode_pos: '' });
+
+    const fetchStations = useCallback(async () => {
+        try {
+            const res = await fetch(`${API}/api/stations`);
+            const d = await res.json();
+            if (d.success) setStations(d.stations);
+        } catch { } finally { setLoading(false); }
+    }, []);
+
+    useEffect(() => { fetchStations(); }, [fetchStations]);
+
+    const handleAdd = async () => {
+        if (!form.id.trim() || !form.name.trim() || !form.city.trim()) { showToast('ID, Nama, dan Kota wajib diisi', false); return; }
+        setSaving(true);
+        try {
+            const res = await fetch(`${API}/api/admin/stations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ ...form, latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0 })
+            });
+            const d = await res.json();
+            if (d.success) { showToast('Stasiun berhasil ditambahkan', true); fetchStations(); setShowForm(false); resetForm(); }
+            else showToast(d.error || 'Gagal', false);
+        } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); }
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
+        setSaving(true);
+        try {
+            const res = await fetch(`${API}/api/admin/stations/${deleteTarget.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            const d = await res.json();
+            if (d.success) { showToast(`Stasiun "${deleteTarget.name}" dihapus`, true); fetchStations(); }
+            else showToast(d.error || 'Gagal', false);
+        } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
+    };
+
+    const filtered = search ? stations.filter(s => s.name.includes(search.toUpperCase()) || s.city.includes(search.toUpperCase()) || s.id.includes(search.toUpperCase())) : stations;
+
+    return (
+        <div className="space-y-8">
+            <ConfirmModal isOpen={!!deleteTarget} title="Hapus Stasiun" message={`Yakin ingin menghapus stasiun "${deleteTarget?.name}"?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
+            <div className="flex items-end justify-between">
+                <div>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Stasiun</h2>
+                    <p className="text-slate-500 text-sm font-medium">{stations.length} stasiun terdaftar · SRS-compliant schema</p>
+                </div>
+                <div className="flex gap-3">
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari stasiun..."
+                        className="px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-[#1d2d6a] placeholder-slate-400 focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all w-52 shadow-sm" />
+                    <button onClick={() => { setShowForm(v => !v); if (showForm) resetForm(); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm uppercase tracking-wide transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+                        {showForm ? <><X size={16} />Batal</> : <><Plus size={16} />Tambah Stasiun</>}
+                    </button>
+                </div>
+            </div>
+
+            <AnimatePresence>
+                {showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden">
+                    <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">Stasiun Baru</h3>
+                    <div className="grid grid-cols-3 gap-4">
+                        {[
+                            { key: 'id', label: 'Kode Stasiun', placeholder: 'e.g. BD' },
+                            { key: 'name', label: 'Nama Stasiun', placeholder: 'e.g. BANDUNG' },
+                            { key: 'city', label: 'Kota', placeholder: 'e.g. BANDUNG' },
+                            { key: 'latitude', label: 'Latitude', placeholder: '-6.9125' },
+                            { key: 'longitude', label: 'Longitude', placeholder: '107.6036' },
+                            { key: 'ip_address', label: 'IP Address', placeholder: '192.168.5.x' },
+                            { key: 'nama_pic', label: 'Nama PIC', placeholder: 'Nama penanggung jawab' },
+                            { key: 'kontak_pic', label: 'Kontak PIC', placeholder: '08xxxxxxxxxx' },
+                            { key: 'kode_kota', label: 'Kode Kota', placeholder: 'BDG' },
+                            { key: 'alamat', label: 'Alamat', placeholder: 'Jl. Stasiun No.1' },
+                            { key: 'provinsi', label: 'Provinsi', placeholder: 'Jawa Barat' },
+                            { key: 'kabupaten_kota', label: 'Kabupaten/Kota', placeholder: 'Kota Bandung' },
+                            { key: 'kecamatan', label: 'Kecamatan', placeholder: 'Regol' },
+                            { key: 'kelurahan_desa', label: 'Kelurahan/Desa', placeholder: 'Kebon Kalapa' },
+                            { key: 'kode_pos', label: 'Kode Pos', placeholder: '40253' },
+                        ].map(f => (
+                            <input key={f.key} value={(form as any)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                                placeholder={f.placeholder} title={f.label}
+                                className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all uppercase" />
+                        ))}
+                    </div>
+                    <button onClick={handleAdd} disabled={saving}
+                        className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none">
+                        {saving ? 'Menyimpan...' : <><CheckCircle2 size={18} />Simpan Stasiun</>}
+                    </button>
+                </motion.div>}
+            </AnimatePresence>
+
+            {loading ? <div className="p-8 text-center text-slate-500 font-medium">Memuat stasiun...</div> : (
+                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+                    <div className="grid grid-cols-[70px_1fr_1fr_120px_1fr_100px_60px] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                        <span>Kode</span><span>Nama</span><span>Kota</span><span>Kode Pos</span><span>PIC</span><span>Koordinat</span><span></span>
+                    </div>
+                    <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
+                        {filtered.map((s, i) => (
+                            <motion.div key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i * 0.02, 0.5) }}
+                                className="grid grid-cols-[70px_1fr_1fr_120px_1fr_100px_60px] gap-0 px-6 py-4 hover:bg-slate-50 transition-colors items-center group">
+                                <span className="text-[#ee6f1f] font-mono font-black text-sm">{s.id}</span>
+                                <span className="text-[#1d2d6a] font-black text-sm">{s.name}</span>
+                                <span className="text-slate-500 text-sm font-medium">{s.city}</span>
+                                <span className="text-slate-400 font-mono text-xs">{s.kode_pos || '-'}</span>
+                                <span className="text-slate-500 text-sm font-medium">{s.nama_pic || '-'}</span>
+                                <span className="text-slate-400 font-mono text-[10px]">{s.latitude ? `${s.latitude.toFixed(2)},${s.longitude.toFixed(2)}` : '-'}</span>
+                                <button onClick={() => setDeleteTarget(s)}
+                                    className="opacity-0 group-hover:opacity-100 p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95 border border-transparent hover:border-red-200">
+                                    <Trash2 size={14} />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            <AnimatePresence>
+                {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold z-50 ${toast.ok ? 'bg-[#1d2d6a] text-white' : 'bg-red-500 text-white'}`}>
+                    {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
+                </motion.div>}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+// ============================================================
+// SCHEDULES PAGE (SRS: Jadwal Kereta)
+// ============================================================
+function SchedulesPage({ token }: { token: string }) {
+    const [schedules, setSchedules] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [deleteTarget, setDeleteTarget] = useState<any>(null);
+    const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const [expanded, setExpanded] = useState<number | null>(null);
+
+    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
+
+    const fetchSchedules = useCallback(async () => {
+        try {
+            const res = await fetch(`${API}/api/schedules`);
+            const d = await res.json();
+            if (d.success) setSchedules(d.schedules);
+        } catch { } finally { setLoading(false); }
+    }, []);
+
+    useEffect(() => { fetchSchedules(); }, [fetchSchedules]);
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
+        setSaving(true);
+        try {
+            const res = await fetch(`${API}/api/admin/schedules/${deleteTarget.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            const d = await res.json();
+            if (d.success) { showToast(`Jadwal ${deleteTarget.train_name} dihapus`, true); fetchSchedules(); }
+            else showToast(d.error || 'Gagal', false);
+        } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
+    };
+
+    const STATUS_COLOR: Record<string, string> = {
+        ON_TIME: 'text-green-600 bg-green-500/10 border-green-500/20',
+        DELAYED: 'text-orange-600 bg-orange-500/10 border-orange-500/20',
+        CANCELLED: 'text-red-500 bg-red-500/10 border-red-500/20',
+    };
+
+    return (
+        <div className="space-y-8">
+            <ConfirmModal isOpen={!!deleteTarget} title="Hapus Jadwal" message={`Hapus jadwal ${deleteTarget?.train_name}?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
+            <div className="flex items-end justify-between">
+                <div>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Jadwal Kereta</h2>
+                    <p className="text-slate-500 text-sm font-medium">{schedules.length} jadwal aktif · Klik untuk detail pemberhentian</p>
+                </div>
+                <button onClick={fetchSchedules} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
+            </div>
+
+            {loading ? <div className="p-8 text-center text-slate-500 font-medium">Memuat jadwal...</div> : (
+                <div className="space-y-4">
+                    {schedules.map((sched, i) => (
+                        <motion.div key={sched.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                            className="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all">
+                            {/* Header */}
+                            <div className="flex items-center gap-4 px-6 py-5 cursor-pointer" onClick={() => setExpanded(expanded === sched.id ? null : sched.id)}>
+                                <div className="w-12 h-12 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm">
+                                    <Train size={20} className="text-[#1d2d6a]" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <h3 className="text-[#1d2d6a] font-black tracking-wide text-base">{sched.train_name}</h3>
+                                        <span className="text-slate-400 text-[10px] font-bold tracking-widest uppercase">{sched.ka_number || '-'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-xs">
+                                        <span className="text-slate-500 font-medium">{sched.schedule_date}</span>
+                                        <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide border ${STATUS_COLOR[sched.status] || 'text-slate-400 bg-slate-50 border-slate-200'}`}>
+                                            {sched.status?.replace('_', ' ')}
+                                        </span>
+                                        <span className="text-slate-400 font-bold">{sched.stops?.length || 0} pemberhentian</span>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className={`text-slate-300 transition-transform ${expanded === sched.id ? 'rotate-90' : ''}`} />
+                                <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(sched); }}
+                                    className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95 border border-transparent hover:border-red-200 opacity-0 group-hover:opacity-100">
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+
+                            {/* Stops */}
+                            <AnimatePresence>
+                                {expanded === sched.id && sched.stops && (
+                                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                                        className="border-t border-slate-100 overflow-hidden">
+                                        <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                                            <span>#</span><span>Stasiun</span><span>Datang</span><span>Berangkat</span><span>Peron</span><span>Status</span>
+                                        </div>
+                                        {sched.stops.map((stop: any, j: number) => (
+                                            <div key={j} className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 border-t border-slate-50 hover:bg-slate-50/50 items-center text-sm">
+                                                <span className="text-slate-300 font-mono font-bold text-xs">{String(stop.sequence_order).padStart(2, '0')}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <MapPinned size={14} className="text-[#ee6f1f]" />
+                                                    <span className="text-[#1d2d6a] font-black text-sm">{stop.station_name}</span>
+                                                    <span className="text-slate-400 font-mono text-[10px]">{stop.station_code}</span>
+                                                </div>
+                                                <span className="text-slate-600 font-mono font-medium">{stop.arrival_time || '-'}</span>
+                                                <span className="text-slate-600 font-mono font-medium">{stop.departure_time || '-'}</span>
+                                                <span className="text-slate-400 font-mono text-xs text-center">{stop.platform}</span>
+                                                <span className={`text-[10px] font-bold uppercase ${stop.stop_status === 'SCHEDULED' ? 'text-blue-500' : stop.stop_status === 'ARRIVED' ? 'text-green-500' : 'text-slate-400'}`}>
+                                                    {stop.stop_status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+            <AnimatePresence>
+                {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold z-50 ${toast.ok ? 'bg-[#1d2d6a] text-white' : 'bg-red-500 text-white'}`}>
+                    {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
+                </motion.div>}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+
+// ============================================================
 // SIDEBAR NAV
 // ============================================================
 const NAV = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'trains', label: 'Layanan Kereta', icon: Train },
     { id: 'routes', label: 'Manajemen Rute', icon: MapPin },
+    { id: 'stations', label: 'Manajemen Stasiun', icon: Building2 },
+    { id: 'schedules', label: 'Jadwal Kereta', icon: Calendar },
     { id: 'users', label: 'Akun Operator', icon: Users },
     { id: 'logs', label: 'System Logs', icon: ScrollText },
 ];
@@ -830,6 +1151,8 @@ export default function App() {
         dashboard: <DashboardPage token={authToken} />,
         trains: <TrainsPage token={authToken} />,
         routes: <RoutesPage token={authToken} />,
+        stations: <StationsPage token={authToken} />,
+        schedules: <SchedulesPage token={authToken} />,
         users: <UsersPage token={authToken} />,
         logs: <LogsPage token={authToken} />,
     };

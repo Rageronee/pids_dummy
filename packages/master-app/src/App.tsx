@@ -1,11 +1,12 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, Compass, ScrollText, LogOut } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, ScrollText, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
 import type { AuthUser, LogEntry } from '@eltran/pids-core';
+
+import maplibregl from 'maplibre-gl';
 
 const API_URL = 'http://localhost:3001';
 
@@ -54,44 +55,250 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     );
 };
 
-const MonitorGPS = ({ route }: { route: any }) => (
-    <div className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-[#0a0f1e] flex flex-col">
-        <div className="absolute inset-0 opacity-20"><div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,#1d2d6a_0%,transparent_50%)]" /></div>
-        <div className="relative z-20 p-10 flex justify-between items-start">
-            <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 rounded-full bg-orange-500 animate-ping" /><span className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em]">Live Tracking System</span></div>
-                <h3 className="text-4xl font-black text-white italic tracking-tighter">{route?.name ? <>{route.name.split(" ")[0]} <span className="text-orange-500">{route.name.split(" ").slice(1).join(" ")}</span></> : <span className="text-white/20">NO ROUTE ACTIVE</span>}</h3>
+const MonitorGPS = ({ route }: { route: any }) => {
+    const [gerbongData, setGerbongData] = useState<any[]>([]);
+    const [selectedKereta, setSelectedKereta] = useState<number | null>(null);
+    const [trains, setTrains] = useState<any[]>([]);
+    const mapContainer = useRef<HTMLDivElement>(null);
+    const map = useRef<maplibregl.Map | null>(null);
+    const markersRef = useRef<Record<number, maplibregl.Marker>>({});
+
+    // Fetch trains list for selector
+    useEffect(() => {
+        const fetchTrains = async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/gps/fleet`);
+                const d = await res.json();
+                if (d.success && d.fleet?.length > 0) {
+                    setTrains(d.fleet);
+                    if (!selectedKereta) setSelectedKereta(d.fleet[0].kereta_id);
+                }
+            } catch { }
+        };
+        fetchTrains();
+    }, []);
+
+    // Fetch per-gerbong GPS when selectedKereta changes
+    useEffect(() => {
+        if (!selectedKereta) return;
+        const fetchGerbong = async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/gps/gerbong/${selectedKereta}`);
+                const d = await res.json();
+                if (d.success) setGerbongData(d.gerbong);
+            } catch { }
+        };
+        fetchGerbong();
+        const interval = setInterval(fetchGerbong, 10000);
+        return () => clearInterval(interval);
+    }, [selectedKereta]);
+
+    // Initialize map
+    useEffect(() => {
+        if (!mapContainer.current) return;
+
+        // Free dark tile style (no API key needed)
+        const darkStyle: maplibregl.StyleSpecification = {
+            version: 8,
+            sources: {
+                'carto-dark': {
+                    type: 'raster',
+                    tiles: [
+                        'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                }
+            },
+            layers: [{
+                id: 'carto-dark-layer',
+                type: 'raster',
+                source: 'carto-dark',
+                minzoom: 0,
+                maxzoom: 19
+            }]
+        };
+
+        map.current = new maplibregl.Map({
+            container: mapContainer.current,
+            style: darkStyle,
+            center: [107.6098, -6.9147],
+            zoom: 11,
+            pitch: 45,
+            attributionControl: false
+        });
+
+        map.current.on('load', () => {
+            if (!route?.geojson) return;
+
+            try {
+                const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+
+                map.current?.addSource('route-path', {
+                    type: 'geojson',
+                    data: geojson
+                });
+
+                map.current?.addLayer({
+                    id: 'route-line',
+                    type: 'line',
+                    source: 'route-path',
+                    paint: {
+                        'line-color': '#1d2d6a',
+                        'line-width': 6,
+                        'line-opacity': 0.8
+                    },
+                    filter: ['==', '$type', 'LineString']
+                });
+
+                map.current?.addLayer({
+                    id: 'route-line-glow',
+                    type: 'line',
+                    source: 'route-path',
+                    paint: {
+                        'line-color': '#ee6f1f',
+                        'line-width': 2,
+                        'line-opacity': 1
+                    },
+                    filter: ['==', '$type', 'LineString']
+                });
+
+                map.current?.addLayer({
+                    id: 'station-points',
+                    type: 'circle',
+                    source: 'route-path',
+                    paint: {
+                        'circle-radius': 6,
+                        'circle-color': '#ffffff',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ee6f1f'
+                    },
+                    filter: ['==', '$type', 'Point']
+                });
+
+                // Fit map to route bounds
+                const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+                const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
+                const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
+
+                if (coordinates && coordinates.length > 0) {
+                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
+                        return bounds.extend(coord);
+                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+                    map.current?.fitBounds(bounds, { padding: 50 });
+                }
+            } catch (err) {
+                console.error("Failed to render GeoJSON:", err);
+            }
+        });
+
+        return () => {
+            Object.values(markersRef.current).forEach((m: maplibregl.Marker) => m.remove());
+            map.current?.remove();
+        };
+    }, [route?.geojson]);
+
+    // Update markers when gerbong data changes
+    useEffect(() => {
+        if (!map.current) return;
+
+        // Clean up old markers
+        const currentIds = gerbongData.map(g => g.gerbong_id);
+        Object.keys(markersRef.current).forEach(id => {
+            const numId = parseInt(id);
+            if (!currentIds.includes(numId)) {
+                markersRef.current[numId].remove();
+                delete markersRef.current[numId];
+            }
+        });
+
+        // Add or update markers
+        gerbongData.forEach(g => {
+            if (g.longitude && g.latitude) {
+                if (!markersRef.current[g.gerbong_id]) {
+                    const el = document.createElement('div');
+                    el.className = 'w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-[0_0_10px_rgba(238,111,31,0.8)] flex items-center justify-center';
+                    el.title = g.nama_gerbong;
+
+                    markersRef.current[g.gerbong_id] = new maplibregl.Marker({ element: el })
+                        .setLngLat([g.longitude, g.latitude])
+                        .addTo(map.current!);
+                } else {
+                    markersRef.current[g.gerbong_id].setLngLat([g.longitude, g.latitude]);
+                }
+            }
+        });
+
+    }, [gerbongData]);
+
+    return (
+        <div className="space-y-6 h-full flex flex-col">
+
+            {/* Map Area */}
+            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[400px] relative flex flex-col">
+                <div className="flex items-center justify-between mb-4 shrink-0 px-4">
+                    <h2 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight flex items-center gap-3">
+                        <MapPin className="text-[#ee6f1f]" /> Peta Lokasi Armada
+                    </h2>
+                    <select
+                        value={selectedKereta || ''}
+                        onChange={e => setSelectedKereta(parseInt(e.target.value))}
+                        className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-2.5 text-sm font-bold text-[#1d2d6a] focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all"
+                    >
+                        {trains.map(t => <option key={t.kereta_id} value={t.kereta_id}>{t.kereta_name} ({t.ka_number})</option>)}
+                    </select>
+                </div>
+
+                <div className="relative flex-1 w-full rounded-2xl overflow-hidden shadow-inner border border-slate-200 bg-[#0a0f1e]">
+                    <div ref={mapContainer} className="absolute inset-0" />
+
+                    {!route?.geojson && (
+                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+                            <MapPin size={48} className="text-white/30 mb-4" />
+                            <span className="text-white font-bold text-xl mb-1 drop-shadow-md">Peta Belum Dikonfigurasi</span>
+                            <span className="text-white/70 text-sm font-medium drop-shadow-md">Sistem PIDS belum memiliki data GeoJSON.</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Per-Gerbong GPS Tracking Panel */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 shrink-0">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight flex items-center gap-3">
+                        <MapPin className="text-[#ee6f1f]" />Detail State per Gerbong
+                    </h2>
+                </div>
+                {gerbongData.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400 font-medium">Tidak ada data gerbong</div>
+                ) : (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {gerbongData.map((g, i) => (
+                            <motion.div key={g.gerbong_id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                                className="bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className={`w-2.5 h-2.5 rounded-full ${g.sensor_status === 'Aktif' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`} />
+                                    <span className="text-[#1d2d6a] font-black text-sm flex-1 uppercase tracking-wide">{g.nama_gerbong}</span>
+                                    <span className="text-slate-400 text-[10px] font-bold tracking-widest">#{String(g.no_urut_gerbong).padStart(2, '0')}</span>
+                                </div>
+                                <div className="space-y-1.5 text-xs">
+                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{g.latitude?.toFixed(4) || '-'}, {g.longitude?.toFixed(4) || '-'}</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Altitude</span><span className="text-slate-600 font-mono">{g.altitude?.toFixed(1) || '-'} m</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Kecepatan</span><span className="text-[#ee6f1f] font-black">{g.kecepatan?.toFixed(1) || '0'} km/h</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Suhu</span><span className="text-slate-600 font-medium">{g.suhu?.toFixed(1) || '-'}°C</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">POI</span><span className="text-slate-500 font-medium truncate max-w-[120px]">{g.poi || 'N/A'}</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Sensor</span>
+                                        <span className={`text-[10px] font-black uppercase ${g.sensor_status === 'Aktif' ? 'text-green-500' : 'text-red-400'}`}>{g.sensor_status}</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
-        <div className="relative flex-1 flex flex-col justify-center items-center px-20">
-            <div className="w-full relative py-20">
-                <svg className="w-full" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
-                    {route?.path && (<><path d={route.path} fill="none" stroke="#1d2d6a" strokeWidth="12" strokeLinecap="round" className="opacity-20 blur-md" /><path d={route.path} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeLinecap="round" />
-                        <motion.g initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} style={{ offsetPath: `path('${route.path}')` }}>
-                            <circle r="8" fill="#ee6f1f" stroke="white" strokeWidth="2" /><circle r="4" fill="white" className="animate-pulse" />
-                        </motion.g></>)}
-                    {route?.nodes?.map((stn: any, i: number) => (
-                        <g key={i} style={{ transform: `translate(${stn.pos.split(" ").slice(1).map((v: string) => v + "px").join(", ")})` }}>
-                            <circle r="5" fill="#0a0f1e" stroke="#ee6f1f" strokeWidth="2" />
-                            <text y="-15" textAnchor="middle" fill="white" className="text-[8px] font-black tracking-widest opacity-30 italic">{stn.label}</text>
-                            <text y="25" textAnchor="middle" fill="white" className="text-[10px] font-black tracking-tighter uppercase">{stn.name}</text>
-                        </g>
-                    ))}
-                </svg>
-            </div>
-        </div>
-        <div className="bg-white/5 border-t border-white/5 p-8 flex justify-between items-center backdrop-blur-xl">
-            <div className="flex gap-16">
-                <div className="flex flex-col"><span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-1">Current Coordinates</span><span className="text-xl font-black text-white font-mono tracking-tighter">-6.9147, 107.6098</span></div>
-                <div className="flex flex-col border-l border-white/10 pl-16"><span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-1">Speed (GPS)</span><div className="flex items-baseline gap-1"><span className="text-xl font-black text-orange-500 font-mono tracking-tighter animate-pulse">98.4</span><span className="text-[10px] font-black text-orange-500/50">km/h</span></div></div>
-            </div>
-            <div className="flex items-center gap-4 bg-orange-500/10 px-6 py-3 rounded-2xl border border-orange-500/20">
-                <Compass size={18} className="text-orange-500" />
-                <div className="flex flex-col"><span className="text-[8px] font-black text-orange-500/50 uppercase tracking-widest leading-none">Destination</span><span className="text-sm font-black text-white tracking-tighter italic">{route?.stations ? route.stations[route.stations.length - 1] : 'TERMINAL'}</span></div>
-            </div>
-        </div>
-    </div>
-);
+    );
+};
 
 // --- Log Viewer Component ---
 const LogViewer = ({ token }: { token: string }) => {
