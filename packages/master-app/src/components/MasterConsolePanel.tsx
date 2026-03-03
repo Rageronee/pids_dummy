@@ -1023,17 +1023,17 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         ) : (
                             <div className="mt-3 border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left whitespace-nowrap">
-                                        <thead className="bg-[#1d2d6a] text-white">
+                                <div className="overflow-x-auto max-h-[450px] overflow-y-auto relative">
+                                    <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0">
+                                        <thead className="bg-[#1d2d6a] text-white sticky top-0 z-20">
                                             <tr>
-                                                <th className="py-3 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Nama Stasiun</th>
-                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Ket</th>
-                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-right">Longitude</th>
-                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-right">Latitude</th>
-                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-center">TTA</th>
-                                                <th className="py-3 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] text-center">Status</th>
-                                                <th className="py-3 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355]">Next Stasiun</th>
+                                                <th className="py-3.5 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a]">Nama Stasiun</th>
+                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a]">Ket</th>
+                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-right">Longitude</th>
+                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-right">Latitude</th>
+                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-center">TTA</th>
+                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-center">Status</th>
+                                                <th className="py-3.5 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a]">Next Stasiun</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 text-sm">
