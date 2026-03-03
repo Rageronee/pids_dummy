@@ -18,6 +18,8 @@ const INITIAL_STATE: PidsState = {
     displayMode: 'pids',
     stations: [],
     activeRoute: null,
+    geofencingInnerRadius: 250,
+    geofencingOuterRadius: 750,
 };
 
 export function usePidsData() {

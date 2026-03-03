@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, CheckCircle2, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
@@ -20,6 +20,8 @@ function App() {
     const [temp, setTemp] = useState(24);
     const [showTVPreview, setShowTVPreview] = useState(false);
     const [showLedSettings, setShowLedSettings] = useState(false);
+    const [showLEDPreview, setShowLEDPreview] = useState(false);
+    const [ledType, setLedType] = useState<'indoor' | 'outdoor'>('indoor');
     const [tvDisplayMode, setTvDisplayMode] = useState<'current' | 'next'>('current');
     const [toastMsg, setToastMsg] = useState<{ title: string, message: string } | null>(null);
 
@@ -338,6 +340,14 @@ function App() {
                     </button>
 
                     <button
+                        onClick={() => setShowLEDPreview(true)}
+                        className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showLEDPreview ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                    >
+                        <Monitor size={20} className={showLEDPreview ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
+                        <span className="font-bold text-sm tracking-wide uppercase">Monitor LED</span>
+                    </button>
+
+                    <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] uppercase tracking-widest border border-white/5 active:scale-95 group mt-4"
                     >
@@ -575,12 +585,34 @@ function App() {
                                         </div>
                                     </div>
 
+                                    {/* LED Type Selection */}
+                                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-col gap-6">
+                                        <div>
+                                            <h4 className="text-lg font-black text-[#1d2d6a] tracking-tight">Display Type</h4>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Select matrix panel model</p>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <button
+                                                onClick={() => setLedType('indoor')}
+                                                className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                            >
+                                                P4 Indoor LED
+                                            </button>
+                                            <button
+                                                onClick={() => setLedType('outdoor')}
+                                                className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'outdoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                            >
+                                                P10 Outdoor LED
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {/* Speed Control */}
                                     <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-col gap-8">
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <h4 className="text-lg font-black text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Adjustment for P10 Outdoor Modules</p>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Adjustment for matrix modules</p>
                                             </div>
                                             <div className="text-3xl font-black text-[#ee6f1f] bg-white px-6 py-2 rounded-2xl shadow-sm border border-slate-100 font-mono">
                                                 {masterSyncedLedSpeed}<span className="text-xs ml-1 opacity-40">MS</span>
@@ -743,6 +775,43 @@ function App() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Fullscreen LED Monitor Modal */}
+                <AnimatePresence>
+                    {showLEDPreview && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 1.05 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05 }}
+                            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                            className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden select-none ${ledType === 'indoor' ? 'bg-zinc-900' : 'bg-black'}`}
+                        >
+                            {/* Mode Indicator */}
+                            <div className="absolute top-8 left-8 text-white/30 font-mono text-[10px] font-black uppercase tracking-[0.3em] pointer-events-none z-10">
+                                [ MODE: {ledType === 'indoor' ? 'P4_INDOOR' : 'P10_OUTDOOR'} ]
+                            </div>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setShowLEDPreview(false)}
+                                className="absolute top-8 right-8 p-3 bg-white/10 hover:bg-white/30 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
+                                title="Close Monitor"
+                            >
+                                <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+                            </button>
+
+                            <div className={`${ledType === 'indoor' ? 'scale-[1.8]' : 'scale-[2.8]'} origin-center transition-transform duration-1000 ease-out`}>
+                                <P10Matrix
+                                    text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
+                                    fixedText={`${masterSyncedNumber} `}
+                                    color="#ff0000"
+                                    speed={masterSyncedLedSpeed}
+                                    columns={128}
+                                />
                             </div>
                         </motion.div>
                     )}

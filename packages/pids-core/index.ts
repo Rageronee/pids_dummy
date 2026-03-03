@@ -52,6 +52,8 @@ export interface PidsState {
     displayMode: DisplayMode;
     stations: string[];
     activeRoute: RouteData | null;
+    geofencingInnerRadius?: number;
+    geofencingOuterRadius?: number;
 }
 
 // ---- Auth & Logging Types ----

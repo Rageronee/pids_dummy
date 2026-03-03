@@ -98,16 +98,16 @@ function SectionAccordion({
 }
 
 
-export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
+export function MasterConsolePanel({ route, data, sendData }: { route: any, data: any, sendData: (updates: any) => Promise<void> }) {
 
     const activeTrainName = data?.serviceName || 'Belum Dikonfigurasi';
     const activeTrainNumber = data?.trainNumber || '-';
     const [jumlahKereta, setJumlahKereta] = useState(5);
     const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
     const [mediaSource, setMediaSource] = useState('Line In');
-    const [outerRadius, setOuterRadius] = useState(750);
-    const [innerRadius, setInnerRadius] = useState(250);
-    const radiusRef = useRef({ inner: 250, outer: 750 });
+    const [outerRadius, setOuterRadius] = useState(data?.geofencingOuterRadius || 750);
+    const [innerRadius, setInnerRadius] = useState(data?.geofencingInnerRadius || 250);
+    const radiusRef = useRef({ inner: data?.geofencingInnerRadius || 250, outer: data?.geofencingOuterRadius || 750 });
     const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
     const [stationsData, setStationsData] = useState<any[]>([]);
@@ -163,10 +163,24 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
         }
     }, [activeTrainName, gerbongCounts]);
 
+    // Sync geofencing radius from data prop
+    useEffect(() => {
+        if (data?.geofencingInnerRadius !== undefined) setInnerRadius(data.geofencingInnerRadius);
+        if (data?.geofencingOuterRadius !== undefined) setOuterRadius(data.geofencingOuterRadius);
+    }, [data?.geofencingInnerRadius, data?.geofencingOuterRadius]);
+
     // Keep radiusRef in sync to avoid stale closures in requestAnimationFrame
     useEffect(() => {
         radiusRef.current = { inner: innerRadius, outer: outerRadius };
     }, [innerRadius, outerRadius]);
+
+    const sendGeofencingUpdate = async () => {
+        await sendData({
+            geofencingInnerRadius: innerRadius,
+            geofencingOuterRadius: outerRadius
+        });
+        showToast('Radius geofencing berhasil diperbarui.');
+    };
 
     // Sync GPS coordinates perfectly, preventing random jitter. Coordinates act as primary anchor.
     useEffect(() => {
@@ -204,6 +218,52 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
 
         // No geofencing circles update in PIDS tab
     }, [simGps]);
+
+    // Update active station highlight circles
+    useEffect(() => {
+        if (!map.current || !route?.geojson || data?.currentStation === '-') {
+            const source = map.current?.getSource('active-station-circles') as maplibregl.GeoJSONSource;
+            if (source) source.setData({ type: 'FeatureCollection', features: [] });
+            return;
+        }
+
+        try {
+            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+
+            // Find current station point in GeoJSON (case-insensitive and trimmed)
+            const currentStationClean = (data.currentStation || '').trim().toLowerCase();
+            const stationFeature = features.find((f: any) => {
+                if (f.geometry?.type !== 'Point') return false;
+                const propName = (f.properties?.name || '').trim().toLowerCase();
+                const propStationName = (f.properties?.station_name || '').trim().toLowerCase();
+                return propName === currentStationClean || propStationName === currentStationClean;
+            });
+
+            if (stationFeature) {
+                const center = stationFeature.geometry.coordinates;
+                const innerRad = (innerRadius || 250) / 1000;
+                const outerRad = (outerRadius || 750) / 1000;
+
+                const innerCircle = turf.circle(center, innerRad, { steps: 64, units: 'kilometers', properties: { type: 'inner' } });
+                const outerCircle = turf.circle(center, outerRad, { steps: 64, units: 'kilometers', properties: { type: 'outer' } });
+
+                const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
+                if (source) {
+                    source.setData({
+                        type: 'FeatureCollection',
+                        features: [outerCircle, innerCircle]
+                    });
+                }
+            } else {
+                // Clear circles if station not found
+                const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
+                if (source) source.setData({ type: 'FeatureCollection', features: [] });
+            }
+        } catch (err) {
+            console.error("Failed to update station highlight circles:", err);
+        }
+    }, [route?.geojson, data?.currentStation, innerRadius, outerRadius]);
 
     const activeRouteStations = data?.activeRoute?.stations || data?.stations || [];
 
@@ -486,6 +546,36 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                     filter: ['==', '$type', 'Point']
                 });
 
+                // Add active station radius source
+                map.current?.addSource('active-station-circles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                map.current?.addLayer({
+                    id: 'active-station-outer',
+                    type: 'fill',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'outer'],
+                    paint: {
+                        'fill-color': '#ee6f1f',
+                        'fill-opacity': 0.1,
+                        'fill-outline-color': '#ee6f1f'
+                    }
+                });
+
+                map.current?.addLayer({
+                    id: 'active-station-inner',
+                    type: 'fill',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'inner'],
+                    paint: {
+                        'fill-color': '#ee6f1f',
+                        'fill-opacity': 0.2,
+                        'fill-outline-color': '#ee6f1f'
+                    }
+                });
+
                 const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
                 const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
                 const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
@@ -646,7 +736,14 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" value={outerRadius} onChange={(e) => setOuterRadius(Number(e.target.value))} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <input
+                                    type="number"
+                                    value={outerRadius}
+                                    onChange={(e) => setOuterRadius(Number(e.target.value))}
+                                    onBlur={sendGeofencingUpdate}
+                                    onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
+                                    className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm"
+                                />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
@@ -658,7 +755,14 @@ export function MasterConsolePanel({ route, data }: { route: any, data: any }) {
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
                             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
-                                <input type="number" value={innerRadius} onChange={(e) => setInnerRadius(Number(e.target.value))} className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm" />
+                                <input
+                                    type="number"
+                                    value={innerRadius}
+                                    onChange={(e) => setInnerRadius(Number(e.target.value))}
+                                    onBlur={sendGeofencingUpdate}
+                                    onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
+                                    className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm"
+                                />
                                 <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
                             </div>
                             {/* Tooltip */}

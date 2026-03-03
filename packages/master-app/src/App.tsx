@@ -7,6 +7,7 @@ import { MasterConsolePanel } from './components/MasterConsolePanel';
 import type { AuthUser, LogEntry } from '@eltran/pids-core';
 
 import maplibregl from 'maplibre-gl';
+import * as turf from '@turf/turf';
 
 const API_URL = 'http://localhost:3001';
 
@@ -82,7 +83,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     );
 };
 
-const MonitorGPS = ({ route }: { route: any }) => {
+const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
     const [gerbongData, setGerbongData] = useState<any[]>([]);
     const [selectedKereta, setSelectedKereta] = useState<number | null>(null);
     const [trains, setTrains] = useState<any[]>([]);
@@ -161,21 +162,9 @@ const MonitorGPS = ({ route }: { route: any }) => {
             try {
                 let geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
 
-                // Fallback: If no Polygons are found (likely old state in DB), try to fetch latest from public/geojson/
-                const feats = geojson.features || (geojson.type === 'Feature' ? [geojson] : []);
-                const hasPolygons = feats.some((f: any) => f.geometry?.type === 'Polygon' || f.type === 'Polygon');
-
-                if (!hasPolygons && route.name) {
-                    try {
-                        const filename = route.name.toLowerCase().replace(/\s+/g, '_') + '.geojson';
-                        const response = await fetch(`/geojson/${filename}`);
-                        if (response.ok) {
-                            const latestGeojson = await response.json();
-                            geojson = latestGeojson;
-                        }
-                    } catch (e) {
-                        console.error("Failed to fetch latest geojson file fallback:", e);
-                    }
+                if (!geojson || (geojson.features && geojson.features.length === 0)) {
+                    console.warn("[MonitorGPS] GeoJSON is empty for route:", route.name);
+                    return;
                 }
 
                 map.current?.addSource('route-path', {
@@ -188,8 +177,8 @@ const MonitorGPS = ({ route }: { route: any }) => {
                     type: 'line',
                     source: 'route-path',
                     paint: {
-                        'line-color': '#1d2d6a',
-                        'line-width': 6,
+                        'line-color': '#ffffff',
+                        'line-width': 4,
                         'line-opacity': 0.8
                     },
                     filter: ['==', '$type', 'LineString']
@@ -219,6 +208,67 @@ const MonitorGPS = ({ route }: { route: any }) => {
                     },
                     filter: ['==', '$type', 'Point']
                 });
+
+                // Add dynamic geofencing source
+                map.current?.addSource('geofencing-circles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                map.current?.addLayer({
+                    id: 'geofencing-outer',
+                    type: 'fill',
+                    source: 'geofencing-circles',
+                    filter: ['==', 'type', 'outer'],
+                    paint: {
+                        'fill-color': '#0080ff',
+                        'fill-opacity': 0.1,
+                        'fill-outline-color': '#0080ff'
+                    }
+                });
+
+                map.current?.addLayer({
+                    id: 'geofencing-inner',
+                    type: 'fill',
+                    source: 'geofencing-circles',
+                    filter: ['==', 'type', 'inner'],
+                    paint: {
+                        'fill-color': '#00ffff',
+                        'fill-opacity': 0.15,
+                        'fill-outline-color': '#00ffff'
+                    }
+                });
+
+                // Add active station radius source
+                map.current?.addSource('active-station-circles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                map.current?.addLayer({
+                    id: 'active-station-outer',
+                    type: 'fill',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'outer'],
+                    paint: {
+                        'fill-color': '#ee6f1f',
+                        'fill-opacity': 0.1,
+                        'fill-outline-color': '#ee6f1f'
+                    }
+                });
+
+                map.current?.addLayer({
+                    id: 'active-station-inner',
+                    type: 'fill',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'inner'],
+                    paint: {
+                        'fill-color': '#ee6f1f',
+                        'fill-opacity': 0.2,
+                        'fill-outline-color': '#ee6f1f'
+                    }
+                });
+
 
                 // Add static geofencing layers (Polygon features in route geojson)
                 map.current?.addLayer({
@@ -307,6 +357,80 @@ const MonitorGPS = ({ route }: { route: any }) => {
         });
 
     }, [gerbongData]);
+
+    // Update geofencing circles based on first gerbong position
+    useEffect(() => {
+        if (!map.current || gerbongData.length === 0) return;
+
+        const firstGerbong = gerbongData[0];
+        if (!firstGerbong.longitude || !firstGerbong.latitude) return;
+
+        const center = [firstGerbong.longitude, firstGerbong.latitude];
+        const innerRadius = (data.geofencingInnerRadius || 250) / 1000; // in km
+        const outerRadius = (data.geofencingOuterRadius || 750) / 1000; // in km
+
+        try {
+            const innerCircle = turf.circle(center, innerRadius, { steps: 64, units: 'kilometers', properties: { type: 'inner' } });
+            const outerCircle = turf.circle(center, outerRadius, { steps: 64, units: 'kilometers', properties: { type: 'outer' } });
+
+            const source = map.current.getSource('geofencing-circles') as maplibregl.GeoJSONSource;
+            if (source) {
+                source.setData({
+                    type: 'FeatureCollection',
+                    features: [outerCircle, innerCircle]
+                });
+            }
+        } catch (err) {
+            console.error("Failed to update geofencing circles:", err);
+        }
+    }, [gerbongData, data.geofencingInnerRadius, data.geofencingOuterRadius]);
+
+    // Update active station highlight circles
+    useEffect(() => {
+        if (!map.current || !route?.geojson || data.currentStation === '-') {
+            const source = map.current?.getSource('active-station-circles') as maplibregl.GeoJSONSource;
+            if (source) source.setData({ type: 'FeatureCollection', features: [] });
+            return;
+        }
+
+        try {
+            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+
+            // Find current station point in GeoJSON (case-insensitive and trimmed)
+            const currentStationClean = (data.currentStation || '').trim().toLowerCase();
+            const stationFeature = features.find((f: any) => {
+                if (f.geometry?.type !== 'Point') return false;
+                const propName = (f.properties?.name || '').trim().toLowerCase();
+                const propStationName = (f.properties?.station_name || '').trim().toLowerCase();
+                return propName === currentStationClean || propStationName === currentStationClean;
+            });
+
+            if (stationFeature) {
+                const center = stationFeature.geometry.coordinates;
+                const innerRadius = (data.geofencingInnerRadius || 250) / 1000;
+                const outerRadius = (data.geofencingOuterRadius || 750) / 1000;
+
+                const innerCircle = turf.circle(center, innerRadius, { steps: 64, units: 'kilometers', properties: { type: 'inner' } });
+                const outerCircle = turf.circle(center, outerRadius, { steps: 64, units: 'kilometers', properties: { type: 'outer' } });
+
+                const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
+                if (source) {
+                    source.setData({
+                        type: 'FeatureCollection',
+                        features: [outerCircle, innerCircle]
+                    });
+                }
+            } else {
+                // Clear circles if station not found
+                const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
+                if (source) source.setData({ type: 'FeatureCollection', features: [] });
+            }
+        } catch (err) {
+            console.error("Failed to update station highlight circles:", err);
+        }
+    }, [route?.geojson, data.currentStation, data.geofencingInnerRadius, data.geofencingOuterRadius]);
+
 
     return (
         <div className="space-y-6 h-full flex flex-col">
@@ -478,7 +602,7 @@ function App() {
     const [authUser, setAuthUser] = useState<AuthUser | null>(null);
     const [authToken, setAuthToken] = useState<string>('');
 
-    const { data } = usePidsData();
+    const { data, sendData } = usePidsData();
     const activeTrainName = data.serviceName || 'Belum Dikonfigurasi';
     const activeTrainNumber = data.trainNumber || '-';
     const activeRoute = data.activeRoute || {
@@ -618,7 +742,7 @@ function App() {
                     <AnimatePresence mode="wait">
                         {activeTab === 'pids' ? (
                             <motion.div key="pids" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-7xl mx-auto">
-                                <MasterConsolePanel route={activeRoute} data={data} />
+                                <MasterConsolePanel route={activeRoute} data={data} sendData={sendData} />
                             </motion.div>
                         ) : activeTab === 'stampformasi' ? (
                             <motion.div key="stampformasi" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto space-y-10">
@@ -665,7 +789,7 @@ function App() {
                             </motion.div>
                         ) : activeTab === 'gps' ? (
                             <motion.div key="gps" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.3 }} className="h-full w-full max-w-6xl mx-auto">
-                                <MonitorGPS route={activeRoute} />
+                                <MonitorGPS route={activeRoute} data={data} />
                             </motion.div>
                         ) : activeTab === 'logs' ? (
                             <motion.div key="logs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>

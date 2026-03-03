@@ -144,7 +144,22 @@ function createTables() {
             console.log('[PIDS-DB] Migration: geojson column added to routes table');
         }
     } catch (e) {
-        console.error('[PIDS-DB] Migration error:', e.message);
+        console.error('[PIDS-DB] Migration error (geojson):', e.message);
+    }
+
+    // Migration: add geofencing radius columns to pids_state
+    try {
+        const cols = getAll(`PRAGMA table_info(pids_state)`);
+        if (!cols.some(c => c.name === 'geofencing_inner_radius')) {
+            db.run(`ALTER TABLE pids_state ADD COLUMN geofencing_inner_radius INTEGER DEFAULT 250`);
+            console.log('[PIDS-DB] Migration: geofencing_inner_radius added to pids_state');
+        }
+        if (!cols.some(c => c.name === 'geofencing_outer_radius')) {
+            db.run(`ALTER TABLE pids_state ADD COLUMN geofencing_outer_radius INTEGER DEFAULT 750`);
+            console.log('[PIDS-DB] Migration: geofencing_outer_radius added to pids_state');
+        }
+    } catch (e) {
+        console.error('[PIDS-DB] Migration error (geofencing):', e.message);
     }
 
     db.run(`
@@ -229,7 +244,9 @@ function createTables() {
             temperature REAL NOT NULL DEFAULT 25.1,
             air_quality TEXT NOT NULL DEFAULT 'GOOD NOMINAL',
             display_mode TEXT NOT NULL DEFAULT 'pids',
-            active_route_json TEXT DEFAULT '{}'
+            active_route_json TEXT DEFAULT '{}',
+            geofencing_inner_radius INTEGER DEFAULT 250,
+            geofencing_outer_radius INTEGER DEFAULT 750
         )
     `);
     db.run(`
@@ -589,7 +606,7 @@ function seedData() {
 
     // ---- PIDS STATE (default) ----
     const argoWilisRoute = buildRouteJson('ARGO WILIS');
-    db.run(`INSERT OR IGNORE INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json) VALUES (1, 'ARGO WILIS', 'BANDUNG', '05', 'TASIKMALAYA', 'ON TIME', 60, 15, 694, 25.1, 'GOOD NOMINAL', 'pids', ?)`,
+    db.run(`INSERT OR IGNORE INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius) VALUES (1, 'ARGO WILIS', 'BANDUNG', '05', 'TASIKMALAYA', 'ON TIME', 60, 15, 694, 25.1, 'GOOD NOMINAL', 'pids', ?, 250, 750)`,
         [JSON.stringify(argoWilisRoute)]);
 
     // ---- INITIAL LOG ----
@@ -659,6 +676,8 @@ export function getState() {
         displayMode: row.display_mode,
         stations: activeRoute?.stations || [],
         activeRoute,
+        geofencingInnerRadius: row.geofencing_inner_radius,
+        geofencingOuterRadius: row.geofencing_outer_radius,
     };
 }
 
@@ -669,6 +688,8 @@ function getDefaultState() {
         altitude: 694, temperature: 25.1, airQuality: 'GOOD NOMINAL', displayMode: 'pids',
         stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
         activeRoute: null,
+        geofencingInnerRadius: 250,
+        geofencingOuterRadius: 750,
     };
 }
 
@@ -693,11 +714,12 @@ export function updateState(updates) {
         }
     }
 
-    db.run(`INSERT OR REPLACE INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    db.run(`INSERT OR REPLACE INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [merged.serviceName, merged.currentStation, merged.trainNumber,
         merged.nextStation, merged.status, merged.ledSpeed, merged.speed,
         merged.altitude, merged.temperature, merged.airQuality,
-        merged.displayMode, activeRouteJson]);
+        merged.displayMode, activeRouteJson,
+        merged.geofencingInnerRadius || 250, merged.geofencingOuterRadius || 750]);
 
     // Don't save to disk on every telemetry update (auto-save handles periodic persistence)
     return getState();

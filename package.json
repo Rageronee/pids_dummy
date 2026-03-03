@@ -7,18 +7,14 @@
   "scripts": {
     "dev:master": "npm run dev --workspace=@eltran/master-app",
     "dev:selector": "npm run dev --workspace=@eltran/selector-app",
-    "dev:led": "npm run dev --workspace=@eltran/led-app",
     "dev:cc": "npm run dev --workspace=@eltran/command-center-app",
     "vite:master": "npm run dev --workspace=@eltran/master-app",
     "vite:selector": "npm run dev --workspace=@eltran/selector-app",
-    "vite:led": "npm run dev --workspace=@eltran/led-app",
     "vite:cc": "npm run dev --workspace=@eltran/command-center-app",
     "electron:master": "wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron packages/master-app --user-data-dir=.electron/master",
     "electron:selector": "wait-on tcp:5174 && cross-env VITE_DEV_SERVER_URL=http://localhost:5174 electron packages/selector-app --user-data-dir=.electron/selector",
-    "electron:led": "wait-on tcp:5175 && cross-env VITE_DEV_SERVER_URL=http://localhost:5175 electron packages/led-app --user-data-dir=.electron/led",
     "electron:cc": "wait-on tcp:5176 && cross-env VITE_DEV_SERVER_URL=http://localhost:5176 electron packages/command-center-app --user-data-dir=.electron/cc",
     "dev:all": "concurrently -n vite-m,vite-s,vite-c,elec-m,elec-s,elec-c -c blue,magenta,cyan,blue.bold,magenta.bold,cyan.bold \"npm run vite:master\" \"npm run vite:selector\" \"npm run vite:cc\" \"npm run electron:master\" \"npm run electron:selector\" \"npm run electron:cc\"",
-    "dev:all-led": "concurrently -n vite-m,vite-s,vite-l,vite-c,elec-m,elec-s,elec-l,elec-c -c blue,magenta,green,cyan,blue.bold,magenta.bold,green.bold,cyan.bold \"npm run vite:master\" \"npm run vite:selector\" \"npm run vite:led\" \"npm run vite:cc\" \"npm run electron:master\" \"npm run electron:selector\" \"npm run electron:led\" \"npm run electron:cc\"",
     "build": "npm run build --workspaces"
   },
   "devDependencies": {
