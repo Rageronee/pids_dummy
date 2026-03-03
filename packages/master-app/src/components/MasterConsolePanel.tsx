@@ -450,6 +450,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         reader.readAsText(file);
     };
 
+    const [mapLoaded, setMapLoaded] = useState(false);
+
     useEffect(() => {
         if (!mapContainer.current) return;
 
@@ -496,14 +498,39 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             .addTo(map.current!);
 
         map.current.on('load', () => {
-            // Removed geofencing initialization from PIDS Tab
+            setMapLoaded(true);
+        });
 
+        return () => {
+            map.current?.remove();
+            map.current = null;
+        }
+    }, []);
 
-            if (!route?.geojson) return;
+    // Effect for handling GeoJSON changes
+    useEffect(() => {
+        if (!map.current || !mapLoaded) return;
 
-            try {
-                const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+        if (!route?.geojson) {
+            // Remove existing route-path if geojson is deleted
+            const source = map.current.getSource('route-path');
+            if (source) {
+                if (map.current.getLayer('route-line')) map.current.removeLayer('route-line');
+                if (map.current.getLayer('route-line-glow')) map.current.removeLayer('route-line-glow');
+                if (map.current.getLayer('station-points')) map.current.removeLayer('station-points');
+                map.current.removeSource('route-path');
+            }
+            return;
+        }
 
+        try {
+            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+
+            const existingSource = map.current.getSource('route-path') as maplibregl.GeoJSONSource;
+
+            if (existingSource) {
+                existingSource.setData(geojson);
+            } else {
                 map.current?.addSource('route-path', {
                     type: 'geojson',
                     data: geojson
@@ -545,7 +572,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     },
                     filter: ['==', '$type', 'Point']
                 });
+            }
 
+            if (!map.current.getSource('active-station-circles')) {
                 // Add active station radius source
                 map.current?.addSource('active-station-circles', {
                     type: 'geojson',
@@ -575,37 +604,29 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         'fill-outline-color': '#ee6f1f'
                     }
                 });
-
-                const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
-                const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
-                const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
-
-                if (!map.current) return;
-
-                // Removed static geofencing layers from PIDS Tab as per user request
-
-
-                if (coordinates && coordinates.length > 0) {
-                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
-                        return bounds.extend(coord);
-                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-
-                    // Only fit bounds if we don't have a valid train location
-                    if (!simGpsRef.current.lng) {
-                        map.current?.fitBounds(bounds, { padding: 50 });
-                    }
-                }
-
-            } catch (err) {
-                console.error("Failed to render GeoJSON:", err);
             }
-        });
 
-        return () => {
-            map.current?.remove();
-            map.current = null;
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+            const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
+            const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
+
+            // Removed static geofencing layers from PIDS Tab as per user request
+
+            if (coordinates && coordinates.length > 0) {
+                const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
+                    return bounds.extend(coord);
+                }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+
+                // Only fit bounds if we don't have a valid train location
+                if (!simGpsRef.current.lng) {
+                    map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+                }
+            }
+
+        } catch (err) {
+            console.error("Failed to render GeoJSON:", err);
         }
-    }, [route?.geojson]);
+    }, [route?.geojson, mapLoaded]);
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-full pb-32">
@@ -952,7 +973,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         </div>
 
-                        {navData.length === 0 ? (
+                        {!route?.geojson || navData.length === 0 ? (
                             <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-100 to-transparent" />
                                 <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">

@@ -121,7 +121,9 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
         return () => clearInterval(interval);
     }, [selectedKereta]);
 
-    // Initialize map
+    const [mapLoaded, setMapLoaded] = useState(false);
+
+    // Initialize map ONCE
     useEffect(() => {
         if (!mapContainer.current) return;
 
@@ -156,17 +158,49 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             attributionControl: false
         });
 
-        map.current.on('load', async () => {
-            if (!route?.geojson) return;
+        map.current.on('load', () => {
+            setMapLoaded(true);
+        });
 
-            try {
-                let geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+        return () => {
+            Object.values(markersRef.current).forEach((m: maplibregl.Marker) => m.remove());
+            map.current?.remove();
+            map.current = null;
+        };
+    }, []);
 
-                if (!geojson || (geojson.features && geojson.features.length === 0)) {
-                    console.warn("[MonitorGPS] GeoJSON is empty for route:", route.name);
-                    return;
-                }
+    // Effect for handling GeoJSON changes
+    useEffect(() => {
+        if (!map.current || !mapLoaded) return;
 
+        if (!route?.geojson) {
+            // Remove existing route-path if geojson is deleted
+            const source = map.current.getSource('route-path');
+            if (source) {
+                // we have to remove layers first before the source
+                if (map.current.getLayer('route-line')) map.current.removeLayer('route-line');
+                if (map.current.getLayer('route-line-glow')) map.current.removeLayer('route-line-glow');
+                if (map.current.getLayer('station-points')) map.current.removeLayer('station-points');
+                if (map.current.getLayer('route-static-geofencing-outer')) map.current.removeLayer('route-static-geofencing-outer');
+                if (map.current.getLayer('route-static-geofencing-inner')) map.current.removeLayer('route-static-geofencing-inner');
+                map.current.removeSource('route-path');
+            }
+            return;
+        }
+
+        try {
+            let geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+
+            if (!geojson || (geojson.features && geojson.features.length === 0)) {
+                console.warn("[MonitorGPS] GeoJSON is empty for route:", route.name);
+                return;
+            }
+
+            const existingSource = map.current.getSource('route-path') as maplibregl.GeoJSONSource;
+
+            if (existingSource) {
+                existingSource.setData(geojson);
+            } else {
                 map.current?.addSource('route-path', {
                     type: 'geojson',
                     data: geojson
@@ -209,67 +243,6 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                     filter: ['==', '$type', 'Point']
                 });
 
-                // Add dynamic geofencing source
-                map.current?.addSource('geofencing-circles', {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
-                });
-
-                map.current?.addLayer({
-                    id: 'geofencing-outer',
-                    type: 'fill',
-                    source: 'geofencing-circles',
-                    filter: ['==', 'type', 'outer'],
-                    paint: {
-                        'fill-color': '#0080ff',
-                        'fill-opacity': 0.1,
-                        'fill-outline-color': '#0080ff'
-                    }
-                });
-
-                map.current?.addLayer({
-                    id: 'geofencing-inner',
-                    type: 'fill',
-                    source: 'geofencing-circles',
-                    filter: ['==', 'type', 'inner'],
-                    paint: {
-                        'fill-color': '#00ffff',
-                        'fill-opacity': 0.15,
-                        'fill-outline-color': '#00ffff'
-                    }
-                });
-
-                // Add active station radius source
-                map.current?.addSource('active-station-circles', {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
-                });
-
-                map.current?.addLayer({
-                    id: 'active-station-outer',
-                    type: 'fill',
-                    source: 'active-station-circles',
-                    filter: ['==', 'type', 'outer'],
-                    paint: {
-                        'fill-color': '#ee6f1f',
-                        'fill-opacity': 0.1,
-                        'fill-outline-color': '#ee6f1f'
-                    }
-                });
-
-                map.current?.addLayer({
-                    id: 'active-station-inner',
-                    type: 'fill',
-                    source: 'active-station-circles',
-                    filter: ['==', 'type', 'inner'],
-                    paint: {
-                        'fill-color': '#ee6f1f',
-                        'fill-opacity': 0.2,
-                        'fill-outline-color': '#ee6f1f'
-                    }
-                });
-
-
                 // Add static geofencing layers (Polygon features in route geojson)
                 map.current?.addLayer({
                     id: 'route-static-geofencing-outer',
@@ -302,28 +275,89 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                         'fill-outline-color': '#00ffff'
                     }
                 });
-
-                // Fit map to route bounds
-                const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
-                const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
-                const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
-
-                if (coordinates && coordinates.length > 0) {
-                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
-                        return bounds.extend(coord);
-                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-                    map.current?.fitBounds(bounds, { padding: 50 });
-                }
-            } catch (err) {
-                console.error("Failed to render GeoJSON:", err);
             }
-        });
 
-        return () => {
-            Object.values(markersRef.current).forEach((m: maplibregl.Marker) => m.remove());
-            map.current?.remove();
-        };
-    }, [route?.geojson]);
+            // Always ensure geo-fencing source circles are created (handled by other effect)
+            if (!map.current.getSource('geofencing-circles')) {
+                // Add dynamic geofencing source
+                map.current?.addSource('geofencing-circles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                map.current?.addLayer({
+                    id: 'geofencing-outer',
+                    type: 'fill',
+                    source: 'geofencing-circles',
+                    filter: ['==', 'type', 'outer'],
+                    paint: {
+                        'fill-color': '#0080ff',
+                        'fill-opacity': 0.1,
+                        'fill-outline-color': '#0080ff'
+                    }
+                });
+
+                map.current?.addLayer({
+                    id: 'geofencing-inner',
+                    type: 'fill',
+                    source: 'geofencing-circles',
+                    filter: ['==', 'type', 'inner'],
+                    paint: {
+                        'fill-color': '#00ffff',
+                        'fill-opacity': 0.15,
+                        'fill-outline-color': '#00ffff'
+                    }
+                });
+            }
+
+            if (!map.current.getSource('active-station-circles')) {
+                // Add active station radius source
+                map.current?.addSource('active-station-circles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                map.current?.addLayer({
+                    id: 'active-station-outer',
+                    type: 'fill',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'outer'],
+                    paint: {
+                        'fill-color': '#ee6f1f',
+                        'fill-opacity': 0.1,
+                        'fill-outline-color': '#ee6f1f'
+                    }
+                });
+
+                map.current?.addLayer({
+                    id: 'active-station-inner',
+                    type: 'fill',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'inner'],
+                    paint: {
+                        'fill-color': '#ee6f1f',
+                        'fill-opacity': 0.2,
+                        'fill-outline-color': '#ee6f1f'
+                    }
+                });
+            }
+
+            // Fit map to route bounds if coordinates exist
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+            const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
+            const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
+
+            if (coordinates && coordinates.length > 0) {
+                const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
+                    return bounds.extend(coord);
+                }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+                map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+            }
+        } catch (err) {
+            console.error("Failed to render GeoJSON:", err);
+        }
+
+    }, [route?.geojson, mapLoaded]);
 
     // Update markers when gerbong data changes
     useEffect(() => {
