@@ -54,6 +54,8 @@ export interface PidsState {
     activeRoute: RouteData | null;
     geofencingInnerRadius?: number;
     geofencingOuterRadius?: number;
+    showTrainNumber?: boolean;
+    ledActive?: boolean;
 }
 
 // ---- Auth & Logging Types ----

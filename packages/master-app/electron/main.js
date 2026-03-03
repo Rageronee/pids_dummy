@@ -57,6 +57,10 @@ app.on('window-all-closed', () => {
 });
 
 // Cleanup on quit
-app.on('before-quit', () => {
-    closeDatabase();
+app.on('before-quit', async (event) => {
+    // We prevent default to ensure the DB closes before the app actually exits
+    // However, in many Electron versions, quit() is called immediately.
+    // A better way is to use a flag or just await if it works in your environment.
+    console.log('[PIDS-MAIN] Closing database...');
+    await closeDatabase();
 });

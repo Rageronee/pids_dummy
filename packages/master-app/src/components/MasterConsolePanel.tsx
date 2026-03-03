@@ -9,7 +9,7 @@ import {
     ChevronDown, ChevronRight, RadioTower, Video, Info,
     ListVideo, Disc, CheckCircle2, AlertCircle, Satellite,
     Repeat, Shuffle,
-    Upload, X, Trash2, Loader2
+    Upload, Trash2, Loader2
 } from 'lucide-react';
 
 // Modern Toggle Switch Component (REFINED: Single Toggle Button)
@@ -826,11 +826,21 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center sm:text-left">Tampilkan</span>
                                 <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
                                     <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
-                                        <input type="checkbox" className="w-4 h-4 rounded text-blue-600 border-slate-300" /> No. KA
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 rounded text-blue-600 border-slate-300"
+                                            checked={!!data.showTrainNumber}
+                                            onChange={(e) => sendData({ showTrainNumber: e.target.checked })}
+                                        /> No. KA
                                     </label>
                                     <div className="w-px h-5 bg-slate-200" />
                                     <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
-                                        <input type="checkbox" className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300" defaultChecked /> LED 9×16
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300"
+                                            checked={data.ledActive !== false}
+                                            onChange={(e) => sendData({ ledActive: e.target.checked })}
+                                        /> LED 96×16
                                     </label>
                                 </div>
                             </div>
@@ -928,15 +938,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                {route?.geojson && (
-                                    <button
-                                        onClick={handleDeleteClick}
-                                        disabled={uploading}
-                                        className="text-xs font-black uppercase tracking-widest text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors"
-                                    >
-                                        <X size={14} /> {uploading ? '...' : 'Close'}
-                                    </button>
-                                )}
+                                <button
+                                    onClick={handleDeleteClick}
+                                    disabled={uploading}
+                                    className={`text-xs font-black uppercase tracking-widest text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${uploading ? 'opacity-50 grayscale pointer-events-none' : ''}`}
+                                >
+                                    <Trash2 size={14} /> {uploading ? '...' : 'Hapus'}
+                                </button>
                                 <label className={`text-xs font-black uppercase tracking-widest text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                                     <Upload size={14} className={`text-white ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import'}
                                     <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading} />

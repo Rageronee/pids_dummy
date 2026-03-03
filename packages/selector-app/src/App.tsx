@@ -21,7 +21,7 @@ function App() {
     const [showTVPreview, setShowTVPreview] = useState(false);
     const [showLedSettings, setShowLedSettings] = useState(false);
     const [showLEDPreview, setShowLEDPreview] = useState(false);
-    const [ledType, setLedType] = useState<'indoor' | 'outdoor'>('indoor');
+    const [ledType, setLedType] = useState<'indoor' | 'outdoor' | 'p10_32_16' | 'p25_32_16'>('indoor');
     const [tvDisplayMode, setTvDisplayMode] = useState<'current' | 'next'>('current');
     const [toastMsg, setToastMsg] = useState<{ title: string, message: string } | null>(null);
 
@@ -573,14 +573,13 @@ function App() {
                                 <div className="p-12 space-y-12">
                                     {/* Preview Section */}
                                     <div className="space-y-4 text-center">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Live Matrix Preview</p>
                                         <div className="flex justify-center scale-110 py-6">
                                             <P10Matrix
                                                 text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
-                                                fixedText={`${masterSyncedNumber} `}
+                                                fixedText={data?.showTrainNumber ? `${masterSyncedNumber} ` : ''}
                                                 color="#ee6f1f"
                                                 speed={masterSyncedLedSpeed}
-                                                columns={128}
+                                                columns={ledType.includes('96') ? 96 : 128}
                                             />
                                         </div>
                                     </div>
@@ -596,13 +595,13 @@ function App() {
                                                 onClick={() => setLedType('indoor')}
                                                 className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
                                             >
-                                                P4 Indoor LED
+                                                P2.5 Indoor
                                             </button>
                                             <button
-                                                onClick={() => setLedType('outdoor')}
-                                                className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'outdoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                                onClick={() => setLedType('p10_32_16')}
+                                                className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
                                             >
-                                                P10 Outdoor LED
+                                                P10 Outdoor
                                             </button>
                                         </div>
                                     </div>
@@ -804,13 +803,13 @@ function App() {
                                 <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
                             </button>
 
-                            <div className={`${ledType === 'indoor' ? 'scale-[1.8]' : 'scale-[2.8]'} origin-center transition-transform duration-1000 ease-out`}>
+                            <div className={`${(ledType === 'indoor' || ledType.includes('p25')) ? 'scale-[1.8]' : 'scale-[2.8]'} origin-center transition-transform duration-1000 ease-out`}>
                                 <P10Matrix
                                     text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
-                                    fixedText={`${masterSyncedNumber} `}
+                                    fixedText={data?.showTrainNumber ? `${masterSyncedNumber} ` : ''}
                                     color="#ff0000"
                                     speed={masterSyncedLedSpeed}
-                                    columns={128}
+                                    columns={ledType.includes('96') ? 96 : 128}
                                 />
                             </div>
                         </motion.div>
