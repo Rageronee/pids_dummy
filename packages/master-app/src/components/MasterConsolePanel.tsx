@@ -613,13 +613,15 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             // Removed static geofencing layers from PIDS Tab as per user request
 
             if (coordinates && coordinates.length > 0) {
-                const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
-                    return bounds.extend(coord);
-                }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+                if (!existingSource) {
+                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
+                        return bounds.extend(coord);
+                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
 
-                // Only fit bounds if we don't have a valid train location
-                if (!simGpsRef.current.lng) {
-                    map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+                    // Only fit bounds if we don't have a valid train location
+                    if (!simGpsRef.current.lng) {
+                        map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+                    }
                 }
             }
 

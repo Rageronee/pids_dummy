@@ -348,10 +348,12 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
 
             if (coordinates && coordinates.length > 0) {
-                const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
-                    return bounds.extend(coord);
-                }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-                map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+                if (!existingSource) {
+                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
+                        return bounds.extend(coord);
+                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+                    map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+                }
             }
         } catch (err) {
             console.error("Failed to render GeoJSON:", err);
