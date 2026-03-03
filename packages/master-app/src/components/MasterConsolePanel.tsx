@@ -306,20 +306,55 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         distToNext = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
     }
 
-    const navData = activeRouteStations.map((stationName: string, idx: number) => {
-        const station = stationsData.find(s => s.name === stationName) || {};
-        const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === stationName);
-        return {
-            name: stationName,
-            type: idx === 0 ? 'ASAL' : idx === activeRouteStations.length - 1 ? 'TUJUAN' : 'ANTARA',
-            lng: station.longitude?.toFixed(6) || "-",
-            lat: station.latitude?.toFixed(6) || "-",
-            eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
-            status: stationName === data?.currentStation ? "BERHENTI" : "",
-            next: activeRouteStations[idx + 1] || "-"
-        };
-    });
+    let navData = [];
+    if (route?.geojson && route.geojson !== '{}') {
+        try {
+            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? geojson.features : [geojson]);
+            const pts = features?.filter((f: any) => f.geometry?.type === 'Point' && f.properties?.name) || [];
 
+            if (pts.length > 0) {
+                navData = pts.map((f: any, idx: number) => {
+                    const sName = (f.properties?.name || '').toUpperCase();
+                    // Optional: Try to find schedule from DB by name
+                    const stopSched = activeSchedule?.stops?.find((s: any) => (s.station_name || '').toUpperCase() === sName);
+
+                    const isBerhenti = sName === (data?.currentStation || '').trim().toUpperCase();
+                    const lng = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[0]?.toFixed(6) : "-";
+                    const lat = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[1]?.toFixed(6) : "-";
+
+                    return {
+                        name: f.properties?.name || sName,
+                        type: idx === 0 ? 'ASAL' : idx === pts.length - 1 ? 'TUJUAN' : 'ANTARA',
+                        lng: lng,
+                        lat: lat,
+                        eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
+                        status: isBerhenti ? "BERHENTI" : "",
+                        next: pts[idx + 1]?.properties?.name || "-"
+                    };
+                });
+            }
+        } catch (e) {
+            console.error("Failed to parse GeoJSON for navData:", e);
+        }
+    }
+
+    // Fallback logic if GeoJSON not available or has no point features
+    if (navData.length === 0) {
+        navData = activeRouteStations.map((stationName: string, idx: number) => {
+            const station = stationsData.find(s => s.name === stationName) || {};
+            const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === stationName);
+            return {
+                name: stationName,
+                type: idx === 0 ? 'ASAL' : idx === activeRouteStations.length - 1 ? 'TUJUAN' : 'ANTARA',
+                lng: station.longitude?.toFixed(6) || "-",
+                lat: station.latitude?.toFixed(6) || "-",
+                eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
+                status: stationName === data?.currentStation ? "BERHENTI" : "",
+                next: activeRouteStations[idx + 1] || "-"
+            };
+        });
+    }
 
     const showToast = (msg: string, ok: boolean = true) => {
         setToast({ msg, ok });
