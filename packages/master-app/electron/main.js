@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startApiServer } from './api.js';
@@ -36,6 +36,15 @@ function createWindow() {
         win.loadURL(`data:text/html,<html><body><h1>Failed to load: ${devServerUrl}</h1><p>Check if Vite is running.</p></body></html>`);
     });
 }
+
+// IPC Handlers
+ipcMain.handle('select-directory', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+        properties: ['openDirectory']
+    });
+    if (canceled) return null;
+    return filePaths[0];
+});
 
 app.whenReady().then(async () => {
     // Start the local PIDS API backend (SQLite + Socket.IO)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
+import React, { useState, useEffect, useRef, useCallback, ChangeEvent } from 'react';
 import maplibregl from 'maplibre-gl';
 import * as turf from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -7,8 +7,8 @@ import {
     Train, Settings, Save, RefreshCw, Volume2,
     MapPin, MonitorPlay, Mic, Play, Pause,
     ChevronDown, ChevronRight, RadioTower, Video, Info,
-    ListVideo, Disc, CheckCircle2, AlertCircle, Satellite,
-    Repeat, Shuffle,
+    ListVideo, CheckCircle2, AlertCircle, Satellite,
+    Repeat, Shuffle, Plus, FolderOpen,
     Upload, Trash2, Loader2
 } from 'lucide-react';
 
@@ -108,17 +108,173 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const [outerRadius, setOuterRadius] = useState(data?.geofencingOuterRadius || 750);
     const [innerRadius, setInnerRadius] = useState(data?.geofencingInnerRadius || 250);
     const radiusRef = useRef({ inner: data?.geofencingInnerRadius || 250, outer: data?.geofencingOuterRadius || 750 });
-    const [tvStandby, setTvStandby] = useState(true);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
     const [stationsData, setStationsData] = useState<any[]>([]);
     const [scheduleData, setScheduleData] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [videoList, setVideoList] = useState<string[]>([]);
+    const [videoViewMode, setVideoViewMode] = useState<'playlist' | 'files'>('playlist');
+    const [loadingVideos, setLoadingVideos] = useState(false);
+
+    // Fetch videos from server
+    const fetchVideos = useCallback(async () => {
+        try {
+            setLoadingVideos(true);
+            const res = await fetch('http://localhost:3001/api/media/videos');
+            const d = await res.json();
+            if (d.success) setVideoList(d.videos);
+        } catch (e) {
+            console.error("Failed to fetch videos:", e);
+        } finally {
+            setLoadingVideos(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchVideos();
+    }, [fetchVideos]);
     const [simGps, setSimGps] = useState({ lng: 0, lat: 0, heading: 0 });
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
     const simGpsRef = useRef(simGps);
+    const navTableRef = useRef<HTMLDivElement>(null);
+    const lastFocusedStation = useRef<string | null>(null);
+
+    // VIDEO HANDLERS & LOGIC
+    const playlist = data?.videoPlaylist || [];
+    const activeIndex = data?.activeVideoIndex ?? 0;
+    const isPlaying = data?.isPlaying ?? false;
+    const playbackMode = data?.playbackMode || 'normal';
+    const progress = data?.playbackProgress || 0;
+
+    // Simulation logic for "Literal" functionality
+    useEffect(() => {
+        if (!isPlaying || playlist.length === 0) return;
+
+        const interval = setInterval(() => {
+            const newProgress = Math.min(progress + 1, 100);
+            if (newProgress >= 100) {
+                // Auto Advance
+                if (playbackMode === 'repeat-one') {
+                    sendData({ playbackProgress: 0 });
+                } else if (playbackMode === 'shuffle') {
+                    const nextIdx = Math.floor(Math.random() * playlist.length);
+                    sendData({ activeVideoIndex: nextIdx, playbackProgress: 0 });
+                } else {
+                    const nextIdx = (activeIndex + 1) % playlist.length;
+                    sendData({ activeVideoIndex: nextIdx, playbackProgress: 0 });
+                }
+            } else {
+                // Update progress quietly (every 2 seconds to avoid over-socketing, but local UI is fast)
+                sendData({ playbackProgress: newProgress });
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isPlaying, progress, playlist, activeIndex, playbackMode, sendData]);
+
+    const handleVideoAction = useCallback(async (updates: any) => {
+        await sendData(updates);
+    }, [sendData]);
+
+    const addToPlaylist = (file: string) => {
+        const newPlaylist = [...playlist, file];
+        handleVideoAction({ videoPlaylist: newPlaylist });
+        showToast(`"${file}" ditambahkan ke playlist`);
+    };
+
+    const removeFromPlaylist = (idx: number) => {
+        const newPlaylist = playlist.filter((_: any, i: number) => i !== idx);
+        let newIndex = activeIndex;
+        if (activeIndex >= newPlaylist.length && newPlaylist.length > 0) newIndex = newPlaylist.length - 1;
+        handleVideoAction({ videoPlaylist: newPlaylist, activeVideoIndex: newIndex, playbackProgress: 0 });
+    };
+
+    const playVideoAt = (idx: number) => {
+        handleVideoAction({ activeVideoIndex: idx, isPlaying: true, playbackProgress: 0 });
+    };
+
+    const togglePlay = () => {
+        if (playlist.length === 0) return showToast('Playlist kosong');
+        handleVideoAction({ isPlaying: !isPlaying });
+        showToast(isPlaying ? 'Video dijeda' : 'Memutar video');
+    };
+
+    const nextVideo = () => {
+        if (playlist.length === 0) return;
+        const nextIdx = (activeIndex + 1) % playlist.length;
+        playVideoAt(nextIdx);
+    };
+
+    const prevVideo = () => {
+        if (playlist.length === 0) return;
+        const prevIdx = (activeIndex - 1 + playlist.length) % playlist.length;
+        playVideoAt(prevIdx);
+    };
+
+    const toggleRepeat = () => {
+        const repeatModes = ['normal', 'repeat-one', 'repeat-all'];
+        const currentMode = playbackMode === 'shuffle' ? 'normal' : playbackMode;
+        const nextMode = repeatModes[(repeatModes.indexOf(currentMode) + 1) % repeatModes.length];
+        handleVideoAction({ playbackMode: nextMode });
+        showToast(`Repeat: ${nextMode.toUpperCase()}`);
+    };
+
+    const toggleShuffle = () => {
+        const isShuffle = playbackMode === 'shuffle';
+        handleVideoAction({ playbackMode: isShuffle ? 'normal' : 'shuffle' });
+        showToast(isShuffle ? 'Urutan normal' : 'Mode acak diaktifkan');
+    };
+
+    const handleSelectDirectory = async () => {
+        try {
+            // @ts-ignore
+            const selectedDir = await window.require('electron').ipcRenderer.invoke('select-directory');
+            if (selectedDir) {
+                const res = await fetch('http://localhost:3001/api/media/directory', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ directory: selectedDir })
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(`Direktori diubah ke: ${selectedDir}`);
+                    fetchVideos();
+                    setVideoViewMode('files');
+                }
+            }
+        } catch (e) {
+            console.error("Failed to select directory:", e);
+            showToast('Gagal membuka browser direktori');
+        }
+    };
+
+    // Auto-scroll to current station in table
+    useEffect(() => {
+        if (!navTableRef.current || !data?.currentStation || data.currentStation === '-') return;
+
+        // Only focus if station actually changed from last focused one
+        if (data.currentStation === lastFocusedStation.current) return;
+
+        const timeoutId = setTimeout(() => {
+            const container = navTableRef.current;
+            const activeRow = container?.querySelector('[data-active="true"]');
+
+            if (activeRow && container) {
+                const row = activeRow as HTMLElement;
+                const headerOffset = 45;
+                container.scrollTo({
+                    top: row.offsetTop - headerOffset,
+                    behavior: 'smooth'
+                });
+                lastFocusedStation.current = data.currentStation;
+            }
+        }, 150);
+
+        return () => clearTimeout(timeoutId);
+    }, [data?.currentStation, route?.geojson]);
 
     // Fetch stations
     useEffect(() => {
@@ -441,7 +597,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ geojson: parsed })
+                        body: JSON.stringify({
+                            geojson: parsed,
+                            filename: file.name
+                        })
                     });
                 } catch (networkErr) {
                     throw new Error('Tidak dapat terhubung ke API server (port 3001). Pastikan Electron sudah berjalan.');
@@ -991,7 +1150,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
                                 <span className="text-sm font-black text-[#1d2d6a]">
-                                    {route?.geojson ? `${route.name.replace(/\s+/g, '_')}.json` : 'Belum Ada GeoJSON'}
+                                    {route?.geojson ? (route.geojson_filename || `${route.name.replace(/\s+/g, '_')}.geojson`) : 'Belum Ada GeoJSON'}
                                     {route?.geojson && <span className="ml-2 text-[10px] text-green-500 font-black uppercase tracking-widest bg-green-50 px-1.5 py-0.5 rounded border border-green-100 italic">Aktif</span>}
                                 </span>
                             </div>
@@ -1023,7 +1182,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         ) : (
                             <div className="mt-3 border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
-                                <div className="overflow-x-auto max-h-[450px] overflow-y-auto relative">
+                                <div ref={navTableRef} className="overflow-x-auto max-h-[450px] overflow-y-auto relative">
                                     <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0">
                                         <thead className="bg-[#1d2d6a] text-white sticky top-0 z-20">
                                             <tr>
@@ -1040,7 +1199,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             {navData.map((item: any, idx: number) => {
                                                 const isBerhenti = item.status === 'BERHENTI';
                                                 return (
-                                                    <tr key={idx} className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/50' : 'bg-white'}`}>
+                                                    <tr
+                                                        key={idx}
+                                                        data-active={isBerhenti}
+                                                        className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/100' : 'bg-white'}`}
+                                                    >
                                                         <td className={`py-3 px-6 font-black flex items-center gap-2 ${isBerhenti ? 'text-[#ee6f1f]' : 'text-slate-700'}`}>
                                                             {isBerhenti && <ChevronRight size={16} className="text-[#ee6f1f]" />}
                                                             {item.name}
@@ -1077,7 +1240,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 title="3. Sistem Media & Penyiaran"
                 icon={RadioTower}
                 defaultOpen={true}
-                summary={`Audio ${mediaSource} • Layar ${tvStandby ? 'Standby' : 'Aktif'}`}
+                summary={`Audio ${mediaSource} • Layar ${data?.tvStandby ? 'Standby' : 'Aktif'}`}
             >
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
 
@@ -1143,73 +1306,179 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <Video size={16} className="text-blue-500" /> Manajemen TV / Video
                             </h4>
                             <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setVideoViewMode(prev => prev === 'playlist' ? 'files' : 'playlist')}
+                                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all shadow-sm ${videoViewMode === 'files' ? 'bg-blue-600 text-white border-blue-700' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                        }`}
+                                >
+                                    {videoViewMode === 'playlist' ? <ListVideo size={14} /> : <Video size={14} />}
+                                    {videoViewMode === 'playlist' ? 'Playlist' : 'Video'}
+                                </button>
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
-                                    <input type="checkbox" checked={tvStandby} onChange={(e) => setTvStandby(e.target.checked)} className="w-3.5 h-6 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> Standby
+                                    <input type="checkbox" checked={data?.dvdActive} onChange={(e) => handleVideoAction({ dvdActive: e.target.checked })} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> DVD
                                 </label>
-                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer text-slate-500 hover:text-[#1d2d6a] bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 transition-all shadow-sm">
-                                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-[#1d2d6a] focus:ring-[#1d2d6a]" /> DVD
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
+                                    <input type="checkbox" checked={data?.tvStandby} onChange={(e) => handleVideoAction({ tvStandby: e.target.checked })} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> Standby
                                 </label>
-                                <button onClick={() => showToast('Membuka pengaturan modul media')} className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 transition-all shadow-sm">
-                                    <Settings size={14} />
+                                <button
+                                    onClick={handleSelectDirectory}
+                                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                                >
+                                    <FolderOpen size={14} /> Pilih Direktori
+                                </button>
+                                <button onClick={fetchVideos} className={`text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors ${loadingVideos ? 'animate-spin' : ''}`}>
+                                    <RefreshCw size={14} />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Playlist Box */}
+                        {/* Video Preview */}
+                        <div className="bg-black rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
+                            {(() => {
+                                const activeFile = playlist[activeIndex];
+                                if (!activeFile) {
+                                    return (
+                                        <div className="flex flex-col items-center gap-2 text-slate-500">
+                                            <Video size={28} className="text-slate-400" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest">Tidak Ada Video Aktif</span>
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <>
+                                        <video
+                                            key={activeFile}
+                                            src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
+                                            autoPlay={isPlaying}
+                                            loop
+                                            muted
+                                            className="w-full h-full object-contain"
+                                        />
+                                        <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-lg flex items-center gap-2">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+                                            <span className="text-[8px] font-black uppercase tracking-widest truncate max-w-[150px]">{activeFile}</span>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Video Content Box */}
                         <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 overflow-auto space-y-1.5 shadow-inner min-h-[140px]">
-                            {/* Playlist Item 1: Active */}
-                            <div className="text-xs font-bold text-blue-700 bg-blue-100/50 p-2.5 rounded-lg flex items-center justify-between gap-3 border border-blue-200 shadow-sm">
-                                <div className="flex items-center gap-3 w-full overflow-hidden">
-                                    <div className="bg-blue-600 text-white rounded-full p-1 border border-blue-500 shadow-sm shrink-0"><Play size={10} className="ml-[1px]" /></div>
-                                    <span className="truncate w-full font-black">Company_Profile_Eltran.mp4</span>
+                            {videoViewMode === 'playlist' ? (
+                                <>
+                                    {playlist.length === 0 ? (
+                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">Playlist Kosong</div>
+                                    ) : (
+                                        playlist.map((file: string, i: number) => {
+                                            const isActive = i === activeIndex;
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    onClick={() => playVideoAt(i)}
+                                                    className={`text-xs font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${isActive
+                                                        ? 'text-blue-700 bg-blue-100/50 border-blue-200 shadow-sm'
+                                                        : 'text-slate-600 bg-transparent border-transparent hover:bg-white hover:border-slate-200'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-3 w-full overflow-hidden">
+                                                        <div className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
+                                                            {isActive && isPlaying ? <div className="bg-blue-600 w-1 h-3 animate-pulse rounded-full mx-auto" /> : <Play size={10} className="ml-[1px]" fill={isActive ? "currentColor" : "none"} />}
+                                                        </div>
+                                                        <span className={`truncate w-full ${isActive ? 'font-black' : 'font-bold'}`}>{file}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[10px] font-mono font-bold shrink-0 ${isActive ? 'text-blue-500' : 'text-slate-400'}`}>
+                                                            {isActive ? 'Active' : '--:--'}
+                                                        </span>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); removeFromPlaylist(i); }}
+                                                            className="opacity-0 group-hover/plitem:opacity-100 p-1 text-red-400 hover:bg-red-50 rounded transition-all"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </>
+                            ) : (
+                                <div className="space-y-1">
+                                    <div className="px-2 py-1 mb-2 border-b border-slate-200 flex justify-between items-center">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Direktori: /public/videos</span>
+                                        <span className="text-[9px] font-bold text-blue-500">{videoList.length} File ditemukan</span>
+                                    </div>
+                                    {videoList.length === 0 ? (
+                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">Video tidak ditemukan</div>
+                                    ) : (
+                                        videoList.map((file, i) => (
+                                            <div key={i} className="text-[11px] font-bold text-slate-600 p-2 rounded-lg flex items-center gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem">
+                                                <div className="p-1.5 bg-slate-100 rounded group-hover/vitem:bg-blue-50 group-hover/vitem:text-blue-500 transition-colors">
+                                                    <Video size={12} />
+                                                </div>
+                                                <span className="truncate flex-1">{file}</span>
+                                                <button onClick={(e) => { e.stopPropagation(); addToPlaylist(file); }} className="opacity-0 group-hover/vitem:opacity-100 p-1 text-blue-500 hover:bg-blue-100 rounded transition-all">
+                                                    <Plus size={14} />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
-                                <span className="text-[10px] font-mono font-bold text-blue-500 shrink-0">02:15 / 05:30</span>
-                            </div>
-                            {/* Playlist Item 2 */}
-                            <div className="text-xs font-medium text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all">
-                                <div className="flex items-center gap-3 w-full overflow-hidden">
-                                    <div className="p-1 shrink-0 text-slate-400"><ListVideo size={14} /></div>
-                                    <span className="truncate w-full font-bold">Safety_Briefing_KAI.mp4</span>
-                                </div>
-                                <span className="text-[10px] font-mono font-bold text-slate-400 shrink-0">03:45</span>
-                            </div>
-                            {/* Playlist Item 3 */}
-                            <div className="text-xs font-medium text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all">
-                                <div className="flex items-center gap-3 w-full overflow-hidden">
-                                    <div className="p-1 shrink-0 text-slate-400"><Disc size={14} /></div>
-                                    <span className="truncate w-full font-bold">Wonderful_Indonesia_Tour.avi</span>
-                                </div>
-                                <span className="text-[10px] font-mono font-bold text-slate-400 shrink-0">12:20</span>
-                            </div>
+                            )}
                         </div>
 
                         {/* Playback Controls & Progress */}
                         <div className="flex flex-col gap-4 mt-auto border-t border-slate-100 pt-3">
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-mono font-black text-blue-500">02:15</span>
-                                <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden cursor-pointer relative shadow-inner">
-                                    <div className="absolute top-0 left-0 bottom-0 bg-blue-500 w-[41%]" />
+                                <span className="text-[10px] font-mono font-black text-blue-500">{Math.floor(progress / 20)}:{(progress % 20).toString().padStart(2, '0')}</span>
+                                <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden cursor-pointer relative shadow-inner" onClick={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const x = e.clientX - rect.left;
+                                    const pct = Math.floor((x / rect.width) * 100);
+                                    handleVideoAction({ playbackProgress: pct });
+                                }}>
+                                    <div className="absolute top-0 left-0 bottom-0 bg-blue-500 transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${progress}%` }} />
                                 </div>
-                                <span className="text-[10px] font-mono font-bold text-slate-400">-03:15</span>
+                                <span className="text-[10px] font-mono font-bold text-slate-400">-{Math.floor((100 - progress) / 20)}:{((100 - progress) % 20).toString().padStart(2, '0')}</span>
                             </div>
 
                             <div className="flex items-center justify-between gap-4 relative min-h-[50px]">
                                 {/* Left Side Tools */}
-                                <div className="flex items-center gap-2">
-                                    <button onClick={() => showToast('Mengulang playlist')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Repeat size={18} /></button>
-                                    <button onClick={() => showToast('Mengacak playlist')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Shuffle size={18} /></button>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={toggleRepeat} title="Repeat" className={`p-2 rounded-lg transition-all ${playbackMode.includes('repeat') ? 'text-blue-600 bg-blue-50 border border-blue-100' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}>
+                                        <div className="relative">
+                                            <Repeat size={18} />
+                                            {playbackMode === 'repeat-one' && <span className="absolute -top-1 -right-1 bg-blue-600 text-[6px] text-white w-2.5 h-2.5 rounded-full flex items-center justify-center font-black">1</span>}
+                                        </div>
+                                    </button>
+                                    <button onClick={toggleShuffle} title="Shuffle" className={`p-2 rounded-lg transition-all ${playbackMode === 'shuffle' ? 'text-blue-600 bg-blue-50 border border-blue-100' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}>
+                                        <Shuffle size={18} />
+                                    </button>
                                 </div>
 
                                 {/* Center Play Controls */}
-                                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-50 px-4 py-1.5 rounded-2xl border border-slate-100 shadow-inner">
-                                    <button onClick={() => showToast('Memutar video sebelumnya')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="rotate-90" /></button>
-                                    <button onClick={() => showToast('Video dijeda')} className="text-white bg-[#1d2d6a] hover:bg-[#152355] p-3.5 mx-2 rounded-full shadow-lg transition-all active:scale-90 hover:scale-105"><Pause size={20} fill="currentColor" /></button>
-                                    <button onClick={() => showToast('Memutar video selanjutnya')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="-rotate-90" /></button>
+                                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white px-5 py-2 rounded-2xl border border-slate-200 shadow-sm z-10">
+                                    <button onClick={prevVideo} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="rotate-90" /></button>
+                                    <button onClick={togglePlay} className="text-white bg-[#1d2d6a] hover:bg-[#152355] p-3.5 mx-2 rounded-full shadow-lg transition-all active:scale-95 hover:scale-105">
+                                        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                                    </button>
+                                    <button onClick={nextVideo} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="-rotate-90" /></button>
                                 </div>
 
                                 {/* Right Side Tools */}
-                                <div className="flex items-center gap-2">
-                                    <button onClick={() => showToast('Mengatur volume')} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"><Volume2 size={18} /></button>
+                                <div className="flex items-center gap-4 bg-slate-50/50 px-4 py-2 rounded-xl border border-slate-100">
+                                    <div className="flex items-center gap-3">
+                                        <Volume2 size={16} className="text-slate-400" />
+                                        <input
+                                            type="range"
+                                            min="0" max="100"
+                                            value={data?.volume ?? 50}
+                                            onChange={(e) => handleVideoAction({ volume: parseInt(e.target.value) })}
+                                            className="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                        />
+                                        <span className="text-[10px] font-mono font-bold text-slate-500 w-6">{data?.volume ?? 50}%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -56,6 +56,15 @@ export interface PidsState {
     geofencingOuterRadius?: number;
     showTrainNumber?: boolean;
     ledActive?: boolean;
+    // Video / TV Management
+    tvStandby?: boolean;
+    dvdActive?: boolean;
+    videoPlaylist?: string[];
+    activeVideoIndex?: number;
+    isPlaying?: boolean;
+    playbackProgress?: number;
+    playbackMode?: string;
+    volume?: number;
 }
 
 // ---- Auth & Logging Types ----

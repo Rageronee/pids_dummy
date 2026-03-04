@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, CheckCircle2, Monitor } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
@@ -20,7 +20,6 @@ function App() {
     const [temp, setTemp] = useState(24);
     const [showTVPreview, setShowTVPreview] = useState(false);
     const [showLedSettings, setShowLedSettings] = useState(false);
-    const [showLEDPreview, setShowLEDPreview] = useState(false);
     const [ledType, setLedType] = useState<'indoor' | 'outdoor' | 'p10_32_16' | 'p25_32_16'>('indoor');
     const [tvDisplayMode, setTvDisplayMode] = useState<'current' | 'next'>('current');
     const [toastMsg, setToastMsg] = useState<{ title: string, message: string } | null>(null);
@@ -325,9 +324,9 @@ function App() {
                 <div className="flex flex-col gap-2 mt-12">
                     <button
                         onClick={() => setShowLedSettings(true)}
-                        className="flex items-center gap-4 py-3 px-4 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors w-full text-left group"
+                        className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showLedSettings ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     >
-                        <Settings size={20} className="text-white/40 group-hover:text-white transition-colors" />
+                        <Settings size={20} className={showLedSettings ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
                         <span className="font-bold text-sm tracking-wide uppercase">LED Settings</span>
                     </button>
 
@@ -337,14 +336,6 @@ function App() {
                     >
                         <Video size={20} className={showTVPreview ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
                         <span className="font-bold text-sm tracking-wide uppercase">Monitor TV</span>
-                    </button>
-
-                    <button
-                        onClick={() => setShowLEDPreview(true)}
-                        className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showLEDPreview ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
-                    >
-                        <Monitor size={20} className={showLEDPreview ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
-                        <span className="font-bold text-sm tracking-wide uppercase">Monitor LED</span>
                     </button>
 
                     <button
@@ -570,55 +561,66 @@ function App() {
                                     </button>
                                 </div>
 
-                                <div className="p-12 space-y-12">
+                                <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                                     {/* Preview Section */}
-                                    <div className="space-y-4 text-center">
-                                        <div className="flex justify-center scale-110 py-6">
-                                            <P10Matrix
-                                                text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
-                                                fixedText={data?.showTrainNumber ? `${masterSyncedNumber} ` : ''}
-                                                color="#ee6f1f"
-                                                speed={masterSyncedLedSpeed}
-                                                columns={ledType.includes('96') ? 96 : 128}
-                                            />
+                                    <div className="space-y-4 text-center pb-2">
+                                        <div className="flex justify-center scale-100 py-4 h-32 items-center">
+                                            {data?.ledActive !== false ? (
+                                                <P10Matrix
+                                                    text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
+                                                    fixedText={data?.showTrainNumber ? `${masterSyncedNumber} ` : ''}
+                                                    color="#ee6f1f"
+                                                    speed={masterSyncedLedSpeed}
+                                                    columns={ledType.includes('96') ? 96 : 128}
+                                                />
+                                            ) : (
+                                                <div className="w-full max-w-2xl h-16 bg-black flex items-center justify-center rounded-lg border border-slate-800 shadow-inner">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">LED SYSTEM STANDBY / POWERED OFF</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {/* LED Type Selection */}
-                                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-col gap-6">
-                                        <div>
-                                            <h4 className="text-lg font-black text-[#1d2d6a] tracking-tight">Display Type</h4>
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Select matrix panel model</p>
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <button
-                                                onClick={() => setLedType('indoor')}
-                                                className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
-                                            >
-                                                P2.5 Indoor
-                                            </button>
-                                            <button
-                                                onClick={() => setLedType('p10_32_16')}
-                                                className={`flex-1 py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all border-2 ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
-                                            >
-                                                P10 Outdoor
-                                            </button>
+                                    <div className="grid grid-cols-1 gap-6">
+                                        {/* LED Type Selection */}
+                                        <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-4">
+                                            <div>
+                                                <h4 className="text-base font-black text-[#1d2d6a] tracking-tight">Display Type</h4>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select matrix panel model</p>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => setLedType('indoor')}
+                                                    className={`flex-1 py-3 px-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                                >
+                                                    P2.5 Indoor
+                                                </button>
+                                                <button
+                                                    onClick={() => setLedType('p10_32_16')}
+                                                    className={`flex-1 py-3 px-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                                >
+                                                    P10 Outdoor
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Speed Control */}
-                                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-col gap-8">
+                                    <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-6">
                                         <div className="flex justify-between items-center">
                                             <div>
-                                                <h4 className="text-lg font-black text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Adjustment for matrix modules</p>
+                                                <h4 className="text-base font-black text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Adjustment for matrix modules</p>
                                             </div>
-                                            <div className="text-3xl font-black text-[#ee6f1f] bg-white px-6 py-2 rounded-2xl shadow-sm border border-slate-100 font-mono">
-                                                {masterSyncedLedSpeed}<span className="text-xs ml-1 opacity-40">MS</span>
+                                            <div className="text-2xl font-black text-[#ee6f1f] bg-white px-5 py-1.5 rounded-2xl shadow-sm border border-slate-100 font-mono">
+                                                {masterSyncedLedSpeed}<span className="text-[10px] ml-1 opacity-40 uppercase">MS</span>
                                             </div>
                                         </div>
 
-                                        <div className="relative pt-2">
+                                        <div className="relative pt-1">
                                             <input
                                                 type="range"
                                                 min="10"
@@ -626,9 +628,9 @@ function App() {
                                                 step="5"
                                                 value={masterSyncedLedSpeed}
                                                 onChange={(e) => handleSetLedSpeed(parseInt(e.target.value))}
-                                                className="w-full h-4 bg-slate-200 rounded-xl appearance-none cursor-pointer accent-[#ee6f1f]"
+                                                className="w-full h-3 bg-slate-200 rounded-xl appearance-none cursor-pointer accent-[#ee6f1f]"
                                             />
-                                            <div className="flex justify-between text-[10px] font-black text-slate-300 mt-4 uppercase tracking-[0.2em]">
+                                            <div className="flex justify-between text-[8px] font-black text-slate-300 mt-3 uppercase tracking-[0.2em]">
                                                 <span>Hyper Fast (10ms)</span>
                                                 <span>Standard (60ms)</span>
                                                 <span>Slow (200ms)</span>
@@ -636,7 +638,7 @@ function App() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 text-slate-400 text-[10px] leading-relaxed">
+                                    <div className="flex items-center gap-4 text-slate-400 text-[9px] leading-relaxed pt-2">
                                         <div className="bg-blue-50 p-2 rounded-lg text-blue-500">
                                             <Clock size={14} />
                                         </div>
@@ -656,165 +658,164 @@ function App() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 1.05 }}
                             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                            className="fixed inset-0 z-50 bg-slate-900 flex flex-col overflow-hidden font-sans select-none"
+                            className="fixed inset-0 z-50 bg-black flex flex-col overflow-hidden font-sans select-none"
                         >
-                            {/* Background Image Content */}
-                            <motion.div
-                                initial={{ scale: 1.1 }}
-                                animate={{ scale: 1 }}
-                                transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                                style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/9/96/Tugu_Malang.jpg')" }}
-                            />
-
-                            {/* Subtle dark gradient overlay to ensure text readability */}
-                            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-
-                            {/* Top UI Layer */}
-                            <div className="relative z-20 flex justify-between items-start pt-10 px-14">
-                                {/* Top Left: Time & Date */}
-                                <div className="flex flex-col text-white drop-shadow-md">
-                                    <div className="text-5xl font-bold tracking-tight mb-1">
-                                        {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':')}
-                                    </div>
-                                    <div className="text-xl font-medium tracking-wide uppercase text-white/90">
-                                        {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                                    </div>
-                                </div>
-
-                                {/* Top Right: Branding */}
-                                <div className="flex items-center gap-3 mt-1 mr-16">
-                                    <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
-                                        alt="KAI Logo"
-                                        className="h-9 drop-shadow-md brightness-0 invert"
-                                    />
-                                    <div className="flex flex-col text-white font-bold leading-none tracking-wide drop-shadow-md">
-                                        <span className="text-sm">MONITOR</span>
-                                        <span className="text-sm">PIDS</span>
-                                    </div>
-                                </div>
-
-                                {/* Subtle Close Button Component */}
-                                <button
-                                    onClick={handleToggleTV}
-                                    className="absolute top-8 right-8 p-3 bg-black/10 hover:bg-black/30 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
-                                    title="Close Monitor"
-                                >
-                                    <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
-                                </button>
-                            </div>
-
-                            {/* Center Visuals: Huge Station Name & Information */}
-                            <div className="flex-1 flex flex-col justify-center items-center px-12 relative z-20 -mt-8">
-                                <motion.div
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="text-center w-full max-w-5xl"
-                                >
-                                    {/* Huge Station Text */}
-                                    <h3 className="text-[1.5vw] font-bold text-white/80 tracking-widest uppercase mb-2 drop-shadow-md">
-                                        {tvDisplayMode === 'current' ? 'CURRENT STATION' : 'NEXT STATION'}
-                                    </h3>
-                                    <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] uppercase mb-6">
-                                        {tvDisplayMode === 'current' ? currentStation : nextStation}
-                                    </h3>
-
-                                    {/* Service & Train Block */}
-                                    <div className="flex items-center justify-center font-sans tracking-wide">
-                                        {/* Left Block (Grey Transparent) */}
-                                        <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
-                                            <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">SERVICE</span>
-                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">{masterSyncedServiceName}</span>
-                                        </div>
-                                        {/* Right Block (Solid Orange) */}
-                                        <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 h-[140px] shadow-lg border-l border-[#d95d19]">
-                                            <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">TRAIN NO</span>
-                                            <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            </div>
-
-                            {/* Bottom Telemetry Bar */}
-                            <div className="h-[160px] bg-gradient-to-b from-transparent via-[#0d1c47]/80 to-[#0a1536] relative z-20 flex items-end justify-between px-24 pb-10">
-                                {/* Speed */}
-                                <div className="flex items-center gap-6 w-1/3 justify-start">
-                                    <Gauge size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={2} />
-                                    <div className="flex flex-col">
-                                        <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">SPEED</span>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-[44px] leading-none font-bold text-white tracking-tight">{speed}</span>
-                                            <span className="text-2xl font-bold text-white/90">km/h</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Altitude */}
-                                <div className="flex items-center gap-6 w-1/3 justify-center">
-                                    <Mountain size={60} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
-                                    <div className="flex flex-col">
-                                        <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">ALTITUDE</span>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-[44px] leading-none font-bold text-white tracking-tight">{altitude}</span>
-                                            <span className="text-2xl font-bold text-white/90">m</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Temp */}
-                                <div className="flex items-center gap-6 w-1/3 justify-end">
-                                    <Thermometer size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
-                                    <div className="flex flex-col">
-                                        <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">TEMP</span>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-[44px] leading-none font-bold text-white tracking-tight">{temp}</span>
-                                            <span className="text-2xl font-bold text-white/90">°C</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Fullscreen LED Monitor Modal */}
-                <AnimatePresence>
-                    {showLEDPreview && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 1.05 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.05 }}
-                            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                            className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden select-none ${ledType === 'indoor' ? 'bg-zinc-900' : 'bg-black'}`}
-                        >
-                            {/* Mode Indicator */}
-                            <div className="absolute top-8 left-8 text-white/30 font-mono text-[10px] font-black uppercase tracking-[0.3em] pointer-events-none z-10">
-                                [ MODE: {ledType === 'indoor' ? 'P4_INDOOR' : 'P10_OUTDOOR'} ]
-                            </div>
-
-                            {/* Close Button */}
+                            {/* Subtle Close Button - always visible */}
                             <button
-                                onClick={() => setShowLEDPreview(false)}
-                                className="absolute top-8 right-8 p-3 bg-white/10 hover:bg-white/30 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
+                                onClick={handleToggleTV}
+                                className="absolute top-6 right-6 p-3 bg-black/30 hover:bg-black/60 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
                                 title="Close Monitor"
                             >
                                 <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
                             </button>
 
-                            <div className={`${(ledType === 'indoor' || ledType.includes('p25')) ? 'scale-[1.8]' : 'scale-[2.8]'} origin-center transition-transform duration-1000 ease-out`}>
-                                <P10Matrix
-                                    text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${(stations || [])[(stations || []).length - 1]} ~ BERHENTI DI: ${(stations || []).join(', ')}`}
-                                    fixedText={data?.showTrainNumber ? `${masterSyncedNumber} ` : ''}
-                                    color="#ff0000"
-                                    speed={masterSyncedLedSpeed}
-                                    columns={ledType.includes('96') ? 96 : 128}
-                                />
-                            </div>
+                            {data?.tvStandby ? (
+                                /* === STANDBY MODE: Show PIDS Data === */
+                                <>
+                                    {/* Background Image Content */}
+                                    <motion.div
+                                        initial={{ scale: 1.1 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
+                                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                        style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/9/96/Tugu_Malang.jpg')" }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+
+                                    {/* Top UI Layer */}
+                                    <div className="relative z-20 flex justify-between items-start pt-10 px-14">
+                                        <div className="flex flex-col text-white drop-shadow-md">
+                                            <div className="text-5xl font-bold tracking-tight mb-1">
+                                                {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':')}
+                                            </div>
+                                            <div className="text-xl font-medium tracking-wide uppercase text-white/90">
+                                                {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-1 mr-16">
+                                            <img
+                                                src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+                                                alt="KAI Logo"
+                                                className="h-9 drop-shadow-md brightness-0 invert"
+                                            />
+                                            <div className="flex flex-col text-white font-bold leading-none tracking-wide drop-shadow-md">
+                                                <span className="text-sm">MONITOR</span>
+                                                <span className="text-sm">PIDS</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Center Visuals */}
+                                    <div className="flex-1 flex flex-col justify-center items-center px-12 relative z-20 -mt-8">
+                                        <motion.div
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="text-center w-full max-w-5xl"
+                                        >
+                                            <h3 className="text-[1.5vw] font-bold text-white/80 tracking-widest uppercase mb-2 drop-shadow-md">
+                                                {tvDisplayMode === 'current' ? 'CURRENT STATION' : 'NEXT STATION'}
+                                            </h3>
+                                            <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] uppercase mb-6">
+                                                {tvDisplayMode === 'current' ? currentStation : nextStation}
+                                            </h3>
+                                            <div className="flex items-center justify-center font-sans tracking-wide">
+                                                <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
+                                                    <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">SERVICE</span>
+                                                    <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">{masterSyncedServiceName}</span>
+                                                </div>
+                                                <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 h-[140px] shadow-lg border-l border-[#d95d19]">
+                                                    <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">TRAIN NO</span>
+                                                    <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Bottom Telemetry Bar */}
+                                    <div className="h-[160px] bg-gradient-to-b from-transparent via-[#0d1c47]/80 to-[#0a1536] relative z-20 flex items-end justify-between px-24 pb-10">
+                                        <div className="flex items-center gap-6 w-1/3 justify-start">
+                                            <Gauge size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={2} />
+                                            <div className="flex flex-col">
+                                                <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">SPEED</span>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-[44px] leading-none font-bold text-white tracking-tight">{speed}</span>
+                                                    <span className="text-2xl font-bold text-white/90">km/h</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 w-1/3 justify-center">
+                                            <Mountain size={60} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
+                                            <div className="flex flex-col">
+                                                <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">ALTITUDE</span>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-[44px] leading-none font-bold text-white tracking-tight">{altitude}</span>
+                                                    <span className="text-2xl font-bold text-white/90">m</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 w-1/3 justify-end">
+                                            <Thermometer size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
+                                            <div className="flex flex-col">
+                                                <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">TEMP</span>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-[44px] leading-none font-bold text-white tracking-tight">{temp}</span>
+                                                    <span className="text-2xl font-bold text-white/90">°C</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                /* === VIDEO MODE: Play Active Video === */
+                                <>
+                                    {(() => {
+                                        const playlist = data?.videoPlaylist || [];
+                                        const activeIdx = data?.activeVideoIndex ?? 0;
+                                        const activeFile = playlist[activeIdx];
+                                        const videoUrl = activeFile ? `${API_URL}/media/video/${encodeURIComponent(activeFile)}` : null;
+
+                                        if (!videoUrl || playlist.length === 0) {
+                                            return (
+                                                <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                                                    <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                                                        <Video size={40} className="text-white/20" />
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <p className="text-white/40 text-sm font-bold uppercase tracking-widest">Tidak Ada Video Aktif</p>
+                                                        <p className="text-white/20 text-xs mt-1">Tambahkan video ke playlist dari Master Console</p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <div className="flex-1 flex items-center justify-center w-full h-full bg-black">
+                                                <video
+                                                    key={videoUrl}
+                                                    src={videoUrl}
+                                                    autoPlay={data?.isPlaying ?? true}
+                                                    loop
+                                                    muted={false}
+                                                    className="w-full h-full object-contain"
+                                                    style={{ maxWidth: '100vw', maxHeight: '100vh' }}
+                                                />
+                                                {/* Video Info Overlay */}
+                                                <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
+                                                    <div className={`w-2 h-2 rounded-full ${data?.isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">
+                                                        {data?.isPlaying ? 'Now Playing' : 'Paused'}: {activeFile}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                </>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
+
 
                 {/* Toast Notification */}
                 <AnimatePresence>

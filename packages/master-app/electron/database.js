@@ -20,6 +20,10 @@ export async function initDatabase() {
         await pool.query('SELECT NOW()');
         console.log('[PIDS-DB] PostgreSQL connected successfully');
         await createTables();
+        // Migration: Add geojson_filename to routes if it doesn't exist
+        try {
+            await pool.query('ALTER TABLE routes ADD COLUMN IF NOT EXISTS geojson_filename TEXT DEFAULT \'\'');
+        } catch (e) { console.error('[PIDS-DB] Migration failed (geojson_filename):', e.message); }
         await seedData();
         console.log('[PIDS-DB] Database schema and seed data verified');
     } catch (err) {
@@ -93,6 +97,7 @@ async function createTables() {
             direction TEXT NOT NULL DEFAULT '',
             svg_path TEXT DEFAULT '',
             geojson TEXT DEFAULT '',
+            geojson_filename TEXT DEFAULT '',
             CONSTRAINT fk_train_service FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE CASCADE
         )
     `);
@@ -186,12 +191,28 @@ async function createTables() {
             geofencing_inner_radius INTEGER DEFAULT 250,
             geofencing_outer_radius INTEGER DEFAULT 750,
             show_train_number BOOLEAN DEFAULT TRUE,
-            led_active BOOLEAN DEFAULT TRUE
+            led_active BOOLEAN DEFAULT TRUE,
+            video_playlist_json TEXT DEFAULT '[]',
+            active_video_index INTEGER DEFAULT 0,
+            video_is_playing BOOLEAN DEFAULT FALSE,
+            video_playback_mode TEXT DEFAULT 'normal',
+            video_volume INTEGER DEFAULT 50,
+            video_dvd_active BOOLEAN DEFAULT FALSE,
+            video_tv_standby BOOLEAN DEFAULT TRUE,
+            video_playback_progress REAL DEFAULT 0
         )
     `);
 
-    try { await pool.query("ALTER TABLE pids_state ADD COLUMN show_train_number BOOLEAN DEFAULT TRUE;"); } catch (e) { }
-    try { await pool.query("ALTER TABLE pids_state ADD COLUMN led_active BOOLEAN DEFAULT TRUE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS show_train_number BOOLEAN DEFAULT TRUE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS led_active BOOLEAN DEFAULT TRUE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playlist_json TEXT DEFAULT '[]';"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS active_video_index INTEGER DEFAULT 0;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_is_playing BOOLEAN DEFAULT FALSE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playback_mode TEXT DEFAULT 'normal';"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_volume INTEGER DEFAULT 50;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_dvd_active BOOLEAN DEFAULT FALSE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_tv_standby BOOLEAN DEFAULT TRUE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playback_progress REAL DEFAULT 0;"); } catch (e) { }
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS system_logs (
@@ -404,6 +425,14 @@ export async function getState() {
         geofencingOuterRadius: row.geofencing_outer_radius,
         showTrainNumber: row.show_train_number !== false,
         ledActive: row.led_active !== false,
+        videoPlaylist: JSON.parse(row.video_playlist_json || '[]'),
+        activeVideoIndex: row.active_video_index ?? 0,
+        isPlaying: row.video_is_playing ?? false,
+        playbackMode: row.video_playback_mode || 'normal',
+        volume: row.video_volume ?? 50,
+        dvdActive: row.video_dvd_active ?? false,
+        tvStandby: row.video_tv_standby ?? true,
+        playbackProgress: row.video_playback_progress ?? 0,
     };
 }
 
@@ -427,8 +456,8 @@ export async function updateState(updates) {
     let activeRouteJson = current.activeRoute ? JSON.stringify(current.activeRoute) : '{}';
     if (updates.activeRoute) activeRouteJson = JSON.stringify(updates.activeRoute);
 
-    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active) 
-                 VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_dvd_active, video_tv_standby) 
+                 VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  ON CONFLICT (id) DO UPDATE SET 
                     service_name = EXCLUDED.service_name,
                     current_station = EXCLUDED.current_station,
@@ -445,8 +474,21 @@ export async function updateState(updates) {
                     geofencing_inner_radius = EXCLUDED.geofencing_inner_radius,
                     geofencing_outer_radius = EXCLUDED.geofencing_outer_radius,
                     show_train_number = EXCLUDED.show_train_number,
-                    led_active = EXCLUDED.led_active`,
-        [merged.serviceName, merged.currentStation, merged.trainNumber, merged.nextStation, merged.status, merged.ledSpeed, merged.speed, merged.altitude, merged.temperature, merged.airQuality, merged.displayMode, activeRouteJson, merged.geofencingInnerRadius || 250, merged.geofencingOuterRadius || 750, merged.showTrainNumber !== false, merged.ledActive !== false]);
+                    led_active = EXCLUDED.led_active,
+                    video_playlist_json = EXCLUDED.video_playlist_json,
+                    active_video_index = EXCLUDED.active_video_index,
+                    video_is_playing = EXCLUDED.video_is_playing,
+                    video_playback_progress = EXCLUDED.video_playback_progress,
+                    video_playback_mode = EXCLUDED.video_playback_mode,
+                    video_volume = EXCLUDED.video_volume,
+                    video_dvd_active = EXCLUDED.video_dvd_active,
+                    video_tv_standby = EXCLUDED.video_tv_standby`,
+        [
+            merged.serviceName, merged.currentStation, merged.trainNumber, merged.nextStation, merged.status, merged.ledSpeed, merged.speed, merged.altitude, merged.temperature, merged.airQuality, merged.displayMode, activeRouteJson,
+            merged.geofencingInnerRadius || 250, merged.geofencingOuterRadius || 750, merged.showTrainNumber !== false, merged.ledActive !== false,
+            JSON.stringify(merged.videoPlaylist || []), merged.activeVideoIndex ?? 0, merged.isPlaying ?? false, merged.playbackProgress ?? 0, merged.playbackMode || 'normal',
+            merged.volume ?? 50, merged.dvdActive ?? false, merged.tvStandby ?? true
+        ]);
     return await getState();
 }
 
@@ -485,7 +527,17 @@ export async function getRoutes() {
     const routes = {};
     for (const service of services) {
         const route = await getOne('SELECT * FROM routes WHERE train_service_id = ?', [service.id]);
-        routes[service.name] = route ? JSON.parse(route.geojson || '{}') : { name: service.name, stations: [], path: '', nodes: [] };
+        if (route) {
+            const parsed = JSON.parse(route.geojson || '{}');
+            routes[service.name] = {
+                ...parsed,
+                name: service.name,
+                geojson: route.geojson,
+                geojson_filename: route.geojson_filename
+            };
+        } else {
+            routes[service.name] = { name: service.name, stations: [], path: '', nodes: [] };
+        }
     }
     return routes;
 }
@@ -521,16 +573,19 @@ export async function addLogOperasional(data) { return { success: true }; }
 export async function getGpsFleet() { return []; }
 export async function getGpsGerbong(id) { return []; }
 
-export async function updateRouteGeoJSON(name, geojson) {
+export async function updateRouteGeoJSON(name, geojson, filename = '') {
     const service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
     if (!service) return { error: `Train service "${name}" not found` };
     const extractedStations = extractStationsFromGeoJSON(geojson);
-    await query('INSERT INTO routes (train_service_id, geojson) VALUES (?, ?) ON CONFLICT (train_service_id) DO UPDATE SET geojson = EXCLUDED.geojson', [service.id, JSON.stringify(geojson)]);
+    await query('INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES (?, ?, ?) ON CONFLICT (train_service_id) DO UPDATE SET geojson = EXCLUDED.geojson, geojson_filename = EXCLUDED.geojson_filename', [service.id, JSON.stringify(geojson), filename]);
     const currentState = await getOne('SELECT service_name, active_route_json, train_number FROM pids_state WHERE id = 1');
     if (currentState && currentState.service_name === name) {
         let activeRoute = {};
         try { activeRoute = JSON.parse(currentState.active_route_json || '{}'); } catch { }
-        activeRoute.name = name; activeRoute.number = currentState.train_number; activeRoute.geojson = geojson;
+        activeRoute.name = name;
+        activeRoute.number = currentState.train_number;
+        activeRoute.geojson = geojson;
+        activeRoute.geojson_filename = filename;
         if (extractedStations.length > 0) activeRoute.stations = extractedStations;
         await query('UPDATE pids_state SET active_route_json = ? WHERE id = 1', [JSON.stringify(activeRoute)]);
     }

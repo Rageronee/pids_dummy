@@ -41,6 +41,12 @@ export async function startApiServer() {
     apiApp.use(cors());
     apiApp.use(express.json({ limit: '50mb' }));
 
+    let currentVideoDir = '';
+    try {
+        const path = await import('path');
+        currentVideoDir = path.join(process.cwd(), 'public', 'videos');
+    } catch (e) { }
+
     const sessions = new Map();
 
     const getSessionUser = (req) => {
@@ -180,8 +186,8 @@ export async function startApiServer() {
     // ROUTES GEOJSON
     apiApp.post('/api/admin/routes/:name/geojson', requireAdmin, async (req, res) => {
         const { name } = req.params;
-        const { geojson } = req.body;
-        const result = await updateRouteGeoJSON(name, geojson);
+        const { geojson, filename } = req.body;
+        const result = await updateRouteGeoJSON(name, geojson, filename);
         if (result.error) return res.status(404).json({ success: false, error: result.error });
         await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `GeoJSON diunggah untuk rute: ${name}` });
         await broadcastDbUpdate();
@@ -197,6 +203,75 @@ export async function startApiServer() {
         await broadcastDbUpdate();
         await broadcastState();
         res.json({ success: true });
+    });
+
+    apiApp.get('/api/media/videos', async (req, res) => {
+        try {
+            const fs = await import('fs/promises');
+            // Ensure dir exists
+            try { await fs.access(currentVideoDir); } catch { await fs.mkdir(currentVideoDir, { recursive: true }); }
+
+            const files = await fs.readdir(currentVideoDir);
+            const videos = files.filter(f => /\.(mp4|avi|mkv|mov)$/i.test(f));
+            res.json({ success: true, videos, directory: currentVideoDir });
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    });
+
+    apiApp.post('/api/media/directory', async (req, res) => {
+        const { directory } = req.body;
+        if (!directory) return res.status(400).json({ success: false, error: 'Directory required' });
+        currentVideoDir = directory;
+        res.json({ success: true, directory: currentVideoDir });
+    });
+
+    // Video streaming endpoint with range support
+    apiApp.get('/media/video/:filename', async (req, res) => {
+        try {
+            const path = await import('path');
+            const fs = await import('fs');
+            const filePath = path.join(currentVideoDir, req.params.filename);
+
+            // Security: prevent path traversal
+            if (!filePath.startsWith(currentVideoDir)) {
+                return res.status(403).json({ success: false, error: 'Forbidden' });
+            }
+
+            if (!fs.existsSync(filePath)) {
+                return res.status(404).json({ success: false, error: 'Video not found' });
+            }
+
+            const stat = fs.statSync(filePath);
+            const fileSize = stat.size;
+            const ext = path.extname(filePath).toLowerCase();
+            const mimeTypes = { '.mp4': 'video/mp4', '.avi': 'video/x-msvideo', '.mkv': 'video/x-matroska', '.mov': 'video/quicktime' };
+            const contentType = mimeTypes[ext] || 'video/mp4';
+
+            const range = req.headers.range;
+            if (range) {
+                const parts = range.replace(/bytes=/, '').split('-');
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+                const chunksize = (end - start) + 1;
+                const file = fs.createReadStream(filePath, { start, end });
+                res.writeHead(206, {
+                    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': chunksize,
+                    'Content-Type': contentType
+                });
+                file.pipe(res);
+            } else {
+                res.writeHead(200, {
+                    'Content-Length': fileSize,
+                    'Content-Type': contentType
+                });
+                fs.createReadStream(filePath).pipe(res);
+            }
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
     });
 
     // ... other endpoints refactored similarly ...
