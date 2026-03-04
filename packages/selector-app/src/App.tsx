@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, Info } from 'lucide-react';
+import { MapPin, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
@@ -423,7 +423,7 @@ function App() {
                     {/* Section: Train Configuration */}
                     <div className="mb-10">
                         <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight uppercase mb-6 flex items-center gap-3">
-                            <Activity className="text-[#ee6f1f]" size={24} /> Service Configuration
+                            <Settings className="text-[#ee6f1f]" size={24} /> Service Configuration
                         </h2>
                         <div className="flex items-end gap-12">
                             {/* Service Config */}
@@ -896,8 +896,8 @@ function App() {
                             key={toastMsg.id}
                             initial={{ opacity: 0, y: 50, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
+                            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                            className="fixed bottom-10 right-10 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
                         >
                             {/* Status Left Border */}
                             <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1d2d6a]" />
