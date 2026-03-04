@@ -9,7 +9,7 @@ import {
     ChevronDown, ChevronRight, RadioTower, Video, Info,
     ListVideo, CheckCircle2, AlertCircle, Satellite,
     Repeat, Shuffle, Plus, FolderOpen,
-    Upload, Trash2, Loader2
+    Upload, Trash2, Loader2, Maximize, VolumeX
 } from 'lucide-react';
 
 // Modern Toggle Switch Component (REFINED: Single Toggle Button)
@@ -115,6 +115,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [videoList, setVideoList] = useState<string[]>([]);
     const [videoViewMode, setVideoViewMode] = useState<'playlist' | 'files'>('playlist');
+    const [showStandbyConfirm, setShowStandbyConfirm] = useState(false);
     const [loadingVideos, setLoadingVideos] = useState(false);
 
     // Fetch videos from server
@@ -147,33 +148,19 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const activeIndex = data?.activeVideoIndex ?? 0;
     const isPlaying = data?.isPlaying ?? false;
     const playbackMode = data?.playbackMode || 'normal';
-    const progress = data?.playbackProgress || 0;
+    const activeFile = playlist[activeIndex];
 
-    // Simulation logic for "Literal" functionality
-    useEffect(() => {
-        if (!isPlaying || playlist.length === 0) return;
+    const lastProgressSync = useRef(0);
+    const lastVolumeRef = useRef(data?.volume || 50);
 
-        const interval = setInterval(() => {
-            const newProgress = Math.min(progress + 1, 100);
-            if (newProgress >= 100) {
-                // Auto Advance
-                if (playbackMode === 'repeat-one') {
-                    sendData({ playbackProgress: 0 });
-                } else if (playbackMode === 'shuffle') {
-                    const nextIdx = Math.floor(Math.random() * playlist.length);
-                    sendData({ activeVideoIndex: nextIdx, playbackProgress: 0 });
-                } else {
-                    const nextIdx = (activeIndex + 1) % playlist.length;
-                    sendData({ activeVideoIndex: nextIdx, playbackProgress: 0 });
-                }
-            } else {
-                // Update progress quietly (every 2 seconds to avoid over-socketing, but local UI is fast)
-                sendData({ playbackProgress: newProgress });
-            }
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [isPlaying, progress, playlist, activeIndex, playbackMode, sendData]);
+    const toggleMute = () => {
+        if ((data?.volume || 0) > 0) {
+            lastVolumeRef.current = data?.volume || 50;
+            handleVideoAction({ volume: 0 });
+        } else {
+            handleVideoAction({ volume: lastVolumeRef.current || 50 });
+        }
+    };
 
     const handleVideoAction = useCallback(async (updates: any) => {
         await sendData(updates);
@@ -859,6 +846,55 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <span className="text-xs font-black text-[#1d2d6a]">{arrivalLabel}</span>
                             </div>
                         </div>
+                        {/* Standby Confirmation Modal */}
+                        <AnimatePresence>
+                            {showStandbyConfirm && (
+                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        onClick={() => setShowStandbyConfirm(false)}
+                                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                                    />
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
+                                    >
+                                        <div className="p-8 pb-6 flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
+                                                <MonitorPlay size={32} className="text-blue-600" />
+                                            </div>
+                                            <h3 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight mb-3">
+                                                Konfirmasi Tampilan Video
+                                            </h3>
+                                            <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-[280px]">
+                                                Apakah Anda yakin ingin menampilkan video di Layar TV?
+                                            </p>
+                                        </div>
+                                        <div className="p-6 bg-slate-50 flex gap-3">
+                                            <button
+                                                onClick={() => setShowStandbyConfirm(false)}
+                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
+                                            >
+                                                Batal
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    handleVideoAction({ tvStandby: false });
+                                                    setShowStandbyConfirm(false);
+                                                }}
+                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-[#1d2d6a] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-[#152355] transition-all active:scale-95"
+                                            >
+                                                Tampilkan
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            )}
+                        </AnimatePresence>
 
                         {/* POI Info Terdekat */}
                         <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-3">
@@ -1307,10 +1343,19 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </h4>
                             <div className="flex flex-wrap items-center gap-2 lg:gap-3">
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
-                                    <input type="checkbox" checked={data?.dvdActive} onChange={(e) => handleVideoAction({ dvdActive: e.target.checked })} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> DVD
-                                </label>
-                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
-                                    <input type="checkbox" checked={data?.tvStandby} onChange={(e) => handleVideoAction({ tvStandby: e.target.checked })} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> Standby
+                                    <input
+                                        type="checkbox"
+                                        checked={data?.tvStandby !== false}
+                                        onChange={(e) => {
+                                            const newVal = e.target.checked;
+                                            if (!newVal) {
+                                                setShowStandbyConfirm(true);
+                                            } else {
+                                                handleVideoAction({ tvStandby: true });
+                                            }
+                                        }}
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    /> Standby
                                 </label>
                                 <button
                                     onClick={handleSelectDirectory}
@@ -1326,50 +1371,85 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Video Preview Block */}
                         <div className="bg-black rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
-                            {(() => {
-                                const activeFile = playlist[activeIndex];
-                                if (!activeFile) {
-                                    return (
-                                        <div className="flex flex-col items-center gap-2 text-slate-500">
-                                            <Video size={28} className="text-slate-400" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest">Tidak Ada Video Aktif</span>
-                                        </div>
-                                    );
-                                }
-                                return (
-                                    <>
-                                        <video
-                                            key={activeFile}
-                                            src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
-                                            autoPlay={isPlaying}
-                                            loop={playbackMode.includes('repeat')}
-                                            className="w-full h-full object-contain"
-                                            ref={(el) => {
-                                                if (el) {
-                                                    el.volume = (data?.volume ?? 50) / 100;
-                                                    // Allow local seek if user dragging
-                                                    if (Math.abs(el.currentTime - ((data?.playbackProgress || 0) / 100) * el.duration) > 2) {
-                                                        el.currentTime = ((data?.playbackProgress || 0) / 100) * (el.duration || 1);
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-100/10 backdrop-blur-[2px] rounded-2xl overflow-hidden border border-slate-200/50">
+                                <AnimatePresence mode="wait">
+                                    {activeFile ? (
+                                        <motion.div
+                                            key={`video-${activeFile}`}
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 1.05 }}
+                                            transition={{ duration: 0.4, ease: "easeOut" }}
+                                            className="relative w-full h-full flex items-center justify-center bg-black"
+                                        >
+                                            <video
+                                                id="master-video-preview"
+                                                key={activeFile}
+                                                src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
+                                                autoPlay={isPlaying}
+                                                loop={playbackMode.includes('repeat')}
+                                                className="w-full h-full object-contain"
+                                                ref={(el) => {
+                                                    if (el) {
+                                                        el.volume = (data?.volume ?? 50) / 100;
+                                                        if (data?.isPlaying !== undefined) {
+                                                            if (data.isPlaying && el.paused) el.play().catch(() => { });
+                                                            if (!data.isPlaying && !el.paused) el.pause();
+                                                        }
+                                                        if (Math.abs(el.currentTime - ((data?.playbackProgress || 0) / 100) * (el.duration || 1)) > 2) {
+                                                            el.currentTime = ((data?.playbackProgress || 0) / 100) * (el.duration || 1);
+                                                        }
                                                     }
-                                                }
-                                            }}
-                                            onTimeUpdate={(e) => {
-                                                // Only send updates occasionally or debounce, handled by hook technically, 
-                                                // but for preview we just let it play and trust the master's own interval.
-                                            }}
-                                            onEnded={() => {
-                                                if (playbackMode !== 'repeat-one' && isPlaying) nextVideo();
-                                            }}
-                                        />
-                                        <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
-                                            <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
-                                                <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                                                <span className="text-[9px] font-black uppercase tracking-widest truncate">{activeFile}</span>
+                                                }}
+                                                onTimeUpdate={(e) => {
+                                                    const el = e.currentTarget;
+                                                    const pct = (el.currentTime / Math.max(el.duration, 1)) * 100;
+                                                    if (Date.now() - lastProgressSync.current > 1000) {
+                                                        handleVideoAction({ playbackProgress: pct });
+                                                        lastProgressSync.current = Date.now();
+                                                    }
+                                                }}
+                                                onEnded={() => {
+                                                    if (playbackMode !== 'repeat-one' && isPlaying) nextVideo();
+                                                }}
+                                            />
+                                            <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
+                                                <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
+                                                    <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest truncate">{activeFile}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        const vid = document.getElementById('master-video-preview');
+                                                        if (vid && vid.requestFullscreen) vid.requestFullscreen().catch(() => { });
+                                                    }}
+                                                    className="bg-black/60 backdrop-blur-sm text-white p-1.5 rounded-lg hover:bg-white/20 transition-colors pointer-events-auto"
+                                                    title="Full Screen"
+                                                >
+                                                    <Maximize size={14} />
+                                                </button>
                                             </div>
-                                        </div>
-                                    </>
-                                );
-                            })()}
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="no-video"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="flex flex-col items-center justify-center gap-4 text-slate-300"
+                                        >
+                                            <div className="relative">
+                                                <div className="absolute -inset-4 bg-blue-500/5 blur-2xl rounded-full animate-pulse" />
+                                                <Video size={48} strokeWidth={1} className="relative opacity-20" />
+                                            </div>
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Tidak ada Video Aktif</span>
+                                                <span className="text-[9px] font-bold text-slate-400/60 italic">Silakan pilih folder atau playlist</span>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
 
                         {/* Playback Progress Slider */}
@@ -1380,9 +1460,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <input
                                 type="range"
                                 min="0" max="100"
+                                disabled={playlist.length === 0}
                                 value={data?.playbackProgress || 0}
                                 onChange={(e) => handleVideoAction({ playbackProgress: parseInt(e.target.value) })}
-                                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                                className={`flex-1 h-2 bg-slate-200 rounded-lg appearance-none accent-blue-600 focus:outline-none ${playlist.length === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                             />
                             <span className="text-[10px] font-mono font-bold text-slate-400 w-8 text-left">
                                 -{Math.floor((100 - (data?.playbackProgress || 0)) / 20)}:{(Math.floor(100 - (data?.playbackProgress || 0)) % 20).toString().padStart(2, '0')}
@@ -1415,7 +1496,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                             {/* Right Side: Volume */}
                             <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 w-full sm:w-auto mt-2 sm:mt-0">
-                                <Volume2 size={16} className={data?.volume === 0 ? "text-slate-300" : "text-blue-500"} />
+                                <button onClick={toggleMute} className="flex-shrink-0 focus:outline-none transition-transform hover:scale-110 active:scale-95">
+                                    {data?.volume === 0 ? <VolumeX size={16} className="text-slate-400" /> : <Volume2 size={16} className="text-blue-500" />}
+                                </button>
                                 <input
                                     type="range"
                                     min="0" max="100"
@@ -1428,23 +1511,37 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         </div>
 
                         {/* Tab Switcher for Lists */}
-                        <div className="flex items-center gap-1 border-b border-slate-100 pt-2 pb-2">
-                            <button
-                                onClick={() => setVideoViewMode('playlist')}
-                                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                            >
-                                <ListVideo size={14} /> Playlist ({playlist.length})
-                            </button>
-                            <button
-                                onClick={() => setVideoViewMode('files')}
-                                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                            >
-                                <Video size={14} /> Tersedia ({videoList.length})
-                            </button>
+                        <div className="flex justify-between items-center border-b border-slate-100 pt-2 pb-2 pr-2">
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setVideoViewMode('playlist')}
+                                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                >
+                                    <ListVideo size={14} /> Playlist ({playlist.length})
+                                </button>
+                                <button
+                                    onClick={() => setVideoViewMode('files')}
+                                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                >
+                                    <Video size={14} /> Tersedia ({videoList.length})
+                                </button>
+                            </div>
+                            {videoViewMode === 'playlist' && playlist.length > 0 && (
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm('Kosongkan playlist saat ini?')) {
+                                            handleVideoAction({ videoPlaylist: [], activeVideoIndex: 0, isPlaying: false, playbackProgress: 0 });
+                                        }
+                                    }}
+                                    className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
+                                >
+                                    Bersihkan
+                                </button>
+                            )}
                         </div>
 
                         {/* List Area */}
-                        <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2 overflow-auto space-y-1 shadow-inner min-h-[160px] max-h-[220px]">
+                        <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2 overflow-y-auto space-y-1 shadow-inner max-h-[142px] min-h-[60px]">
                             {videoViewMode === 'playlist' ? (
                                 <>
                                     {playlist.length === 0 ? (
@@ -1568,6 +1665,47 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <span className="text-blue-100/90 text-xs font-medium">{toast.msg}</span>
                         </div>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Standby Confirmation Modal */}
+            <AnimatePresence>
+                {showStandbyConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200"
+                        >
+                            <div className="bg-blue-50 p-6 flex flex-col items-center justify-center border-b border-blue-100">
+                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-500 shadow-inner">
+                                    <Video size={32} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1d2d6a] uppercase tracking-widest text-center">Tampilkan Video?</h3>
+                            </div>
+                            <div className="p-6 text-center text-slate-500 text-sm font-bold uppercase tracking-wide leading-relaxed">
+                                Apakah Anda yakin ingin menampilkan video di Layar TV? Hal ini akan menonaktifkan mode Standby PIDS.
+                            </div>
+                            <div className="p-6 pt-0 flex gap-3">
+                                <button
+                                    onClick={() => setShowStandbyConfirm(false)}
+                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleVideoAction({ tvStandby: false });
+                                        setShowStandbyConfirm(false);
+                                    }}
+                                    className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)]"
+                                >
+                                    Ya, Tampilkan
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
 

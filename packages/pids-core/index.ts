@@ -58,7 +58,6 @@ export interface PidsState {
     ledActive?: boolean;
     // Video / TV Management
     tvStandby?: boolean;
-    dvdActive?: boolean;
     videoPlaylist?: string[];
     activeVideoIndex?: number;
     isPlaying?: boolean;
@@ -258,4 +257,3 @@ export interface SocketEvents {
     'state:update': (state: PidsState) => void;
     'db:update': (data: { trainNames?: string[]; routes?: Record<string, RouteData> }) => void;
 }
-

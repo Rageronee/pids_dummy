@@ -197,7 +197,6 @@ async function createTables() {
             video_is_playing BOOLEAN DEFAULT FALSE,
             video_playback_mode TEXT DEFAULT 'normal',
             video_volume INTEGER DEFAULT 50,
-            video_dvd_active BOOLEAN DEFAULT FALSE,
             video_tv_standby BOOLEAN DEFAULT TRUE,
             video_playback_progress REAL DEFAULT 0
         )
@@ -210,7 +209,6 @@ async function createTables() {
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_is_playing BOOLEAN DEFAULT FALSE;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playback_mode TEXT DEFAULT 'normal';"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_volume INTEGER DEFAULT 50;"); } catch (e) { }
-    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_dvd_active BOOLEAN DEFAULT FALSE;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_tv_standby BOOLEAN DEFAULT TRUE;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playback_progress REAL DEFAULT 0;"); } catch (e) { }
 
@@ -430,7 +428,6 @@ export async function getState() {
         isPlaying: row.video_is_playing ?? false,
         playbackMode: row.video_playback_mode || 'normal',
         volume: row.video_volume ?? 50,
-        dvdActive: row.video_dvd_active ?? false,
         tvStandby: row.video_tv_standby ?? true,
         playbackProgress: row.video_playback_progress ?? 0,
     };
@@ -456,7 +453,7 @@ export async function updateState(updates) {
     let activeRouteJson = current.activeRoute ? JSON.stringify(current.activeRoute) : '{}';
     if (updates.activeRoute) activeRouteJson = JSON.stringify(updates.activeRoute);
 
-    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_dvd_active, video_tv_standby) 
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby) 
                  VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  ON CONFLICT (id) DO UPDATE SET 
                     service_name = EXCLUDED.service_name,
@@ -481,13 +478,12 @@ export async function updateState(updates) {
                     video_playback_progress = EXCLUDED.video_playback_progress,
                     video_playback_mode = EXCLUDED.video_playback_mode,
                     video_volume = EXCLUDED.video_volume,
-                    video_dvd_active = EXCLUDED.video_dvd_active,
                     video_tv_standby = EXCLUDED.video_tv_standby`,
         [
             merged.serviceName, merged.currentStation, merged.trainNumber, merged.nextStation, merged.status, merged.ledSpeed, merged.speed, merged.altitude, merged.temperature, merged.airQuality, merged.displayMode, activeRouteJson,
             merged.geofencingInnerRadius || 250, merged.geofencingOuterRadius || 750, merged.showTrainNumber !== false, merged.ledActive !== false,
             JSON.stringify(merged.videoPlaylist || []), merged.activeVideoIndex ?? 0, merged.isPlaying ?? false, merged.playbackProgress ?? 0, merged.playbackMode || 'normal',
-            merged.volume ?? 50, merged.dvdActive ?? false, merged.tvStandby ?? true
+            merged.volume ?? 50, merged.tvStandby ?? true
         ]);
     return await getState();
 }
