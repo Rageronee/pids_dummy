@@ -32,11 +32,11 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, loading }: 
                         <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">{message}</p>
                         <div className="flex flex-col gap-3">
                             <button onClick={onConfirm} disabled={loading}
-                                className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-2xl text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_8px_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2">
+                                className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-2xl text-sm transition-all active:scale-95 shadow-[0_8px_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2">
                                 {loading ? 'Menghapus...' : 'Ya, Hapus'}
                             </button>
                             <button onClick={onCancel} disabled={loading}
-                                className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 font-black rounded-2xl text-sm uppercase tracking-widest transition-all">
+                                className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 font-black rounded-2xl text-sm transition-all">
                                 Batal
                             </button>
                         </div>
@@ -176,7 +176,7 @@ function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token: string) => vo
                         <h1 className="text-3xl leading-tight font-black tracking-tight text-[#1d2d6a] drop-shadow-sm">
                             PIDS Command Center
                         </h1>
-                        <p className="mt-2 text-[10px] font-bold tracking-[0.2em] text-[#1d2d6a] uppercase opacity-90">
+                        <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] opacity-90">
                             Passenger Information Display System
                         </p>
                     </div>
@@ -236,13 +236,13 @@ function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token: string) => vo
                         <button
                             type="submit"
                             disabled={loading}
-                            className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+                            className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
                         >
                             {loading ? 'Memproses...' : 'Masuk Ke Sistem'}
                         </button>
 
                         {/* Hint Info */}
-                        <p className="text-center w-full text-[10px] uppercase tracking-widest text-slate-400 font-medium mt-6">
+                        <p className="text-center w-full text-[15px] text-slate-400 font-medium mt-6">
                             Demo: admin / admin123
                         </p>
                     </form>
@@ -251,7 +251,7 @@ function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token: string) => vo
 
             {/* Footer */}
             <div className="absolute bottom-6 w-full text-center z-10">
-                <p className="text-[10px] font-bold tracking-[0.1em] text-slate-500/70">
+                <p className="text-[10px] font-bold text-slate-500/70">
                     © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
                 </p>
             </div>
@@ -299,7 +299,7 @@ function DashboardPage({ token }: { token: string }) {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Dashboard Overview</h2>
+                <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Dashboard Overview</h2>
                 <p className="text-slate-500 text-sm font-medium">Status sistem PIDS secara real-time</p>
             </div>
             <div className="grid grid-cols-4 gap-6">
@@ -309,7 +309,7 @@ function DashboardPage({ token }: { token: string }) {
                         <div className={`w-12 h-12 ${c.color} rounded-2xl flex items-center justify-center shadow-sm`}><c.icon size={24} className="text-white" /></div>
                         <div>
                             <div className="text-3xl font-black text-[#1d2d6a] tracking-tight">{String(c.value)}</div>
-                            <div className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">{c.label}</div>
+                            <div className="text-slate-400 text-xs font-bold mt-1">{c.label}</div>
                             <div className="text-slate-400/80 text-[10px] font-medium mt-0.5">{c.sub}</div>
                         </div>
                     </motion.div>
@@ -319,7 +319,7 @@ function DashboardPage({ token }: { token: string }) {
             {/* Latest log */}
             {status?.lastLog && (
                 <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Activity size={16} className="text-[#ee6f1f]" /> Log Terakhir</h3>
+                    <h3 className="text-sm font-black text-slate-400 mb-4 flex items-center gap-2"><Activity size={16} className="text-[#ee6f1f]" /> Log Terakhir</h3>
                     <div className="flex items-start gap-4">
                         <div className={`text-sm font-black ${ACTION_COLOR[status.lastLog.action] || 'text-slate-400'}`}>{status.lastLog.action}</div>
                         <div className="text-slate-600 text-sm font-medium flex-1">{status.lastLog.details}</div>
@@ -338,7 +338,7 @@ function DashboardPage({ token }: { token: string }) {
                     <div key={i} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
                         <div className={`w-3 h-3 rounded-full ${unit.ok ? 'bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
                         <div>
-                            <div className="text-[#1d2d6a] font-bold text-sm tracking-wide">{unit.name}</div>
+                            <div className="text-[#1d2d6a] font-bold text-sm">{unit.name}</div>
                             <div className="text-slate-400 text-xs font-mono font-medium mt-0.5">Port: {unit.port}</div>
                         </div>
                         <Wifi size={20} className={`ml-auto ${unit.ok ? 'text-green-500' : 'text-red-500'}`} />
@@ -371,7 +371,7 @@ function GpsFleetPanel() {
 
     return (
         <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
-            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-black text-slate-400 mb-5 flex items-center gap-2">
                 <Navigation size={16} className="text-[#ee6f1f]" /> GPS Fleet Monitoring
                 <span className="ml-auto text-[10px] font-bold text-slate-300 tracking-normal normal-case">Auto-refresh 10s</span>
             </h3>
@@ -382,8 +382,8 @@ function GpsFleetPanel() {
                             className="bg-slate-50 border border-slate-100 rounded-2xl p-4 hover:shadow-md transition-all">
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                <span className="text-[#1d2d6a] font-black text-sm tracking-wide flex-1">{train.kereta_name}</span>
-                                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{train.ka_number}</span>
+                                <span className="text-[#1d2d6a] font-black text-sm flex-1">{train.kereta_name}</span>
+                                <span className="text-slate-400 text-[10px] font-bold">{train.ka_number}</span>
                             </div>
                             <div className="space-y-1.5 text-xs">
                                 <div className="flex justify-between"><span className="text-slate-400 font-bold">Lokasi</span><span className="text-slate-600 font-medium">{train.poi || 'N/A'}</span></div>
@@ -455,7 +455,7 @@ function TrainsPage({ token }: { token: string }) {
             />
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Layanan (Service)</h2>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Manajemen Layanan (Service)</h2>
                     <p className="text-slate-500 text-sm font-medium">{trains.length} layanan terdaftar dalam sistem pids</p>
                 </div>
                 <button onClick={fetchTrains} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
@@ -465,9 +465,9 @@ function TrainsPage({ token }: { token: string }) {
             <div className="bg-white border border-slate-200 rounded-3xl p-6 flex gap-4 shadow-sm">
                 <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()}
                     placeholder="Nama layanan baru (e.g. GAJAYANA)" maxLength={50}
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all uppercase" />
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
                 <button onClick={handleAdd} disabled={saving || !newName.trim()}
-                    className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all flex items-center gap-2 active:scale-95 shadow-[0_8px_20px_rgba(238,111,31,0.25)] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] disabled:shadow-none">
+                    className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm transition-all flex items-center gap-2 active:scale-95 shadow-[0_8px_20px_rgba(238,111,31,0.25)] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] disabled:shadow-none">
                     {saving ? 'Menyimpan...' : <><Plus size={18} />Tambah</>}
                 </button>
             </div>
@@ -484,8 +484,8 @@ function TrainsPage({ token }: { token: string }) {
                                 <div className="w-10 h-10 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
                                     <Train size={18} className="text-[#1d2d6a]" />
                                 </div>
-                                <span className="text-[#1d2d6a] font-black flex-1 tracking-wide text-base">{name}</span>
-                                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">#{String(i + 1).padStart(2, '0')}</span>
+                                <span className="text-[#1d2d6a] font-black flex-1 text-base">{name}</span>
+                                <span className="text-slate-400 text-[10px] font-bold">#{String(i + 1).padStart(2, '0')}</span>
                                 <button onClick={() => setDeleteTarget(name)}
                                     className="opacity-0 group-hover:opacity-100 p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95 border border-transparent hover:border-red-200">
                                     <Trash2 size={16} />
@@ -585,10 +585,10 @@ function RoutesPage({ token }: { token: string }) {
             />
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Rute & Stasiun</h2>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Manajemen Rute & Stasiun</h2>
                     <p className="text-slate-500 text-sm font-medium">{routeList.length} rute terdaftar</p>
                 </div>
-                <button onClick={isEditing ? cancelForm : () => setShowForm(v => !v)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm uppercase tracking-wide transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+                <button onClick={isEditing ? cancelForm : () => setShowForm(v => !v)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
                     {showForm ? <><X size={16} />Batal</> : <><Plus size={16} />Tambah Rute</>}
                 </button>
             </div>
@@ -596,13 +596,13 @@ function RoutesPage({ token }: { token: string }) {
             <AnimatePresence>
                 {showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                     className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden mb-8">
-                    <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">{isEditing ? 'Edit Rute' : 'Rute Baru'}</h3>
+                    <h3 className="text-slate-400 font-black text-xs">{isEditing ? 'Edit Rute' : 'Rute Baru'}</h3>
                     <input value={newRouteName} onChange={e => setNewRouteName(e.target.value)} placeholder="Nama rute (e.g. GAJAYANA)" maxLength={60} disabled={isEditing}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all uppercase disabled:opacity-60" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all disabled:opacity-60" />
                     <textarea value={newStations} onChange={e => setNewStations(e.target.value)} rows={3} placeholder="Stasiun dipisah koma: MALANG, BLITAR, KEDIRI, MADIUN, YOGYAKARTA, BANDUNG"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all resize-none uppercase" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all resize-none" />
                     <div className="flex gap-3">
-                        <button onClick={handleSave} disabled={saving} className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
+                        <button onClick={handleSave} disabled={saving} className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)]">
                             {saving ? 'Menyimpan...' : <><CheckCircle2 size={18} />{isEditing ? 'Perbarui Rute' : 'Simpan Rute'}</>}
                         </button>
                     </div>
@@ -618,12 +618,12 @@ function RoutesPage({ token }: { token: string }) {
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="w-10 h-10 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm text-[#1d2d6a]"><MapPin size={18} /></div>
-                                        <h3 className="text-[#1d2d6a] font-black tracking-wide text-lg">{route.name}</h3>
-                                        <span className="text-slate-400 text-[10px] font-bold tracking-widest uppercase">{route.stations?.length || 0} STASIUN</span>
+                                        <h3 className="text-[#1d2d6a] font-black text-lg">{route.name}</h3>
+                                        <span className="text-slate-400 text-[10px] font-bold">{route.stations?.length || 0} Stasiun</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {route.stations?.map((s: string, j: number) => (
-                                            <span key={j} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-600 text-[11px] font-bold uppercase tracking-tight">
+                                            <span key={j} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-600 text-[11px] font-bold tracking-tight">
                                                 {j > 0 && <ChevronRight size={10} className="text-slate-300" />} {s}
                                             </span>
                                         ))}
@@ -721,10 +721,10 @@ function UsersPage({ token }: { token: string }) {
             />
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Pengguna</h2>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Manajemen Pengguna</h2>
                     <p className="text-slate-500 text-sm font-medium">{users.length} pengguna terdaftar dalam sistem PIDS</p>
                 </div>
-                <button onClick={() => setShowForm(v => !v)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm uppercase tracking-wide transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+                <button onClick={() => setShowForm(v => !v)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
                     {showForm ? <><X size={16} />Batal</> : <><Plus size={16} />Tambah User</>}
                 </button>
             </div>
@@ -732,7 +732,7 @@ function UsersPage({ token }: { token: string }) {
             <AnimatePresence>
                 {showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                     className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden mb-8">
-                    <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">User Baru</h3>
+                    <h3 className="text-slate-400 font-black text-xs">User Baru</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <input value={newNama} onChange={e => setNewNama(e.target.value)} placeholder="Nama Lengkap"
                             className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
@@ -747,14 +747,14 @@ function UsersPage({ token }: { token: string }) {
                         </select>
                     </div>
                     <button onClick={handleAddUser} disabled={saving}
-                        className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none">
+                        className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none">
                         {saving ? 'Menyimpan...' : <><CheckCircle2 size={18} />Simpan User</>}
                     </button>
                 </motion.div>}
             </AnimatePresence>
 
             <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                <div className="grid grid-cols-[80px_1fr_1fr_100px_60px] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                <div className="grid grid-cols-[80px_1fr_1fr_100px_60px] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black">
                     <span>ID</span><span>Nama</span><span>Username</span><span>Role</span><span></span>
                 </div>
                 {loading ? <div className="p-8 text-center text-slate-500 text-sm font-medium">Memuat pengguna...</div> : users.map((u, i) => (
@@ -763,7 +763,7 @@ function UsersPage({ token }: { token: string }) {
                         <span className="text-slate-400 font-mono text-sm">{u.id}</span>
                         <span className="text-[#1d2d6a] font-black">{u.nama}</span>
                         <span className="text-slate-500 font-mono text-sm font-medium">{u.username}</span>
-                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[11px] font-black uppercase w-fit ${u.role === 'Admin' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'bg-blue-500/10 text-blue-500'}`}>
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[11px] font-black w-fit ${u.role === 'Admin' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'bg-blue-500/10 text-blue-500'}`}>
                             <Shield size={12} />{u.role}
                         </span>
                         <button onClick={() => setDeleteTarget({ id: u.id, nama: u.nama })}
@@ -822,7 +822,7 @@ function LogsPage({ token }: { token: string }) {
         <div className="space-y-8">
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Log Sistem</h2>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Log Sistem</h2>
                     <p className="text-slate-500 text-sm font-medium">{logs.length} entri total · Real-time via Socket.IO</p>
                 </div>
                 <button onClick={fetchLogs} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
@@ -831,7 +831,7 @@ function LogsPage({ token }: { token: string }) {
             <div className="flex gap-2 flex-wrap">
                 {filterOptions.map(opt => (
                     <button key={opt} onClick={() => setFilter(opt)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${filter === opt ? 'bg-[#ee6f1f] text-white border-[#ee6f1f] shadow-[0_4px_12px_rgba(238,111,31,0.25)]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-[#1d2d6a] shadow-sm hover:shadow-md'}`}>
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${filter === opt ? 'bg-[#ee6f1f] text-white border-[#ee6f1f] shadow-[0_4px_12px_rgba(238,111,31,0.25)]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-[#1d2d6a] shadow-sm hover:shadow-md'}`}>
                         {opt === 'ALL' ? 'Semua' : ACTION_META[opt]?.label || opt}
                         {opt !== 'ALL' && <span className={`ml-2 ${filter === opt ? 'text-white/60' : 'text-slate-400'}`}>{logs.filter(l => l.action === opt).length}</span>}
                     </button>
@@ -842,7 +842,7 @@ function LogsPage({ token }: { token: string }) {
                 <div className="p-8 text-center text-slate-500 font-medium bg-white rounded-3xl border border-slate-200 shadow-sm">Tidak ada log untuk filter ini.</div>
             ) : (
                 <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                    <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                    <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black">
                         <span>Waktu</span><span>Aksi</span><span>Pengguna</span><span>Role</span><span>Keterangan</span>
                     </div>
                     <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
@@ -856,9 +856,9 @@ function LogsPage({ token }: { token: string }) {
                                         <div className="text-slate-500">{dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</div>
                                         <div className="text-slate-400">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
                                     </div>
-                                    <div><span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border mt-0.5 ${meta.color}`}>{meta.label}</span></div>
+                                    <div><span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black border mt-0.5 ${meta.color}`}>{meta.label}</span></div>
                                     <span className="text-[#1d2d6a] text-sm font-black tracking-tight self-center">{log.user}</span>
-                                    <span className="text-slate-400 text-xs font-bold uppercase self-center">{log.role}</span>
+                                    <span className="text-slate-400 text-xs font-bold self-center">{log.role}</span>
                                     <span className="text-slate-600 text-sm font-medium self-center leading-relaxed pr-6">{log.details}</span>
                                 </motion.div>
                             );
@@ -935,13 +935,13 @@ function StationsPage({ token }: { token: string }) {
             <ConfirmModal isOpen={!!deleteTarget} title="Hapus Stasiun" message={`Yakin ingin menghapus stasiun "${deleteTarget?.name}"?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Manajemen Stasiun</h2>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Manajemen Stasiun</h2>
                     <p className="text-slate-500 text-sm font-medium">{stations.length} stasiun terdaftar · SRS-compliant schema</p>
                 </div>
                 <div className="flex gap-3">
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari stasiun..."
                         className="px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-[#1d2d6a] placeholder-slate-400 focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all w-52 shadow-sm" />
-                    <button onClick={() => { setShowForm(v => !v); if (showForm) resetForm(); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm uppercase tracking-wide transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+                    <button onClick={() => { setShowForm(v => !v); if (showForm) resetForm(); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
                         {showForm ? <><X size={16} />Batal</> : <><Plus size={16} />Tambah Stasiun</>}
                     </button>
                 </div>
@@ -950,7 +950,7 @@ function StationsPage({ token }: { token: string }) {
             <AnimatePresence>
                 {showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                     className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden">
-                    <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">Stasiun Baru</h3>
+                    <h3 className="text-slate-400 font-black text-xs">Stasiun Baru</h3>
                     <div className="grid grid-cols-3 gap-4">
                         {[
                             { key: 'id', label: 'Kode Stasiun', placeholder: 'e.g. BD' },
@@ -971,11 +971,11 @@ function StationsPage({ token }: { token: string }) {
                         ].map(f => (
                             <input key={f.key} value={(form as any)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
                                 placeholder={f.placeholder} title={f.label}
-                                className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all uppercase" />
+                                className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
                         ))}
                     </div>
                     <button onClick={handleAdd} disabled={saving}
-                        className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm uppercase tracking-wide transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none">
+                        className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-2xl text-sm transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none">
                         {saving ? 'Menyimpan...' : <><CheckCircle2 size={18} />Simpan Stasiun</>}
                     </button>
                 </motion.div>}
@@ -983,7 +983,7 @@ function StationsPage({ token }: { token: string }) {
 
             {loading ? <div className="p-8 text-center text-slate-500 font-medium">Memuat stasiun...</div> : (
                 <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                    <div className="grid grid-cols-[70px_1fr_1fr_120px_1fr_100px_60px] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                    <div className="grid grid-cols-[70px_1fr_1fr_120px_1fr_100px_60px] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black">
                         <span>Kode</span><span>Nama</span><span>Kota</span><span>Kode Pos</span><span>PIC</span><span>Koordinat</span><span></span>
                     </div>
                     <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
@@ -1053,7 +1053,7 @@ function SchedulesPage({ token }: { token: string }) {
             <ConfirmModal isOpen={!!deleteTarget} title="Hapus Jadwal" message={`Hapus jadwal ${deleteTarget?.train_name}?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1 uppercase">Jadwal Kereta</h2>
+                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Jadwal Kereta</h2>
                     <p className="text-slate-500 text-sm font-medium">{schedules.length} jadwal aktif · Klik untuk detail pemberhentian</p>
                 </div>
                 <button onClick={fetchSchedules} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
@@ -1071,12 +1071,12 @@ function SchedulesPage({ token }: { token: string }) {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-1">
-                                        <h3 className="text-[#1d2d6a] font-black tracking-wide text-base">{sched.train_name}</h3>
-                                        <span className="text-slate-400 text-[10px] font-bold tracking-widest uppercase">{sched.ka_number || '-'}</span>
+                                        <h3 className="text-[#1d2d6a] font-black text-base">{sched.train_name}</h3>
+                                        <span className="text-slate-400 text-[10px] font-bold">{sched.ka_number || '-'}</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-xs">
                                         <span className="text-slate-500 font-medium">{sched.schedule_date}</span>
-                                        <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide border ${STATUS_COLOR[sched.status] || 'text-slate-400 bg-slate-50 border-slate-200'}`}>
+                                        <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-black border ${STATUS_COLOR[sched.status] || 'text-slate-400 bg-slate-50 border-slate-200'}`}>
                                             {sched.status?.replace('_', ' ')}
                                         </span>
                                         <span className="text-slate-400 font-bold">{sched.stops?.length || 0} pemberhentian</span>
@@ -1094,7 +1094,7 @@ function SchedulesPage({ token }: { token: string }) {
                                 {expanded === sched.id && sched.stops && (
                                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                                         className="border-t border-slate-100 overflow-hidden">
-                                        <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                                        <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-black">
                                             <span>#</span><span>Stasiun</span><span>Datang</span><span>Berangkat</span><span>Peron</span><span>Status</span>
                                         </div>
                                         {sched.stops.map((stop: any, j: number) => (
@@ -1108,7 +1108,7 @@ function SchedulesPage({ token }: { token: string }) {
                                                 <span className="text-slate-600 font-mono font-medium">{stop.arrival_time || '-'}</span>
                                                 <span className="text-slate-600 font-mono font-medium">{stop.departure_time || '-'}</span>
                                                 <span className="text-slate-400 font-mono text-xs text-center">{stop.platform}</span>
-                                                <span className={`text-[10px] font-bold uppercase ${stop.stop_status === 'SCHEDULED' ? 'text-blue-500' : stop.stop_status === 'ARRIVED' ? 'text-green-500' : 'text-slate-400'}`}>
+                                                <span className={`text-[10px] font-bold ${stop.stop_status === 'SCHEDULED' ? 'text-blue-500' : stop.stop_status === 'ARRIVED' ? 'text-green-500' : 'text-slate-400'}`}>
                                                     {stop.stop_status}
                                                 </span>
                                             </div>
@@ -1197,8 +1197,8 @@ export default function App() {
                         alt="KAI Logo"
                         className="h-8 w-auto mb-4 brightness-0 invert"
                     />
-                    <h1 className="text-xl font-black text-white tracking-tight leading-tight uppercase">Command Center</h1>
-                    <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5 font-mono">Control Panel V1.0</p>
+                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">Command Center</h1>
+                    <p className="text-[9px] font-bold text-blue-200/40 mt-0.5 font-mono">Control Panel V1.0</p>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1">
@@ -1213,7 +1213,7 @@ export default function App() {
 
                 <div className="p-6 border-t border-white/5 bg-black/10">
                     <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] uppercase tracking-widest border border-white/5 active:scale-95 group">
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] border border-white/5 active:scale-95 group">
                         <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
                         <span>Logout dari Sistem</span>
                     </button>
@@ -1226,11 +1226,11 @@ export default function App() {
                     <div className="flex items-center gap-4">
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Shield className="text-[#1d2d6a]" size={20} /></div>
                         <div>
-                            <h1 className="text-lg font-black text-[#1d2d6a] uppercase tracking-tight leading-none mb-1">Command Center</h1>
+                            <h1 className="text-lg font-black text-[#1d2d6a] tracking-tight leading-none mb-1">Command Center</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{NAV.find(n => n.id === activePage)?.label}</span>
+                                <span className="text-[10px] font-bold text-slate-400">{NAV.find(n => n.id === activePage)?.label}</span>
                                 <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active session</span>
+                                <span className="text-[10px] font-bold text-slate-400">Active session</span>
                             </div>
                         </div>
                     </div>

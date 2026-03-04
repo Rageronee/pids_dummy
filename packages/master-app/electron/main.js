@@ -11,6 +11,7 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1280,
         height: 720,
+        fullscreen: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false, // For dummy simulation, reducing complexity

@@ -64,7 +64,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="w-full max-w-[440px] rounded-[2rem] bg-white/95 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] flex flex-col items-center"
+                    className="w-full max-w-[440px] rounded-[2rem] bg-white/95 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-f_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] flex flex-col items-center"
                 >
                     {/* Branding */}
                     <div className="mb-10 flex flex-col items-center text-center">
@@ -79,7 +79,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                         <h1 className="text-3xl leading-tight font-black tracking-tight text-[#1d2d6a] drop-shadow-sm">
                             PIDS Master Controller
                         </h1>
-                        <p className="mt-2 text-[10px] font-bold tracking-[0.2em] text-[#1d2d6a] uppercase opacity-90">
+                        <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] opacity-90">
                             Passenger Information Display System
                         </p>
                     </div>
@@ -139,13 +139,13 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+                            className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
                         >
                             {isLoading ? 'Memproses...' : 'Masuk Ke Sistem'}
                         </button>
 
                         {/* Hint Info */}
-                        <p className="text-center w-full text-[10px] uppercase tracking-widest text-slate-400 font-medium mt-6">
+                        <p className="text-center w-full text-[15px] text-slate-400 font-medium mt-6">
                             Demo: operator / operator123
                         </p>
                     </form>
@@ -154,7 +154,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
             {/* Footer */}
             <div className="absolute bottom-6 w-full text-center z-10">
-                <p className="text-[10px] font-bold tracking-[0.1em] text-slate-500/70">
+                <p className="text-[10px] font-bold text-slate-500/70">
                     © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
                 </p>
             </div>

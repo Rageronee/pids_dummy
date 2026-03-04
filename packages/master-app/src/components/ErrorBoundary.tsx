@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         PIDS System is currently undergoing routine maintenance or recovering from an unexpected state. Please stand by.
                     </p>
                     <div className="bg-white/10 px-8 py-4 rounded-full border border-white/20">
-                        <span className="font-mono text-xs opacity-70 tracking-[0.2em] uppercase">
+                        <span className="font-mono text-xs opacity-70 tracking-wider">
                             Error Code: {this.state.error?.message || 'UNKNOWN_EXCEPTION'}
                         </span>
                     </div>

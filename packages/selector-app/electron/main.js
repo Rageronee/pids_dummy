@@ -9,6 +9,7 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 800,
         height: 480, // Raspberry Pi Touchscreen size
+        fullscreen: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,

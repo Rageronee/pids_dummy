@@ -282,8 +282,8 @@ function App() {
                         alt="KAI Logo"
                         className="h-8 w-auto mb-4 brightness-0 invert"
                     />
-                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS SELECTOR</h1>
-                    <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5">Control & Monitoring System</p>
+                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS Selector</h1>
+                    <p className="text-[9px] font-bold text-blue-200/40 mt-0.5">Control & Monitoring System</p>
                 </div>
 
                 {/* Status Items */}
@@ -294,8 +294,8 @@ function App() {
                             <Train size={24} className="text-white" strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Active Service</span>
-                            <span className="text-lg font-black text-white leading-none uppercase">{masterSyncedServiceName}</span>
+                            <span className="text-[10px] font-bold text-blue-200/40 mb-0.5">Active Service</span>
+                            <span className="text-lg font-black text-white leading-none">{masterSyncedServiceName}</span>
                         </div>
                     </div>
 
@@ -305,8 +305,8 @@ function App() {
                             <Train size={24} className="text-white" strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Unit Number</span>
-                            <span className="text-lg font-black text-white leading-none uppercase">KA-{masterSyncedNumber}</span>
+                            <span className="text-[10px] font-bold text-blue-200/40 mb-0.5">Unit Number</span>
+                            <span className="text-lg font-black text-white leading-none">KA-{masterSyncedNumber}</span>
                         </div>
                     </div>
 
@@ -317,7 +317,7 @@ function App() {
                                 <MapPin size={24} className="text-white" strokeWidth={2} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-blue-200/60 tracking-widest mb-0.5">Destination</span>
+                                <span className="text-[10px] font-bold text-blue-200/60 mb-0.5">Destination</span>
                                 <span className="text-lg font-black text-white leading-none">{stations[stations.length - 1]}</span>
                             </div>
                         </div>
@@ -373,7 +373,7 @@ function App() {
                         className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showLedSettings ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     >
                         <Settings size={20} className={showLedSettings ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
-                        <span className="font-bold text-sm tracking-wide uppercase">LED Settings</span>
+                        <span className="font-bold text-sm">LED Settings</span>
                     </button>
 
                     <button
@@ -381,12 +381,12 @@ function App() {
                         className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showTVPreview ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     >
                         <Video size={20} className={showTVPreview ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} />
-                        <span className="font-bold text-sm tracking-wide uppercase">Monitor TV</span>
+                        <span className="font-bold text-sm">Monitor TV</span>
                     </button>
 
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] uppercase tracking-widest border border-white/5 active:scale-95 group mt-4"
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] border border-white/5 active:scale-95 group mt-4"
                     >
                         <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
                         <span>Logout dari Sistem</span>
@@ -402,11 +402,11 @@ function App() {
                     <div className="flex items-center gap-4">
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Zap className="text-[#1d2d6a]" size={20} /></div>
                         <div>
-                            <h1 className="text-lg font-black text-[#1d2d6a] uppercase tracking-tight leading-none mb-1">Selector Console</h1>
+                            <h1 className="text-lg font-black text-[#1d2d6a] tracking-tight leading-none mb-1">Selector Console</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Control Interface</span>
+                                <span className="text-[10px] font-bold text-slate-400">Control Interface</span>
                                 <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active session</span>
+                                <span className="text-[10px] font-bold text-slate-400">Active session</span>
                             </div>
                         </div>
                     </div>
@@ -422,14 +422,14 @@ function App() {
                 <div className="flex-1 min-h-0 relative overflow-y-auto p-8 pr-10 pb-10">
                     {/* Section: Train Configuration */}
                     <div className="mb-10">
-                        <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight uppercase mb-6 flex items-center gap-3">
+                        <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-6 flex items-center gap-3">
                             <Settings className="text-[#ee6f1f]" size={24} /> Service Configuration
                         </h2>
                         <div className="flex items-end gap-12">
                             {/* Service Config */}
                             <div className="flex-1 flex gap-4 items-end">
                                 <div className="flex-1 flex flex-col gap-2">
-                                    <label className="text-[11px] font-black text-[#1d2d6a] uppercase tracking-widest pl-1">Service Configuration</label>
+                                    <label className="text-[11px] font-black text-[#1d2d6a] pl-1">Service Configuration</label>
                                     <div className="relative">
                                         <select
                                             value={trainNameIndex}
@@ -447,7 +447,7 @@ function App() {
                                 </div>
                                 <button
                                     onClick={handleSetName}
-                                    className="h-[52px] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black tracking-widest uppercase shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95"
+                                    className="h-[52px] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95"
                                 >
                                     Set
                                 </button>
@@ -456,7 +456,7 @@ function App() {
                             {/* Unit Config */}
                             <div className="flex-1 flex gap-4 items-end">
                                 <div className="flex-1 flex flex-col gap-2">
-                                    <label className="text-[11px] font-black text-[#1d2d6a] uppercase tracking-widest pl-1">Unit Configuration</label>
+                                    <label className="text-[11px] font-black text-[#1d2d6a] pl-1">Unit Configuration</label>
                                     <div className="relative">
                                         <select
                                             value={trainNumberIndex}
@@ -479,7 +479,7 @@ function App() {
                                 </div>
                                 <button
                                     onClick={handleSetNumber}
-                                    className="h-[52px] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black tracking-widest uppercase shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95"
+                                    className="h-[52px] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95"
                                 >
                                     Set
                                 </button>
@@ -491,7 +491,7 @@ function App() {
 
                     {/* Section: Station Control */}
                     <div>
-                        <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight uppercase mb-6 flex items-center gap-3">
+                        <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-6 flex items-center gap-3">
                             <MapPin className="text-[#ee6f1f]" size={24} /> Station Control
                         </h2>
 
@@ -499,14 +499,14 @@ function App() {
                             <div className="flex-[2] bg-white rounded-3xl border border-slate-200 flex flex-col p-8 relative overflow-hidden group">
 
                                 <div className="flex justify-between items-start mb-6 relative z-10">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">CURRENT STATION</span>
+                                    <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">Current Station</span>
                                     <div className="bg-[#1d2d6a]/5 text-[#1d2d6a] rounded-xl p-3 shadow-sm">
                                         <MapPin size={24} />
                                     </div>
                                 </div>
 
                                 <div className="flex flex-col flex-1 justify-center relative z-10 pl-2">
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Departing From</p>
+                                    <p className="text-[11px] font-bold text-slate-400 mb-2">Departing From</p>
                                     <div className="h-24">
                                         <AnimatePresence mode="wait">
                                             <motion.h3
@@ -514,7 +514,7 @@ function App() {
                                                 initial={{ y: 10, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
                                                 exit={{ y: -10, opacity: 0 }}
-                                                className="text-6xl font-black text-[#1d2d6a] uppercase tracking-tighter"
+                                                className="text-6xl font-black text-[#1d2d6a] tracking-tighter"
                                             >
                                                 {currentStation}
                                             </motion.h3>
@@ -532,7 +532,7 @@ function App() {
                                     </button>
                                     <button
                                         onClick={handleSelectStation}
-                                        className="flex-1 h-16 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-2xl font-black tracking-wider uppercase shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 drop-shadow-sm text-lg"
+                                        className="flex-1 h-16 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-2xl font-black shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 drop-shadow-sm text-lg"
                                     >
                                         <RefreshCcw size={22} /> SYNC DISPLAY STATUS
                                     </button>
@@ -547,7 +547,7 @@ function App() {
 
                             <div className="flex-1 bg-white rounded-3xl border border-slate-200 flex flex-col items-center justify-center p-8 relative overflow-hidden group">
 
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 mb-4">UPCOMING STOP</span>
+                                <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 mb-4">Upcoming Stop</span>
 
                                 <div className="flex flex-col items-center justify-center relative z-10">
                                     <div className="h-16 mb-2 flex items-center justify-center">
@@ -557,7 +557,7 @@ function App() {
                                                 initial={{ y: 5, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
                                                 exit={{ y: -5, opacity: 0 }}
-                                                className="text-4xl font-black text-[#1d2d6a] uppercase tracking-tighter truncate text-center"
+                                                className="text-4xl font-black text-[#1d2d6a] tracking-tighter truncate text-center"
                                                 title={nextStation}
                                             >
                                                 {nextStation}
@@ -596,7 +596,7 @@ function App() {
                                         </div>
                                         <div>
                                             <h2 className="text-2xl font-black italic tracking-tighter">LED <span className="text-[#ee6f1f]">Configuration</span></h2>
-                                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Visualizer & Velocity Control</p>
+                                            <p className="text-[10px] font-bold text-white/40">Visualizer & Velocity Control</p>
                                         </div>
                                     </div>
                                     <button
@@ -623,7 +623,7 @@ function App() {
                                                 <div className="w-full max-w-2xl h-16 bg-black flex items-center justify-center rounded-lg border border-slate-800 shadow-inner">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">LED SYSTEM STANDBY / POWERED OFF</span>
+                                                        <span className="text-[10px] font-black text-slate-500">LED System Standby / Powered Off</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -635,18 +635,18 @@ function App() {
                                         <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-4">
                                             <div>
                                                 <h4 className="text-base font-black text-[#1d2d6a] tracking-tight">Display Type</h4>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select matrix panel model</p>
+                                                <p className="text-[10px] font-bold text-slate-400">Select matrix panel model</p>
                                             </div>
                                             <div className="flex gap-3">
                                                 <button
                                                     onClick={() => setLedType('indoor')}
-                                                    className={`flex-1 py-3 px-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                                    className={`flex-1 py-3 px-4 rounded-2xl font-black text-[10px] transition-all border-2 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
                                                 >
                                                     P2.5 Indoor
                                                 </button>
                                                 <button
                                                     onClick={() => setLedType('p10_32_16')}
-                                                    className={`flex-1 py-3 px-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
+                                                    className={`flex-1 py-3 px-4 rounded-2xl font-black text-[10px] transition-all border-2 ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
                                                 >
                                                     P10 Outdoor
                                                 </button>
@@ -659,10 +659,10 @@ function App() {
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <h4 className="text-base font-black text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Adjustment for matrix modules</p>
+                                                <p className="text-[10px] font-bold text-slate-400">Adjustment for matrix modules</p>
                                             </div>
                                             <div className="text-2xl font-black text-[#ee6f1f] bg-white px-5 py-1.5 rounded-2xl shadow-sm border border-slate-100 font-mono">
-                                                {masterSyncedLedSpeed}<span className="text-[10px] ml-1 opacity-40 uppercase">MS</span>
+                                                {masterSyncedLedSpeed}<span className="text-[10px] ml-1 opacity-40">MS</span>
                                             </div>
                                         </div>
 
@@ -676,7 +676,7 @@ function App() {
                                                 onChange={(e) => handleSetLedSpeed(parseInt(e.target.value))}
                                                 className="w-full h-3 bg-slate-200 rounded-xl appearance-none cursor-pointer accent-[#ee6f1f]"
                                             />
-                                            <div className="flex justify-between text-[8px] font-black text-slate-300 mt-3 uppercase tracking-[0.2em]">
+                                            <div className="flex justify-between text-[8px] font-black text-slate-300 mt-3">
                                                 <span>Hyper Fast (10ms)</span>
                                                 <span>Standard (60ms)</span>
                                                 <span>Slow (200ms)</span>
@@ -688,7 +688,7 @@ function App() {
                                         <div className="bg-blue-50 p-2 rounded-lg text-blue-500">
                                             <Clock size={14} />
                                         </div>
-                                        <p className="font-bold uppercase tracking-wide">Changes are broadcasted in real-time to all connected LED units and passenger displays.</p>
+                                        <p className="font-bold">Changes are broadcasted in real-time to all connected LED units and passenger displays.</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -742,7 +742,7 @@ function App() {
                                                 <div className="text-5xl font-bold tracking-tight mb-1">
                                                     {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':')}
                                                 </div>
-                                                <div className="text-xl font-medium tracking-wide uppercase text-white/90">
+                                                <div className="text-xl font-medium text-white/90">
                                                     {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </div>
                                             </div>
@@ -752,8 +752,8 @@ function App() {
                                                     alt="KAI Logo"
                                                     className="h-9 drop-shadow-md brightness-0 invert"
                                                 />
-                                                <div className="flex flex-col text-white font-bold leading-none tracking-wide drop-shadow-md">
-                                                    <span className="text-sm">MONITOR</span>
+                                                <div className="flex flex-col text-white font-bold leading-none drop-shadow-md">
+                                                    <span className="text-sm">Monitor</span>
                                                     <span className="text-sm">PIDS</span>
                                                 </div>
                                             </div>
@@ -766,20 +766,20 @@ function App() {
                                                 animate={{ y: 0, opacity: 1 }}
                                                 className="text-center w-full max-w-5xl"
                                             >
-                                                <h3 className="text-[1.5vw] font-bold text-white/80 tracking-widest uppercase mb-2 drop-shadow-md">
-                                                    {tvDisplayMode === 'current' ? 'CURRENT STATION' : 'NEXT STATION'}
+                                                <h3 className="text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md">
+                                                    {tvDisplayMode === 'current' ? 'Current Station' : 'NEXT STATION'}
                                                 </h3>
-                                                <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] uppercase mb-6">
+                                                <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] mb-6">
                                                     {tvDisplayMode === 'current' ? currentStation : nextStation}
                                                 </h3>
-                                                <div className="flex items-center justify-center font-sans tracking-wide">
+                                                <div className="flex items-center justify-center font-sans">
                                                     <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
-                                                        <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">SERVICE</span>
-                                                        <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">{masterSyncedServiceName}</span>
+                                                        <span className="text-[13px] font-medium text-white/90 mb-1">Service</span>
+                                                        <span className="text-[32px] font-bold text-white drop-shadow-sm leading-tight text-center">{masterSyncedServiceName}</span>
                                                     </div>
                                                     <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 h-[140px] shadow-lg border-l border-[#d95d19]">
-                                                        <span className="text-[13px] font-medium text-white/90 uppercase tracking-[0.15em] mb-1">TRAIN NO</span>
-                                                        <span className="text-[32px] font-bold text-white uppercase drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
+                                                        <span className="text-[13px] font-medium text-white/90 mb-1">Train No</span>
+                                                        <span className="text-[32px] font-bold text-white drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
                                                     </div>
                                                 </div>
                                             </motion.div>
@@ -790,7 +790,7 @@ function App() {
                                             <div className="flex items-center gap-6 w-1/3 justify-start">
                                                 <Gauge size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={2} />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">SPEED</span>
+                                                    <span className="text-[15px] font-medium text-white/90 mb-0.5">Speed</span>
                                                     <div className="flex items-baseline gap-2">
                                                         <span className="text-[44px] leading-none font-bold text-white tracking-tight">{speed}</span>
                                                         <span className="text-2xl font-bold text-white/90">km/h</span>
@@ -800,7 +800,7 @@ function App() {
                                             <div className="flex items-center gap-6 w-1/3 justify-center">
                                                 <Mountain size={60} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">ALTITUDE</span>
+                                                    <span className="text-[15px] font-medium text-white/90 mb-0.5">Altitude</span>
                                                     <div className="flex items-baseline gap-2">
                                                         <span className="text-[44px] leading-none font-bold text-white tracking-tight">{altitude}</span>
                                                         <span className="text-2xl font-bold text-white/90">m</span>
@@ -810,7 +810,7 @@ function App() {
                                             <div className="flex items-center gap-6 w-1/3 justify-end">
                                                 <Thermometer size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[15px] font-medium text-white/90 uppercase tracking-widest mb-0.5">TEMP</span>
+                                                    <span className="text-[15px] font-medium text-white/90 mb-0.5">Temp</span>
                                                     <div className="flex items-baseline gap-2">
                                                         <span className="text-[44px] leading-none font-bold text-white tracking-tight">{temp}</span>
                                                         <span className="text-2xl font-bold text-white/90">°C</span>
@@ -842,7 +842,7 @@ function App() {
                                                             <Video size={40} className="text-white/20" />
                                                         </div>
                                                         <div className="text-center">
-                                                            <p className="text-white/40 text-sm font-bold uppercase tracking-widest">Tidak Ada Video Aktif</p>
+                                                            <p className="text-white/40 text-sm font-bold">Tidak Ada Video Aktif</p>
                                                             <p className="text-white/20 text-xs mt-1">Tambahkan video ke playlist dari Master Console</p>
                                                         </div>
                                                     </div>
@@ -874,7 +874,7 @@ function App() {
                                                     {/* Video Info Overlay */}
                                                     <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
                                                         <div className={`w-2 h-2 rounded-full ${data?.isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">
+                                                        <span className="text-[10px] font-black">
                                                             {data?.isPlaying ? 'Now Playing' : 'Paused'}: {activeFile}
                                                         </span>
                                                     </div>

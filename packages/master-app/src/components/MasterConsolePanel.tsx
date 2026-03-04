@@ -22,12 +22,12 @@ function StateToggle({ value, label1 = "auto", label2 = "custom", onChange }: { 
                 setInternalValue(navVal);
                 onChange?.(navVal);
             }}
-            className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all border shadow-sm ${isFirst
+            className={`px-3 py-1 text-[8px] font-black rounded-lg transition-all border shadow-sm ${isFirst
                 ? 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700'
                 : 'bg-[#ee6f1f] text-white border-[#d8631c] hover:bg-[#f87a2c]'
                 }`}
         >
-            {internalValue.toUpperCase()}
+            {internalValue.charAt(0).toUpperCase() + internalValue.slice(1).toLowerCase()}
         </button>
     );
 }
@@ -40,9 +40,9 @@ function TextToggle({ value, label1 = "auto", label2 = "custom" }: { value: stri
         <button
             type="button"
             onClick={() => setInternalValue(isFirst ? label2.toLowerCase() : label1.toLowerCase())}
-            className={`text-[9px] font-black uppercase tracking-widest transition-colors ${isFirst ? 'text-blue-500 hover:text-blue-600' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
+            className={`text-[9px] font-black transition-colors ${isFirst ? 'text-blue-500 hover:text-blue-600' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
         >
-            {internalValue.toUpperCase()}
+            {internalValue.charAt(0).toUpperCase() + internalValue.slice(1).toLowerCase()}
         </button>
     );
 }
@@ -66,9 +66,9 @@ function SectionAccordion({
                         <Icon size={24} strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm lg:text-base font-black text-[#1d2d6a] uppercase tracking-wider">{title}</span>
+                        <span className="text-sm lg:text-base font-black text-[#1d2d6a]">{title}</span>
                         {!isOpen && summary && (
-                            <div className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest hidden sm:block">{summary}</div>
+                            <div className="text-xs font-bold text-slate-400 mt-1 hidden sm:block">{summary}</div>
                         )}
                     </div>
                 </div>
@@ -115,6 +115,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const [videoList, setVideoList] = useState<string[]>([]);
     const [videoViewMode, setVideoViewMode] = useState<'playlist' | 'files'>('playlist');
     const [showStandbyConfirm, setShowStandbyConfirm] = useState(false);
+    const [showClearPlaylistConfirm, setShowClearPlaylistConfirm] = useState(false);
     const [loadingVideos, setLoadingVideos] = useState(false);
 
     // Fetch videos from server
@@ -141,6 +142,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const simGpsRef = useRef(simGps);
     const navTableRef = useRef<HTMLDivElement>(null);
     const lastFocusedStation = useRef<string | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     // VIDEO HANDLERS & LOGIC
     const playlist = data?.videoPlaylist || [];
@@ -190,6 +192,18 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
     const nextVideo = () => {
         if (playlist.length === 0) return;
+
+        // Kembali ke mode standby jika di akhir playlist dan mode normal (non repeat)
+        if (playbackMode === 'normal' && activeIndex === playlist.length - 1) {
+            handleVideoAction({
+                activeVideoIndex: 0,
+                isPlaying: false,
+                playbackProgress: 0,
+                tvStandby: true
+            });
+            return;
+        }
+
         const nextIdx = (activeIndex + 1) % playlist.length;
         handleVideoAction({ activeVideoIndex: nextIdx, isPlaying: isPlaying, playbackProgress: 0 });
     };
@@ -205,7 +219,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         const currentMode = playbackMode === 'shuffle' ? 'normal' : playbackMode;
         const nextMode = repeatModes[(repeatModes.indexOf(currentMode) + 1) % repeatModes.length];
         handleVideoAction({ playbackMode: nextMode });
-        showToast(`Repeat: ${nextMode.toUpperCase()}`);
+        showToast(`Repeat: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1).toLowerCase()}`);
     };
 
     const toggleShuffle = () => {
@@ -237,6 +251,28 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         }
     };
 
+    // Video effect for sync state
+    useEffect(() => {
+        if (!videoRef.current) return;
+        const vid = videoRef.current;
+        vid.volume = (data?.volume ?? 50) / 100;
+
+        if (data?.isPlaying) {
+            if (vid.paused) vid.play().catch(e => console.error("Play failed:", e));
+        } else {
+            if (!vid.paused) vid.pause();
+        }
+    }, [data?.isPlaying, data?.volume]);
+
+    useEffect(() => {
+        if (!videoRef.current || isNaN(videoRef.current.duration)) return;
+        const vid = videoRef.current;
+        const targetTime = ((data?.playbackProgress || 0) / 100) * (vid.duration || 1);
+        if (Math.abs(vid.currentTime - targetTime) > 2) {
+            vid.currentTime = targetTime;
+        }
+    }, [data?.playbackProgress]);
+
     // Auto-scroll to current station in table
     useEffect(() => {
         if (!navTableRef.current || !data?.currentStation || data.currentStation === '-') return;
@@ -250,11 +286,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
             if (activeRow && container) {
                 const row = activeRow as HTMLElement;
-                const headerOffset = 45;
-                container.scrollTo({
-                    top: row.offsetTop - headerOffset,
-                    behavior: 'smooth'
-                });
+                row.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 lastFocusedStation.current = data.currentStation;
             }
         }, 150);
@@ -819,31 +851,31 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 <div className="p-6 xl:w-1/3 bg-slate-50 border-b xl:border-b-0 xl:border-r border-slate-200 flex flex-col">
                     <div className="flex items-center gap-3 mb-5 shrink-0">
                         <div className="text-[#ee6f1f]"><Train size={24} /></div>
-                        <h3 className="font-black text-[#1d2d6a] uppercase tracking-widest text-sm">Status Perjalanan</h3>
+                        <h3 className="font-black text-[#1d2d6a] text-sm">Status Perjalanan</h3>
                     </div>
 
                     <div className="flex flex-col gap-3 flex-1 justify-center">
                         {/* Identitas */}
                         <div className="flex justify-between items-center bg-white px-4 py-2.5 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">No KA / Nama</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">KA {activeTrainNumber} - {activeTrainName}</span>
+                                <span className="text-[14px] font-bold text-slate-400 mb-0.5">No KA / Nama</span>
+                                <span className="text-[16px] font-black text-[#1d2d6a]">KA {activeTrainNumber} - {activeTrainName}</span>
                             </div>
                             <div className="flex flex-col text-right">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Relasi</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">{relasiCode}</span>
+                                <span className="text-[14px] font-bold text-slate-400 mb-0.5">Relasi</span>
+                                <span className="text-[16px] font-black text-[#1d2d6a]">{relasiCode}</span>
                             </div>
                         </div>
 
                         {/* Berangkat & Tiba */}
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-white px-4 py-2.5 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Berangkat</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">{departureLabel}</span>
+                                <span className="text-[12px] font-bold text-slate-400 block mb-0.5">Berangkat</span>
+                                <span className="text-[14px] font-black text-[#1d2d6a]">{departureLabel}</span>
                             </div>
                             <div className="bg-white px-4 py-2.5 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Tiba</span>
-                                <span className="text-xs font-black text-[#1d2d6a]">{arrivalLabel}</span>
+                                <span className="text-[12px] font-bold text-slate-400 block mb-0.5">Tiba</span>
+                                <span className="text-[14px] font-black text-[#1d2d6a]">{arrivalLabel}</span>
                             </div>
                         </div>
                         {/* Standby Confirmation Modal */}
@@ -867,7 +899,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
                                                 <MonitorPlay size={32} className="text-blue-600" />
                                             </div>
-                                            <h3 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight mb-3">
+                                            <h3 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-3">
                                                 Konfirmasi Tampilan Video
                                             </h3>
                                             <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-[280px]">
@@ -877,7 +909,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         <div className="p-6 bg-slate-50 flex gap-3">
                                             <button
                                                 onClick={() => setShowStandbyConfirm(false)}
-                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
+                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-black hover:bg-slate-100 transition-all active:scale-95"
                                             >
                                                 Batal
                                             </button>
@@ -886,7 +918,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                     handleVideoAction({ tvStandby: false });
                                                     setShowStandbyConfirm(false);
                                                 }}
-                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-[#1d2d6a] text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-[#152355] transition-all active:scale-95"
+                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-[#1d2d6a] text-white text-xs font-black shadow-lg shadow-blue-900/20 hover:bg-[#152355] transition-all active:scale-95"
                                             >
                                                 Tampilkan
                                             </button>
@@ -900,12 +932,12 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-3">
                             <div className="flex justify-between items-center">
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">POI Terdekat</span>
-                                    <span className="text-sm font-black text-[#ee6f1f]">{nearestPoi}</span>
+                                    <span className="text-[14px] font-bold text-slate-400 mb-0.5">POI Terdekat</span>
+                                    <span className="text-[14px] font-black text-[#ee6f1f]">{nearestPoi}</span>
                                 </div>
                                 <div className="flex flex-col text-right">
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Jarak ke Tujuan</span>
-                                    <span className="text-xs font-black text-[#ee6f1f]">{distToNext}</span>
+                                    <span className="text-[14px] font-bold text-slate-400 mb-0.5">Jarak ke Tujuan</span>
+                                    <span className="text-[14px] font-black text-[#ee6f1f]">{distToNext}</span>
                                 </div>
                             </div>
 
@@ -913,12 +945,12 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                             <div className="flex justify-between items-center bg-blue-50/50 p-2.5 rounded-xl border border-blue-100/50">
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Status Aktual</span>
-                                    <span className="text-xs font-black text-[#1d2d6a]">Menuju ke {nextStationName}</span>
+                                    <span className="text-[14px] font-bold text-blue-500 mb-0.5">Status Aktual</span>
+                                    <span className="text-[13px] font-black text-[#1d2d6a]">Menuju ke {nextStationName}</span>
                                 </div>
                                 <div className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100 text-center">
-                                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest block mb-0.5">ETA</span>
-                                    <span className="text-xs font-black text-blue-700">{etaTime}</span>
+                                    <span className="text-[10px] font-bold text-[#ee6f1f] block mb-0.5">ETA</span>
+                                    <span className="text-[14px] font-black text-[#ee6f1f]">{etaTime}</span>
                                 </div>
                             </div>
                         </div>
@@ -929,9 +961,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     <div className="flex items-center justify-between mb-5 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="text-[#ee6f1f]"><Satellite size={24} /></div>
-                            <h3 className="font-black text-[#1d2d6a] uppercase tracking-widest text-sm">Telemetri Satelit (GPS)</h3>
+                            <h3 className="font-black text-[#1d2d6a] text-sm">Telemetri Satelit (GPS)</h3>
                         </div>
-                        <span className="text-[10px] font-black bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2 tracking-widest">
+                        <span className="text-[10px] font-black bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2">
                             TANGGAL: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </span>
                     </div>
@@ -939,55 +971,55 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         <div className="bg-[#ee6f1f] p-5 rounded-2xl border border-[#ee6f1f] shadow-sm lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="absolute right-0 top-0 bottom-0 w-48 bg-[#ee6f1f]/50 group-hover:bg-[#ee6f1f]/20 transition-transform duration-500 transform -skew-x-12 translate-x-10" />
                             <div className="relative z-10 flex flex-col">
-                                <div className="text-sm text-slate-50 font-bold uppercase tracking-widest mb-1 flex items-center gap-2">
+                                <div className="text-sm text-slate-50 font-bold mb-1 flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-slate-100 animate-pulse" />
                                     Kecepatan
                                 </div>
                                 <div className="text-xs text-slate-200 font-medium">Realtime Speed (GPS)</div>
                             </div>
                             <div className="text-5xl font-mono font-black text-slate-50  leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
-                                {(data?.speed || 0).toFixed(1)}<span className="text-base font-sans tracking-widest ml-2 text-slate-50 font-bold">km/h</span>
+                                {(data?.speed || 0).toFixed(1)}<span className="text-base font-sans ml-2 text-slate-50 font-bold">km/h</span>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Longitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
+                            <div className="text-[12px] text-slate-400 font-bold mb-1 flex justify-between">Longitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div id="gps-lng" className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
                             {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Bujur Timur
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Latitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
+                            <div className="text-[12px] text-slate-400 font-bold mb-1 flex justify-between">Latitude <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div id="gps-lat" className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
                             {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Lintang Selatan
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
 
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Haluan (Dir) <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
+                            <div className="text-[12px] text-slate-400 font-bold mb-1 flex justify-between">Haluan (Dir) <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="text-xl font-mono font-black text-[#1d2d6a]">{simGps.heading.toFixed(2)}&deg;</div>
                             {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Arah Orientasi KA
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex justify-between">Ketinggian <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
-                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{data?.altitude || 0} <span className="text-[10px] text-slate-500 tracking-wider">MDPL</span></div>
+                            <div className="text-[12px] text-slate-400 font-bold mb-1 flex justify-between">Ketinggian <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
+                            <div className="text-xl font-mono font-black text-[#1d2d6a]">{data?.altitude || 0} <span className="text-[10px] text-slate-500">MDPL</span></div>
                             {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Elevasi Permukaan
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Luar <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
+                            <div className="text-[12px] text-slate-400 font-bold flex justify-between">Radius Luar <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
                                 <input
                                     type="number"
@@ -997,16 +1029,16 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
                                     className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black text-[#1d2d6a] focus:outline-none focus:border-blue-400 shadow-sm"
                                 />
-                                <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
+                                <span className="text-[10px] text-slate-500 font-bold mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Batas Jarak Toleransi
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between">Radius Dalam <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
+                            <div className="text-[12px] text-slate-400 font-bold flex justify-between">Radius Dalam <Info size={12} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" /></div>
                             <div className="flex items-end gap-2 mt-2">
                                 <input
                                     type="number"
@@ -1016,10 +1048,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
                                     className="w-16 bg-white border border-slate-200 rounded px-2 py-1 flex-1 min-w-0 text-xl font-mono font-black focus:outline-none focus:border-blue-400 shadow-sm"
                                 />
-                                <span className="text-[10px] text-slate-500 font-bold tracking-wider mb-2">METER</span>
+                                <span className="text-[10px] text-slate-500 font-bold mb-2">METER</span>
                             </div>
                             {/* Tooltip */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 bg-[#1d2d6a] text-white text-[10px] font-black px-3 py-2 rounded-lg shadow-lg whitespace-nowrap border border-[#2a3b7a]">
                                 Batas Presisi Target
                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -1035,8 +1067,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <div className="bg-white/10 p-6 rounded-3xl border border-white/20 mb-6 shadow-2xl">
                                     <MapPin size={56} className="text-orange-400 animate-pulse" />
                                 </div>
-                                <h3 className="text-white font-black text-2xl mb-2 uppercase tracking-widest drop-shadow-lg">Peta Belum Dikonfigurasi</h3>
-                                <p className="text-slate-300 text-center max-w-md px-6 text-sm font-bold uppercase tracking-tight leading-relaxed">
+                                <h3 className="text-white font-black text-2xl mb-2 drop-shadow-lg">Peta Belum Dikonfigurasi</h3>
+                                <p className="text-slate-300 text-center max-w-md px-6 text-sm font-bold tracking-tight leading-relaxed">
                                     Gunakan tombol <span className="text-[#ee6f1f] border-b-2 border-[#ee6f1f]">Import GeoJSON</span> di bawah pada bagian Rute untuk memuat koordinat navigasi dan visualisasi perjalanan.
                                 </p>
                             </div>
@@ -1058,15 +1090,15 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         {/* Global IP & Settings */}
                         <div className="flex flex-wrap items-center gap-4 flex-1">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Network Global IP</span>
+                                <span className="text-[13px] font-black text-slate-500 mb-1">Network Global IP</span>
                                 <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-2 py-1.5 shadow-sm">
-                                    <input type="text" defaultValue="192" className="w-[28px] text-[11px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="192" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <span className="text-slate-300">.</span>
-                                    <input type="text" defaultValue="168" className="w-[28px] text-[11px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="168" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <span className="text-slate-300">.</span>
-                                    <input type="text" defaultValue="1" className="w-[20px] text-[11px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="1" className="w-[20px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <span className="text-slate-300">.</span>
-                                    <input type="text" defaultValue="48" className="w-[24px] text-[11px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="48" className="w-[24px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <div className="w-px h-4 bg-slate-200 mx-1" />
                                     <StateToggle value="auto" />
                                 </div>
@@ -1076,9 +1108,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                             {/* Toggles */}
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center sm:text-left">Tampilkan</span>
+                                <span className="text-[13px] font-black text-slate-500 mb-1 text-center sm:text-left">Tampilkan</span>
                                 <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
                                         <input
                                             type="checkbox"
                                             className="w-4 h-4 rounded text-blue-600 border-slate-300"
@@ -1087,7 +1119,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         /> No. KA
                                     </label>
                                     <div className="w-px h-5 bg-slate-200" />
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
                                         <input
                                             type="checkbox"
                                             className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300"
@@ -1099,10 +1131,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Jumlah Kereta</span>
+                            <span className="text-[13px] font-black text-slate-500 mb-1">Jumlah Kereta</span>
                             <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
                                 <Train size={14} className="text-slate-400" />
-                                <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[70px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
+                                <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[150px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
                                     {[...Array(gerbongCounts[activeTrainName] || 15)].map((_, i) => (
                                         <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
                                     ))}
@@ -1119,28 +1151,28 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div key={item} className={`flex shrink-0 snap-start ${i === 0 ? 'w-[150px]' : 'w-[150px] flex-1'}`}>
                                 <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all relative">
                                     <div className={`flex items-center justify-center h-10 shrink-0 ${i === 0 ? 'bg-slate-50 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
-                                        <span className="text-sm font-black uppercase tracking-widest">{item}</span>
+                                        <span className="text-sm font-black">{item}</span>
                                     </div>
                                     <div className="p-4 bg-white flex flex-col gap-4 flex-1">
                                         {i === 0 ? (
                                             <div className="flex flex-col gap-4 flex-1 justify-center">
                                                 {/* Specialized Locomotive Style based on Image */}
-                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
+                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                                                     ID KERETA
                                                 </div>
-                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] uppercase tracking-wider">
+                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                                                     IP KERETA
                                                 </div>
                                             </div>
                                         ) : (
                                             <>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Kereta</span>
+                                                    <span className="text-[9px] font-bold text-slate-400 mb-1">Kereta</span>
                                                     <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IP Node</span>
+                                                        <span className="text-[9px] font-bold text-slate-400">IP Node</span>
                                                         <TextToggle value="auto" />
                                                     </div>
                                                     <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
@@ -1170,35 +1202,35 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 title="2. Rute & Checkpoint Navigasi"
                 icon={MapPin}
                 defaultOpen={true}
-                summary={!route?.name ? "Pilih Rute di Selector" : `Detail ${navData.length} POI Navigasi • Target Utama ${navData.find((x: any) => x.status === "BERHENTI")?.name || 'SGU'}`}
+                summary={!route?.name ? "Pilih Rute di Selector" : `Detail ${navData.length} POI Navigasi • Lokasi Saat Ini: ${navData.find((x: any) => x.status === "BERHENTI")?.name || data?.currentStation || '-'}`}
             >
                 {!route?.name || route.name === '-' ? (
                     <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl mt-4">
                         <div className="bg-white p-4 rounded-2xl shadow-sm mb-4">
                             <MapPin size={32} className="text-slate-300" />
                         </div>
-                        <h4 className="text-sm font-black text-[#1d2d6a] uppercase tracking-widest mb-1">Rute Belum Dipilih</h4>
-                        <p className="text-xs font-bold text-slate-400 text-center max-w-xs uppercase tracking-tighter">Silakan pilih rute perjalanan pada aplikasi Selector untuk memulai konfigurasi navigasi.</p>
+                        <h4 className="text-sm font-black text-[#1d2d6a] mb-1">Rute Belum Dipilih</h4>
+                        <p className="text-xs font-bold text-slate-400 text-center max-w-xs tracking-tighter">Silakan pilih rute perjalanan pada aplikasi Selector untuk memulai konfigurasi navigasi.</p>
                     </div>
                 ) : (
                     <>
                         <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
+                                <span className="text-[10px] font-bold text-slate-500">File Aktif:</span>
                                 <span className="text-sm font-black text-[#1d2d6a]">
                                     {route?.geojson ? (route.geojson_filename || `${route.name.replace(/\s+/g, '_')}.geojson`) : 'Belum Ada GeoJSON'}
-                                    {route?.geojson && <span className="ml-2 text-[10px] text-green-500 font-black uppercase tracking-widest bg-green-50 px-1.5 py-0.5 rounded border border-green-100 italic">Aktif</span>}
+                                    {route?.geojson && <span className="ml-2 text-[10px] text-green-500 font-black bg-green-50 px-1.5 py-0.5 rounded border border-green-100 italic">Aktif</span>}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={handleDeleteClick}
                                     disabled={uploading}
-                                    className={`text-xs font-black uppercase tracking-widest text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${uploading ? 'opacity-50 grayscale pointer-events-none' : ''}`}
+                                    className={`text-xs font-black text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${uploading ? 'opacity-50 grayscale pointer-events-none' : ''}`}
                                 >
                                     <Trash2 size={14} /> {uploading ? '...' : 'Hapus'}
                                 </button>
-                                <label className={`text-xs font-black uppercase tracking-widest text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <label className={`text-xs font-black text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                                     <Upload size={14} className={`text-white ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import'}
                                     <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading} />
                                 </label>
@@ -1211,8 +1243,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">
                                     <Info size={40} className="text-slate-300" />
                                 </div>
-                                <h4 className="text-sm font-black text-[#1d2d6a] uppercase tracking-[0.2em] mb-2">Data Navigasi Kosong</h4>
-                                <p className="text-[11px] font-bold text-slate-400 text-center max-w-[280px] uppercase tracking-tight leading-relaxed">
+                                <h4 className="text-sm font-black text-[#1d2d6a] mb-2">Data Navigasi Kosong</h4>
+                                <p className="text-[11px] font-bold text-slate-400 text-center max-w-[280px] tracking-tight leading-relaxed">
                                     Silakan <span className="text-[#ee6f1f]">Impor GeoJSON</span> untuk memuat daftar stasiun, koordinat GPS, dan estimasi waktu kedatangan.
                                 </p>
                             </div>
@@ -1222,13 +1254,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0">
                                         <thead className="bg-[#1d2d6a] text-white sticky top-0 z-20">
                                             <tr>
-                                                <th className="py-3.5 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a]">Nama Stasiun</th>
-                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a]">Ket</th>
-                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-right">Longitude</th>
-                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-right">Latitude</th>
-                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-center">TTA</th>
-                                                <th className="py-3.5 px-4 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a] text-center">Status</th>
-                                                <th className="py-3.5 px-6 text-[10px] font-black uppercase tracking-widest border-b border-[#152355] bg-[#1d2d6a]">Next Stasiun</th>
+                                                <th className="py-3.5 px-6 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a]">Nama Stasiun</th>
+                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a]">Ket</th>
+                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-right">Longitude</th>
+                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-right">Latitude</th>
+                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-center">TTA</th>
+                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-center">Status</th>
+                                                <th className="py-3.5 px-6 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a]">Next Stasiun</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 text-sm">
@@ -1239,6 +1271,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                         key={idx}
                                                         data-active={isBerhenti}
                                                         className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/100' : 'bg-white'}`}
+                                                        style={{ scrollMarginTop: '46px' }}
                                                     >
                                                         <td className={`py-3 px-6 font-black flex items-center gap-2 ${isBerhenti ? 'text-[#ee6f1f]' : 'text-slate-700'}`}>
                                                             {isBerhenti && <ChevronRight size={16} className="text-[#ee6f1f]" />}
@@ -1250,7 +1283,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                         <td className="py-3 px-4 font-mono font-black text-[#1d2d6a] text-center text-xs">{item.eta}</td>
                                                         <td className="py-3 px-4 text-center">
                                                             {item.status ? (
-                                                                <span className={`text-[9px] font-black px-2.5 py-1 rounded tracking-widest uppercase shadow-sm ${isBerhenti ? 'bg-[#1d2d6a] text-white' : 'bg-slate-200 text-slate-500'
+                                                                <span className={`text-[9px] font-black px-2.5 py-1 rounded shadow-sm ${isBerhenti ? 'bg-[#1d2d6a] text-white' : 'bg-slate-200 text-slate-500'
                                                                     }`}>
                                                                     {item.status}
                                                                 </span>
@@ -1258,7 +1291,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                                 <span className="text-slate-300 text-xs">-</span>
                                                             )}
                                                         </td>
-                                                        <td className="py-3 px-6 font-bold text-slate-500 text-[11px] uppercase tracking-wider">{item.next}</td>
+                                                        <td className="py-3 px-6 font-bold text-slate-500 text-[11px]">{item.next}</td>
                                                     </tr>
                                                 );
                                             })}
@@ -1282,13 +1315,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                     {/* Audio Broadcast */}
                     <div className="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col">
-                        <h4 className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
+                        <h4 className="flex items-center gap-2 text-xs font-black text-slate-400 border-b border-slate-100 pb-2">
                             <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
                         </h4>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
-                                <label className="text-[10px] font-bold uppercase tracking-widest">Sumber Output</label>
+                                <label className="text-[10px] font-bold">Sumber Output</label>
                                 <select
                                     value={mediaSource}
                                     onChange={(e) => setMediaSource(e.target.value)}
@@ -1300,21 +1333,21 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
 
                             <div className="flex items-end pb-[1px]">
-                                <label className="flex items-center justify-center gap-3 text-sm font-black text-slate-600 uppercase tracking-wider cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
+                                <label className="flex items-center justify-center gap-3 text-sm font-black text-slate-600 cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
                                     <input type="checkbox" className="w-4 h-4 rounded text-[#1d2d6a] focus:ring-[#1d2d6a]" /> Enable Broadcast
                                 </label>
                             </div>
                         </div>
 
                         <div className="space-y-1.5 flex-1 flex flex-col focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
-                            <label className="text-[10px] font-bold uppercase tracking-widest">Teks Informasi Darurat/Manual</label>
+                            <label className="text-[10px] font-bold">Teks Informasi Darurat/Manual</label>
                             <textarea
                                 className="w-full h-full min-h-[80px] text-sm font-medium text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl p-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all resize-none"
                                 placeholder="Ketik pesan darurat/info..."
                             />
                         </div>
                         <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
-                            <label className="text-[10px] font-bold uppercase tracking-widest">Pilihan Suara</label>
+                            <label className="text-[10px] font-bold">Pilihan Suara</label>
                             <select
                                 className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
                             >
@@ -1325,10 +1358,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </select>
                         </div>
                         <div className="flex justify-end gap-3 pt-2">
-                            <button onClick={() => showToast('Audio dinonaktifkan')} className="text-xs font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
+                            <button onClick={() => showToast('Audio dinonaktifkan')} className="text-xs font-black text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
                                 Reset
                             </button>
-                            <button onClick={() => showToast('Memainkan Audio Announcer')} className="text-xs font-black uppercase tracking-widest text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
+                            <button onClick={() => showToast('Memainkan Audio Announcer')} className="text-xs font-black text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
                                 <Volume2 size={14} /> Mainkan
                             </button>
                         </div>
@@ -1338,11 +1371,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     <div className="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col relative group">
 
                         <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-3">
-                            <h4 className="flex items-center gap-2 text-xs font-black text-[#1d2d6a] uppercase tracking-widest">
+                            <h4 className="flex items-center gap-2 text-xs font-black text-[#1d2d6a]">
                                 <Video size={16} className="text-blue-500" /> Manajemen TV / Video
                             </h4>
                             <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
+                                <label className="flex items-center gap-2 text-[10px] font-black cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
                                     <input
                                         type="checkbox"
                                         checked={data?.tvStandby !== false}
@@ -1359,7 +1392,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 </label>
                                 <button
                                     onClick={handleSelectDirectory}
-                                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                                    className="flex items-center gap-2 text-[10px] font-black px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
                                 >
                                     <FolderOpen size={14} /> Pilih Direktori
                                 </button>
@@ -1383,26 +1416,16 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             className="relative w-full h-full flex items-center justify-center bg-black"
                                         >
                                             <video
+                                                ref={videoRef}
                                                 id="master-video-preview"
                                                 key={activeFile}
                                                 src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
                                                 autoPlay={isPlaying}
                                                 loop={playbackMode.includes('repeat')}
                                                 className="w-full h-full object-contain"
-                                                ref={(el) => {
-                                                    if (el) {
-                                                        el.volume = (data?.volume ?? 50) / 100;
-                                                        if (data?.isPlaying !== undefined) {
-                                                            if (data.isPlaying && el.paused) el.play().catch(() => { });
-                                                            if (!data.isPlaying && !el.paused) el.pause();
-                                                        }
-                                                        if (Math.abs(el.currentTime - ((data?.playbackProgress || 0) / 100) * (el.duration || 1)) > 2) {
-                                                            el.currentTime = ((data?.playbackProgress || 0) / 100) * (el.duration || 1);
-                                                        }
-                                                    }
-                                                }}
                                                 onTimeUpdate={(e) => {
                                                     const el = e.currentTarget;
+                                                    if (isNaN(el.duration)) return;
                                                     const pct = (el.currentTime / Math.max(el.duration, 1)) * 100;
                                                     if (Date.now() - lastProgressSync.current > 1000) {
                                                         handleVideoAction({ playbackProgress: pct });
@@ -1416,7 +1439,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
                                                 <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
                                                     <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest truncate">{activeFile}</span>
+                                                    <span className="text-[9px] font-black truncate">{activeFile}</span>
                                                 </div>
                                                 <button
                                                     onClick={() => {
@@ -1443,7 +1466,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                 <Video size={48} strokeWidth={1} className="relative opacity-20" />
                                             </div>
                                             <div className="flex flex-col items-center gap-1">
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Tidak ada Video Aktif</span>
+                                                <span className="text-[10px] font-black opacity-40">Tidak ada Video Aktif</span>
                                                 <span className="text-[9px] font-bold text-slate-400/60 italic">Silakan pilih folder atau playlist</span>
                                             </div>
                                         </motion.div>
@@ -1515,25 +1538,21 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => setVideoViewMode('playlist')}
-                                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 >
                                     <ListVideo size={14} /> Playlist ({playlist.length})
                                 </button>
                                 <button
                                     onClick={() => setVideoViewMode('files')}
-                                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 >
                                     <Video size={14} /> Tersedia ({videoList.length})
                                 </button>
                             </div>
                             {videoViewMode === 'playlist' && playlist.length > 0 && (
                                 <button
-                                    onClick={() => {
-                                        if (window.confirm('Kosongkan playlist saat ini?')) {
-                                            handleVideoAction({ videoPlaylist: [], activeVideoIndex: 0, isPlaying: false, playbackProgress: 0 });
-                                        }
-                                    }}
-                                    className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
+                                    onClick={() => setShowClearPlaylistConfirm(true)}
+                                    className="text-[9px] font-black text-red-500 hover:text-red-700 transition-colors"
                                 >
                                     Bersihkan
                                 </button>
@@ -1545,7 +1564,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             {videoViewMode === 'playlist' ? (
                                 <>
                                     {playlist.length === 0 ? (
-                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">Playlist Kosong</div>
+                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold">Playlist Kosong</div>
                                     ) : (
                                         playlist.map((file: string, i: number) => {
                                             const isActive = i === activeIndex;
@@ -1565,7 +1584,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                         <span className={`truncate w-full block ${isActive ? 'font-black' : 'font-bold'}`}>{file}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[9px] uppercase tracking-wider font-black shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
+                                                        <span className={`text-[9px] font-black shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
                                                             {isActive ? 'Active' : ''}
                                                         </span>
                                                         <button
@@ -1584,10 +1603,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             ) : (
                                 <div className="space-y-1">
                                     <div className="px-3 py-1.5 mb-2 bg-slate-100 border border-slate-200 rounded-lg flex justify-between items-center">
-                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate max-w-[200px]" title="/public/videos">Dir: /public/videos</span>
+                                        <span className="text-[9px] font-black text-slate-500 truncate max-w-[200px]" title="/public/videos">Dir: /public/videos</span>
                                     </div>
                                     {videoList.length === 0 ? (
-                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">Video tidak ditemukan</div>
+                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold">Video tidak ditemukan</div>
                                     ) : (
                                         videoList.map((file, i) => (
                                             <div key={i} className="text-[11px] font-bold text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem bg-slate-50/50">
@@ -1602,7 +1621,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                     className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
                                                     title="Tambahkan ke Playlist"
                                                 >
-                                                    <Plus size={12} /><span className="text-[9px] font-black uppercase tracking-wider hidden sm:inline">Add</span>
+                                                    <Plus size={12} /><span className="text-[9px] font-black hidden sm:inline">Add</span>
                                                 </button>
                                             </div>
                                         ))
@@ -1617,27 +1636,27 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             {/* FIXED BOTTOM TOOLBAR */}
             <div className="fixed bottom-0 left-0 lg:left-72 right-0 z-[60] bg-[#1d2d6a]/95 backdrop-blur-xl border-t border-[#152355] shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 py-4 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex flex-col text-center md:text-left">
-                    <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest">Global Action Toolbar</span>
-                    <span className="text-sm font-black text-white uppercase tracking-wider">Console PIDS</span>
+                    <span className="text-[10px] font-black text-blue-300">Global Action Toolbar</span>
+                    <span className="text-sm font-black text-white">Console PIDS</span>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
-                    <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                    <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
                         <MapPin size={16} className="text-slate-200" /> Cek GPS
                     </button>
-                    <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                    <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
                         <Settings size={16} className="text-slate-200" /> Warna
                     </button>
-                    <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                    <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
                         <MonitorPlay size={16} className="text-slate-200" /> Outdoor
                     </button>
-                    <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black uppercase tracking-widest text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
+                    <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
                         <RefreshCw size={16} className="text-slate-200" /> Arah
                     </button>
 
                     <div className="w-full md:w-px md:h-8 bg-[#2a3b7a] mx-1 hidden md:block" />
 
-                    <button onClick={() => showToast('Konfigurasi baru berhasil disimpan')} className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black uppercase tracking-widest text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#ee6f1f]/50 active:scale-95 w-full md:w-auto">
+                    <button onClick={() => showToast('Konfigurasi baru berhasil disimpan')} className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#ee6f1f]/50 active:scale-95 w-full md:w-auto">
                         <Save size={16} /> Simpan Konfig
                     </button>
                 </div>
@@ -1726,15 +1745,15 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-500 shadow-inner">
                                     <Video size={32} />
                                 </div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] uppercase tracking-widest text-center">Tampilkan Video?</h3>
+                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Tampilkan Video?</h3>
                             </div>
-                            <div className="p-6 text-center text-slate-500 text-sm font-bold uppercase tracking-wide leading-relaxed">
+                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">
                                 Apakah Anda yakin ingin menampilkan video di Layar TV? Hal ini akan menonaktifkan mode Standby PIDS.
                             </div>
                             <div className="p-6 pt-0 flex gap-3">
                                 <button
                                     onClick={() => setShowStandbyConfirm(false)}
-                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
+                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm"
                                 >
                                     Batal
                                 </button>
@@ -1743,7 +1762,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         handleVideoAction({ tvStandby: false });
                                         setShowStandbyConfirm(false);
                                     }}
-                                    className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)]"
+                                    className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)]"
                                 >
                                     Ya, Tampilkan
                                 </button>
@@ -1767,23 +1786,65 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner">
                                     <Trash2 size={32} />
                                 </div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] uppercase tracking-widest text-center">Hapus GeoJSON?</h3>
+                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Hapus GeoJSON?</h3>
                             </div>
-                            <div className="p-6 text-center text-slate-500 text-sm font-bold uppercase tracking-wide leading-relaxed">
+                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">
                                 Anda yakin ingin menghapus data rute <span className="text-[#1d2d6a] font-black">{route?.name}</span>? Tindakan ini tidak dapat dibatalkan.
                             </div>
                             <div className="p-6 pt-0 flex gap-3">
                                 <button
                                     onClick={() => setShowDeleteModal(false)}
-                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm"
+                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     onClick={confirmDeleteGeoJSON}
-                                    className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.3)]"
+                                    className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.3)]"
                                 >
                                     Ya, Hapus
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Clear Playlist Confirmation Modal */}
+            <AnimatePresence>
+                {showClearPlaylistConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200"
+                        >
+                            <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner">
+                                    <Trash2 size={32} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Bersihkan Playlist?</h3>
+                            </div>
+                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">
+                                Apakah Anda yakin ingin menghapus semua video dari playlist? Anda dapat menambahkan video kembali setelah dibersihkan.
+                            </div>
+                            <div className="p-6 pt-0 flex gap-3">
+                                <button
+                                    onClick={() => setShowClearPlaylistConfirm(false)}
+                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleVideoAction({ videoPlaylist: [], activeVideoIndex: 0, isPlaying: false, playbackProgress: 0 });
+                                        setShowClearPlaylistConfirm(false);
+                                        showToast('Playlist berhasil dikosongkan', true);
+                                    }}
+                                    className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(220,38,38,0.3)]"
+                                >
+                                    Ya, Bersihkan
                                 </button>
                             </div>
                         </motion.div>
@@ -1803,8 +1864,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         <div className="bg-white/10 p-8 rounded-3xl mb-6 shadow-2xl border border-white/20 flex items-center justify-center">
                             <Loader2 size={64} className="text-[#ee6f1f] animate-spin" />
                         </div>
-                        <h3 className="text-white font-black text-2xl mb-2 uppercase tracking-widest drop-shadow-lg">Memproses Data Peta</h3>
-                        <p className="text-slate-300 text-center max-w-sm px-6 text-sm font-bold uppercase tracking-tight leading-relaxed">
+                        <h3 className="text-white font-black text-2xl mb-2 drop-shadow-lg">Memproses Data Peta</h3>
+                        <p className="text-slate-300 text-center max-w-sm px-6 text-sm font-bold tracking-tight leading-relaxed">
                             Mohon tunggu sebentar. Sistem sedang mensinkronisasi rute dan waypoint navigasi.
                         </p>
                     </motion.div>

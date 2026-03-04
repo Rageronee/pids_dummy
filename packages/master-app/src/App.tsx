@@ -51,11 +51,11 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
             <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
                 <div className="flex items-center gap-4">
                     <div className="bg-white/90 p-3 rounded-xl shadow-2xl"><img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-6" /></div>
-                    <div className="flex flex-col text-white"><span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60 leading-none mb-1">Security System</span><span className="text-xl font-black italic tracking-tighter uppercase leading-none">CCTV MONITOR</span></div>
+                    <div className="flex flex-col text-white"><span className="text-[10px] font-black opacity-60 leading-none mb-1">Security System</span><span className="text-xl font-black italic tracking-tighter leading-none">CCTV Monitor</span></div>
                 </div>
                 <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-3xl border border-white/20 shadow-2xl flex flex-col items-end">
                     <div className="text-3xl font-black text-white font-mono tracking-tighter tabular-nums leading-none mb-1">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
-                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    <div className="text-[10px] font-bold text-white/40">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 </div>
             </div>
             <div className="absolute top-1/2 left-8 -translate-y-1/2 z-20"><div className="text-white/20 font-mono text-[80px] font-black leading-none select-none">{cameras[currentCamIndex].id}</div></div>
@@ -75,7 +75,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
             <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end z-20">
                 <div className="bg-black/80 backdrop-blur-3xl px-10 py-6 rounded-[2.5rem] border border-white/10 shadow-2xl flex items-center gap-6">
                     <div className="bg-blue-600 p-4 rounded-2xl shadow-lg"><Activity size={24} className="text-white" /></div>
-                    <div className="flex flex-col"><span className="text-[10px] font-black tracking-[0.4em] text-white/40 uppercase leading-none mb-2">Current Location</span><span className="text-2xl font-black text-white tracking-widest uppercase italic">{cameras[currentCamIndex].location}</span></div>
+                    <div className="flex flex-col"><span className="text-[10px] font-black text-white/40 leading-none mb-2">Current Location</span><span className="text-2xl font-black text-white italic">{cameras[currentCamIndex].location}</span></div>
                 </div>
             </div>
             <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
@@ -474,7 +474,7 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             {/* Map Area */}
             <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[400px] relative flex flex-col">
                 <div className="flex items-center justify-between mb-4 shrink-0 px-4">
-                    <h2 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <MapPin className="text-[#ee6f1f]" /> Peta Lokasi Armada
                     </h2>
                     <select
@@ -502,7 +502,7 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             {/* Per-Gerbong GPS Tracking Panel */}
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 shrink-0">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <MapPin className="text-[#ee6f1f]" />Detail State per Gerbong
                     </h2>
                 </div>
@@ -515,8 +515,8 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                                 className="bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all">
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className={`w-2.5 h-2.5 rounded-full ${g.sensor_status === 'Aktif' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`} />
-                                    <span className="text-[#1d2d6a] font-black text-sm flex-1 uppercase tracking-wide">{g.nama_gerbong}</span>
-                                    <span className="text-slate-400 text-[10px] font-bold tracking-widest">#{String(g.no_urut_gerbong).padStart(2, '0')}</span>
+                                    <span className="text-[#1d2d6a] font-black text-sm flex-1">{g.nama_gerbong}</span>
+                                    <span className="text-slate-400 text-[10px] font-bold">#{String(g.no_urut_gerbong).padStart(2, '0')}</span>
                                 </div>
                                 <div className="space-y-1.5 text-xs">
                                     <div className="flex justify-between"><span className="text-slate-400 font-bold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{g.latitude?.toFixed(4) || '-'}, {g.longitude?.toFixed(4) || '-'}</span></div>
@@ -525,7 +525,7 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                                     <div className="flex justify-between"><span className="text-slate-400 font-bold">Suhu</span><span className="text-slate-600 font-medium">{g.suhu?.toFixed(1) || '-'}°C</span></div>
                                     <div className="flex justify-between"><span className="text-slate-400 font-bold">POI</span><span className="text-slate-500 font-medium truncate max-w-[120px]">{g.poi || 'N/A'}</span></div>
                                     <div className="flex justify-between"><span className="text-slate-400 font-bold">Sensor</span>
-                                        <span className={`text-[10px] font-black uppercase ${g.sensor_status === 'Aktif' ? 'text-green-500' : 'text-red-400'}`}>{g.sensor_status}</span>
+                                        <span className={`text-[10px] font-black ${g.sensor_status === 'Aktif' ? 'text-green-500' : 'text-red-400'}`}>{g.sensor_status}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -575,13 +575,13 @@ const LogViewer = ({ token }: { token: string }) => {
         <div className="max-w-6xl mx-auto space-y-6">
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black text-[#1d2d6a] uppercase tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <ScrollText className="text-[#ee6f1f]" />Log Aktivitas Sistem
                     </h2>
                     <div className="flex gap-2 flex-wrap">
                         {filterOptions.map(opt => (
                             <button key={opt} onClick={() => setFilter(opt)}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${filter === opt ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'}`}>
+                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all ${filter === opt ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'}`}>
                                 {opt === 'ALL' ? 'Semua' : ACTION_LABELS[opt]?.label || opt}
                             </button>
                         ))}
@@ -594,7 +594,7 @@ const LogViewer = ({ token }: { token: string }) => {
                 ) : (
                     <div className="overflow-hidden rounded-2xl border border-slate-200">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 text-[#1d2d6a] font-black uppercase tracking-wider text-[11px]">
+                            <thead className="bg-slate-50 text-[#1d2d6a] font-black text-[11px]">
                                 <tr>
                                     <th className="p-4 border-b border-slate-200">Waktu</th>
                                     <th className="p-4 border-b border-slate-200">Aksi</th>
@@ -614,7 +614,7 @@ const LogViewer = ({ token }: { token: string }) => {
                                                 <div className="font-bold text-slate-700">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border ${meta.color}`}>{meta.label}</span>
+                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black border ${meta.color}`}>{meta.label}</span>
                                             </td>
                                             <td className="p-4 font-bold text-[#1d2d6a]">{log.user}</td>
                                             <td className="p-4 text-slate-500 text-xs font-medium">{log.role}</td>
@@ -719,8 +719,8 @@ function App() {
                         alt="KAI Logo"
                         className="h-8 w-auto mb-4 brightness-0 invert"
                     />
-                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS MASTER</h1>
-                    <p className="text-[9px] font-bold text-blue-200/40 uppercase tracking-widest mt-0.5">Central Processing System</p>
+                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS Master</h1>
+                    <p className="text-[9px] font-bold text-blue-200/40 mt-0.5">Central Processing System</p>
                 </div>
 
                 {/* User info was removed here */}
@@ -741,7 +741,7 @@ function App() {
 
                 <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-black/5">
                     <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] uppercase tracking-widest border border-white/5 active:scale-95 group">
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] border border-white/5 active:scale-95 group">
                         <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
                         <span>Logout dari Sistem</span>
                     </button>
@@ -754,17 +754,17 @@ function App() {
                     <div className="flex items-center gap-4">
                         <div className="bg-[#1d2d6a] p-2.5 rounded-xl border border-slate-100"><Train className="text-slate-50" size={20} /></div>
                         <div>
-                            <h1 className="text-lg font-black text-[#1d2d6a] uppercase tracking-tight leading-none mb-1">Master Controller</h1>
+                            <h1 className="text-lg font-black text-[#1d2d6a] tracking-tight leading-none mb-1">Master Controller</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{NAV_ITEMS.find(n => n.id === activeTab)?.label}</span>
+                                <span className="text-[10px] font-bold text-slate-400">{NAV_ITEMS.find(n => n.id === activeTab)?.label}</span>
                                 <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active session</span>
+                                <span className="text-[10px] font-bold text-slate-400">Active session</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-8">
                         <div className="text-right border-r border-slate-100 pr-8">
-                            <div className="text-sm font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Active Unit</div>
+                            <div className="text-sm font-bold text-slate-400 leading-none mb-1">Active Unit</div>
                             <div className="text-base font-black text-[#1d2d6a] tracking-tight">{activeTrainName} <span className="text-[#ee6f1f] ml-1">K1-90-{activeTrainNumber}</span></div>
                         </div>
                         <div className="flex items-center gap-3 text-[#1d2d6a]">
@@ -783,12 +783,12 @@ function App() {
                         ) : activeTab === 'stampformasi' ? (
                             <motion.div key="stampformasi" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto space-y-10">
                                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                                    <h2 className="text-xl font-black text-[#1d2d6a] mb-8 uppercase tracking-tight flex items-center gap-3">
+                                    <h2 className="text-xl font-black text-[#1d2d6a] mb-8 tracking-tight flex items-center gap-3">
                                         <Database className="text-[#ee6f1f]" />Stampformasi
                                     </h2>
                                     <div className="overflow-hidden rounded-2xl border border-slate-200">
                                         <table className="w-full text-left text-sm">
-                                            <thead className="bg-slate-50 text-[#1d2d6a] font-black uppercase tracking-wider">
+                                            <thead className="bg-slate-50 text-[#1d2d6a] font-black">
                                                 <tr>
                                                     <th className="p-4 border-b border-slate-200">No Rangkaian</th>
                                                     <th className="p-4 border-b border-slate-200">No Aset</th>
@@ -807,7 +807,7 @@ function App() {
                                                         <td className="p-4 font-mono text-slate-500">192.168.1.{100 + idx}</td>
                                                         <td className="p-4 font-mono text-slate-500">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</td>
                                                         <td className="p-4 text-center">
-                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-wide border border-green-100">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black border border-green-100">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                                                 Active
                                                             </span>
@@ -836,7 +836,7 @@ function App() {
                                 <div className="bg-white p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 max-w-md w-full">
                                     <div className="bg-orange-50 p-6 rounded-3xl text-[#ee6f1f]"><AlertCircle size={48} /></div>
                                     <div className="text-center">
-                                        <h2 className="text-xl font-black text-[#1d2d6a] mb-2 uppercase tracking-tight">Access Restricted</h2>
+                                        <h2 className="text-xl font-black text-[#1d2d6a] mb-2 tracking-tight">Access Restricted</h2>
                                         <p className="text-sm font-medium text-slate-400 leading-relaxed">Module <span className="text-[#1d2d6a]">{activeTab}</span> sedang dalam pemeliharaan.</p>
                                     </div>
                                     <button onClick={() => setActiveTab('pids')} className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-black text-white text-sm font-black rounded-2xl shadow-lg transition-all active:scale-95">Return to Dashboard</button>
