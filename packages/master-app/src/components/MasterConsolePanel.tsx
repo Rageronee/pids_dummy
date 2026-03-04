@@ -1299,21 +1299,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     </div>
 
                     {/* Video Layar */}
-                    <div className="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col relative overflow-hidden group">
+                    <div className="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col relative group">
 
                         <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-3">
                             <h4 className="flex items-center gap-2 text-xs font-black text-[#1d2d6a] uppercase tracking-widest">
                                 <Video size={16} className="text-blue-500" /> Manajemen TV / Video
                             </h4>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setVideoViewMode(prev => prev === 'playlist' ? 'files' : 'playlist')}
-                                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all shadow-sm ${videoViewMode === 'files' ? 'bg-blue-600 text-white border-blue-700' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                                        }`}
-                                >
-                                    {videoViewMode === 'playlist' ? <ListVideo size={14} /> : <Video size={14} />}
-                                    {videoViewMode === 'playlist' ? 'Playlist' : 'Video'}
-                                </button>
+                            <div className="flex flex-wrap items-center gap-2 lg:gap-3">
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
                                     <input type="checkbox" checked={data?.dvdActive} onChange={(e) => handleVideoAction({ dvdActive: e.target.checked })} className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" /> DVD
                                 </label>
@@ -1332,7 +1324,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         </div>
 
-                        {/* Video Preview */}
+                        {/* Video Preview Block */}
                         <div className="bg-black rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
                             {(() => {
                                 const activeFile = playlist[activeIndex];
@@ -1350,21 +1342,109 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             key={activeFile}
                                             src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
                                             autoPlay={isPlaying}
-                                            loop
-                                            muted
+                                            loop={playbackMode.includes('repeat')}
                                             className="w-full h-full object-contain"
+                                            ref={(el) => {
+                                                if (el) {
+                                                    el.volume = (data?.volume ?? 50) / 100;
+                                                    // Allow local seek if user dragging
+                                                    if (Math.abs(el.currentTime - ((data?.playbackProgress || 0) / 100) * el.duration) > 2) {
+                                                        el.currentTime = ((data?.playbackProgress || 0) / 100) * (el.duration || 1);
+                                                    }
+                                                }
+                                            }}
+                                            onTimeUpdate={(e) => {
+                                                // Only send updates occasionally or debounce, handled by hook technically, 
+                                                // but for preview we just let it play and trust the master's own interval.
+                                            }}
+                                            onEnded={() => {
+                                                if (playbackMode !== 'repeat-one' && isPlaying) nextVideo();
+                                            }}
                                         />
-                                        <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-lg flex items-center gap-2">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                                            <span className="text-[8px] font-black uppercase tracking-widest truncate max-w-[150px]">{activeFile}</span>
+                                        <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
+                                            <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
+                                                <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+                                                <span className="text-[9px] font-black uppercase tracking-widest truncate">{activeFile}</span>
+                                            </div>
                                         </div>
                                     </>
                                 );
                             })()}
                         </div>
 
-                        {/* Video Content Box */}
-                        <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 overflow-auto space-y-1.5 shadow-inner min-h-[140px]">
+                        {/* Playback Progress Slider */}
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-mono font-black text-blue-500 w-8 text-right">
+                                {Math.floor((data?.playbackProgress || 0) / 20)}:{(Math.floor((data?.playbackProgress || 0)) % 20).toString().padStart(2, '0')}
+                            </span>
+                            <input
+                                type="range"
+                                min="0" max="100"
+                                value={data?.playbackProgress || 0}
+                                onChange={(e) => handleVideoAction({ playbackProgress: parseInt(e.target.value) })}
+                                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                            />
+                            <span className="text-[10px] font-mono font-bold text-slate-400 w-8 text-left">
+                                -{Math.floor((100 - (data?.playbackProgress || 0)) / 20)}:{(Math.floor(100 - (data?.playbackProgress || 0)) % 20).toString().padStart(2, '0')}
+                            </span>
+                        </div>
+
+                        {/* Playback Controls Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 py-1">
+                            {/* Left Side: Modes */}
+                            <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl p-1">
+                                <button onClick={toggleRepeat} title="Repeat" className={`p-2 rounded-lg transition-all ${playbackMode.includes('repeat') ? 'text-blue-600 bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-blue-600 hover:bg-slate-200'}`}>
+                                    <div className="relative">
+                                        <Repeat size={16} />
+                                        {playbackMode === 'repeat-one' && <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-black">1</span>}
+                                    </div>
+                                </button>
+                                <button onClick={toggleShuffle} title="Shuffle" className={`p-2 rounded-lg transition-all ${playbackMode === 'shuffle' ? 'text-blue-600 bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-blue-600 hover:bg-slate-200'}`}>
+                                    <Shuffle size={16} />
+                                </button>
+                            </div>
+
+                            {/* Center: Main Play Controls */}
+                            <div className="flex items-center justify-center gap-3">
+                                <button onClick={prevVideo} className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"><ChevronDown size={22} className="rotate-90" /></button>
+                                <button onClick={togglePlay} className="text-white bg-[#1d2d6a] hover:bg-[#152355] w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 transform hover:scale-105 border-2 border-white focus:outline-none ring-2 ring-transparent focus:ring-blue-200">
+                                    {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                                </button>
+                                <button onClick={nextVideo} className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"><ChevronDown size={22} className="-rotate-90" /></button>
+                            </div>
+
+                            {/* Right Side: Volume */}
+                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 w-full sm:w-auto mt-2 sm:mt-0">
+                                <Volume2 size={16} className={data?.volume === 0 ? "text-slate-300" : "text-blue-500"} />
+                                <input
+                                    type="range"
+                                    min="0" max="100"
+                                    value={data?.volume ?? 50}
+                                    onChange={(e) => handleVideoAction({ volume: parseInt(e.target.value) })}
+                                    className="w-20 sm:w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                                />
+                                <span className="text-[10px] font-mono font-bold text-slate-500 w-7 text-right">{data?.volume ?? 50}%</span>
+                            </div>
+                        </div>
+
+                        {/* Tab Switcher for Lists */}
+                        <div className="flex items-center gap-1 border-b border-slate-100 pt-2 pb-2">
+                            <button
+                                onClick={() => setVideoViewMode('playlist')}
+                                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                <ListVideo size={14} /> Playlist ({playlist.length})
+                            </button>
+                            <button
+                                onClick={() => setVideoViewMode('files')}
+                                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                <Video size={14} /> Tersedia ({videoList.length})
+                            </button>
+                        </div>
+
+                        {/* List Area */}
+                        <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2 overflow-auto space-y-1 shadow-inner min-h-[160px] max-h-[220px]">
                             {videoViewMode === 'playlist' ? (
                                 <>
                                     {playlist.length === 0 ? (
@@ -1376,26 +1456,27 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                 <div
                                                     key={i}
                                                     onClick={() => playVideoAt(i)}
-                                                    className={`text-xs font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${isActive
-                                                        ? 'text-blue-700 bg-blue-100/50 border-blue-200 shadow-sm'
+                                                    className={`text-[11px] font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${isActive
+                                                        ? 'text-blue-800 bg-blue-100/70 border-blue-200 shadow-sm'
                                                         : 'text-slate-600 bg-transparent border-transparent hover:bg-white hover:border-slate-200'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-3 w-full overflow-hidden">
                                                         <div className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
-                                                            {isActive && isPlaying ? <div className="bg-blue-600 w-1 h-3 animate-pulse rounded-full mx-auto" /> : <Play size={10} className="ml-[1px]" fill={isActive ? "currentColor" : "none"} />}
+                                                            {isActive && isPlaying ? <div className="bg-white w-1 h-2.5 animate-pulse rounded-full mx-auto" /> : <Play size={10} className="ml-[1px]" fill={isActive ? "currentColor" : "none"} />}
                                                         </div>
-                                                        <span className={`truncate w-full ${isActive ? 'font-black' : 'font-bold'}`}>{file}</span>
+                                                        <span className={`truncate w-full block ${isActive ? 'font-black' : 'font-bold'}`}>{file}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] font-mono font-bold shrink-0 ${isActive ? 'text-blue-500' : 'text-slate-400'}`}>
-                                                            {isActive ? 'Active' : '--:--'}
+                                                        <span className={`text-[9px] uppercase tracking-wider font-black shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
+                                                            {isActive ? 'Active' : ''}
                                                         </span>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); removeFromPlaylist(i); }}
-                                                            className="opacity-0 group-hover/plitem:opacity-100 p-1 text-red-400 hover:bg-red-50 rounded transition-all"
+                                                            className="opacity-0 group-hover/plitem:opacity-100 p-1.5 text-red-500 hover:bg-red-100 hover:text-red-700 rounded transition-all"
+                                                            title="Hapus dari playlist"
                                                         >
-                                                            <Trash2 size={12} />
+                                                            <Trash2 size={14} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1405,82 +1486,32 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 </>
                             ) : (
                                 <div className="space-y-1">
-                                    <div className="px-2 py-1 mb-2 border-b border-slate-200 flex justify-between items-center">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Direktori: /public/videos</span>
-                                        <span className="text-[9px] font-bold text-blue-500">{videoList.length} File ditemukan</span>
+                                    <div className="px-3 py-1.5 mb-2 bg-slate-100 border border-slate-200 rounded-lg flex justify-between items-center">
+                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate max-w-[200px]" title="/public/videos">Dir: /public/videos</span>
                                     </div>
                                     {videoList.length === 0 ? (
                                         <div className="py-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">Video tidak ditemukan</div>
                                     ) : (
                                         videoList.map((file, i) => (
-                                            <div key={i} className="text-[11px] font-bold text-slate-600 p-2 rounded-lg flex items-center gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem">
-                                                <div className="p-1.5 bg-slate-100 rounded group-hover/vitem:bg-blue-50 group-hover/vitem:text-blue-500 transition-colors">
-                                                    <Video size={12} />
+                                            <div key={i} className="text-[11px] font-bold text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem bg-slate-50/50">
+                                                <div className="flex items-center gap-3 overflow-hidden">
+                                                    <div className="p-1.5 bg-slate-200 text-slate-400 rounded shrink-0 group-hover/vitem:bg-blue-100 group-hover/vitem:text-blue-600 transition-colors">
+                                                        <Video size={12} />
+                                                    </div>
+                                                    <span className="truncate">{file}</span>
                                                 </div>
-                                                <span className="truncate flex-1">{file}</span>
-                                                <button onClick={(e) => { e.stopPropagation(); addToPlaylist(file); }} className="opacity-0 group-hover/vitem:opacity-100 p-1 text-blue-500 hover:bg-blue-100 rounded transition-all">
-                                                    <Plus size={14} />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); addToPlaylist(file); }}
+                                                    className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
+                                                    title="Tambahkan ke Playlist"
+                                                >
+                                                    <Plus size={12} /><span className="text-[9px] font-black uppercase tracking-wider hidden sm:inline">Add</span>
                                                 </button>
                                             </div>
                                         ))
                                     )}
                                 </div>
                             )}
-                        </div>
-
-                        {/* Playback Controls & Progress */}
-                        <div className="flex flex-col gap-4 mt-auto border-t border-slate-100 pt-3">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-mono font-black text-blue-500">{Math.floor(progress / 20)}:{(progress % 20).toString().padStart(2, '0')}</span>
-                                <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden cursor-pointer relative shadow-inner" onClick={(e) => {
-                                    const rect = e.currentTarget.getBoundingClientRect();
-                                    const x = e.clientX - rect.left;
-                                    const pct = Math.floor((x / rect.width) * 100);
-                                    handleVideoAction({ playbackProgress: pct });
-                                }}>
-                                    <div className="absolute top-0 left-0 bottom-0 bg-blue-500 transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${progress}%` }} />
-                                </div>
-                                <span className="text-[10px] font-mono font-bold text-slate-400">-{Math.floor((100 - progress) / 20)}:{((100 - progress) % 20).toString().padStart(2, '0')}</span>
-                            </div>
-
-                            <div className="flex items-center justify-between gap-4 relative min-h-[50px]">
-                                {/* Left Side Tools */}
-                                <div className="flex items-center gap-1">
-                                    <button onClick={toggleRepeat} title="Repeat" className={`p-2 rounded-lg transition-all ${playbackMode.includes('repeat') ? 'text-blue-600 bg-blue-50 border border-blue-100' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-                                        <div className="relative">
-                                            <Repeat size={18} />
-                                            {playbackMode === 'repeat-one' && <span className="absolute -top-1 -right-1 bg-blue-600 text-[6px] text-white w-2.5 h-2.5 rounded-full flex items-center justify-center font-black">1</span>}
-                                        </div>
-                                    </button>
-                                    <button onClick={toggleShuffle} title="Shuffle" className={`p-2 rounded-lg transition-all ${playbackMode === 'shuffle' ? 'text-blue-600 bg-blue-50 border border-blue-100' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-                                        <Shuffle size={18} />
-                                    </button>
-                                </div>
-
-                                {/* Center Play Controls */}
-                                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white px-5 py-2 rounded-2xl border border-slate-200 shadow-sm z-10">
-                                    <button onClick={prevVideo} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="rotate-90" /></button>
-                                    <button onClick={togglePlay} className="text-white bg-[#1d2d6a] hover:bg-[#152355] p-3.5 mx-2 rounded-full shadow-lg transition-all active:scale-95 hover:scale-105">
-                                        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                                    </button>
-                                    <button onClick={nextVideo} className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><ChevronDown size={20} className="-rotate-90" /></button>
-                                </div>
-
-                                {/* Right Side Tools */}
-                                <div className="flex items-center gap-4 bg-slate-50/50 px-4 py-2 rounded-xl border border-slate-100">
-                                    <div className="flex items-center gap-3">
-                                        <Volume2 size={16} className="text-slate-400" />
-                                        <input
-                                            type="range"
-                                            min="0" max="100"
-                                            value={data?.volume ?? 50}
-                                            onChange={(e) => handleVideoAction({ volume: parseInt(e.target.value) })}
-                                            className="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                                        />
-                                        <span className="text-[10px] font-mono font-bold text-slate-500 w-6">{data?.volume ?? 50}%</span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

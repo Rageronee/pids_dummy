@@ -799,6 +799,18 @@ function App() {
                                                     muted={false}
                                                     className="w-full h-full object-contain"
                                                     style={{ maxWidth: '100vw', maxHeight: '100vh' }}
+                                                    ref={(el) => {
+                                                        if (el) {
+                                                            if (data?.isPlaying !== undefined) {
+                                                                if (data.isPlaying && el.paused) el.play().catch(() => { });
+                                                                if (!data.isPlaying && !el.paused) el.pause();
+                                                            }
+                                                            el.volume = (data?.volume ?? 50) / 100;
+                                                            if (Math.abs(el.currentTime - ((data?.playbackProgress || 0) / 100) * (el.duration || 1)) > 2) {
+                                                                el.currentTime = ((data?.playbackProgress || 0) / 100) * (el.duration || 1);
+                                                            }
+                                                        }
+                                                    }}
                                                 />
                                                 {/* Video Info Overlay */}
                                                 <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
