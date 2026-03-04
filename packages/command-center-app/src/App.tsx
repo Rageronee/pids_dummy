@@ -5,7 +5,7 @@ import {
     LogOut, Plus, Trash2, Eye, EyeOff, Lock, User as UserIcon,
     AlertCircle, CheckCircle2, Activity, Clock, Shield,
     ChevronRight, RefreshCcw, X, Server, Wifi,
-    Building2, Calendar, Navigation, MapPinned, Thermometer
+    Building2, Calendar, Navigation, MapPinned, Thermometer, Info
 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 
@@ -45,6 +45,66 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, loading }: 
             )}
         </AnimatePresence>
     );
+}
+
+// ============================================================
+// TOAST COMPONENT & HOOK
+// ============================================================
+function ToastNotification({ toast, onClose }: { toast: { msg: string; ok: boolean; id?: number } | null; onClose: () => void }) {
+    return (
+        <AnimatePresence>
+            {toast && (
+                <motion.div
+                    key={toast.id}
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
+                >
+                    <div className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? 'bg-[#1d2d6a]' : 'bg-red-500'}`} />
+                    <div className="relative p-5 pl-7 pb-6">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50">
+                            <X size={18} strokeWidth={2.5} />
+                        </button>
+                        <div className="flex gap-4">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-50'}`}>
+                                {toast.ok ? <Info size={24} className="text-white" /> : <X size={24} className="text-red-500" />}
+                            </div>
+                            <div className="flex flex-col pr-6">
+                                <span className={`font-semibold text-lg leading-tight mb-2 ${toast.ok ? 'text-[#1d2d6a]' : 'text-red-600'}`}>
+                                    {toast.ok ? 'Informasi Sistem' : 'Peringatan Sistem'}
+                                </span>
+                                <span className="text-slate-600 font-medium text-[15px] leading-relaxed mb-5">
+                                    {toast.msg}
+                                </span>
+                                <div className="flex justify-end gap-5 items-center mt-2">
+                                    <button onClick={onClose} className="text-slate-500 font-semibold text-sm hover:text-slate-700 transition-colors">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className={`h-1.5 w-full absolute bottom-0 left-0 ${toast.ok ? 'bg-orange-100' : 'bg-red-100'}`}>
+                        <motion.div initial={{ width: "100%" }} animate={{ width: "0%" }} transition={{ duration: 5, ease: "linear" }} className={`h-full ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-500'}`} />
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
+
+export function useToast() {
+    const [toast, setToast] = useState<{ msg: string; ok: boolean; id?: number } | null>(null);
+    const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const showToast = useCallback((msg: string, ok: boolean) => {
+        setToast({ msg, ok, id: Date.now() });
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = setTimeout(() => setToast(null), 5000);
+    }, []);
+
+    const closeToast = useCallback(() => setToast(null), []);
+
+    return { toast, showToast, closeToast };
 }
 
 // ============================================================
@@ -348,9 +408,7 @@ function TrainsPage({ token }: { token: string }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
+    const { toast, showToast, closeToast } = useToast();
 
     const fetchTrains = useCallback(async () => {
         try {
@@ -439,12 +497,7 @@ function TrainsPage({ token }: { token: string }) {
             </div>
 
             {/* Toast */}
-            <AnimatePresence>
-                {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold ${toast.ok ? 'bg-[#1d2d6a] text-white shadow-[0_8px_24px_rgba(29,45,106,0.25)]' : 'bg-red-500 text-white shadow-[0_8px_24px_rgba(239,68,68,0.25)]'}`}>
-                    {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
-                </motion.div>}
-            </AnimatePresence>
+            <ToastNotification toast={toast} onClose={closeToast} />
         </div>
     );
 }
@@ -461,9 +514,7 @@ function RoutesPage({ token }: { token: string }) {
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
+    const { toast, showToast, closeToast } = useToast();
 
     const fetchRoutes = useCallback(async () => {
         try {
@@ -613,14 +664,12 @@ function UsersPage({ token }: { token: string }) {
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<{ id: string; nama: string } | null>(null);
-    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const { toast, showToast, closeToast } = useToast();
 
     const [newUsername, setNewUsername] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [newNama, setNewNama] = useState('');
     const [newRole, setNewRole] = useState<'Admin' | 'Operator'>('Operator');
-
-    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -725,12 +774,7 @@ function UsersPage({ token }: { token: string }) {
                 ))}
             </div>
 
-            <AnimatePresence>
-                {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold z-50 ${toast.ok ? 'bg-[#1d2d6a] text-white shadow-[0_8px_24px_rgba(29,45,106,0.3)]' : 'bg-red-500 text-white shadow-[0_8px_24px_rgba(239,68,68,0.3)]'}`}>
-                    {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
-                </motion.div>}
-            </AnimatePresence>
+            <ToastNotification toast={toast} onClose={closeToast} />
         </div>
     );
 }
@@ -836,7 +880,7 @@ function StationsPage({ token }: { token: string }) {
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
-    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const { toast, showToast, closeToast } = useToast();
     const [search, setSearch] = useState('');
 
     const [form, setForm] = useState({
@@ -846,7 +890,6 @@ function StationsPage({ token }: { token: string }) {
         kelurahan_desa: '', kode_pos: ''
     });
 
-    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
     const resetForm = () => setForm({ id: '', name: '', city: '', latitude: '', longitude: '', ip_address: '', nama_pic: '', kontak_pic: '', kode_kota: '', alamat: '', provinsi: '', kabupaten_kota: '', kecamatan: '', kelurahan_desa: '', kode_pos: '' });
 
     const fetchStations = useCallback(async () => {
@@ -962,12 +1005,7 @@ function StationsPage({ token }: { token: string }) {
                     </div>
                 </div>
             )}
-            <AnimatePresence>
-                {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold z-50 ${toast.ok ? 'bg-[#1d2d6a] text-white' : 'bg-red-500 text-white'}`}>
-                    {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
-                </motion.div>}
-            </AnimatePresence>
+            <ToastNotification toast={toast} onClose={closeToast} />
         </div>
     );
 }
@@ -980,10 +1018,8 @@ function SchedulesPage({ token }: { token: string }) {
     const [loading, setLoading] = useState(true);
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const [saving, setSaving] = useState(false);
-    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const { toast, showToast, closeToast } = useToast();
     const [expanded, setExpanded] = useState<number | null>(null);
-
-    const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
 
     const fetchSchedules = useCallback(async () => {
         try {
@@ -1084,12 +1120,7 @@ function SchedulesPage({ token }: { token: string }) {
                     ))}
                 </div>
             )}
-            <AnimatePresence>
-                {toast && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                    className={`fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-sm font-bold z-50 ${toast.ok ? 'bg-[#1d2d6a] text-white' : 'bg-red-500 text-white'}`}>
-                    {toast.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}{toast.msg}
-                </motion.div>}
-            </AnimatePresence>
+            <ToastNotification toast={toast} onClose={closeToast} />
         </div>
     );
 }

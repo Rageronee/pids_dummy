@@ -7,12 +7,10 @@ import {
     Train, Settings, Save, RefreshCw, Volume2,
     MapPin, MonitorPlay, Mic, Play, Pause,
     ChevronDown, ChevronRight, RadioTower, Video, Info,
-    ListVideo, CheckCircle2, AlertCircle, Satellite,
+    ListVideo, AlertCircle, Satellite,
     Repeat, Shuffle, Plus, FolderOpen,
-    Upload, Trash2, Loader2, Maximize, VolumeX
+    Upload, Trash2, Loader2, Maximize, VolumeX, X
 } from 'lucide-react';
-
-// Modern Toggle Switch Component (REFINED: Single Toggle Button)
 function StateToggle({ value, label1 = "auto", label2 = "custom", onChange }: { value: string, label1?: string, label2?: string, onChange?: (val: string) => void }) {
     const [internalValue, setInternalValue] = useState(value.toLowerCase());
     const isFirst = internalValue === label1.toLowerCase();
@@ -108,7 +106,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const [outerRadius, setOuterRadius] = useState(data?.geofencingOuterRadius || 750);
     const [innerRadius, setInnerRadius] = useState(data?.geofencingInnerRadius || 250);
     const radiusRef = useRef({ inner: data?.geofencingInnerRadius || 250, outer: data?.geofencingOuterRadius || 750 });
-    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+    const [toast, setToast] = useState<{ msg: string; ok: boolean; id?: number } | null>(null);
+    const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [stationsData, setStationsData] = useState<any[]>([]);
     const [scheduleData, setScheduleData] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -180,7 +179,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     };
 
     const playVideoAt = (idx: number) => {
-        handleVideoAction({ activeVideoIndex: idx, isPlaying: true, playbackProgress: 0 });
+        handleVideoAction({ activeVideoIndex: idx, isPlaying: false, playbackProgress: 0 });
     };
 
     const togglePlay = () => {
@@ -192,13 +191,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const nextVideo = () => {
         if (playlist.length === 0) return;
         const nextIdx = (activeIndex + 1) % playlist.length;
-        playVideoAt(nextIdx);
+        handleVideoAction({ activeVideoIndex: nextIdx, isPlaying: isPlaying, playbackProgress: 0 });
     };
 
     const prevVideo = () => {
         if (playlist.length === 0) return;
         const prevIdx = (activeIndex - 1 + playlist.length) % playlist.length;
-        playVideoAt(prevIdx);
+        handleVideoAction({ activeVideoIndex: prevIdx, isPlaying: isPlaying, playbackProgress: 0 });
     };
 
     const toggleRepeat = () => {
@@ -500,8 +499,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     }
 
     const showToast = (msg: string, ok: boolean = true) => {
-        setToast({ msg, ok });
-        setTimeout(() => setToast(null), 3000);
+        setToast({ msg, ok, id: Date.now() });
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = setTimeout(() => setToast(null), 5000);
     };
 
     const handleDeleteClick = () => {
@@ -1647,22 +1647,66 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             <AnimatePresence>
                 {toast && (
                     <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 50 }}
-                        className={`fixed bottom-24 right-8 z-[70] text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px] ${toast.ok
-                            ? 'bg-[#1d2d6a] border border-blue-900/50'
-                            : 'bg-red-600 border border-red-700/50'
-                            }`}
+                        key={toast.id}
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        className="fixed bottom-24 right-8 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
                     >
-                        <div className={`p-2 rounded-full flex items-center justify-center shrink-0 ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-800'}`}>
-                            {toast.ok ? <CheckCircle2 size={24} className="text-white" /> : <AlertCircle size={24} className="text-white" />}
+                        {/* Status Left Border */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? 'bg-[#1d2d6a]' : 'bg-red-600'}`} />
+
+                        <div className="relative p-5 pl-7 pb-6">
+                            {/* Close Icon (X) */}
+                            <button
+                                onClick={() => setToast(null)}
+                                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50"
+                            >
+                                <X size={18} strokeWidth={2.5} />
+                            </button>
+
+                            <div className="flex gap-4">
+                                {/* Icon */}
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-600'}`}>
+                                    {toast.ok ? <Info size={24} className="text-white" /> : <AlertCircle size={24} className="text-white" />}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex flex-col pr-6">
+                                    <span className={`font-semibold text-lg leading-tight mb-2 ${toast.ok ? 'text-[#1d2d6a]' : 'text-red-700'}`}>
+                                        {toast.ok ? 'Informasi Sistem' : 'Peringatan Sistem'}
+                                    </span>
+                                    <span className="text-slate-600 font-medium text-[15px] leading-relaxed mb-5">
+                                        {toast.msg}
+                                    </span>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex justify-end gap-5 items-center mt-2">
+                                        <button
+                                            onClick={() => setToast(null)}
+                                            className="text-slate-500 font-semibold text-sm hover:text-slate-700 transition-colors"
+                                        >
+                                            Tutup
+                                        </button>
+                                        <button
+                                            onClick={() => setToast(null)}
+                                            className="text-[#1d2d6a] font-bold text-sm hover:text-blue-800 transition-colors"
+                                        >
+                                            Lihat Detail
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="font-black text-sm uppercase tracking-widest">
-                                {toast.ok ? 'Notifikasi' : 'Kesalahan'}
-                            </span>
-                            <span className="text-blue-100/90 text-xs font-medium">{toast.msg}</span>
+
+                        {/* Animated Progress Bar */}
+                        <div className={`h-1.5 w-full ${toast.ok ? 'bg-orange-100' : 'bg-red-100'} absolute bottom-0 left-0`}>
+                            <motion.div
+                                initial={{ width: "100%" }}
+                                animate={{ width: "0%" }}
+                                transition={{ duration: 5, ease: "linear" }}
+                                className={`h-full ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-500'}`}
+                            />
                         </div>
                     </motion.div>
                 )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { MapPin, Activity, Mountain, Gauge, Thermometer, ChevronLeft, ChevronRight, Video, Clock, RefreshCcw, Train, X, Zap, Settings, LogOut, ChevronDown, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { P10Matrix } from '@eltran/shared';
 import { LoginScreen } from './components/LoginScreen';
@@ -22,11 +22,13 @@ function App() {
     const [showLedSettings, setShowLedSettings] = useState(false);
     const [ledType, setLedType] = useState<'indoor' | 'outdoor' | 'p10_32_16' | 'p25_32_16'>('indoor');
     const [tvDisplayMode, setTvDisplayMode] = useState<'current' | 'next'>('current');
-    const [toastMsg, setToastMsg] = useState<{ title: string, message: string } | null>(null);
+    const [toastMsg, setToastMsg] = useState<{ title: string, message: string; id?: number } | null>(null);
+    const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const showNotification = (title: string, message: string) => {
-        setToastMsg({ title, message });
-        setTimeout(() => setToastMsg(null), 3000);
+        setToastMsg({ title, message, id: Date.now() });
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = setTimeout(() => setToastMsg(null), 5000);
     };
 
     // Synced State from Master
@@ -309,14 +311,58 @@ function App() {
                     </div>
 
                     {/* Destination */}
-                    <div className="flex items-center gap-5">
-                        <div className="bg-white/10 p-3 rounded-xl flex-shrink-0 border border-white/5">
-                            <MapPin size={24} className="text-white" strokeWidth={2} />
+                    <div className="flex flex-col gap-5">
+                        <div className="flex items-center gap-5">
+                            <div className="bg-white/10 p-3 rounded-xl flex-shrink-0 border border-white/5">
+                                <MapPin size={24} className="text-white" strokeWidth={2} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-blue-200/60 tracking-widest mb-0.5">Destination</span>
+                                <span className="text-lg font-black text-white leading-none">{stations[stations.length - 1]}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-0.5">Destination</span>
-                            <span className="text-lg font-black text-white leading-none uppercase">{stations[stations.length - 1]}</span>
-                        </div>
+
+                        {/* Next Stations Timeline */}
+                        {stations.length > 0 && (
+                            <div className="ml-6 flex flex-col gap-6 border-l-2 border-white/5 pl-7 py-2">
+                                {[1, 2, 3].map((offset) => {
+                                    const targetIdx = (currentIndex + offset) % stations.length;
+                                    const stName = stations[targetIdx];
+
+                                    // Stop if we loop back to current or reach the final destination
+                                    if (targetIdx === currentIndex) return null;
+                                    // If this is the destination, we already show it above
+                                    if (targetIdx === stations.length - 1) return null;
+
+                                    // Mock times for visual representation
+                                    const arrivalTime = new Date(currentTime.getTime() + (offset * 15 * 60000));
+                                    const jamSampai = arrivalTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\./g, ':');
+                                    const etaMins = offset * 15;
+
+                                    return (
+                                        <div key={offset} className="flex flex-col gap-1 relative">
+                                            {/* Line Marker */}
+                                            <div className="absolute -left-[33px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white/20 bg-[#1d2d6a] shadow-[0_0_0_4px_rgba(29,45,106,1)]" />
+
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-white/90">{stName}</span>
+                                                    <span className="text-[10px] font-medium text-blue-200/30">ETA: {etaMins} mins</span>
+                                                </div>
+
+                                                {offset === 1 ? (
+                                                    <div className="bg-[#ee6f1f]/10 text-[#ee6f1f] px-2 py-0.5 rounded-full text-[10px] font-black border border-[#ee6f1f]/20">
+                                                        {jamSampai}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[11px] font-bold text-blue-200/30">{jamSampai}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -808,7 +854,7 @@ function App() {
                                                     <video
                                                         key={videoUrl}
                                                         src={videoUrl}
-                                                        autoPlay={data?.isPlaying ?? true}
+                                                        autoPlay={data?.isPlaying ?? false}
                                                         loop
                                                         muted={false}
                                                         className="w-full h-full object-contain shadow-[0_0_100px_rgba(0,0,0,0.5)]"
@@ -847,17 +893,66 @@ function App() {
                 <AnimatePresence>
                     {toastMsg && (
                         <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 50 }}
-                            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 bg-[#1d2d6a] text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-blue-900/50 min-w-[320px]"
+                            key={toastMsg.id}
+                            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
                         >
-                            <div className="bg-[#ee6f1f] p-2 rounded-full">
-                                <CheckCircle2 size={24} className="text-white" />
+                            {/* Status Left Border */}
+                            <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1d2d6a]" />
+
+                            <div className="relative p-5 pl-7 pb-6">
+                                {/* Close Icon (X) */}
+                                <button
+                                    onClick={() => setToastMsg(null)}
+                                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50"
+                                >
+                                    <X size={18} strokeWidth={2.5} />
+                                </button>
+
+                                <div className="flex gap-4">
+                                    {/* Icon */}
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-[#ee6f1f]">
+                                        <Info size={24} className="text-white" />
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="flex flex-col pr-6">
+                                        <span className="font-semibold text-lg leading-tight mb-2 text-[#1d2d6a]">
+                                            {toastMsg.title}
+                                        </span>
+                                        <span className="text-slate-600 font-medium text-[15px] leading-relaxed mb-5">
+                                            {toastMsg.message}
+                                        </span>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex justify-end gap-5 items-center mt-2">
+                                            <button
+                                                onClick={() => setToastMsg(null)}
+                                                className="text-slate-500 font-semibold text-sm hover:text-slate-700 transition-colors"
+                                            >
+                                                Tutup
+                                            </button>
+                                            <button
+                                                onClick={() => setToastMsg(null)}
+                                                className="text-[#1d2d6a] font-bold text-sm hover:text-blue-800 transition-colors"
+                                            >
+                                                Lihat Detail
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="font-black text-sm uppercase tracking-widest">{toastMsg.title}</span>
-                                <span className="text-blue-200/80 text-xs font-medium">{toastMsg.message}</span>
+
+                            {/* Animated Progress Bar */}
+                            <div className="h-1.5 w-full bg-orange-100 absolute bottom-0 left-0">
+                                <motion.div
+                                    initial={{ width: "100%" }}
+                                    animate={{ width: "0%" }}
+                                    transition={{ duration: 5, ease: "linear" }}
+                                    className="h-full bg-[#ee6f1f]"
+                                />
                             </div>
                         </motion.div>
                     )}
