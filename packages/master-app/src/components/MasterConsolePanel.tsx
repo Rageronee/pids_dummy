@@ -23,7 +23,7 @@ function StateToggle({ value, label1 = "auto", label2 = "custom", onChange }: { 
                 onChange?.(navVal);
             }}
             className={`px-3 py-1 text-[8px] font-black rounded-lg transition-all border shadow-sm ${isFirst
-                ? 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700'
+                ? 'bg-[#1d2d6a] text-white border-[#152355] hover:bg-[#152355]'
                 : 'bg-[#ee6f1f] text-white border-[#d8631c] hover:bg-[#f87a2c]'
                 }`}
         >
@@ -40,7 +40,7 @@ function TextToggle({ value, label1 = "auto", label2 = "custom" }: { value: stri
         <button
             type="button"
             onClick={() => setInternalValue(isFirst ? label2.toLowerCase() : label1.toLowerCase())}
-            className={`text-[9px] font-black transition-colors ${isFirst ? 'text-blue-500 hover:text-blue-600' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
+            className={`text-[9px] font-black transition-colors ${isFirst ? 'text-[#1d2d6a] hover:text-[#152355]' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
         >
             {internalValue.charAt(0).toUpperCase() + internalValue.slice(1).toLowerCase()}
         </button>
@@ -286,7 +286,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
             if (activeRow && container) {
                 const row = activeRow as HTMLElement;
-                row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const stickyHeaderHeight = 46; // The table header height
+                const targetScrollTop = row.offsetTop - stickyHeaderHeight;
+
+                container.scrollTo({
+                    top: targetScrollTop,
+                    behavior: 'smooth'
+                });
                 lastFocusedStation.current = data.currentStation;
             }
         }, 150);
@@ -897,7 +903,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     >
                                         <div className="p-8 pb-6 flex flex-col items-center text-center">
                                             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
-                                                <MonitorPlay size={32} className="text-blue-600" />
+                                                <MonitorPlay size={32} className="text-[#1d2d6a]" />
                                             </div>
                                             <h3 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-3">
                                                 Konfirmasi Tampilan Video
@@ -1113,7 +1119,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded text-blue-600 border-slate-300"
+                                            className="w-4 h-4 rounded accent-[#1d2d6a] border-slate-300"
                                             checked={!!data.showTrainNumber}
                                             onChange={(e) => sendData({ showTrainNumber: e.target.checked })}
                                         /> No. KA
@@ -1122,7 +1128,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 rounded text-[#ee6f1f] border-slate-300"
+                                            className="w-4 h-4 rounded accent-[#1d2d6a] border-slate-300"
                                             checked={data.ledActive !== false}
                                             onChange={(e) => sendData({ ledActive: e.target.checked })}
                                         /> LED 96×16
@@ -1135,7 +1141,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
                                 <Train size={14} className="text-slate-400" />
                                 <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[150px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
-                                    {[...Array(gerbongCounts[activeTrainName] || 15)].map((_, i) => (
+                                    {[...Array(Math.min(gerbongCounts[activeTrainName] || 15, 15))].map((_, i) => (
                                         <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
                                     ))}
                                 </select>
@@ -1147,48 +1153,34 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                     {/* Visualizer */}
                     <div className="flex items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
-                        {['LOK', ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
-                            <div key={item} className={`flex shrink-0 snap-start ${i === 0 ? 'w-[150px]' : 'w-[150px] flex-1'}`}>
+                        {[...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1))].map((item, i) => (
+                            <div key={item} className="flex shrink-0 snap-start w-[220px]">
                                 <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all relative">
-                                    <div className={`flex items-center justify-center h-10 shrink-0 ${i === 0 ? 'bg-slate-50 border-b border-slate-200' : 'bg-[#1d2d6a] text-white border-b border-[#152355]'}`}>
-                                        <span className="text-sm font-black">{item}</span>
+                                    <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] text-white border-b border-[#152355]">
+                                        <span className="text-[10px] font-black tracking-wider">GERBONG {item}</span>
                                     </div>
                                     <div className="p-4 bg-white flex flex-col gap-4 flex-1">
-                                        {i === 0 ? (
-                                            <div className="flex flex-col gap-4 flex-1 justify-center">
-                                                {/* Specialized Locomotive Style based on Image */}
-                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
-                                                    ID KERETA
-                                                </div>
-                                                <div className="text-[10px] font-black text-slate-500 h-[42px] flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
-                                                    IP KERETA
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-bold text-slate-400 mb-1">ID Kereta</span>
+                                            <input type="text" defaultValue={`K1016${i + 1}`} className="text-xs font-black text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-[9px] font-bold text-slate-400">IP Node</span>
+                                                <TextToggle value="auto" />
+                                            </div>
+                                            <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
+                                                <div className="flex items-center gap-0.5 w-full justify-center">
+                                                    <input type="text" defaultValue="192" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <span className="text-slate-300 text-[13px]">.</span>
+                                                    <input type="text" defaultValue="168" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <span className="text-slate-300 text-[13px]">.</span>
+                                                    <input type="text" defaultValue="1" className="w-[18px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <span className="text-slate-300 text-[13px]">.</span>
+                                                    <input type="text" defaultValue={51 + i} className="w-[24px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-slate-400 mb-1">Kereta</span>
-                                                    <input type="text" defaultValue={`K1016${i}`} className="text-xs font-black text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-[9px] font-bold text-slate-400">IP Node</span>
-                                                        <TextToggle value="auto" />
-                                                    </div>
-                                                    <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
-                                                        <div className="flex items-center gap-0.5 w-full justify-center">
-                                                            <input type="text" defaultValue="192" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                            <span className="text-slate-300 text-[8px]">.</span>
-                                                            <input type="text" defaultValue="168" className="w-[24px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                            <span className="text-slate-300 text-[8px]">.</span>
-                                                            <input type="text" defaultValue="1" className="w-[12px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                            <span className="text-slate-300 text-[8px]">.</span>
-                                                            <input type="text" defaultValue={50 + i} className="w-[18px] text-[10px] font-mono font-black text-blue-600 bg-transparent text-center focus:outline-none" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1387,7 +1379,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                 handleVideoAction({ tvStandby: true });
                                             }
                                         }}
-                                        className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                        className="w-3.5 h-3.5 rounded border-slate-300 accent-[#1d2d6a] focus:ring-[#1d2d6a]"
                                     /> Standby
                                 </label>
                                 <button
@@ -1396,7 +1388,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 >
                                     <FolderOpen size={14} /> Pilih Direktori
                                 </button>
-                                <button onClick={fetchVideos} className={`text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors ${loadingVideos ? 'animate-spin' : ''}`}>
+                                <button onClick={fetchVideos} className={`text-slate-400 hover:text-[#1d2d6a] p-2 rounded-lg transition-colors ${loadingVideos ? 'animate-spin' : ''}`}>
                                     <RefreshCw size={14} />
                                 </button>
                             </div>
@@ -1486,7 +1478,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 disabled={playlist.length === 0}
                                 value={data?.playbackProgress || 0}
                                 onChange={(e) => handleVideoAction({ playbackProgress: parseInt(e.target.value) })}
-                                className={`flex-1 h-2 bg-slate-200 rounded-lg appearance-none accent-blue-600 focus:outline-none ${playlist.length === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                                className={`flex-1 h-2 bg-slate-200 rounded-lg appearance-none accent-[#1d2d6a] focus:outline-none ${playlist.length === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                             />
                             <span className="text-[10px] font-mono font-bold text-slate-400 w-8 text-left">
                                 -{Math.floor((100 - (data?.playbackProgress || 0)) / 20)}:{(Math.floor(100 - (data?.playbackProgress || 0)) % 20).toString().padStart(2, '0')}
@@ -1497,24 +1489,24 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         <div className="flex flex-wrap items-center justify-between gap-4 py-1">
                             {/* Left Side: Modes */}
                             <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl p-1">
-                                <button onClick={toggleRepeat} title="Repeat" className={`p-2 rounded-lg transition-all ${playbackMode.includes('repeat') ? 'text-blue-600 bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-blue-600 hover:bg-slate-200'}`}>
+                                <button onClick={toggleRepeat} title="Repeat" className={`p-2 rounded-lg transition-all ${playbackMode.includes('repeat') ? 'text-[#1d2d6a] bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-200'}`}>
                                     <div className="relative">
                                         <Repeat size={16} />
-                                        {playbackMode === 'repeat-one' && <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-black">1</span>}
+                                        {playbackMode === 'repeat-one' && <span className="absolute -top-1.5 -right-1.5 bg-[#1d2d6a] text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-black">1</span>}
                                     </div>
                                 </button>
-                                <button onClick={toggleShuffle} title="Shuffle" className={`p-2 rounded-lg transition-all ${playbackMode === 'shuffle' ? 'text-blue-600 bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-blue-600 hover:bg-slate-200'}`}>
+                                <button onClick={toggleShuffle} title="Shuffle" className={`p-2 rounded-lg transition-all ${playbackMode === 'shuffle' ? 'text-[#1d2d6a] bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-200'}`}>
                                     <Shuffle size={16} />
                                 </button>
                             </div>
 
                             {/* Center: Main Play Controls */}
                             <div className="flex items-center justify-center gap-3">
-                                <button onClick={prevVideo} className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"><ChevronDown size={22} className="rotate-90" /></button>
+                                <button onClick={prevVideo} className="text-slate-500 hover:text-[#1d2d6a] hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"><ChevronDown size={22} className="rotate-90" /></button>
                                 <button onClick={togglePlay} className="text-white bg-[#1d2d6a] hover:bg-[#152355] w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 transform hover:scale-105 border-2 border-white focus:outline-none ring-2 ring-transparent focus:ring-blue-200">
                                     {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
                                 </button>
-                                <button onClick={nextVideo} className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"><ChevronDown size={22} className="-rotate-90" /></button>
+                                <button onClick={nextVideo} className="text-slate-500 hover:text-[#1d2d6a] hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"><ChevronDown size={22} className="-rotate-90" /></button>
                             </div>
 
                             {/* Right Side: Volume */}
@@ -1527,7 +1519,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     min="0" max="100"
                                     value={data?.volume ?? 50}
                                     onChange={(e) => handleVideoAction({ volume: parseInt(e.target.value) })}
-                                    className="w-20 sm:w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                                    className="w-20 sm:w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1d2d6a] focus:outline-none"
                                 />
                                 <span className="text-[10px] font-mono font-bold text-slate-500 w-7 text-right">{data?.volume ?? 50}%</span>
                             </div>
@@ -1538,13 +1530,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => setVideoViewMode('playlist')}
-                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 >
                                     <ListVideo size={14} /> Playlist ({playlist.length})
                                 </button>
                                 <button
                                     onClick={() => setVideoViewMode('files')}
-                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 >
                                     <Video size={14} /> Tersedia ({videoList.length})
                                 </button>
@@ -1573,18 +1565,18 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                     key={i}
                                                     onClick={() => playVideoAt(i)}
                                                     className={`text-[11px] font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${isActive
-                                                        ? 'text-blue-800 bg-blue-100/70 border-blue-200 shadow-sm'
+                                                        ? 'text-[#1d2d6a] bg-blue-100/70 border-blue-200 shadow-sm'
                                                         : 'text-slate-600 bg-transparent border-transparent hover:bg-white hover:border-slate-200'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-3 w-full overflow-hidden">
-                                                        <div className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
+                                                        <div className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? 'bg-[#1d2d6a] text-white border-[#152355]' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
                                                             {isActive && isPlaying ? <div className="bg-white w-1 h-2.5 animate-pulse rounded-full mx-auto" /> : <Play size={10} className="ml-[1px]" fill={isActive ? "currentColor" : "none"} />}
                                                         </div>
                                                         <span className={`truncate w-full block ${isActive ? 'font-black' : 'font-bold'}`}>{file}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[9px] font-black shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
+                                                        <span className={`text-[9px] font-black shrink-0 ${isActive ? 'text-[#1d2d6a]' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
                                                             {isActive ? 'Active' : ''}
                                                         </span>
                                                         <button
@@ -1611,14 +1603,14 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         videoList.map((file, i) => (
                                             <div key={i} className="text-[11px] font-bold text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem bg-slate-50/50">
                                                 <div className="flex items-center gap-3 overflow-hidden">
-                                                    <div className="p-1.5 bg-slate-200 text-slate-400 rounded shrink-0 group-hover/vitem:bg-blue-100 group-hover/vitem:text-blue-600 transition-colors">
+                                                    <div className="p-1.5 bg-slate-200 text-slate-400 rounded shrink-0 group-hover/vitem:bg-blue-100 group-hover/vitem:text-[#1d2d6a] transition-colors">
                                                         <Video size={12} />
                                                     </div>
                                                     <span className="truncate">{file}</span>
                                                 </div>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); addToPlaylist(file); }}
-                                                    className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
+                                                    className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-[#1d2d6a] bg-blue-50 hover:bg-[#1d2d6a] hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
                                                     title="Tambahkan ke Playlist"
                                                 >
                                                     <Plus size={12} /><span className="text-[9px] font-black hidden sm:inline">Add</span>
@@ -1762,7 +1754,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         handleVideoAction({ tvStandby: false });
                                         setShowStandbyConfirm(false);
                                     }}
-                                    className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)]"
+                                    className="flex-1 py-3 px-4 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(29,45,106,0.3)]"
                                 >
                                     Ya, Tampilkan
                                 </button>

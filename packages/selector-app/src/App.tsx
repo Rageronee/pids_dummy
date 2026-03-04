@@ -790,7 +790,7 @@ function App() {
                                             <div className="flex items-center gap-6 w-1/3 justify-start">
                                                 <Gauge size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={2} />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[15px] font-medium text-white/90 mb-0.5">Speed</span>
+                                                    <span className="text-[35px] font-medium text-white/90 mb-0.5">Speed</span>
                                                     <div className="flex items-baseline gap-2">
                                                         <span className="text-[44px] leading-none font-bold text-white tracking-tight">{speed}</span>
                                                         <span className="text-2xl font-bold text-white/90">km/h</span>
@@ -800,7 +800,7 @@ function App() {
                                             <div className="flex items-center gap-6 w-1/3 justify-center">
                                                 <Mountain size={60} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[15px] font-medium text-white/90 mb-0.5">Altitude</span>
+                                                    <span className="text-[35px] font-medium text-white/90 mb-0.5">Altitude</span>
                                                     <div className="flex items-baseline gap-2">
                                                         <span className="text-[44px] leading-none font-bold text-white tracking-tight">{altitude}</span>
                                                         <span className="text-2xl font-bold text-white/90">m</span>
@@ -810,7 +810,7 @@ function App() {
                                             <div className="flex items-center gap-6 w-1/3 justify-end">
                                                 <Thermometer size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[15px] font-medium text-white/90 mb-0.5">Temp</span>
+                                                    <span className="text-[35px] font-medium text-white/90 mb-0.5">Temp</span>
                                                     <div className="flex items-baseline gap-2">
                                                         <span className="text-[44px] leading-none font-bold text-white tracking-tight">{temp}</span>
                                                         <span className="text-2xl font-bold text-white/90">°C</span>

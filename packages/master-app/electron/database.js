@@ -176,10 +176,10 @@ async function createTables() {
     await pool.query(`
         CREATE TABLE IF NOT EXISTS pids_state (
             id INTEGER PRIMARY KEY CHECK (id = 1),
-            service_name TEXT NOT NULL DEFAULT 'ARGO WILIS',
-            current_station TEXT NOT NULL DEFAULT 'BANDUNG',
-            train_number TEXT NOT NULL DEFAULT '05',
-            next_station TEXT NOT NULL DEFAULT 'TASIKMALAYA',
+            service_name TEXT NOT NULL DEFAULT '',
+            current_station TEXT NOT NULL DEFAULT '',
+            train_number TEXT NOT NULL DEFAULT '',
+            next_station TEXT NOT NULL DEFAULT '',
             status TEXT NOT NULL DEFAULT 'ON TIME',
             led_speed INTEGER NOT NULL DEFAULT 60,
             speed REAL NOT NULL DEFAULT 15,
@@ -364,10 +364,10 @@ async function seedData() {
         }
     }
 
-    const argoWilisRoute = { name: 'ARGO WILIS', number: '05', stations: defaultRoutes['ARGO WILIS'] };
+    // Initialize empty or generic state instead of hardcoded 'ARGO WILIS'
     await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json) 
-                 VALUES (1, 'ARGO WILIS', 'BANDUNG', '05', 'TASIKMALAYA', 'ON TIME', 60, 15, 694, 25.1, 'GOOD NOMINAL', 'pids', ?)
-                 ON CONFLICT (id) DO UPDATE SET active_route_json = EXCLUDED.active_route_json`, [JSON.stringify(argoWilisRoute)]);
+                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}')
+                 ON CONFLICT (id) DO NOTHING`);
 
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING',
         ['USR001', 'admin', 'admin123', 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
@@ -575,7 +575,7 @@ export async function updateRouteGeoJSON(name, geojson, filename = '') {
     const extractedStations = extractStationsFromGeoJSON(geojson);
     await query('INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES (?, ?, ?) ON CONFLICT (train_service_id) DO UPDATE SET geojson = EXCLUDED.geojson, geojson_filename = EXCLUDED.geojson_filename', [service.id, JSON.stringify(geojson), filename]);
     const currentState = await getOne('SELECT service_name, active_route_json, train_number FROM pids_state WHERE id = 1');
-    if (currentState && currentState.service_name === name) {
+    if (currentState) {
         let activeRoute = {};
         try { activeRoute = JSON.parse(currentState.active_route_json || '{}'); } catch { }
         activeRoute.name = name;
@@ -583,7 +583,9 @@ export async function updateRouteGeoJSON(name, geojson, filename = '') {
         activeRoute.geojson = geojson;
         activeRoute.geojson_filename = filename;
         if (extractedStations.length > 0) activeRoute.stations = extractedStations;
-        await query('UPDATE pids_state SET active_route_json = ? WHERE id = 1', [JSON.stringify(activeRoute)]);
+
+        // CRITICAL: Update the Toplevel service_name as well so the UI reflects the change
+        await query('UPDATE pids_state SET service_name = ?, active_route_json = ? WHERE id = 1', [name, JSON.stringify(activeRoute)]);
     }
     return { success: true };
 }
