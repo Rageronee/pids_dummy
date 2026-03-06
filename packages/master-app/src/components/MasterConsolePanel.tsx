@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import maplibregl from 'maplibre-gl';
 import * as turf from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -11,89 +11,10 @@ import {
     Repeat, Shuffle, Plus, FolderOpen,
     Upload, Trash2, Loader2, Maximize, VolumeX, X
 } from 'lucide-react';
-function StateToggle({ value, label1 = "auto", label2 = "custom", onChange }: { value: string, label1?: string, label2?: string, onChange?: (val: string) => void }) {
-    const [internalValue, setInternalValue] = useState(value.toLowerCase());
-    const isFirst = internalValue === label1.toLowerCase();
-    return (
-        <button
-            type="button"
-            onClick={() => {
-                const navVal = isFirst ? label2.toLowerCase() : label1.toLowerCase();
-                setInternalValue(navVal);
-                onChange?.(navVal);
-            }}
-            className={`px-3 py-1 text-[8px] font-black rounded-lg transition-all border shadow-sm ${isFirst
-                ? 'bg-[#1d2d6a] text-white border-[#152355] hover:bg-[#152355]'
-                : 'bg-[#ee6f1f] text-white border-[#d8631c] hover:bg-[#f87a2c]'
-                }`}
-        >
-            {internalValue.charAt(0).toUpperCase() + internalValue.slice(1).toLowerCase()}
-        </button>
-    );
-}
-
-// Text-Only Toggle for Carriages
-function TextToggle({ value, label1 = "auto", label2 = "custom" }: { value: string, label1?: string, label2?: string }) {
-    const [internalValue, setInternalValue] = useState(value.toLowerCase());
-    const isFirst = internalValue === label1.toLowerCase();
-    return (
-        <button
-            type="button"
-            onClick={() => setInternalValue(isFirst ? label2.toLowerCase() : label1.toLowerCase())}
-            className={`text-[9px] font-black transition-colors ${isFirst ? 'text-[#1d2d6a] hover:text-[#152355]' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
-        >
-            {internalValue.charAt(0).toUpperCase() + internalValue.slice(1).toLowerCase()}
-        </button>
-    );
-}
-
-// Reusable Accordion Component
-function SectionAccordion({
-    title, icon: Icon, defaultOpen = false, children, summary
-}: {
-    title: string; icon: any; defaultOpen?: boolean; children: React.ReactNode; summary?: React.ReactNode
-}) {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
-
-    return (
-        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm transition-all hover:border-slate-300">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full text-left px-6 py-5 lg:px-8 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors focus:outline-none"
-            >
-                <div className="flex items-center gap-4">
-                    <div className="text-[#ee6f1f]">
-                        <Icon size={24} strokeWidth={2.5} />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-sm lg:text-base font-black text-[#1d2d6a]">{title}</span>
-                        {!isOpen && summary && (
-                            <div className="text-xs font-bold text-slate-400 mt-1 hidden sm:block">{summary}</div>
-                        )}
-                    </div>
-                </div>
-                <div className={`p-2 rounded-full transition-transform duration-300 ${isOpen ? 'bg-slate-100 rotate-180' : 'bg-transparent rotate-0'}`}>
-                    <ChevronDown size={20} className="text-slate-400" />
-                </div>
-            </button>
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-hidden"
-                    >
-                        <div className="px-6 pb-6 pt-2 lg:px-8 lg:pb-8 border-t border-slate-100 bg-slate-50/50">
-                            {children}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
+import { StateToggle } from './ui/StateToggle';
+import { TextToggle } from './ui/TextToggle';
+import { SectionAccordion } from './ui/SectionAccordion';
+import { useVideoSystem } from '../hooks/useVideoSystem';
 
 
 export function MasterConsolePanel({ route, data, sendData }: { route: any, data: any, sendData: (updates: any) => Promise<void> }) {
@@ -112,29 +33,27 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const [scheduleData, setScheduleData] = useState<any[]>([]);
     const [uploading, setUploading] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [videoList, setVideoList] = useState<string[]>([]);
-    const [videoViewMode, setVideoViewMode] = useState<'playlist' | 'files'>('playlist');
-    const [showStandbyConfirm, setShowStandbyConfirm] = useState(false);
-    const [showClearPlaylistConfirm, setShowClearPlaylistConfirm] = useState(false);
-    const [loadingVideos, setLoadingVideos] = useState(false);
 
-    // Fetch videos from server
-    const fetchVideos = useCallback(async () => {
-        try {
-            setLoadingVideos(true);
-            const res = await fetch('http://localhost:3001/api/media/videos');
-            const d = await res.json();
-            if (d.success) setVideoList(d.videos);
-        } catch (e) {
-            console.error("Failed to fetch videos:", e);
-        } finally {
-            setLoadingVideos(false);
-        }
-    }, []);
+    const showToast = (msg: string, ok: boolean = true) => {
+        setToast({ msg, ok, id: Date.now() });
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = setTimeout(() => setToast(null), 5000);
+    };
 
-    useEffect(() => {
-        fetchVideos();
-    }, [fetchVideos]);
+    // Video system hook
+    const {
+        videoList, videoViewMode, setVideoViewMode,
+        showStandbyConfirm, setShowStandbyConfirm,
+        showClearPlaylistConfirm, setShowClearPlaylistConfirm,
+        loadingVideos, videoRef, lastProgressSync,
+        playlist, activeIndex, isPlaying, playbackMode, activeFile,
+        handleVideoAction, fetchVideos, toggleMute,
+        addToPlaylist, removeFromPlaylist, playVideoAt,
+        togglePlay, nextVideo, prevVideo,
+        toggleRepeat, toggleShuffle, handleSelectDirectory,
+    } = useVideoSystem(data, sendData, showToast);
+
+
     const [simGps, setSimGps] = useState({ lng: 0, lat: 0, heading: 0 });
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
@@ -142,136 +61,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const simGpsRef = useRef(simGps);
     const navTableRef = useRef<HTMLDivElement>(null);
     const lastFocusedStation = useRef<string | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
 
-    // VIDEO HANDLERS & LOGIC
-    const playlist = data?.videoPlaylist || [];
-    const activeIndex = data?.activeVideoIndex ?? 0;
-    const isPlaying = data?.isPlaying ?? false;
-    const playbackMode = data?.playbackMode || 'normal';
-    const activeFile = playlist[activeIndex];
 
-    const lastProgressSync = useRef(0);
-    const lastVolumeRef = useRef(data?.volume || 50);
 
-    const toggleMute = () => {
-        if ((data?.volume || 0) > 0) {
-            lastVolumeRef.current = data?.volume || 50;
-            handleVideoAction({ volume: 0 });
-        } else {
-            handleVideoAction({ volume: lastVolumeRef.current || 50 });
-        }
-    };
 
-    const handleVideoAction = useCallback(async (updates: any) => {
-        await sendData(updates);
-    }, [sendData]);
 
-    const addToPlaylist = (file: string) => {
-        const newPlaylist = [...playlist, file];
-        handleVideoAction({ videoPlaylist: newPlaylist });
-        showToast(`"${file}" ditambahkan ke playlist`);
-    };
 
-    const removeFromPlaylist = (idx: number) => {
-        const newPlaylist = playlist.filter((_: any, i: number) => i !== idx);
-        let newIndex = activeIndex;
-        if (activeIndex >= newPlaylist.length && newPlaylist.length > 0) newIndex = newPlaylist.length - 1;
-        handleVideoAction({ videoPlaylist: newPlaylist, activeVideoIndex: newIndex, playbackProgress: 0 });
-    };
 
-    const playVideoAt = (idx: number) => {
-        handleVideoAction({ activeVideoIndex: idx, isPlaying: false, playbackProgress: 0 });
-    };
-
-    const togglePlay = () => {
-        if (playlist.length === 0) return showToast('Playlist kosong');
-        handleVideoAction({ isPlaying: !isPlaying });
-        showToast(isPlaying ? 'Video dijeda' : 'Memutar video');
-    };
-
-    const nextVideo = () => {
-        if (playlist.length === 0) return;
-
-        // Kembali ke mode standby jika di akhir playlist dan mode normal (non repeat)
-        if (playbackMode === 'normal' && activeIndex === playlist.length - 1) {
-            handleVideoAction({
-                activeVideoIndex: 0,
-                isPlaying: false,
-                playbackProgress: 0,
-                tvStandby: true
-            });
-            return;
-        }
-
-        const nextIdx = (activeIndex + 1) % playlist.length;
-        handleVideoAction({ activeVideoIndex: nextIdx, isPlaying: isPlaying, playbackProgress: 0 });
-    };
-
-    const prevVideo = () => {
-        if (playlist.length === 0) return;
-        const prevIdx = (activeIndex - 1 + playlist.length) % playlist.length;
-        handleVideoAction({ activeVideoIndex: prevIdx, isPlaying: isPlaying, playbackProgress: 0 });
-    };
-
-    const toggleRepeat = () => {
-        const repeatModes = ['normal', 'repeat-one', 'repeat-all'];
-        const currentMode = playbackMode === 'shuffle' ? 'normal' : playbackMode;
-        const nextMode = repeatModes[(repeatModes.indexOf(currentMode) + 1) % repeatModes.length];
-        handleVideoAction({ playbackMode: nextMode });
-        showToast(`Repeat: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1).toLowerCase()}`);
-    };
-
-    const toggleShuffle = () => {
-        const isShuffle = playbackMode === 'shuffle';
-        handleVideoAction({ playbackMode: isShuffle ? 'normal' : 'shuffle' });
-        showToast(isShuffle ? 'Urutan normal' : 'Mode acak diaktifkan');
-    };
-
-    const handleSelectDirectory = async () => {
-        try {
-            // @ts-ignore
-            const selectedDir = await window.require('electron').ipcRenderer.invoke('select-directory');
-            if (selectedDir) {
-                const res = await fetch('http://localhost:3001/api/media/directory', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ directory: selectedDir })
-                });
-                const d = await res.json();
-                if (d.success) {
-                    showToast(`Direktori diubah ke: ${selectedDir}`);
-                    fetchVideos();
-                    setVideoViewMode('files');
-                }
-            }
-        } catch (e) {
-            console.error("Failed to select directory:", e);
-            showToast('Gagal membuka browser direktori');
-        }
-    };
-
-    // Video effect for sync state
-    useEffect(() => {
-        if (!videoRef.current) return;
-        const vid = videoRef.current;
-        vid.volume = (data?.volume ?? 50) / 100;
-
-        if (data?.isPlaying) {
-            if (vid.paused) vid.play().catch(e => console.error("Play failed:", e));
-        } else {
-            if (!vid.paused) vid.pause();
-        }
-    }, [data?.isPlaying, data?.volume]);
-
-    useEffect(() => {
-        if (!videoRef.current || isNaN(videoRef.current.duration)) return;
-        const vid = videoRef.current;
-        const targetTime = ((data?.playbackProgress || 0) / 100) * (vid.duration || 1);
-        if (Math.abs(vid.currentTime - targetTime) > 2) {
-            vid.currentTime = targetTime;
-        }
-    }, [data?.playbackProgress]);
 
     // Auto-scroll to current station in table
     useEffect(() => {
@@ -536,11 +332,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         });
     }
 
-    const showToast = (msg: string, ok: boolean = true) => {
-        setToast({ msg, ok, id: Date.now() });
-        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
-        toastTimeoutRef.current = setTimeout(() => setToast(null), 5000);
-    };
+
 
     const handleDeleteClick = () => {
         if (!route?.name) return;
@@ -599,12 +391,6 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     throw new Error('File bukan GeoJSON yang valid. Pastikan file memiliki "type": "FeatureCollection" atau "Feature".');
                 }
 
-                if (!route?.name) {
-                    showToast('Tidak ada rute kereta yang aktif. Pilih rute terlebih dahulu.', false);
-                    setUploading(false);
-                    return;
-                }
-
                 const token = sessionStorage.getItem('pids_token');
                 if (!token) {
                     showToast('Sesi login tidak ditemukan. Silakan login ulang.', false);
@@ -612,11 +398,17 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     return;
                 }
 
-                console.log(`[GeoJSON Upload] Uploading to route: ${route.name}, file size: ${jsonStr.length} chars`);
+                // If no route is active, create a new route named after the file (without extension)
+                let routeName = route?.name;
+                if (!routeName || routeName === '-') {
+                    routeName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                }
+
+                console.log(`[GeoJSON Upload] Uploading to route: ${routeName}, file size: ${jsonStr.length} chars`);
 
                 let res: Response;
                 try {
-                    res = await fetch(`http://localhost:3001/api/admin/routes/${encodeURIComponent(route.name)}/geojson`, {
+                    res = await fetch(`http://localhost:3001/api/admin/routes/${encodeURIComponent(routeName)}/geojson`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -653,6 +445,33 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                 const apiData = await res.json();
                 if (apiData.success) {
+                    // Automatically set this route as active in the system
+                    try {
+                        const stationsList = parsed.features
+                            ?.filter((f: any) => f.geometry?.type === 'Point' && f.properties?.name)
+                            .map((f: any) => f.properties.name) || [];
+
+                        await fetch(`http://localhost:3001/api/state`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                serviceName: routeName,
+                                stations: stationsList,
+                                activeRoute: {
+                                    name: routeName,
+                                    geojson: parsed,
+                                    stations: stationsList,
+                                    geojson_filename: file.name
+                                }
+                            })
+                        });
+                    } catch (syncErr) {
+                        console.error('[GeoJSON Upload] Failed to auto-sync state:', syncErr);
+                    }
+
                     await new Promise(r => setTimeout(r, 1500));
                     showToast('GeoJSON rute berhasil diunggah! Data stasiun otomatis diperbarui.');
                     if (e.target) e.target.value = ''; // Reset input
@@ -1202,7 +1021,14 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <MapPin size={32} className="text-slate-300" />
                         </div>
                         <h4 className="text-sm font-black text-[#1d2d6a] mb-1">Rute Belum Dipilih</h4>
-                        <p className="text-xs font-bold text-slate-400 text-center max-w-xs tracking-tighter">Silakan pilih rute perjalanan pada aplikasi Selector untuk memulai konfigurasi navigasi.</p>
+                        <p className="text-xs font-bold text-slate-400 text-center max-w-xs tracking-tighter mb-6">Silakan pilih rute perjalanan pada aplikasi Selector atau unggah GeoJSON baru untuk membuat rute.</p>
+
+                        <div className="flex items-center gap-2">
+                            <label className={`text-xs font-black text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-6 py-2.5 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <Upload size={16} className={`text-white ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import GeoJSON Baru'}
+                                <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading} />
+                            </label>
+                        </div>
                     </div>
                 ) : (
                     <>

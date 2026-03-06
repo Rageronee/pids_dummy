@@ -33,20 +33,16 @@ function App() {
 
     // Synced State from Master
     const [stations, setStations] = useState(['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI']);
-    const [masterSyncedServiceName, setMasterSyncedServiceName] = useState('ARGO BROMO ANGGREK');
-    const [masterSyncedNumber, setMasterSyncedNumber] = useState('KA 1');
+    const [masterSyncedServiceName, setMasterSyncedServiceName] = useState('');
+    const [masterSyncedNumber, setMasterSyncedNumber] = useState('');
     const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
     const [data, setData] = useState<PidsState | null>(null);
 
-    const [trainNames, setTrainNames] = useState<string[]>(['ARGO WILIS', 'ARGO BROMO ANGGREK', 'TURANGGA', 'LODAYA', 'MALABAR', 'ARGO PARAHYANGAN']);
-    const [trainNumbers, setTrainNumbers] = useState<string[]>(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15']);
-    const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
-    const [routes, setRoutes] = useState<any>({
-        'ARGO WILIS': { name: 'ARGO WILIS', stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'] },
-        'ARGO BROMO ANGGREK': { name: 'ARGO BROMO ANGGREK', stations: ['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI'] }
-    });
-    const [trainNameIndex, setTrainNameIndex] = useState(0);
-    const [trainNumberIndex, setTrainNumberIndex] = useState(4); // Default to KA-05
+    const [trainNames, setTrainNames] = useState<string[]>([]);
+    const [routes, setRoutes] = useState<any>({});
+    const [trainNameIndex, setTrainNameIndex] = useState(-1);
+    const [jumlahKereta, setJumlahKereta] = useState(10);
+    const [selectedGerbong, setSelectedGerbong] = useState(1);
 
     const socketRef = useRef<Socket | null>(null);
     const API_URL = 'http://localhost:3001';
@@ -61,9 +57,7 @@ function App() {
                     const dbData = await res.json();
                     if (dbData.success && dbData.data && dbData.data.trainNames) {
                         setTrainNames(dbData.data.trainNames);
-                        setTrainNumbers(dbData.data.trainNumbers || []);
                         setRoutes(dbData.data.routes || {});
-                        if (dbData.data.gerbongCounts) setGerbongCounts(dbData.data.gerbongCounts);
                     }
                 }
             } catch (e) {
@@ -82,6 +76,10 @@ function App() {
                         setData(stateData);
                         if (stateData.serviceName) setMasterSyncedServiceName(stateData.serviceName);
                         if (stateData.trainNumber) setMasterSyncedNumber(stateData.trainNumber);
+                        if (stateData.jumlahKereta !== undefined) {
+                            setJumlahKereta(stateData.jumlahKereta);
+                            setMasterSyncedNumber(`${stateData.jumlahKereta} Kereta`);
+                        }
                         if (stateData.ledSpeed !== undefined) setMasterSyncedLedSpeed(stateData.ledSpeed);
                         if (stateData.stations && Array.isArray(stateData.stations) && stateData.stations.length > 0) {
                             setStations(stateData.stations);
@@ -109,6 +107,10 @@ function App() {
             setData(parsed);
             if (parsed.serviceName) setMasterSyncedServiceName(parsed.serviceName);
             if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
+            if (parsed.jumlahKereta !== undefined) {
+                setJumlahKereta(parsed.jumlahKereta);
+                setMasterSyncedNumber(`${parsed.jumlahKereta} Kereta`);
+            }
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
             if (parsed.stations && Array.isArray(parsed.stations) && parsed.stations.length > 0) {
                 setStations(parsed.stations);
@@ -121,7 +123,6 @@ function App() {
         socket.on('db:update', (dbUpdate: any) => {
             if (dbUpdate.trainNames) setTrainNames(dbUpdate.trainNames);
             if (dbUpdate.routes) setRoutes(dbUpdate.routes);
-            if (dbUpdate.gerbongCounts) setGerbongCounts(dbUpdate.gerbongCounts);
         });
 
         return () => { socket.disconnect(); socketRef.current = null; };
@@ -173,10 +174,7 @@ function App() {
     useEffect(() => {
         const nameIdx = trainNames.indexOf(masterSyncedServiceName);
         if (nameIdx !== -1) setTrainNameIndex(nameIdx);
-
-        const numIdx = trainNumbers.indexOf(masterSyncedNumber);
-        if (numIdx !== -1) setTrainNumberIndex(numIdx);
-    }, [masterSyncedServiceName, masterSyncedNumber, trainNames, trainNumbers]);
+    }, [masterSyncedServiceName, trainNames]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -225,6 +223,8 @@ function App() {
     }, [stations]);
 
     const handleSetName = () => {
+        if (trainNameIndex < 0 || trainNameIndex >= trainNames.length) return;
+
         const newName = trainNames[trainNameIndex];
         const routeData = routes[newName];
         const newStations = routeData?.stations || [];
@@ -244,9 +244,9 @@ function App() {
     };
 
     const handleSetNumber = () => {
-        const newNumber = trainNumbers[trainNumberIndex];
-        sendData({ trainNumber: newNumber });
-        showNotification('Configuration Saved', `Unit number set to ${newNumber}`);
+        const val = selectedGerbong;
+        sendData({ trainNumber: `Gerbong ${val}` });
+        showNotification('Configuration Saved', `Unit configuration set to Gerbong ${val}`);
     };
 
     const handleSetLedSpeed = (speedValue: number) => {
@@ -436,6 +436,7 @@ function App() {
                                             onChange={(e) => setTrainNameIndex(parseInt(e.target.value))}
                                             className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-3.5 text-base font-bold text-[#1d2d6a] shadow-sm focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12"
                                         >
+                                            <option value={-1} disabled>--- Pilih Service ---</option>
                                             {trainNames.map((name, idx) => (
                                                 <option key={name} value={idx}>{name}</option>
                                             ))}
@@ -459,16 +460,14 @@ function App() {
                                     <label className="text-[11px] font-black text-[#1d2d6a] pl-1">Unit Configuration</label>
                                     <div className="relative">
                                         <select
-                                            value={trainNumberIndex}
-                                            onChange={(e) => setTrainNumberIndex(parseInt(e.target.value))}
+                                            value={selectedGerbong}
+                                            onChange={(e) => setSelectedGerbong(parseInt(e.target.value))}
                                             className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-3.5 text-base font-bold text-[#1d2d6a] shadow-sm focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12"
                                         >
                                             {(() => {
-                                                const currentTrainName = trainNames[trainNameIndex] || masterSyncedServiceName;
-                                                const maxWagons = gerbongCounts[currentTrainName] || 15;
-                                                const availableNumbers = trainNumbers.slice(0, maxWagons);
-                                                return availableNumbers.map((num, idx) => (
-                                                    <option key={num} value={idx}>{num.replace('KA-', '')}</option>
+                                                const maxWagons = jumlahKereta > 0 ? jumlahKereta : 10;
+                                                return [...Array(maxWagons)].map((_, i) => (
+                                                    <option key={i + 1} value={i + 1}>Gerbong {i + 1}</option>
                                                 ));
                                             })()}
                                         </select>

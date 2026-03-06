@@ -83,6 +83,7 @@ async function createTables() {
             name TEXT NOT NULL UNIQUE,
             class TEXT NOT NULL DEFAULT 'EKSEKUTIF',
             ka_number TEXT NOT NULL DEFAULT '',
+            gerbong_count INTEGER DEFAULT 10,
             ip_address TEXT DEFAULT '',
             nama_pic TEXT DEFAULT '',
             kontak_pic TEXT DEFAULT '',
@@ -198,7 +199,8 @@ async function createTables() {
             video_playback_mode TEXT DEFAULT 'normal',
             video_volume INTEGER DEFAULT 50,
             video_tv_standby BOOLEAN DEFAULT TRUE,
-            video_playback_progress REAL DEFAULT 0
+            video_playback_progress REAL DEFAULT 0,
+            jumlah_kereta INTEGER DEFAULT 10
         )
     `);
 
@@ -211,6 +213,7 @@ async function createTables() {
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_volume INTEGER DEFAULT 50;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_tv_standby BOOLEAN DEFAULT TRUE;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playback_progress REAL DEFAULT 0;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS jumlah_kereta INTEGER DEFAULT 10;"); } catch (e) { }
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS system_logs (
@@ -330,43 +333,14 @@ async function seedData() {
         await query('INSERT INTO stations (id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING', s);
     }
 
-    const trainServices = [
-        ['ARGO BROMO ANGGREK', 'EKSEKUTIF', 'KA 1', '192.168.3.1', 'Budi Santoso', '081300001001'],
-        ['ARGO PARAHYANGAN', 'EKSEKUTIF', 'KA 34', '192.168.3.2', 'Siti Rahma', '081300001002'],
-        ['ARGO WILIS', 'EKSEKUTIF', 'KA 5', '192.168.3.3', 'Edi Suryanto', '081300001003'],
-        ['TURANGGA', 'EKSEKUTIF', 'KA 65', '192.168.3.4', 'Wawan Kurniawan', '081300001004'],
-        ['LODAYA', 'EKSEKUTIF/EKONOMI', 'KA 91', '192.168.3.5', 'Hasan Basri', '081300001005'],
-        ['MALABAR', 'EKSEKUTIF/EKONOMI', 'KA 121', '192.168.3.6', 'Dewi Kartika', '081300001006'],
-    ];
+    const trainServices = [];
     const serviceIds = {};
-    for (const ts of trainServices) {
-        await query('INSERT INTO train_services (name, class, ka_number, ip_address, nama_pic, kontak_pic) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (name) DO NOTHING', ts);
-        const row = await getOne('SELECT id FROM train_services WHERE name = ?', [ts[0]]);
-        serviceIds[ts[0]] = row.id;
-    }
 
-    const defaultRoutes = {
-        'ARGO BROMO ANGGREK': ['GMR', 'CN', 'SMT', 'SBI'],
-        'ARGO PARAHYANGAN': ['GMR', 'BKS', 'CMI', 'BD'],
-        'ARGO WILIS': ['BD', 'TSM', 'YK', 'SLO', 'MN', 'SGU'],
-        'TURANGGA': ['BD', 'TSM', 'YK', 'SLO', 'MN', 'SGU'],
-        'LODAYA': ['BD', 'TSM', 'YK', 'SLO'],
-        'MALABAR': ['BD', 'TSM', 'YK', 'SLO', 'MN', 'KD', 'BL', 'ML']
-    };
-
-    for (const [sName, sList] of Object.entries(defaultRoutes)) {
-        const sId = serviceIds[sName];
-        if (!sId) continue;
-        await query('INSERT INTO routes (train_service_id) VALUES (?) ON CONFLICT (train_service_id) DO NOTHING', [sId]);
-        const rRow = await getOne('SELECT id FROM routes WHERE train_service_id = ?', [sId]);
-        for (let i = 0; i < sList.length; i++) {
-            await query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [rRow.id, sList[i], i + 1]);
-        }
-    }
+    const defaultRoutes = {};
 
     // Initialize empty or generic state instead of hardcoded 'ARGO WILIS'
-    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json) 
-                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}')
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, jumlah_kereta) 
+                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10)
                  ON CONFLICT (id) DO NOTHING`);
 
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING',
@@ -430,15 +404,16 @@ export async function getState() {
         volume: row.video_volume ?? 50,
         tvStandby: row.video_tv_standby ?? true,
         playbackProgress: row.video_playback_progress ?? 0,
+        jumlahKereta: row.jumlah_kereta ?? 10,
     };
 }
 
 function getDefaultState() {
     return {
-        serviceName: 'ARGO WILIS', currentStation: 'BANDUNG', trainNumber: '05',
-        nextStation: 'TASIKMALAYA', status: 'ON TIME', ledSpeed: 60, speed: 15,
-        altitude: 694, temperature: 25.1, airQuality: 'GOOD NOMINAL', displayMode: 'pids',
-        stations: ['BANDUNG', 'TASIKMALAYA', 'YOGYAKARTA', 'SOLO BALAPAN', 'MADIUN', 'SURABAYA GUBENG'],
+        serviceName: '', currentStation: '-', trainNumber: '',
+        nextStation: '-', status: 'STANDBY', ledSpeed: 60, speed: 0,
+        altitude: 0, temperature: 0, airQuality: '-', displayMode: 'pids',
+        stations: [],
         activeRoute: null,
         geofencingInnerRadius: 250,
         geofencingOuterRadius: 750,
@@ -453,8 +428,8 @@ export async function updateState(updates) {
     let activeRouteJson = current.activeRoute ? JSON.stringify(current.activeRoute) : '{}';
     if (updates.activeRoute) activeRouteJson = JSON.stringify(updates.activeRoute);
 
-    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby) 
-                 VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, jumlah_kereta) 
+                 VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  ON CONFLICT (id) DO UPDATE SET 
                     service_name = EXCLUDED.service_name,
                     current_station = EXCLUDED.current_station,
@@ -478,12 +453,13 @@ export async function updateState(updates) {
                     video_playback_progress = EXCLUDED.video_playback_progress,
                     video_playback_mode = EXCLUDED.video_playback_mode,
                     video_volume = EXCLUDED.video_volume,
-                    video_tv_standby = EXCLUDED.video_tv_standby`,
+                    video_tv_standby = EXCLUDED.video_tv_standby,
+                    jumlah_kereta = EXCLUDED.jumlah_kereta`,
         [
             merged.serviceName, merged.currentStation, merged.trainNumber, merged.nextStation, merged.status, merged.ledSpeed, merged.speed, merged.altitude, merged.temperature, merged.airQuality, merged.displayMode, activeRouteJson,
             merged.geofencingInnerRadius || 250, merged.geofencingOuterRadius || 750, merged.showTrainNumber !== false, merged.ledActive !== false,
             JSON.stringify(merged.videoPlaylist || []), merged.activeVideoIndex ?? 0, merged.isPlaying ?? false, merged.playbackProgress ?? 0, merged.playbackMode || 'normal',
-            merged.volume ?? 50, merged.tvStandby ?? true
+            merged.volume ?? 50, merged.tvStandby ?? true, merged.jumlahKereta ?? 10
         ]);
     return await getState();
 }
@@ -539,12 +515,19 @@ export async function getRoutes() {
 }
 export async function getUnits() { return await getAll('SELECT * FROM units'); }
 export async function getDbDump() {
+    const services = await getAll('SELECT name, gerbong_count FROM train_services');
+    const gerbongCounts = {};
+    services.forEach(s => {
+        gerbongCounts[s.name] = s.gerbong_count;
+    });
+
     return {
         trainNames: await getTrainNames(),
         trainNumbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'],
         routes: await getRoutes(),
         users: await getUsersWithPassword(),
-        units: await getUnits()
+        units: await getUnits(),
+        gerbongCounts
     };
 }
 export async function closeDatabase() { if (pool) { await pool.end(); pool = null; } }
@@ -570,35 +553,35 @@ export async function getGpsFleet() { return []; }
 export async function getGpsGerbong(id) { return []; }
 
 export async function updateRouteGeoJSON(name, geojson, filename = '') {
-    const service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
-    if (!service) return { error: `Train service "${name}" not found` };
+    let service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
+    if (!service) {
+        // Create service if it doesn't exist (Importing a new route name)
+        const result = await query('INSERT INTO train_services (name) VALUES (?) RETURNING id', [name]);
+        // Use result.rows[0] or result.rows[0].id depending on pg driver behavior
+        service = result.rows[0];
+    }
     const extractedStations = extractStationsFromGeoJSON(geojson);
     await query('INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES (?, ?, ?) ON CONFLICT (train_service_id) DO UPDATE SET geojson = EXCLUDED.geojson, geojson_filename = EXCLUDED.geojson_filename', [service.id, JSON.stringify(geojson), filename]);
-    const currentState = await getOne('SELECT service_name, active_route_json, train_number FROM pids_state WHERE id = 1');
-    if (currentState) {
-        let activeRoute = {};
-        try { activeRoute = JSON.parse(currentState.active_route_json || '{}'); } catch { }
-        activeRoute.name = name;
-        activeRoute.number = currentState.train_number;
-        activeRoute.geojson = geojson;
-        activeRoute.geojson_filename = filename;
-        if (extractedStations.length > 0) activeRoute.stations = extractedStations;
 
-        // CRITICAL: Update the Toplevel service_name as well so the UI reflects the change
-        await query('UPDATE pids_state SET service_name = ?, active_route_json = ? WHERE id = 1', [name, JSON.stringify(activeRoute)]);
-    }
+    // Just return success. The new route will now appear in the Selector's dropdown
+    // because it's been added to the train_services table.
     return { success: true };
 }
 
 export async function deleteRoute(name) {
     const service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
     if (!service) return { error: `Train service "${name}" not found` };
-    await query('UPDATE routes SET geojson = NULL WHERE train_service_id = ?', [service.id]);
-    const currentState = await getOne('SELECT service_name, active_route_json, train_number FROM pids_state WHERE id = 1');
+
+    // Instead of just clearing geojson, delete the whole service if the user wants it gone.
+    // However, to keep it safe, we'll delete the route entry if it has no geojson anymore, 
+    // or just delete the train_service if it was likely an imported one.
+    // For now, let's delete the service to ensure it disappears from the selector.
+    await query('DELETE FROM train_services WHERE id = ?', [service.id]);
+
+    const currentState = await getOne('SELECT service_name FROM pids_state WHERE id = 1');
     if (currentState && currentState.service_name === name) {
-        const defaultStations = await getRouteStations(name);
-        const activeRoute = { name: name, number: currentState.train_number, stations: defaultStations };
-        await query('UPDATE pids_state SET active_route_json = ? WHERE id = 1', [JSON.stringify(activeRoute)]);
+        // Reset state if we deleted the currently active route
+        await query('UPDATE pids_state SET service_name = \'\', active_route_json = \'{}\' WHERE id = 1');
     }
     return { success: true };
 }
