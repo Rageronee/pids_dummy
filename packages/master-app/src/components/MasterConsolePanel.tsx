@@ -4,24 +4,26 @@ import * as turf from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Train, Settings, Save, RefreshCw, Volume2,
-    MapPin, MonitorPlay, Mic, Play, Pause,
-    ChevronDown, ChevronRight, RadioTower, Video, Info,
-    ListVideo, AlertCircle, Satellite,
+    Train, Settings, RefreshCw, Volume2,
+    MapPin, Mic, Play, Pause,
+    ChevronDown, RadioTower, Video, Info,
+    ListVideo, Satellite,
     Repeat, Shuffle, Plus, FolderOpen,
-    Upload, Trash2, Loader2, Maximize, VolumeX, X
+    Trash2, Maximize, VolumeX
 } from 'lucide-react';
 import { StateToggle } from './ui/StateToggle';
 import { TextToggle } from './ui/TextToggle';
 import { SectionAccordion } from './ui/SectionAccordion';
 import { useVideoSystem } from '../hooks/useVideoSystem';
+import { RouteCheckpoints } from './RouteCheckpoints';
+import { MasterToolbar } from './MasterToolbar';
+import { MasterModals } from './MasterModals';
 
 
 export function MasterConsolePanel({ route, data, sendData }: { route: any, data: any, sendData: (updates: any) => Promise<void> }) {
 
     const activeTrainName = data?.serviceName || 'Belum Dikonfigurasi';
-    const activeTrainNumber = data?.trainNumber || '-';
-    const [jumlahKereta, setJumlahKereta] = useState(5);
+    const [jumlahKereta, setJumlahKereta] = useState(4);
     const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
     const [mediaSource, setMediaSource] = useState('Line In');
     const [outerRadius, setOuterRadius] = useState(data?.geofencingOuterRadius || 750);
@@ -703,55 +705,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <span className="text-[14px] font-black text-[#1d2d6a]">{arrivalLabel}</span>
                             </div>
                         </div>
-                        {/* Standby Confirmation Modal */}
-                        <AnimatePresence>
-                            {showStandbyConfirm && (
-                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        onClick={() => setShowStandbyConfirm(false)}
-                                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                                    />
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
-                                    >
-                                        <div className="p-8 pb-6 flex flex-col items-center text-center">
-                                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
-                                                <MonitorPlay size={32} className="text-[#1d2d6a]" />
-                                            </div>
-                                            <h3 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-3">
-                                                Konfirmasi Tampilan Video
-                                            </h3>
-                                            <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-[280px]">
-                                                Apakah Anda yakin ingin menampilkan video di Layar TV?
-                                            </p>
-                                        </div>
-                                        <div className="p-6 bg-slate-50 flex gap-3">
-                                            <button
-                                                onClick={() => setShowStandbyConfirm(false)}
-                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-black hover:bg-slate-100 transition-all active:scale-95"
-                                            >
-                                                Batal
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    handleVideoAction({ tvStandby: false });
-                                                    setShowStandbyConfirm(false);
-                                                }}
-                                                className="flex-1 px-6 py-3.5 rounded-2xl bg-[#1d2d6a] text-white text-xs font-black shadow-lg shadow-blue-900/20 hover:bg-[#152355] transition-all active:scale-95"
-                                            >
-                                                Tampilkan
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                </div>
-                            )}
-                        </AnimatePresence>
+
 
                         {/* POI Info Terdekat */}
                         <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-3">
@@ -961,7 +915,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <Train size={14} className="text-slate-400" />
                                 <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[150px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
                                     {[...Array(Math.min(gerbongCounts[activeTrainName] || 15, 15))].map((_, i) => (
-                                        <option key={i + 1} value={i + 1}>{i + 1} Kereta</option>
+                                        <option key={i + 1} value={i + 1}>{i + 1} Gerbong</option>
                                     ))}
                                 </select>
                             </div>
@@ -1009,118 +963,15 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             </SectionAccordion>
 
             {/* 2. RUTE & CHECKPOINT NAVIGASI */}
-            <SectionAccordion
-                title="2. Rute & Checkpoint Navigasi"
-                icon={MapPin}
-                defaultOpen={true}
-                summary={!route?.name ? "Pilih Rute di Selector" : `Detail ${navData.length} POI Navigasi • Lokasi Saat Ini: ${navData.find((x: any) => x.status === "BERHENTI")?.name || data?.currentStation || '-'}`}
-            >
-                {!route?.name || route.name === '-' ? (
-                    <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl mt-4">
-                        <div className="bg-white p-4 rounded-2xl shadow-sm mb-4">
-                            <MapPin size={32} className="text-slate-300" />
-                        </div>
-                        <h4 className="text-sm font-black text-[#1d2d6a] mb-1">Rute Belum Dipilih</h4>
-                        <p className="text-xs font-bold text-slate-400 text-center max-w-xs tracking-tighter mb-6">Silakan pilih rute perjalanan pada aplikasi Selector atau unggah GeoJSON baru untuk membuat rute.</p>
-
-                        <div className="flex items-center gap-2">
-                            <label className={`text-xs font-black text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-6 py-2.5 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <Upload size={16} className={`text-white ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import GeoJSON Baru'}
-                                <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading} />
-                            </label>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
-                                <span className="text-[10px] font-bold text-slate-500">File Aktif:</span>
-                                <span className="text-sm font-black text-[#1d2d6a]">
-                                    {route?.geojson ? (route.geojson_filename || `${route.name.replace(/\s+/g, '_')}.geojson`) : 'Belum Ada GeoJSON'}
-                                    {route?.geojson && <span className="ml-2 text-[10px] text-green-500 font-black bg-green-50 px-1.5 py-0.5 rounded border border-green-100 italic">Aktif</span>}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={handleDeleteClick}
-                                    disabled={uploading}
-                                    className={`text-xs font-black text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${uploading ? 'opacity-50 grayscale pointer-events-none' : ''}`}
-                                >
-                                    <Trash2 size={14} /> {uploading ? '...' : 'Hapus'}
-                                </button>
-                                <label className={`text-xs font-black text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-sm px-4 py-2 rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    <Upload size={14} className={`text-white ${uploading ? 'animate-spin' : ''}`} /> {uploading ? 'Mengunggah...' : 'Import'}
-                                    <input type="file" accept=".json,.geojson" className="hidden" onChange={handleUploadGeoJSON} disabled={uploading} />
-                                </label>
-                            </div>
-                        </div>
-
-                        {!route?.geojson || navData.length === 0 ? (
-                            <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-100 to-transparent" />
-                                <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                                    <Info size={40} className="text-slate-300" />
-                                </div>
-                                <h4 className="text-sm font-black text-[#1d2d6a] mb-2">Data Navigasi Kosong</h4>
-                                <p className="text-[11px] font-bold text-slate-400 text-center max-w-[280px] tracking-tight leading-relaxed">
-                                    Silakan <span className="text-[#ee6f1f]">Impor GeoJSON</span> untuk memuat daftar stasiun, koordinat GPS, dan estimasi waktu kedatangan.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="mt-3 border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
-                                <div ref={navTableRef} className="overflow-x-auto max-h-[450px] overflow-y-auto relative">
-                                    <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0">
-                                        <thead className="bg-[#1d2d6a] text-white sticky top-0 z-20">
-                                            <tr>
-                                                <th className="py-3.5 px-6 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a]">Nama Stasiun</th>
-                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a]">Ket</th>
-                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-right">Longitude</th>
-                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-right">Latitude</th>
-                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-center">TTA</th>
-                                                <th className="py-3.5 px-4 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a] text-center">Status</th>
-                                                <th className="py-3.5 px-6 text-[12px] font-black border-b border-[#152355] bg-[#1d2d6a]">Next Stasiun</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 text-sm">
-                                            {navData.map((item: any, idx: number) => {
-                                                const isBerhenti = item.status === 'BERHENTI';
-                                                return (
-                                                    <tr
-                                                        key={idx}
-                                                        data-active={isBerhenti}
-                                                        className={`hover:bg-slate-50 transition-colors ${isBerhenti ? 'bg-orange-50/100' : 'bg-white'}`}
-                                                        style={{ scrollMarginTop: '46px' }}
-                                                    >
-                                                        <td className={`py-3 px-6 font-black flex items-center gap-2 ${isBerhenti ? 'text-[#ee6f1f]' : 'text-slate-700'}`}>
-                                                            {isBerhenti && <ChevronRight size={16} className="text-[#ee6f1f]" />}
-                                                            {item.name}
-                                                        </td>
-                                                        <td className="py-3 px-4 font-bold text-slate-500 text-xs">{item.type}</td>
-                                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 text-xs text-right">{item.lng}</td>
-                                                        <td className="py-3 px-4 font-mono font-bold text-slate-600 text-xs text-right">{item.lat}</td>
-                                                        <td className="py-3 px-4 font-mono font-black text-[#1d2d6a] text-center text-xs">{item.eta}</td>
-                                                        <td className="py-3 px-4 text-center">
-                                                            {item.status ? (
-                                                                <span className={`text-[9px] font-black px-2.5 py-1 rounded shadow-sm ${isBerhenti ? 'bg-[#1d2d6a] text-white' : 'bg-slate-200 text-slate-500'
-                                                                    }`}>
-                                                                    {item.status}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-slate-300 text-xs">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="py-3 px-6 font-bold text-slate-500 text-[11px]">{item.next}</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-            </SectionAccordion>
+            <RouteCheckpoints
+                route={route}
+                data={data}
+                navData={navData}
+                uploading={uploading}
+                navTableRef={navTableRef}
+                onUploadGeoJSON={handleUploadGeoJSON}
+                onDeleteClick={handleDeleteClick}
+            />
 
             {/* 3. SISTEM MEDIA & PENYIARAN */}
             <SectionAccordion
@@ -1452,244 +1303,25 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             </SectionAccordion>
 
             {/* FIXED BOTTOM TOOLBAR */}
-            <div className="fixed bottom-0 left-0 lg:left-72 right-0 z-[60] bg-[#1d2d6a]/95 backdrop-blur-xl border-t border-[#152355] shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 py-4 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-col text-center md:text-left">
-                    <span className="text-[10px] font-black text-blue-300">Global Action Toolbar</span>
-                    <span className="text-sm font-black text-white">Console PIDS</span>
-                </div>
+            <MasterToolbar jumlahKereta={jumlahKereta} sendData={sendData} showToast={showToast} />
 
-                <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
-                    <button onClick={() => showToast('Memeriksa status GPS')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <MapPin size={16} className="text-slate-200" /> Cek GPS
-                    </button>
-                    <button onClick={() => showToast('Menyesuaikan warna tema LED')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <Settings size={16} className="text-slate-200" /> Warna
-                    </button>
-                    <button onClick={() => showToast('Beralih ke tampilan Outdoor')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <MonitorPlay size={16} className="text-slate-200" /> Outdoor
-                    </button>
-                    <button onClick={() => showToast('Arah perjalanan dibalik')} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#152355] hover:bg-[#111c44] border border-[#2a3b7a] text-xs font-black text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] flex-1 md:flex-none">
-                        <RefreshCw size={16} className="text-slate-200" /> Arah
-                    </button>
+            {/* ALL MODALS & TOAST */}
+            <MasterModals
+                toast={toast}
+                setToast={setToast}
+                showStandbyConfirm={showStandbyConfirm}
+                setShowStandbyConfirm={setShowStandbyConfirm}
+                handleVideoAction={handleVideoAction}
+                showDeleteModal={showDeleteModal}
+                setShowDeleteModal={setShowDeleteModal}
+                confirmDeleteGeoJSON={confirmDeleteGeoJSON}
+                routeName={route?.name || ''}
+                showClearPlaylistConfirm={showClearPlaylistConfirm}
+                setShowClearPlaylistConfirm={setShowClearPlaylistConfirm}
+                showToast={showToast}
+                uploading={uploading}
+            />
 
-                    <div className="w-full md:w-px md:h-8 bg-[#2a3b7a] mx-1 hidden md:block" />
-
-                    <button onClick={() => showToast('Konfigurasi baru berhasil disimpan')} className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-black text-white transition-all shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#ee6f1f]/50 active:scale-95 w-full md:w-auto">
-                        <Save size={16} /> Simpan Konfig
-                    </button>
-                </div>
-            </div>
-
-            {/* TOAST SYSTEM */}
-            <AnimatePresence>
-                {toast && (
-                    <motion.div
-                        key={toast.id}
-                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-24 right-8 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
-                    >
-                        {/* Status Left Border */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? 'bg-[#1d2d6a]' : 'bg-red-600'}`} />
-
-                        <div className="relative p-5 pl-7 pb-6">
-                            {/* Close Icon (X) */}
-                            <button
-                                onClick={() => setToast(null)}
-                                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50"
-                            >
-                                <X size={18} strokeWidth={2.5} />
-                            </button>
-
-                            <div className="flex gap-4">
-                                {/* Icon */}
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-600'}`}>
-                                    {toast.ok ? <Info size={24} className="text-white" /> : <AlertCircle size={24} className="text-white" />}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex flex-col pr-6">
-                                    <span className={`font-semibold text-lg leading-tight mb-2 ${toast.ok ? 'text-[#1d2d6a]' : 'text-red-700'}`}>
-                                        {toast.ok ? 'Informasi Sistem' : 'Peringatan Sistem'}
-                                    </span>
-                                    <span className="text-slate-600 font-medium text-[15px] leading-relaxed mb-5">
-                                        {toast.msg}
-                                    </span>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex justify-end gap-5 items-center mt-2">
-                                        <button
-                                            onClick={() => setToast(null)}
-                                            className="text-slate-500 font-semibold text-sm hover:text-slate-700 transition-colors"
-                                        >
-                                            Tutup
-                                        </button>
-                                        <button
-                                            onClick={() => setToast(null)}
-                                            className="text-[#1d2d6a] font-bold text-sm hover:text-blue-800 transition-colors"
-                                        >
-                                            Lihat Detail
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Animated Progress Bar */}
-                        <div className={`h-1.5 w-full ${toast.ok ? 'bg-orange-100' : 'bg-red-100'} absolute bottom-0 left-0`}>
-                            <motion.div
-                                initial={{ width: "100%" }}
-                                animate={{ width: "0%" }}
-                                transition={{ duration: 5, ease: "linear" }}
-                                className={`h-full ${toast.ok ? 'bg-[#ee6f1f]' : 'bg-red-500'}`}
-                            />
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Standby Confirmation Modal */}
-            <AnimatePresence>
-                {showStandbyConfirm && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200"
-                        >
-                            <div className="bg-blue-50 p-6 flex flex-col items-center justify-center border-b border-blue-100">
-                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-500 shadow-inner">
-                                    <Video size={32} />
-                                </div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Tampilkan Video?</h3>
-                            </div>
-                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">
-                                Apakah Anda yakin ingin menampilkan video di Layar TV? Hal ini akan menonaktifkan mode Standby PIDS.
-                            </div>
-                            <div className="p-6 pt-0 flex gap-3">
-                                <button
-                                    onClick={() => setShowStandbyConfirm(false)}
-                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        handleVideoAction({ tvStandby: false });
-                                        setShowStandbyConfirm(false);
-                                    }}
-                                    className="flex-1 py-3 px-4 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(29,45,106,0.3)]"
-                                >
-                                    Ya, Tampilkan
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Custom Delete Confirmation Modal */}
-            <AnimatePresence>
-                {showDeleteModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200"
-                        >
-                            <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner">
-                                    <Trash2 size={32} />
-                                </div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Hapus GeoJSON?</h3>
-                            </div>
-                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">
-                                Anda yakin ingin menghapus data rute <span className="text-[#1d2d6a] font-black">{route?.name}</span>? Tindakan ini tidak dapat dibatalkan.
-                            </div>
-                            <div className="p-6 pt-0 flex gap-3">
-                                <button
-                                    onClick={() => setShowDeleteModal(false)}
-                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={confirmDeleteGeoJSON}
-                                    className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.3)]"
-                                >
-                                    Ya, Hapus
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Clear Playlist Confirmation Modal */}
-            <AnimatePresence>
-                {showClearPlaylistConfirm && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200"
-                        >
-                            <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner">
-                                    <Trash2 size={32} />
-                                </div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Bersihkan Playlist?</h3>
-                            </div>
-                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">
-                                Apakah Anda yakin ingin menghapus semua video dari playlist? Anda dapat menambahkan video kembali setelah dibersihkan.
-                            </div>
-                            <div className="p-6 pt-0 flex gap-3">
-                                <button
-                                    onClick={() => setShowClearPlaylistConfirm(false)}
-                                    className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        handleVideoAction({ videoPlaylist: [], activeVideoIndex: 0, isPlaying: false, playbackProgress: 0 });
-                                        setShowClearPlaylistConfirm(false);
-                                        showToast('Playlist berhasil dikosongkan', true);
-                                    }}
-                                    className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(220,38,38,0.3)]"
-                                >
-                                    Ya, Bersihkan
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Full-screen Loading Overlay for GeoJSON operations */}
-            <AnimatePresence>
-                {uploading && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-[#0b1437]/80 backdrop-blur-md"
-                    >
-                        <div className="bg-white/10 p-8 rounded-3xl mb-6 shadow-2xl border border-white/20 flex items-center justify-center">
-                            <Loader2 size={64} className="text-[#ee6f1f] animate-spin" />
-                        </div>
-                        <h3 className="text-white font-black text-2xl mb-2 drop-shadow-lg">Memproses Data Peta</h3>
-                        <p className="text-slate-300 text-center max-w-sm px-6 text-sm font-bold tracking-tight leading-relaxed">
-                            Mohon tunggu sebentar. Sistem sedang mensinkronisasi rute dan waypoint navigasi.
-                        </p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-        </div>
+        </div >
     );
 }
