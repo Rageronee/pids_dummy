@@ -684,7 +684,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         <div className="flex justify-between items-center bg-white px-4 py-2.5 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col">
                                 <span className="text-[14px] font-bold text-slate-400 mb-0.5">No KA / Nama</span>
-                                <span className="text-[16px] font-black text-[#1d2d6a]">KA {activeTrainNumber} - {activeTrainName}</span>
+                                <span className="text-[16px] font-black text-[#1d2d6a]">KA {activeTrainName}</span>
                             </div>
                             <div className="flex flex-col text-right">
                                 <span className="text-[14px] font-bold text-slate-400 mb-0.5">Relasi</span>

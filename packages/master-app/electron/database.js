@@ -301,12 +301,11 @@ async function createTables() {
             CONSTRAINT fk_sched_ops FOREIGN KEY (id_jadwal) REFERENCES schedules(id) ON DELETE SET NULL
         )
     `);
+
+    await seedData();
 }
 
 async function seedData() {
-    const { count: stationCount } = await getOne('SELECT COUNT(*) as count FROM stations');
-    if (parseInt(stationCount) > 0) return;
-
     console.log('[PIDS-DB] Seeding authentic KAI data to PostgreSQL...');
 
     const stations = [
@@ -350,8 +349,14 @@ async function seedData() {
 function extractStationsFromGeoJSON(geojson) {
     if (!geojson || !geojson.features) return [];
     const stations = geojson.features
-        .filter(f => f.geometry && f.geometry.type === 'Point' && f.properties && f.properties.name)
-        .map(f => f.properties.name.toUpperCase());
+        .filter(f => f.geometry && f.geometry.type === 'Point' && f.properties)
+        .map(f => {
+            const p = f.properties;
+            // Try common name property variants
+            const name = p.name || p.Name || p.STATION || p.Station || p.nama || p.Nama || p.label || '';
+            return name.toString().toUpperCase().trim();
+        })
+        .filter(name => name.length > 0);
     return [...new Set(stations)];
 }
 
@@ -498,17 +503,37 @@ export async function getRoutes() {
     const services = await getAll('SELECT * FROM train_services ORDER BY id');
     const routes = {};
     for (const service of services) {
-        const route = await getOne('SELECT * FROM routes WHERE train_service_id = ?', [service.id]);
-        if (route) {
-            const parsed = JSON.parse(route.geojson || '{}');
+        const dbRoute = await getOne('SELECT * FROM routes WHERE train_service_id = ?', [service.id]);
+
+        // Always try to fetch stations from route_stations table as source of truth
+        let stations = [];
+        if (dbRoute) {
+            const stationRows = await getAll(`
+                SELECT s.name 
+                FROM route_stations rs
+                JOIN stations s ON rs.station_id = s.id
+                WHERE rs.route_id = ?
+                ORDER BY rs.sequence_order
+            `, [dbRoute.id]);
+            stations = stationRows.map(r => r.name);
+        }
+
+        if (dbRoute) {
+            const parsed = JSON.parse(dbRoute.geojson || '{}');
             routes[service.name] = {
                 ...parsed,
                 name: service.name,
-                geojson: route.geojson,
-                geojson_filename: route.geojson_filename
+                stations: stations.length > 0 ? stations : (parsed.stations || []),
+                geojson: dbRoute.geojson,
+                geojson_filename: dbRoute.geojson_filename
             };
         } else {
-            routes[service.name] = { name: service.name, stations: [], path: '', nodes: [] };
+            routes[service.name] = {
+                name: service.name,
+                stations: stations,
+                path: '',
+                nodes: []
+            };
         }
     }
     return routes;
@@ -532,13 +557,52 @@ export async function getDbDump() {
 }
 export async function closeDatabase() { if (pool) { await pool.end(); pool = null; } }
 
-export async function addStation(data) { return { success: true }; }
-export async function updateStation(id, data) { return { success: true }; }
-export async function deleteStation(id) { return { success: true }; }
-export async function addSchedule(data) { return { success: true }; }
+export async function addStation(data) {
+    try {
+        await query('INSERT INTO stations (id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, city = EXCLUDED.city, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, ip_address = EXCLUDED.ip_address, nama_pic = EXCLUDED.nama_pic, kontak_pic = EXCLUDED.kontak_pic, kode_kota = EXCLUDED.kode_kota, alamat = EXCLUDED.alamat, provinsi = EXCLUDED.provinsi, kabupaten_kota = EXCLUDED.kabupaten_kota, kecamatan = EXCLUDED.kecamatan, kelurahan_desa = EXCLUDED.kelurahan_desa, kode_pos = EXCLUDED.kode_pos',
+            [data.id, data.name, data.city, data.latitude, data.longitude, data.ip_address, data.nama_pic, data.kontak_pic, data.kode_kota, data.alamat, data.provinsi, data.kabupaten_kota, data.kecamatan, data.kelurahan_desa, data.kode_pos]);
+        return { success: true, station: data };
+    } catch (e) { return { error: e.message }; }
+}
+
+export async function updateStation(id, data) { return await addStation({ ...data, id }); }
+
+export async function deleteStation(id) {
+    try {
+        await query('DELETE FROM stations WHERE id = ?', [id]);
+        return { success: true };
+    } catch (e) { return { error: e.message }; }
+}
+
+export async function addSchedule(data) {
+    // Basic schedule implementation for now, expecting proper route mapping later
+    try {
+        const id = crypto.randomUUID(); // just return a dummy id or string id if not using SERIAL properly in POST yet
+        return { success: true, id };
+    } catch (e) { return { error: e.message }; }
+}
+
 export async function updateSchedule(id, data) { return { success: true }; }
-export async function deleteSchedule(id) { return { success: true }; }
-export async function getSchedules() { return []; }
+export async function deleteSchedule(id) {
+    try {
+        await query('DELETE FROM schedules WHERE id = ?', [id]);
+        return { success: true };
+    } catch (e) { return { error: e.message }; }
+}
+
+export async function getSchedules() {
+    try {
+        const schedules = await getAll(`
+            SELECT s.*, r.direction, t.name as train_name, t.ka_number
+            FROM schedules s
+            LEFT JOIN routes r ON s.route_id = r.id
+            LEFT JOIN train_services t ON r.train_service_id = t.id
+            ORDER BY s.schedule_date DESC
+        `);
+        return schedules || [];
+    } catch (e) { return []; }
+}
+
 export async function getGerbong(id) { return []; }
 export async function addGerbong(data) { return { success: true }; }
 export async function deleteGerbong(id) { return { success: true }; }
@@ -553,45 +617,123 @@ export async function getGpsFleet() { return []; }
 export async function getGpsGerbong(id) { return []; }
 
 export async function updateRouteGeoJSON(name, geojson, filename = '') {
-    let service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
-    if (!service) {
-        // Create service if it doesn't exist (Importing a new route name)
-        const result = await query('INSERT INTO train_services (name) VALUES (?) RETURNING id', [name]);
-        // Use result.rows[0] or result.rows[0].id depending on pg driver behavior
-        service = result.rows[0];
-    }
-    const extractedStations = extractStationsFromGeoJSON(geojson);
-    await query('INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES (?, ?, ?) ON CONFLICT (train_service_id) DO UPDATE SET geojson = EXCLUDED.geojson, geojson_filename = EXCLUDED.geojson_filename', [service.id, JSON.stringify(geojson), filename]);
+    try {
+        let service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
+        if (!service) {
+            const result = await query('INSERT INTO train_services (name) VALUES (?) RETURNING id', [name]);
+            service = result.rows[0];
+        }
 
-    // Just return success. The new route will now appear in the Selector's dropdown
-    // because it's been added to the train_services table.
-    return { success: true };
+        const extractedStations = extractStationsFromGeoJSON(geojson);
+
+        let route = await getOne('SELECT id FROM routes WHERE train_service_id = ?', [service.id]);
+        if (!route) {
+            const result = await query('INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES (?, ?, ?)', [service.id, JSON.stringify(geojson), filename]);
+            // Re-fetch to get ID or use RETURNING
+            route = await getOne('SELECT id FROM routes WHERE train_service_id = ?', [service.id]);
+        } else {
+            await query('UPDATE routes SET geojson = ?, geojson_filename = ? WHERE id = ?', [JSON.stringify(geojson), filename, route.id]);
+            // Clear old mapping
+            await query('DELETE FROM route_stations WHERE route_id = ?', [route.id]);
+        }
+
+        // Populate route_stations mapping automatically from GeoJSON points
+        let seq = 1;
+        for (const stationName of extractedStations) {
+            let st = await getOne('SELECT id FROM stations WHERE name = ?', [stationName]);
+            if (!st) {
+                // Create dummy station entry if not exists in master station list
+                const newId = stationName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+                await query('INSERT INTO stations (id, name, city) VALUES (?, ?, ?)', [newId, stationName, 'AUTO-GEN']);
+                st = { id: newId };
+            }
+            await query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES (?, ?, ?)', [route.id, st.id, seq++]);
+        }
+
+        return { success: true, stationCount: extractedStations.length };
+    } catch (e) {
+        console.error('[PIDS-DB] Error in updateRouteGeoJSON:', e);
+        return { error: e.message };
+    }
 }
 
 export async function deleteRoute(name) {
     const service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
     if (!service) return { error: `Train service "${name}" not found` };
 
-    // Instead of just clearing geojson, delete the whole service if the user wants it gone.
-    // However, to keep it safe, we'll delete the route entry if it has no geojson anymore, 
-    // or just delete the train_service if it was likely an imported one.
-    // For now, let's delete the service to ensure it disappears from the selector.
     await query('DELETE FROM train_services WHERE id = ?', [service.id]);
 
     const currentState = await getOne('SELECT service_name FROM pids_state WHERE id = 1');
     if (currentState && currentState.service_name === name) {
-        // Reset state if we deleted the currently active route
         await query('UPDATE pids_state SET service_name = \'\', active_route_json = \'{}\' WHERE id = 1');
     }
     return { success: true };
 }
 
-export async function addTrainName(name) { return { success: true, trains: await getTrainNames() }; }
-export async function deleteTrainName(name) { return { success: true, trains: await getTrainNames() }; }
-export async function saveRoute(name, stations) { return { name, stations }; }
+export async function addTrainName(name) {
+    try {
+        await query('INSERT INTO train_services (name) VALUES (?) ON CONFLICT DO NOTHING', [name]);
+        return { success: true, trains: await getTrainNames() };
+    } catch (e) { return { error: e.message }; }
+}
+
+export async function deleteTrainName(name) {
+    try {
+        await query('DELETE FROM train_services WHERE name = ?', [name]);
+        return { success: true, trains: await getTrainNames() };
+    } catch (e) { return { error: e.message }; }
+}
+
+export async function saveRoute(name, stations) {
+    try {
+        let service = await getOne('SELECT id FROM train_services WHERE name = ?', [name]);
+        if (!service) {
+            const result = await query('INSERT INTO train_services (name) VALUES (?) RETURNING id', [name]);
+            service = result.rows[0];
+        }
+
+        let route = await getOne('SELECT id FROM routes WHERE train_service_id = ?', [service.id]);
+        if (!route) {
+            const result = await query('INSERT INTO routes (train_service_id) VALUES (?) RETURNING id', [service.id]);
+            route = result.rows[0];
+        } else {
+            await query('DELETE FROM route_stations WHERE route_id = ?', [route.id]);
+        }
+
+        let seq = 1;
+        for (const stationName of stations) {
+            let st = await getOne('SELECT id FROM stations WHERE name = ?', [stationName]);
+            if (!st) {
+                const newId = stationName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+                await query('INSERT INTO stations (id, name, city) VALUES (?, ?, ?)', [newId, stationName, stationName]);
+                st = { id: newId };
+            }
+            await query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES (?, ?, ?)', [route.id, st.id, seq++]);
+        }
+        return { success: true, name, stations };
+    } catch (e) {
+        return { error: e.message };
+    }
+}
+
 export async function addUnit(data) { return await getUnits(); }
 export async function updateUnit(id, data) { return await getUnits(); }
 export async function deleteUnit(id) { return { success: true }; }
-export async function addUser(data) { return { success: true }; }
-export async function deleteUser(id) { return { success: true }; }
+
+export async function addUser(data) {
+    try {
+        const id = crypto.randomUUID();
+        await query('INSERT INTO users (id, username, password, role, nama) VALUES (?, ?, ?, ?, ?)',
+            [id, data.username, data.password, data.role || 'Operator', data.nama]);
+        return { success: true };
+    } catch (e) { return { error: e.message }; }
+}
+
+export async function deleteUser(id) {
+    try {
+        await query('DELETE FROM users WHERE id = ?', [id]);
+        return { success: true };
+    } catch (e) { return { error: e.message }; }
+}
+
 export function getTrainNumbers() { return ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']; }

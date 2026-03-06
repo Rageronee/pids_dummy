@@ -32,7 +32,7 @@ function App() {
     };
 
     // Synced State from Master
-    const [stations, setStations] = useState(['GAMBIR', 'CIREBON', 'SEMARANG TAWANG', 'SURABAYA PASARTURI']);
+    const [stations, setStations] = useState<string[]>([]);
     const [masterSyncedServiceName, setMasterSyncedServiceName] = useState('');
     const [masterSyncedNumber, setMasterSyncedNumber] = useState('');
     const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
@@ -41,6 +41,7 @@ function App() {
     const [trainNames, setTrainNames] = useState<string[]>([]);
     const [routes, setRoutes] = useState<any>({});
     const [trainNameIndex, setTrainNameIndex] = useState(-1);
+    const [trainSearchQuery, setTrainSearchQuery] = useState('');
     const [jumlahKereta, setJumlahKereta] = useState(10);
     const [selectedGerbong, setSelectedGerbong] = useState(1);
 
@@ -81,7 +82,7 @@ function App() {
                             setMasterSyncedNumber(`${stateData.jumlahKereta} Kereta`);
                         }
                         if (stateData.ledSpeed !== undefined) setMasterSyncedLedSpeed(stateData.ledSpeed);
-                        if (stateData.stations && Array.isArray(stateData.stations) && stateData.stations.length > 0) {
+                        if (stateData.stations && Array.isArray(stateData.stations)) {
                             setStations(stateData.stations);
                         }
                     }
@@ -112,7 +113,7 @@ function App() {
                 setMasterSyncedNumber(`${parsed.jumlahKereta} Kereta`);
             }
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
-            if (parsed.stations && Array.isArray(parsed.stations) && parsed.stations.length > 0) {
+            if (parsed.stations && Array.isArray(parsed.stations)) {
                 setStations(parsed.stations);
             }
             if (parsed.displayMode === 'tv') setShowTVPreview(true);
@@ -295,7 +296,7 @@ function App() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-blue-200/40 mb-0.5">Active Service</span>
-                            <span className="text-lg font-black text-white leading-none">{masterSyncedServiceName}</span>
+                            <span className="text-lg font-black text-white leading-none uppercase">{masterSyncedServiceName || 'LAYANAN TIDAK AKTIF'}</span>
                         </div>
                     </div>
 
@@ -306,7 +307,7 @@ function App() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[10px] font-bold text-blue-200/40 mb-0.5">Unit Number</span>
-                            <span className="text-lg font-black text-white leading-none">KA-{masterSyncedNumber}</span>
+                            <span className="text-lg font-black text-white leading-none">KA-{masterSyncedNumber || '01 (DEFAULT)'}</span>
                         </div>
                     </div>
 
@@ -429,7 +430,19 @@ function App() {
                             {/* Service Config */}
                             <div className="flex-1 flex gap-4 items-end">
                                 <div className="flex-1 flex flex-col gap-2">
-                                    <label className="text-[11px] font-black text-[#1d2d6a] pl-1">Service Configuration</label>
+                                    <div className="flex items-center justify-between pl-1">
+                                        <label className="text-[11px] font-black text-[#1d2d6a]">Service Configuration</label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                            <input
+                                                type="text"
+                                                placeholder="Cari..."
+                                                value={trainSearchQuery}
+                                                onChange={(e) => setTrainSearchQuery(e.target.value)}
+                                                className="text-[10px] font-bold bg-transparent border-none focus:ring-0 w-24 text-[#ee6f1f] placeholder-slate-300"
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="relative">
                                         <select
                                             value={trainNameIndex}
@@ -437,9 +450,13 @@ function App() {
                                             className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-3.5 text-base font-bold text-[#1d2d6a] shadow-sm focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12"
                                         >
                                             <option value={-1} disabled>--- Pilih Service ---</option>
-                                            {trainNames.map((name, idx) => (
-                                                <option key={name} value={idx}>{name}</option>
-                                            ))}
+                                            {trainNames
+                                                .map((name, idx) => ({ name, idx }))
+                                                .filter(t => t.name.toUpperCase().includes(trainSearchQuery.toUpperCase()))
+                                                .map((t) => (
+                                                    <option key={t.name} value={t.idx}>{t.name}</option>
+                                                ))
+                                            }
                                         </select>
                                         <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
                                             <ChevronDown size={20} strokeWidth={2.5} />

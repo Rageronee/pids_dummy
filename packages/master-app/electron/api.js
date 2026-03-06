@@ -179,8 +179,83 @@ export async function startApiServer() {
 
     apiApp.post('/api/admin/schedules', requireAdmin, async (req, res) => {
         const result = await addSchedule(req.body);
-        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Jadwal baru` });
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Jadwal ditambahkan` });
         res.json({ success: true, id: result.id });
+    });
+
+    apiApp.delete('/api/admin/schedules/:id', requireAdmin, async (req, res) => {
+        const result = await deleteSchedule(req.params.id);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Jadwal dihapus: ${req.params.id}` });
+        res.json({ success: true });
+    });
+
+    // TRAINS (Layanan)
+    apiApp.get('/api/admin/trains', requireAdmin, async (req, res) => {
+        res.json({ success: true, trains: await getTrainNames() });
+    });
+
+    apiApp.post('/api/admin/trains', requireAdmin, async (req, res) => {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ success: false, error: 'Name required' });
+        const result = await addTrainName(name);
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Layanan Kereta baru: ${name}` });
+        res.json({ success: true, trains: result.trains });
+    });
+
+    apiApp.delete('/api/admin/trains/:name', requireAdmin, async (req, res) => {
+        const result = await deleteTrainName(req.params.name);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Layanan Kereta dihapus: ${req.params.name}` });
+        await broadcastDbUpdate(); // Since deleting train cascades to routes
+        res.json({ success: true, trains: result.trains });
+    });
+
+    // ROUTES (Stations mapping)
+    apiApp.get('/api/admin/routes', requireAdmin, async (req, res) => {
+        res.json({ success: true, routes: await getRoutes() });
+    });
+
+    apiApp.post('/api/admin/routes', requireAdmin, async (req, res) => {
+        const { name, stations } = req.body;
+        if (!name || !stations) return res.status(400).json({ success: false, error: 'Name and stations required' });
+        const result = await saveRoute(name, stations);
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Rute diperbarui: ${name}` });
+        await broadcastDbUpdate();
+        res.json({ success: true, route: result });
+    });
+
+    apiApp.delete('/api/admin/routes/:name', requireAdmin, async (req, res) => {
+        const result = await deleteRoute(req.params.name);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Rute dihapus: ${req.params.name}` });
+        await broadcastDbUpdate();
+        await broadcastState();
+        res.json({ success: true });
+    });
+
+    // USERS
+    apiApp.get('/api/admin/users', requireAdmin, async (req, res) => {
+        res.json({ success: true, users: await dbGetUsers() });
+    });
+
+    apiApp.post('/api/admin/users', requireAdmin, async (req, res) => {
+        const { username, password, role, nama } = req.body;
+        if (!username || !password || !nama) return res.status(400).json({ success: false, error: 'Missing fields' });
+        const result = await addUser({ username, password, role, nama });
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User baru ditambahkan: ${username}` });
+        res.json({ success: true });
+    });
+
+    apiApp.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+        const result = await deleteUser(req.params.id);
+        if (result.error) return res.status(404).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User dihapus: ${req.params.id}` });
+        res.json({ success: true });
     });
 
     // ROUTES GEOJSON
