@@ -13,7 +13,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { useSelectorSync } from './hooks/useSelectorSync';
 import TVMonitor from './components/TVMonitor';
 import SystemSettingsModal from './components/SystemSettingsModal';
-import ServiceConfigModal from './components/ServiceConfigModal';
+import ServiceConfigModal from './components/ServiceConfigModal.tsx';
 import SelectorToast from './components/SelectorToast';
 
 function App() {
@@ -99,6 +99,10 @@ function App() {
         sendData({ trainNumber: `Gerbong ${gerbong}` });
         showNotification('Configuration Saved', `Unit configuration set to Gerbong ${gerbong}`);
     }, [sendData, showNotification]);
+
+    const handleUpdateDisplayPreferences = useCallback((prefs: Partial<typeof data>) => {
+        sendData(prefs);
+    }, [sendData]);
 
     const handleSetLedSpeed = useCallback((speedValue: number) => {
         setMasterSyncedLedSpeed(speedValue);
@@ -267,7 +271,7 @@ function App() {
                     <div className="flex gap-4 mt-2 h-[80px]">
                         <button onClick={handleSelectStation} className="flex-[0.8] bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[24px] font-black tracking-wide shadow-md flex items-center justify-center gap-4 transition-transform active:scale-95 text-2xl border border-blue-900 overflow-hidden relative group">
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-                            <RefreshCcw size={32} className="group-hover:rotate-180 transition-transform duration-500" /> SYNC TO CLOUD
+                            <RefreshCcw size={32} className="group-hover:rotate-180 transition-transform duration-500" /> SYNC
                         </button>
 
                         <button onClick={() => setShowSystemSettings(true)} className="flex-[0.2] bg-white border border-slate-200 text-[#1d2d6a] hover:bg-slate-50 rounded-[24px] shadow-sm flex items-center justify-center transition-transform active:scale-95 group">
@@ -304,6 +308,7 @@ function App() {
                     showTVPreview={showTVPreview}
                     handleToggleTV={handleToggleTV}
                     handleLogout={handleLogout}
+                    onUpdateDisplayPreferences={handleUpdateDisplayPreferences}
                 />
 
                 <TVMonitor show={showTVPreview} onClose={handleToggleTV} data={data} currentStation={currentStation} nextStation={nextStation} masterSyncedServiceName={masterSyncedServiceName} masterSyncedNumber={masterSyncedNumber} speed={speed} altitude={altitude} temp={temp} />

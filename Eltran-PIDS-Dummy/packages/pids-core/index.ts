@@ -55,6 +55,8 @@ export interface PidsState {
     geofencingInnerRadius?: number;
     geofencingOuterRadius?: number;
     showTrainNumber?: boolean;
+    showTelemetry?: boolean;
+    showClock?: boolean;
     ledActive?: boolean;
     // Video / TV Management
     tvStandby?: boolean;

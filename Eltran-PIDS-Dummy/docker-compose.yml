@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pids-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-greget371}
+      POSTGRES_DB: eltran_pids
+    ports:
+      - "5432:5432"
+    volumes:
+      - pids_db_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: pids-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  # Placeholder for future Device/Sensor Service (e.g. GPSD)
+  # gpsd:
+  #   image: ghcr.io/mikenye/docker-gpsd
+  #   container_name: pids-gpsd
+  #   devices:
+  #     - "/dev/ttyUSB0:/dev/ttyUSB0"
+  #   ports:
+  #     - "2947:2947"
+  #   restart: always
+
+volumes:
+  pids_db_data:

@@ -25,13 +25,15 @@ interface SystemSettingsProps {
     showTVPreview: boolean;
     handleToggleTV: () => void;
     handleLogout: () => void;
+    onUpdateDisplayPreferences: (prefs: Partial<PidsState>) => void;
 }
 
 const SystemSettingsModal = React.memo(function SystemSettingsModal({
     show, onClose, data, currentStation, stations,
     masterSyncedNumber, masterSyncedLedSpeed, onSetLedSpeed,
     ledType, onSetLedType,
-    showTVPreview, handleToggleTV, handleLogout
+    showTVPreview, handleToggleTV, handleLogout,
+    onUpdateDisplayPreferences
 }: SystemSettingsProps) {
     if (!show) return null;
 
@@ -74,7 +76,13 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                             <div className="space-y-4 text-center">
                                 <div className="flex justify-center scale-100 py-4 h-32 items-center bg-slate-50 rounded-[1.5rem] border border-slate-100 overflow-hidden">
                                     {data?.ledActive !== false ? (
-                                        <P10Matrix text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${stations[stations.length - 1]} ~ BERHENTI DI: ${stations.join(', ')}`} fixedText={data?.showTrainNumber ? `${masterSyncedNumber} ` : ''} color="#ee6f1f" speed={masterSyncedLedSpeed} columns={ledType.includes('96') ? 96 : 128} />
+                                        <P10Matrix
+                                            text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${stations[stations.length - 1]} ~ BERHENTI DI: ${stations.join(', ')}`}
+                                            fixedText={data?.showTrainNumber ? `${masterSyncedNumber.replace(/\D/g, '').padStart(2, '0')} ` : ''}
+                                            color="#ee6f1f"
+                                            speed={masterSyncedLedSpeed}
+                                            columns={ledType.includes('96') ? 96 : 128}
+                                        />
                                     ) : (
                                         <div className="w-full max-w-sm h-16 bg-black flex items-center justify-center rounded-lg border border-slate-800 shadow-inner">
                                             <div className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /><span className="text-[10px] font-black text-slate-500">LED System Standby</span></div>
@@ -103,6 +111,42 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                                     <div className="relative pt-2">
                                         <input type="range" min="10" max="200" step="5" value={masterSyncedLedSpeed} onChange={(e) => onSetLedSpeed(parseInt(e.target.value))} className="w-full h-2 bg-slate-200 rounded-xl appearance-none cursor-pointer accent-[#ee6f1f]" />
                                         <div className="flex justify-between text-[10px] font-black text-slate-400 mt-2"><span>Fast</span><span>Standard</span><span>Slow</span></div>
+                                    </div>
+                                </div>
+
+                                {/* LED Content Toggles */}
+                                <div className="flex flex-col gap-4 mt-2">
+                                    <h4 className="text-sm font-black text-[#1d2d6a] tracking-tight">Display Preferences</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            onClick={() => onUpdateDisplayPreferences({ showTrainNumber: !data?.showTrainNumber })}
+                                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${data?.showTrainNumber ? 'border-[#ee6f1f] bg-orange-50' : 'border-slate-100 bg-white'}`}
+                                        >
+                                            <span className={`text-[10px] font-black uppercase tracking-wider ${data?.showTrainNumber ? 'text-[#ee6f1f]' : 'text-slate-400'}`}>Unit ID</span>
+                                            <div className={`w-10 h-5 rounded-full relative transition-colors ${data?.showTrainNumber ? 'bg-[#ee6f1f]' : 'bg-slate-200'}`}>
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${data?.showTrainNumber ? 'right-1' : 'left-1'}`} />
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => onUpdateDisplayPreferences({ showTelemetry: !data?.showTelemetry })}
+                                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${data?.showTelemetry ? 'border-[#ee6f1f] bg-orange-50' : 'border-slate-100 bg-white'}`}
+                                        >
+                                            <span className={`text-[10px] font-black uppercase tracking-wider ${data?.showTelemetry ? 'text-[#ee6f1f]' : 'text-slate-400'}`}>Telemetry</span>
+                                            <div className={`w-10 h-5 rounded-full relative transition-colors ${data?.showTelemetry ? 'bg-[#ee6f1f]' : 'bg-slate-200'}`}>
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${data?.showTelemetry ? 'right-1' : 'left-1'}`} />
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => onUpdateDisplayPreferences({ showClock: !data?.showClock })}
+                                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${data?.showClock ? 'border-[#ee6f1f] bg-orange-50' : 'border-slate-100 bg-white'}`}
+                                        >
+                                            <span className={`text-[10px] font-black uppercase tracking-wider ${data?.showClock ? 'text-[#ee6f1f]' : 'text-slate-400'}`}>Real-time Clock</span>
+                                            <div className={`w-10 h-5 rounded-full relative transition-colors ${data?.showClock ? 'bg-[#ee6f1f]' : 'bg-slate-200'}`}>
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${data?.showClock ? 'right-1' : 'left-1'}`} />
+                                            </div>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
