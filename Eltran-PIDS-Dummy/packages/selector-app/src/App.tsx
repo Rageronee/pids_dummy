@@ -8,13 +8,12 @@
  * - A change in toast won't re-render the TV monitor
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapPin, Train, Clock, Video, Settings, LogOut, Zap } from 'lucide-react';
+import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Crosshair, Route } from 'lucide-react';
 import { LoginScreen } from './components/LoginScreen';
 import { useSelectorSync } from './hooks/useSelectorSync';
 import TVMonitor from './components/TVMonitor';
-import LEDSettingsModal from './components/LEDSettingsModal';
-import StationControl from './components/StationControl';
-import ServiceConfig from './components/ServiceConfig';
+import SystemSettingsModal from './components/SystemSettingsModal';
+import ServiceConfigModal from './components/ServiceConfigModal';
 import SelectorToast from './components/SelectorToast';
 
 function App() {
@@ -32,7 +31,8 @@ function App() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showTVPreview, setShowTVPreview] = useState(false);
-    const [showLedSettings, setShowLedSettings] = useState(false);
+    const [showSystemSettings, setShowSystemSettings] = useState(false);
+    const [showServiceModal, setShowServiceModal] = useState(false);
     const [ledType, setLedType] = useState<'indoor' | 'outdoor' | 'p10_32_16' | 'p25_32_16'>('indoor');
     const [toastMsg, setToastMsg] = useState<{ title: string; message: string; id?: number } | null>(null);
     const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -113,91 +113,205 @@ function App() {
     if (!authUser) return <LoginScreen onLogin={handleLogin} />;
 
     return (
-        <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden select-none">
-            {/* ========== SIDEBAR ========== */}
-            <aside className="w-[300px] bg-[#1d2d6a] border-r border-blue-900 flex flex-col py-10 px-8 relative z-10 shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)]">
-                <div className="mb-14">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-8 w-auto mb-4 brightness-0 invert" />
-                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">PIDS Selector</h1>
-                    <p className="text-[9px] font-bold text-blue-200/40 mt-0.5">Control & Monitoring System</p>
-                </div>
+        <div className="flex flex-col h-[100dvh] w-full bg-[#f4f7f9] text-slate-900 font-sans overflow-hidden select-none">
+            {/* ========== TOP BAR ========== */}
+            <header className="h-[100px] bg-[#1d2d6a] text-white flex items-center px-10 shadow-md shrink-0 justify-between">
+                <button onClick={() => setShowServiceModal(true)} className="flex items-center gap-6 text-left group transition-transform active:scale-95">
+                    <div className="w-[60px] h-[60px] bg-white rounded-[16px] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
+                        <Train className="text-[#1d2d6a]" size={36} />
+                    </div>
+                    <div className="flex flex-col">
+                        <h1 className="text-3xl font-black uppercase tracking-tight group-hover:text-blue-200 transition-colors duration-300">{masterSyncedServiceName || 'SERVICE NOT SET'}</h1>
+                        <p className="text-xs font-bold text-blue-200/60 tracking-widest mt-1 uppercase group-hover:text-blue-100 transition-colors duration-300">EXECUTIVE CLASS • {masterSyncedNumber || 'TRAIN NO. 1'}</p>
+                    </div>
+                </button>
 
-                <div className="flex flex-col gap-8 mb-auto">
-                    {/* Active Service */}
-                    <div className="flex items-center gap-5">
-                        <div className="bg-[#ee6f1f] p-3 rounded-xl flex-shrink-0 shadow-[0_4px_12px_rgba(238,111,31,0.3)]"><Train size={24} className="text-white" strokeWidth={2} /></div>
-                        <div className="flex flex-col"><span className="text-[10px] font-bold text-blue-200/40 mb-0.5">Active Service</span><span className="text-lg font-black text-white leading-none uppercase">{masterSyncedServiceName || 'LAYANAN TIDAK AKTIF'}</span></div>
+                <div className="flex items-center gap-12">
+                    <div className="flex flex-col items-end text-right">
+                        <span className="text-[10px] font-black text-blue-200/60 tracking-wider group-hover:text-blue-200 transition-colors">SERVICE</span>
+                        <span className="text-xl font-black tracking-tight uppercase group-hover:text-white transition-colors">{masterSyncedServiceName ? 'REGULAR' : '---'}</span>
                     </div>
-                    {/* Unit Number */}
-                    <div className="flex items-center gap-5">
-                        <div className="bg-white/10 p-3 rounded-xl flex-shrink-0 border border-white/5"><Train size={24} className="text-white" strokeWidth={2} /></div>
-                        <div className="flex flex-col"><span className="text-[10px] font-bold text-blue-200/40 mb-0.5">Unit Number</span><span className="text-lg font-black text-white leading-none">KA-{masterSyncedNumber || '01 (DEFAULT)'}</span></div>
+                    <div className="w-px h-10 bg-white/20" />
+                    <div className="flex flex-col items-end text-right">
+                        <span className="text-[10px] font-black text-blue-200/60 tracking-wider">UNIT</span>
+                        <span className="text-xl font-black tracking-widest uppercase">{masterSyncedNumber || '---'}</span>
                     </div>
-                    {/* Destination + Timeline */}
-                    <div className="flex flex-col gap-5">
-                        <div className="flex items-center gap-5">
-                            <div className="bg-white/10 p-3 rounded-xl flex-shrink-0 border border-white/5"><MapPin size={24} className="text-white" strokeWidth={2} /></div>
-                            <div className="flex flex-col"><span className="text-[10px] font-bold text-blue-200/60 mb-0.5">Destination</span><span className="text-lg font-black text-white leading-none">{stations[stations.length - 1]}</span></div>
+                    <div className="w-px h-10 bg-white/20" />
+                    <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-black text-blue-200/60 tracking-wider">DESTINATION</span>
+                        <span className="text-2xl font-black text-[#ee6f1f] tracking-tight uppercase">
+                            {stations.length > 0 ? stations[stations.length - 1] : '---'}
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            {/* ========== MAIN CONTENT ========== */}
+            <div className="flex gap-6 p-6 flex-1 min-h-0">
+
+                {/* LEFT COLUMN - Information Display (65%) */}
+                <div className="flex-[0.65] flex flex-col gap-6">
+                    {/* CURRENT STATION */}
+                    <div className="bg-white rounded-[32px] shadow-sm p-8 border border-slate-200 flex flex-col">
+                        <div className="flex items-center gap-3 text-slate-400 font-black text-xs tracking-widest uppercase mb-4">
+                            <Crosshair size={18} className="text-[#ee6f1f]" /> NOW PASSING / STOPPED AT
                         </div>
-                        {stations.length > 0 && (
-                            <div className="ml-6 flex flex-col gap-6 border-l-2 border-white/5 pl-7 py-2">
-                                {[1, 2, 3].map(offset => {
-                                    const targetIdx = (currentIndex + offset) % stations.length;
-                                    if (targetIdx === currentIndex || targetIdx === stations.length - 1) return null;
-                                    const arrivalTime = new Date(currentTime.getTime() + offset * 15 * 60000);
-                                    const jamSampai = arrivalTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\./g, ':');
-                                    return (
-                                        <div key={offset} className="flex flex-col gap-1 relative">
-                                            <div className="absolute -left-[33px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white/20 bg-[#1d2d6a] shadow-[0_0_0_4px_rgba(29,45,106,1)]" />
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex flex-col"><span className="text-sm font-bold text-white/90">{stations[targetIdx]}</span><span className="text-[10px] font-medium text-blue-200/30">ETA: {offset * 15} mins</span></div>
-                                                {offset === 1 ? (<div className="bg-[#ee6f1f]/10 text-[#ee6f1f] px-2 py-0.5 rounded-full text-[10px] font-black border border-[#ee6f1f]/20">{jamSampai}</div>) : (<span className="text-[11px] font-bold text-blue-200/30">{jamSampai}</span>)}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                        <h2 className="text-6xl font-black text-[#1d2d6a] tracking-tight uppercase leading-[1.1] ">{currentStation}</h2>
+                    </div>
+
+                    {/* ITINERARY */}
+                    <div className="bg-white rounded-[32px] shadow-sm py-6 px-8 border border-slate-200 flex-1 flex flex-col min-h-0 overflow-hidden">
+                        <div className="flex items-center gap-3 text-slate-400 font-black text-xs tracking-widest uppercase mb-4 shrink-0">
+                            <Route size={18} /> DETAILED ROUTES
+                        </div>
+
+                        <div className="relative pl-[30px] pr-2 mt-2 flex-1 flex flex-col justify-start">
+                            {/* Vertical Line */}
+                            <div className="absolute left-[61px] top-[40px] bottom-6 w-[4px] bg-slate-100 rounded-full" />
+
+                            {/* Next Stop */}
+                            <div className="flex items-center gap-6 mb-4 relative z-10 w-full group shrink-0">
+                                <div className="w-[68px] h-[68px] bg-white border-[4px] border-[#1d2d6a] rounded-[22px] flex items-center justify-center flex-shrink-0 shadow-sm relative z-10 mt-2">
+                                    <Train className="text-[#1d2d6a]" size={36} />
+                                </div>
+                                <div className="flex-1 bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-3xl p-5 shadow-md flex justify-between items-center relative overflow-hidden">
+                                    <div className="flex flex-col relative z-10 text-white">
+                                        <span className="text-[#ee6f1f] text-[10px] font-black uppercase tracking-widest mb-1 opacity-90">NEXT STOP</span>
+                                        <span className="text-3xl font-black tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end relative z-10 shrink-0">
+                                        <span className="text-white/60 text-[10px] font-black uppercase tracking-wider block mb-1">ETA</span>
+                                        <span className="text-3xl font-black text-white">
+                                            {stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        )}
+
+                            {/* Upcoming Stops Generator */}
+                            {stations.length > 2 && (() => {
+                                const renderUpcoming = [];
+                                for (let i = 2; i < Math.min(stations.length, 4); i++) {
+                                    const upcomingStation = stations[(currentIndex + i) % stations.length];
+                                    if (upcomingStation !== stations[stations.length - 1] && upcomingStation !== stations[currentIndex]) {
+                                        renderUpcoming.push(
+                                            <div key={`upcoming-${i}`} className="flex items-center gap-6 relative z-10 w-full opacity-80 mb-3 transform transition-transform hover:scale-[1.01] hover:opacity-100 shrink-0">
+                                                <div className="w-[68px] flex justify-center relative z-10">
+                                                    <div className="w-[20px] h-[20px] bg-slate-300 rounded-full border-[5px] border-white shadow-sm mt-3" />
+                                                </div>
+                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-colors hover:border-slate-200">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-0.5">UPCOMING</span>
+                                                        <span className="text-lg font-bold text-slate-700 uppercase tracking-tight">{upcomingStation}</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-wider block mb-1">ETA</span>
+                                                        <span className="text-xl font-bold text-slate-500">
+                                                            {new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    } else {
+                                        break; // stop generating past the final station or loop
+                                    }
+                                }
+                                return renderUpcoming;
+                            })()}
+                        </div>
                     </div>
+
+                    {/* STATUS BAR (Bottom Left) */}
+                    <div className="flex gap-4 h-[80px] shrink-0">
+                        {/* TIMESTAMP STATUS */}
+                        <div className="flex-1 bg-white rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200">
+                            <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mr-4">
+                                <Clock size={24} strokeWidth={2.5} />
+                            </div>
+                            <div className="flex flex-col flex-1 border-r border-slate-100 mr-4 pr-4">
+                                <span className="text-slate-400 text-[9px] font-black tracking-widest uppercase mb-0.5">LOCAL TIME</span>
+                                <span className="text-[#1d2d6a] font-black text-2xl tracking-tighter leading-none">
+                                    {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
+                                </span>
+                            </div>
+                            <div className="flex flex-col flex-1 pl-2">
+                                <span className="text-slate-400 text-[9px] font-black tracking-widest uppercase mb-1">CURRENT DATE</span>
+                                <span className="text-slate-700 font-bold text-sm tracking-tight leading-none pt-1">
+                                    {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                {/* Bottom Nav */}
-                <div className="flex flex-col gap-2 mt-12">
-                    <button onClick={() => setShowLedSettings(true)} className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showLedSettings ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
-                        <Settings size={20} className={showLedSettings ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} /><span className="font-bold text-sm">LED Settings</span>
+                {/* RIGHT COLUMN - Action Controls (35%) */}
+                <div className="flex-[0.35] flex flex-col gap-6">
+                    <button onClick={handlePrev} className="flex-1 relative bg-white hover:bg-slate-50 border-2 border-[#ff8d4a] text-[#ee6f1f] rounded-[32px] shadow-sm flex flex-col items-center justify-center gap-4 transition-transform active:scale-95 group overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#ee6f1f]/5 to-transparent pointer-events-none" />
+                        <ChevronsUp size={72} className="transition-transform group-hover:-translate-y-2 stroke-[2.5]" />
+                        <span className="text-3xl font-black uppercase tracking-tight">Previous Station</span>
+                        <div className="absolute top-6 left-6 w-3 h-3 bg-[#ee6f1f]/20 rounded-full" />
+                        <div className="absolute right-6 top-6 w-3 h-3 bg-[#ee6f1f]/20 rounded-full" />
                     </button>
-                    <button onClick={handleToggleTV} className={`flex items-center gap-4 py-3 px-4 rounded-xl transition-colors w-full text-left group ${showTVPreview ? 'bg-white/20 text-white shadow-sm' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
-                        <Video size={20} className={showTVPreview ? 'text-white' : 'text-white/40 group-hover:text-white transition-colors'} /><span className="font-bold text-sm">Monitor TV</span>
-                    </button>
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] border border-white/5 active:scale-95 group mt-4">
-                        <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" /><span>Logout dari Sistem</span>
-                    </button>
-                </div>
-            </aside>
 
-            {/* ========== MAIN ========== */}
-            <main className="flex-1 overflow-hidden flex flex-col relative">
-                <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Zap className="text-[#1d2d6a]" size={20} /></div>
-                        <div><h1 className="text-lg font-black text-[#1d2d6a] tracking-tight leading-none mb-1">Selector Console</h1><div className="flex items-center gap-2"><span className="text-[10px] font-bold text-slate-400">Control Interface</span><div className="w-1 h-1 rounded-full bg-slate-300" /><span className="text-[10px] font-bold text-slate-400">Active session</span></div></div>
+                    <button onClick={handleNext} className="flex-1 relative bg-gradient-to-b from-[#ee6f1f] to-[#e45a05] hover:from-[#f37c35] hover:to-[#eb6009] text-white rounded-[32px] shadow-lg flex flex-col items-center justify-center gap-4 transition-transform active:scale-95 group overflow-hidden border border-[#f58d52]">
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none mix-blend-overlay" />
+                        <span className="text-3xl font-black uppercase tracking-tight relative z-10">Next Station</span>
+                        <ChevronsDown size={72} className="relative z-10 transition-transform group-hover:translate-y-2 stroke-[2.5]" />
+                        <div className="absolute bottom-6 left-6 w-3 h-3 bg-white/20 rounded-full" />
+                        <div className="absolute right-6 bottom-6 w-3 h-3 bg-white/20 rounded-full" />
+                    </button>
+
+                    <div className="flex gap-4 mt-2 h-[80px]">
+                        <button onClick={handleSelectStation} className="flex-[0.8] bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[24px] font-black tracking-wide shadow-md flex items-center justify-center gap-4 transition-transform active:scale-95 text-2xl border border-blue-900 overflow-hidden relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+                            <RefreshCcw size={32} className="group-hover:rotate-180 transition-transform duration-500" /> SYNC TO CLOUD
+                        </button>
+
+                        <button onClick={() => setShowSystemSettings(true)} className="flex-[0.2] bg-white border border-slate-200 text-[#1d2d6a] hover:bg-slate-50 rounded-[24px] shadow-sm flex items-center justify-center transition-transform active:scale-95 group">
+                            <Settings size={32} className="text-slate-500 group-hover:text-[#1d2d6a] group-hover:rotate-90 transition-all duration-500" />
+                        </button>
                     </div>
-                    <div className="flex items-center gap-6"><div className="flex items-center gap-3 text-[#1d2d6a]"><div className="bg-slate-50 p-2 rounded-lg text-slate-400"><Clock size={18} /></div><span className="text-2xl font-black font-mono tracking-tighter opacity-90">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</span></div></div>
-                </header>
-
-                <div className="flex-1 min-h-0 relative overflow-y-auto p-8 pr-10 pb-10">
-                    <ServiceConfig trainNames={trainNames} routes={routes} jumlahKereta={jumlahKereta} onSetService={handleSetService} onSetGerbong={handleSetGerbong} initialTrainNameIndex={trainNameIndex} />
-                    <div className="w-full h-px bg-slate-200 my-8" />
-                    <StationControl stations={stations} currentIndex={currentIndex} onPrev={handlePrev} onNext={handleNext} onSync={handleSelectStation} data={data} />
                 </div>
 
                 {/* Modals */}
-                <LEDSettingsModal show={showLedSettings} onClose={() => setShowLedSettings(false)} data={data} currentStation={currentStation} stations={stations} masterSyncedNumber={masterSyncedNumber} masterSyncedLedSpeed={masterSyncedLedSpeed} onSetLedSpeed={handleSetLedSpeed} ledType={ledType} onSetLedType={setLedType} />
+                <ServiceConfigModal
+                    show={showServiceModal}
+                    onClose={() => setShowServiceModal(false)}
+                    trainNames={trainNames}
+                    routes={routes}
+                    jumlahKereta={jumlahKereta}
+                    onSetService={handleSetService}
+                    onSetGerbong={handleSetGerbong}
+                    initialTrainNameIndex={trainNameIndex}
+                />
+
+                <SystemSettingsModal
+                    show={showSystemSettings}
+                    onClose={() => setShowSystemSettings(false)}
+                    data={data}
+                    currentStation={currentStation}
+                    stations={stations}
+
+                    masterSyncedNumber={masterSyncedNumber}
+                    masterSyncedLedSpeed={masterSyncedLedSpeed}
+                    onSetLedSpeed={handleSetLedSpeed}
+                    ledType={ledType}
+                    onSetLedType={setLedType}
+
+                    showTVPreview={showTVPreview}
+                    handleToggleTV={handleToggleTV}
+                    handleLogout={handleLogout}
+                />
+
                 <TVMonitor show={showTVPreview} onClose={handleToggleTV} data={data} currentStation={currentStation} nextStation={nextStation} masterSyncedServiceName={masterSyncedServiceName} masterSyncedNumber={masterSyncedNumber} speed={speed} altitude={altitude} temp={temp} />
                 <SelectorToast toast={toastMsg} onClose={() => setToastMsg(null)} />
-            </main>
+            </div>
         </div>
     );
 }
 
 export default App;
+

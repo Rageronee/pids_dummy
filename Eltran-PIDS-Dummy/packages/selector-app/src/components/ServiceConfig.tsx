@@ -50,17 +50,21 @@ const ServiceConfig = React.memo(function ServiceConfig({
     const filtered = trainNames.map((name, idx) => ({ name, idx })).filter(t => t.name.toUpperCase().includes(trainSearchQuery.toUpperCase()));
 
     return (
-        <div className="mb-10">
-            <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight mb-6 flex items-center gap-3">
-                <Settings className="text-[#ee6f1f]" size={24} /> Service Configuration
-            </h2>
-            <div className="flex items-end gap-12">
+        <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm flex flex-col gap-8 h-full">
+            <div className="flex flex-col gap-2">
+                <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
+                    <Settings className="text-[#ee6f1f]" size={24} /> Service Configuration
+                </h2>
+                <p className="text-xs font-bold text-slate-400">Configure train service route and carriage number</p>
+            </div>
+
+            <div className="flex flex-col gap-8 flex-1">
                 {/* Service Selection */}
-                <div className="flex-1 flex gap-4 items-end">
-                    <div className="flex-1 flex flex-col gap-2">
-                        <label className="text-[11px] font-black text-[#1d2d6a] pl-1">Service Configuration</label>
-                        <div className="relative" ref={serviceDropdownRef}>
-                            <div className={`w-full bg-white border-2 rounded-xl px-5 py-3.5 shadow-sm transition-all cursor-pointer flex items-center ${serviceDropdownOpen ? 'border-[#ee6f1f] ring-4 ring-orange-500/10' : 'border-slate-200'}`} onClick={() => setServiceDropdownOpen(!serviceDropdownOpen)}>
+                <div className="flex flex-col gap-3">
+                    <label className="text-xs font-black text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Route / Train Name</label>
+                    <div className="flex gap-4">
+                        <div className="relative flex-1" ref={serviceDropdownRef}>
+                            <div className={`w-full bg-slate-50 border-2 rounded-xl px-5 py-4 shadow-sm transition-all cursor-pointer flex items-center ${serviceDropdownOpen ? 'border-[#ee6f1f] ring-4 ring-orange-500/10' : 'border-slate-200 hover:border-slate-300'}`} onClick={() => setServiceDropdownOpen(!serviceDropdownOpen)}>
                                 <input type="text" placeholder={trainNameIndex >= 0 && trainNames[trainNameIndex] ? trainNames[trainNameIndex] : '--- Pilih Service ---'} value={trainSearchQuery} onChange={(e) => { setTrainSearchQuery(e.target.value); if (!serviceDropdownOpen) setServiceDropdownOpen(true); }} onFocus={() => setServiceDropdownOpen(true)} className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-base font-bold text-[#1d2d6a] placeholder-slate-400 p-0" />
                                 <ChevronDown size={20} strokeWidth={2.5} className={`text-slate-400 transition-transform flex-shrink-0 ${serviceDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
@@ -74,22 +78,22 @@ const ServiceConfig = React.memo(function ServiceConfig({
                                 </div>
                             )}
                         </div>
+                        <button onClick={handleSetName} className="h-[auto] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95 shrink-0">Set Route</button>
                     </div>
-                    <button onClick={handleSetName} className="h-[52px] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95">Set</button>
                 </div>
 
                 {/* Unit Selection */}
-                <div className="flex-1 flex gap-4 items-end">
-                    <div className="flex-1 flex flex-col gap-2">
-                        <label className="text-[11px] font-black text-[#1d2d6a] pl-1">Unit Configuration</label>
-                        <div className="relative">
-                            <select value={selectedGerbong} onChange={(e) => setSelectedGerbong(parseInt(e.target.value))} className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-3.5 text-base font-bold text-[#1d2d6a] shadow-sm focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12">
+                <div className="flex flex-col gap-3 mt-auto">
+                    <label className="text-xs font-black text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Carriage Number</label>
+                    <div className="flex gap-4">
+                        <div className="relative flex-1">
+                            <select value={selectedGerbong} onChange={(e) => setSelectedGerbong(parseInt(e.target.value))} className="w-full appearance-none bg-slate-50 border-2 border-slate-200 rounded-xl px-5 py-4 text-base font-bold text-[#1d2d6a] shadow-sm hover:border-slate-300 focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12">
                                 {[...Array(maxWagons)].map((_, i) => (<option key={i + 1} value={i + 1}>Gerbong {i + 1}</option>))}
                             </select>
                             <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400"><ChevronDown size={20} strokeWidth={2.5} /></div>
                         </div>
+                        <button onClick={handleSetNumber} className="h-[auto] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95 shrink-0">Set Unit</button>
                     </div>
-                    <button onClick={handleSetNumber} className="h-[52px] px-8 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-xl font-black shadow-[0_4px_14px_rgba(238,111,31,0.3)] transition-all active:scale-95">Set</button>
                 </div>
             </div>
         </div>
