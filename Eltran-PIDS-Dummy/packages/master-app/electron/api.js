@@ -361,6 +361,15 @@ export async function startApiServer() {
     const port = 3001;
     httpServer.listen(port, () => {
         console.log(`[PIDS-CORE] PostgreSQL API Gateway running on http://localhost:${port}`);
+    }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`\x1b[31m[ERROR] Port ${port} is already in use!\x1b[0m`);
+            console.error(`\x1b[33m[TIP] This usually happens because a previous 'npm run dev:all' is still running in the background.\x1b[0m`);
+            console.error(`\x1b[33m[FIX] Run 'npm run stop:all' to kill background processes before restarting.\x1b[0m`);
+            process.exit(1);
+        } else {
+            console.error(`[ERROR] Server failed to start:`, err);
+        }
     });
 
     return httpServer;

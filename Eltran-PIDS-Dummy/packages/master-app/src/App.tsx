@@ -799,7 +799,7 @@ function App() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100">
-                                                {(data.stations || activeRoute?.stations || []).map((_station: string, idx: number) => (
+                                                {Array.from({ length: data.jumlahKereta || 10 }).map((_, idx) => (
                                                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                                         <td className="p-4 font-bold text-slate-700">K1-{String(idx + 1).padStart(2, '0')}</td>
                                                         <td className="p-4 font-mono text-slate-500">K1{String(idx + 1).padStart(2, '0')}{String(800 + idx)}</td>

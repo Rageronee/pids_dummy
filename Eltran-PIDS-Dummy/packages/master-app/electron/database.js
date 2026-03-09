@@ -205,6 +205,7 @@ async function createTables() {
     `);
 
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS show_train_number BOOLEAN DEFAULT TRUE;"); } catch (e) { }
+    try { await pool.query("ALTER TABLE train_services ADD COLUMN IF NOT EXISTS gerbong_count INTEGER DEFAULT 10;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS led_active BOOLEAN DEFAULT TRUE;"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS video_playlist_json TEXT DEFAULT '[]';"); } catch (e) { }
     try { await pool.query("ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS active_video_index INTEGER DEFAULT 0;"); } catch (e) { }
@@ -431,7 +432,9 @@ export async function updateState(updates) {
     const current = await getState();
     const merged = { ...current, ...updates };
     let activeRouteJson = current.activeRoute ? JSON.stringify(current.activeRoute) : '{}';
-    if (updates.activeRoute) activeRouteJson = JSON.stringify(updates.activeRoute);
+    if (updates.activeRoute !== undefined) {
+        activeRouteJson = updates.activeRoute ? JSON.stringify(updates.activeRoute) : '{}';
+    }
 
     await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, jumlah_kereta) 
                  VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

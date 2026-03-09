@@ -14,7 +14,9 @@
     "electron:master": "wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron packages/master-app --user-data-dir=.electron/master",
     "electron:selector": "wait-on tcp:5174 && cross-env VITE_DEV_SERVER_URL=http://localhost:5174 electron packages/selector-app --user-data-dir=.electron/selector",
     "electron:cc": "wait-on tcp:5176 && cross-env VITE_DEV_SERVER_URL=http://localhost:5176 electron packages/command-center-app --user-data-dir=.electron/cc",
-    "dev:all": "concurrently -n vite-m,vite-s,vite-c,elec-m,elec-s,elec-c -c blue,magenta,cyan,blue.bold,magenta.bold,cyan.bold \"npm run vite:master\" \"npm run vite:selector\" \"npm run vite:cc\" \"npm run electron:master\" \"npm run electron:selector\" \"npm run electron:cc\"",
+    "dev:all": "concurrently -k -i -n vite-m,vite-s,vite-c,elec-m,elec-s,elec-c -c blue,magenta,cyan,blue.bold,magenta.bold,cyan.bold \"npm run vite:master\" \"npm run vite:selector\" \"npm run vite:cc\" \"npm run electron:master\" \"npm run electron:selector\" \"npm run electron:cc\"",
+    "stop:all": "taskkill /F /IM node.exe /T & taskkill /F /IM electron.exe /T",
+    "clean:dev": "npm run stop:all & npm run dev:all",
     "build": "npm run build --workspaces"
   },
   "devDependencies": {

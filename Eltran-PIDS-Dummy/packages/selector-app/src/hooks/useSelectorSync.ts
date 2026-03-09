@@ -72,8 +72,8 @@ export function useSelectorSync() {
         fetch(`${API_URL}/api/state`).then(r => r.json()).then(s => {
             if (s) {
                 setData(s);
-                if (s.serviceName) setMasterSyncedServiceName(s.serviceName);
-                if (s.trainNumber) setMasterSyncedNumber(s.trainNumber);
+                if (s.serviceName !== undefined) setMasterSyncedServiceName(s.serviceName);
+                if (s.trainNumber !== undefined) setMasterSyncedNumber(s.trainNumber);
                 if (s.jumlahKereta !== undefined) { setJumlahKereta(s.jumlahKereta); setMasterSyncedNumber(`${s.jumlahKereta} Kereta`); }
                 if (s.ledSpeed !== undefined) setMasterSyncedLedSpeed(s.ledSpeed);
                 if (s.stations && Array.isArray(s.stations)) setStations(s.stations);
@@ -87,8 +87,8 @@ export function useSelectorSync() {
         socket.on('connect', () => console.log('[Socket.IO] Selector connected'));
         socket.on('state:update', (parsed: any) => {
             setData(parsed);
-            if (parsed.serviceName) setMasterSyncedServiceName(parsed.serviceName);
-            if (parsed.trainNumber) setMasterSyncedNumber(parsed.trainNumber);
+            if (parsed.serviceName !== undefined) setMasterSyncedServiceName(parsed.serviceName);
+            if (parsed.trainNumber !== undefined) setMasterSyncedNumber(parsed.trainNumber);
             if (parsed.jumlahKereta !== undefined) { setJumlahKereta(parsed.jumlahKereta); setMasterSyncedNumber(`${parsed.jumlahKereta} Kereta`); }
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
             if (parsed.stations && Array.isArray(parsed.stations)) setStations(parsed.stations);

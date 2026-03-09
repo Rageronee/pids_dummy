@@ -21,9 +21,8 @@ import { MasterModals } from './MasterModals';
 
 
 export function MasterConsolePanel({ route, data, sendData }: { route: any, data: any, sendData: (updates: any) => Promise<void> }) {
-
     const activeTrainName = data?.serviceName || 'Belum Dikonfigurasi';
-    const [jumlahKereta, setJumlahKereta] = useState(4);
+    const [jumlahKereta, setJumlahKereta] = useState(data?.jumlahKereta || 4);
     const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
     const [mediaSource, setMediaSource] = useState('Line In');
     const [outerRadius, setOuterRadius] = useState(data?.geofencingOuterRadius || 750);
@@ -127,8 +126,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         fetch('http://localhost:3001/api/db')
             .then(res => res.json())
             .then(res => {
-                if (res.success && res.data?.gerbongCounts) {
-                    setGerbongCounts(res.data.gerbongCounts);
+                if (res.gerbongCounts) {
+                    setGerbongCounts(res.gerbongCounts);
                 }
             })
             .catch(console.error);
@@ -346,18 +345,25 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         try {
             setUploading(true);
             const token = sessionStorage.getItem('pids_token');
-            const res = await fetch(`http://localhost:3001/api/admin/routes/${encodeURIComponent(route.name)}/geojson`, {
-                method: 'DELETE',
+            // Instead of deleting from DB, just clear the active state
+            const res = await fetch(`http://localhost:3001/api/state`, {
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                }
+                },
+                body: JSON.stringify({
+                    serviceName: '',
+                    stations: [],
+                    activeRoute: null
+                })
             });
 
             if (res.ok) {
                 await new Promise(r => setTimeout(r, 1500));
-                showToast('GeoJSON rute berhasil dihapus.');
+                showToast('Rute dilepas dari jadwal aktif (tetap tersimpan di database).');
             } else {
-                let msg = 'Gagal menghapus GeoJSON';
+                let msg = 'Gagal melepas rute';
                 try {
                     const err = await res.json();
                     msg = err.error || err.message || msg;
@@ -366,7 +372,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             }
         } catch (e) {
             console.error('[GeoJSON Delete] Error:', e);
-            showToast('Kesalahan koneksi saat menghapus GeoJSON. Pastikan server aktif.', false);
+            showToast('Kesalahan koneksi saat melepas rute. Pastikan server aktif.', false);
         } finally {
             setUploading(false);
         }
@@ -400,11 +406,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     return;
                 }
 
-                // If no route is active, create a new route named after the file (without extension)
-                let routeName = route?.name;
-                if (!routeName || routeName === '-') {
-                    routeName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-                }
+                // Always create a new route named after the file (without extension)
+                let routeName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
 
                 console.log(`[GeoJSON Upload] Uploading to route: ${routeName}, file size: ${jsonStr.length} chars`);
 
