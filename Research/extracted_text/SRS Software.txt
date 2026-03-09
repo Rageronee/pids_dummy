@@ -1,0 +1,1380 @@
+SYSTEM REQUIREMENT SPECIFICATION
+
+PASSENGER INFORMATION DISPLAY SYSTEM - SOFTWARE
+
+
+
+Daftar Isi
+
+Daftar Isi	2
+
+Software PIDS Selektor	3
+
+Deskripsi Singkat	3
+
+Aktor	3
+
+Kebutuhan Fungsional	3
+
+Kebutuhan Non-Funsional	3
+
+Diagram	4
+
+Interface	5
+
+Main	5
+
+Software Windows Mini PC	6
+
+Deskripsi Singkat	6
+
+Aktor	6
+
+Kebutuhan Fungsional	6
+
+Akses	6
+
+Monitoring Data Kereta	6
+
+PIDS	6
+
+GPS	7
+
+CCTV	7
+
+Pengaturan System	7
+
+Integrasi Cloud	8
+
+Kebutuhan Non-Funsional	8
+
+Diagram	9
+
+Interface	10
+
+Login	10
+
+Dashboard	11
+
+PIDS	12
+
+GPS	13
+
+CCTV	14
+
+Display	15
+
+Software Command Center	16
+
+Deskripsi Singkat	16
+
+Aktor	16
+
+Kebutuhan Fungsional	16
+
+Manajemen User	16
+
+Manajemen Data Kereta	16
+
+Monitoring Pusat	16
+
+Integrasi Cloud	17
+
+Kebutuhan Non-Funsional	17
+
+Diagram	18
+
+Interface	19
+
+Login	19
+
+Dashboard	20
+
+Kereta	21
+
+Stasiun	23
+
+Jadwal	25
+
+User	27
+
+Skema Database	29
+
+User	29
+
+Kereta	29
+
+Gerbong	29
+
+Sensor	30
+
+Sensor_Data	30
+
+Stasiun	30
+
+Rute_Perjalanan	31
+
+Jadwal	31
+
+Log_Aktivitas	31
+
+Log_Maintenance	32
+
+Log_Operasional	32
+
+
+
+Software PIDS Selektor
+
+Deskripsi Singkat
+
+Software PIDS Selektor adalah aplikasi yang berfungsi untuk memilih dan mengirimkan data informasi kereta ke Software Windows Mini PC. Software ini menampilkan data ke display PIDS, melainkan bertindak sebagai sumber seleksi data PIDS.
+
+Aktor
+
+Operator PIDS: Petugas yang mengoperasikan software PIDS Selektor
+
+Kebutuhan Fungsional
+
+
+
+Kode
+
+Deskripsi
+
+PIDS-001
+
+Sistem harus memungkinkan pemilihan Nama Kereta
+
+PIDS-002
+
+Sistem harus memungkinkan pemilihan Nomor Kereta
+
+PIDS-003
+
+Sistem harus menampilkan data dari sensor
+
+PIDS-004
+
+Sistem harus mengirim data PIDS ke Software Mini PC
+
+PIDS-005
+
+Sistem harus mencatat log pengiriman data
+
+PIDS-006
+
+Sistem harus menampilkan status koneksi ke Mini PC
+
+PIDS-007
+
+Sistem harum menyimpan log data sensor
+
+
+
+Kebutuhan Non-Funsional
+
+
+
+Kode
+
+Deskripsi
+
+Kategori
+
+PIDS-NFRS-001
+
+Waktu pengiriman data ≤ 3 detik
+
+Performance
+
+PIDS-NFRS-002
+
+Sistem mudah digunakan oleh operator (sederhana)
+
+Usability
+
+
+
+Diagram
+
+
+
+Interface
+
+Main
+
+
+
+
+
+Software Windows Mini PC
+
+Deskripsi Singkat
+
+Software Windows Mini PC adalah aplikasi utama yang berjalan di dalam gerbong kereta makan. Software ini digunakan oleh Operator Kereta Makan untuk monitoring real-time, pengelolaan data kereta, serta menampilkan informasi ke layar tv (screen) pada gerbong kereta penumpang.
+
+Aktor
+
+Operator: Pengguna utama untuk monitoring dan mengelola data kereta
+
+Kebutuhan Fungsional
+
+Akses
+
+
+
+Kode
+
+Deskripsi
+
+MPC-001
+
+Sistem hanya dapat diakses oleh Operator
+
+MPC-002
+
+Sistem harus otomatis berjalan saat Mini PC menyala
+
+
+
+Integrasi Data Kereta
+
+
+
+Kode
+
+Deskripsi
+
+MPC-003
+
+Sistem harus memungkinkan untuk update data (lokal)
+
+MPC-004
+
+Sistem harus memungkinkan menerima dan mengirim data dari dan pada PIDS Selektor
+
+MPC-005
+
+Sistem harus memungkinkan menerima dan mengirim data dari dan pada Command Center
+
+MPC-006
+
+Sistem harus menyimpan data terakhir saat offline
+
+
+
+PIDS
+
+
+
+Kode
+
+Deskripsi
+
+MPC-007
+
+Sistem harus menerima data dari PIDS Selektor
+
+MPC-008
+
+Operator dapat update Nama Kereta
+
+MPC-009
+
+Operator dapat update Nomor Kereta
+
+MPC-010
+
+Sistem harus menampilkan log PIDS (read-only)
+
+
+
+GPS
+
+
+
+Kode
+
+Deskripsi
+
+MPC-011
+
+Sistem harus menampilkan peta lokasi kereta
+
+MPC-012
+
+Sistem harus menampilkan tracking per gerbong
+
+MPC-013
+
+Data GPS bersifat read-only
+
+
+
+CCTV
+
+
+
+Kode
+
+Deskripsi
+
+MPC-014
+
+Sistem harus menampilkan rekaman CCTV dari semua gerbong kereta
+
+MPC-015
+
+Operator hanya dapat melihat CCTV
+
+
+
+Pengaturan System
+
+
+
+Kode
+
+Deskripsi
+
+MPC-016
+
+Operator dapat mengatur konten pada tv/screen
+
+MPC-017
+
+Pengaturan hanya berlaku pada kereta terkait
+
+
+
+Integrasi Cloud
+
+
+
+Kode
+
+Deskripsi
+
+MPC-018
+
+Sistem harus sinkronisasi dua arah dengan Software Command Center
+
+MPC-019
+
+Update Operator harus dikirim ke Pusat
+
+
+
+Kebutuhan Non-Funsional
+
+
+
+Kode
+
+Deskripsi
+
+Kategori
+
+MPC-NFRS-001
+
+Waktu respon ≤ 3 detik
+
+Performance
+
+MPC-NFRS-002
+
+Tetap beroperasi saat offline (lokal)
+
+Reliability
+
+MPC-NFRS-003
+
+Akses terbatas Operator
+
+Security
+
+
+
+Diagram
+
+
+
+Interface
+
+Login
+
+
+
+Dashboard
+
+
+
+PIDS
+
+
+
+GPS
+
+
+
+CCTV
+
+
+
+Display
+
+
+
+
+
+Software Command Center
+
+Deskripsi Singkat
+
+Software Command Center adalah sistem terpusat yang digunakan oleh Admin (Kontrol Pusat) untuk mengelola data kereta, operator, serta melakukan monitoring ke seluruhan armada kereta.
+
+Aktor
+
+Admin: monitoring dan kelola seluruh data armada kereta
+
+Kebutuhan Fungsional
+
+Manajemen User
+
+
+
+Kode
+
+Deskripsi
+
+CTR-001
+
+Admin harus dapat login dan logout pada sistem
+
+CTR-002
+
+Admin dapat mengelola data dan akses Operator
+
+
+
+Manajemen Data
+
+
+
+Kode
+
+Deskripsi
+
+CTR-003
+
+Admin dapat melakukan CRUD pada seluruh data (data master)
+
+CTR-004
+
+Admin dapat memonitor status kereta
+
+
+
+Monitoring Pusat
+
+
+
+Kode
+
+Deskripsi
+
+CTR-005
+
+Sistem menampilkan data GPS seluruh kereta
+
+CTR-006
+
+Sistem menampilkan status koneksi Mini PC
+
+
+
+Integrasi Cloud
+
+
+
+Kode
+
+Deskripsi
+
+CTR-007
+
+Sistem harus mengelola sinkronisasi data ke Mini PC
+
+CTR-008
+
+Sistem harus menyimpan seluruh histori data
+
+
+
+Kebutuhan Non-Funsional
+
+
+
+Kode
+
+Deskripsi
+
+Kategori
+
+CTR-NFRS-001
+
+Sistem tersedia 24/7 (always on)
+
+Reliability
+
+CTR-NFRS-002
+
+Sistem hanya bisa diakses oleh Admin
+
+Security
+
+
+
+Diagram
+
+
+
+Interface
+
+Login
+
+
+
+Dashboard
+
+
+
+Kereta
+
+
+
+Form
+
+
+
+Stasiun
+
+
+
+Form
+
+
+
+Jadwal
+
+
+
+Form
+
+
+
+User
+
+
+
+Form
+
+
+
+Skema Database
+
+User
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_user
+
+CHAR (PK)
+
+ID unik user
+
+USER001
+
+nama
+
+VARCHAR(100)
+
+Nama lengkap
+
+Andi Pratama
+
+kontak
+
+VARCHAR(20)
+
+Kontak
+
+081234567890
+
+email
+
+VARCHAR(100)
+
+Email
+
+andi@kereta.id
+
+password
+
+VARCHAR(255)
+
+Password hash
+
+$2y$10$abc
+
+role
+
+ENUM(Admin,Operator)
+
+Peran user
+
+Operator
+
+media
+
+STRING
+
+path media
+
+media/user/user001
+
+id_kereta
+
+CHAR (FK)
+
+Kereta ditangani
+
+KA003
+
+id_stasiun
+
+CHAR (FK)
+
+Stasiun penempatan
+
+STA005
+
+Kereta
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_kereta
+
+CHAR (PK)
+
+ID kereta
+
+KA001
+
+nama_kereta
+
+VARCHAR(100)
+
+Nama kereta
+
+KA Argo Bromo
+
+ip_address
+
+VARCHAR(45)
+
+IP kereta
+
+192.168.3.8
+
+nama_pic
+
+VARCHAR(100)
+
+PIC
+
+Budi
+
+kontak_pic
+
+VARCHAR(20)
+
+Kontak PIC
+
+08129
+
+media
+
+STRING
+
+path media
+
+media/train/train001
+
+id_rute
+
+CHAR (FK)
+
+ID Rute
+
+RP005
+
+Gerbong
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_gerbong
+
+CHAR (PK)
+
+ID gerbong
+
+GB012
+
+ip_address
+
+VARCHAR(45)
+
+IP Address
+
+192.168.2.8
+
+nama_gerbong
+
+VARCHAR(50)
+
+Nama
+
+Eksekutif A
+
+no_urut_gerbong
+
+INT
+
+Urutan Gerbong
+
+1
+
+id_kereta
+
+INT (FK)
+
+Kereta
+
+KA003
+
+Sensor
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_sensor
+
+CHAR (PK)
+
+ID sensor
+
+DVC021
+
+ip_address
+
+VARCHAR(45)
+
+IP device
+
+192.168.1.30
+
+nama_device
+
+VARCHAR(100)
+
+Nama device
+
+GPS Module
+
+tipe_sensor
+
+ENUM(GPS,Suhu)
+
+Jenis
+
+GPS
+
+status
+
+ENUM(Aktif,Nonaktif)
+
+Status
+
+Aktif
+
+is_main
+
+BOOLEAN
+
+Sensor utama
+
+TRUE
+
+id_gerbong
+
+CHAR (FK)
+
+Gerbong
+
+GB012
+
+Sensor_Data
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_data
+
+CHAR (PK)
+
+ID data
+
+DT1001
+
+latitude
+
+DECIMAL(10,6)
+
+Lintang
+
+-6.21
+
+longitude
+
+DECIMAL(10,6)
+
+Bujur
+
+106.84
+
+altitude
+
+DECIMAL(10,6)
+
+Ketinggian (m dpl)
+
+30.26
+
+kecepatan
+
+FLOAT
+
+Kecepatan (km/h)
+
+80.00
+
+suhu
+
+FLOAT
+
+Temerature (C)
+
+25.00
+
+POI
+
+??
+
+Point Of Interest
+
+??
+
+waktu_rekam
+
+DATETIME
+
+Timestamp
+
+2026-01-29 10:31
+
+id_sensor
+
+INT (FK)
+
+Sensor
+
+DVC021
+
+Stasiun
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_stasiun
+
+CHAR (PK)
+
+ID stasiun
+
+STS005
+
+ip_address
+
+VARCHAR(45)
+
+IP address
+
+192/168.5.2
+
+nama_stasiun
+
+VARCHAR(100)
+
+Nama
+
+Gambir
+
+nama_pic
+
+VARCHAR(100)
+
+Nama pic
+
+Reno Sikandar
+
+kontak_pic
+
+VARCHAR(20)
+
+Nomor kontak pic
+
+0812348765
+
+kode_kota
+
+CHAR
+
+Kode kota
+
+BDG
+
+latitude
+
+DECIMAL(10,6)
+
+Lintang
+
+-6.21
+
+longitude
+
+DECIMAL(10,6)
+
+Bujur
+
+106.84
+
+altitude
+
+DECIMAL(10,6)
+
+Ketinggian (m dpl)
+
+30.26
+
+poi
+
+??
+
+Point Of Internet
+
+??
+
+alamat
+
+TEXT
+
+Alamat lengkap
+
+Jalan Soekarno-Hatta
+
+provinsi
+
+VARCHAR(100)
+
+Provinsi
+
+DKI Jakarta
+
+kabupaten_kota
+
+VARCHAR(100)
+
+Kabupaten/Kota
+
+Jakarta Pusat
+
+kecamatan
+
+VARCHAR(100)
+
+Kecamatan
+
+Kemayoran
+
+kelurahan_desa
+
+VARCHAR(100)
+
+Kelurahan/Desa
+
+Kebon Kosong
+
+kode_pos
+
+VARCHAR(10)
+
+Kode pos
+
+6291
+
+media
+
+STRING
+
+Path media
+
+media/station/station002
+
+Rute_Perjalanan
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_rute
+
+CHAR (PK)
+
+ID rute
+
+RP002
+
+urutan
+
+INT
+
+Urutan stasiun
+
+1
+
+keterangan
+
+STRING
+
+Stasiun (awal/antara/akhir)
+
+Awal
+
+id_kereta
+
+CHAR (FK)
+
+Kereta
+
+KA003
+
+id_stasiun
+
+CHAR (FK)
+
+Stasiun
+
+STA005
+
+Jadwal
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_jadwal
+
+CHAR (PK)
+
+ID jadwal
+
+SCH015
+
+jadwal_berangkat
+
+DATETIME
+
+Rencana
+
+2026-01-29 08:00
+
+realisasi_berangkat
+
+DATETIME
+
+Aktual
+
+2026-01-29 08:05
+
+selisih_waktu_berangkat
+
+DATETIME
+
+Selisih (menit)
+
+5
+
+status_berangkat
+
+ENUM
+
+Status
+
+Terlambat
+
+jadwal_datang
+
+DATETIME
+
+Rencana
+
+2026-01-29 08:00
+
+realisasi_datang
+
+DATETIME
+
+Aktual
+
+2026-01-29 08:05
+
+selisih_waktu_datang
+
+DATETIME
+
+Selisih (menit)
+
+5
+
+status_datang
+
+ENUM
+
+Status
+
+Terlambat
+
+catatan
+
+TEXT
+
+Informasi Tambahan
+
+Menunggu kereta lain
+
+media
+
+STRING
+
+Path media
+
+media/schedule/schedule002
+
+id_kereta
+
+CHAR (FK)
+
+ID kereta
+
+KA003
+
+id_stasiun
+
+CHAR (FK)
+
+ID stasiun
+
+STA004
+
+Log_Aktivitas
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_log
+
+INT (PK)
+
+ID log
+
+LOGAK301
+
+waktu_login
+
+DATETIME
+
+Login
+
+2026-01-29 07:45
+
+waktu_logout
+
+DATETIME
+
+Logout
+
+2026-01-29 16:00
+
+id_user
+
+INT (FK)
+
+User
+
+USER001
+
+Log_Maintenance
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_maintenance
+
+INT (PK)
+
+ID
+
+MTNC007
+
+mulai
+
+DATETIME
+
+Waktu mulai
+
+2026-01-30 08:00
+
+selesai
+
+DATETIME
+
+Waktu selesai
+
+2026-01-31 07:00
+
+status
+
+ENUM(Open, On Going, Closed)
+
+Status
+
+Closed
+
+prioritas
+
+ENUM(Low, Medium, High)
+
+Prioritas
+
+High
+
+id_kereta
+
+CHAR (FK)
+
+Kereta
+
+KA003
+
+Log_Operasional
+
+Atribut
+
+Tipe Data
+
+Deskripsi
+
+Contoh Data
+
+id_log_operasional
+
+CHAR (PK)
+
+ID
+
+LOGOP050
+
+id_kereta
+
+CHAR (FK)
+
+ID Kereta
+
+KA003
+
+id_jadwal
+
+CHAR (FK)
+
+ID Jadwal
+
+SCH015
+
+
+
+
+

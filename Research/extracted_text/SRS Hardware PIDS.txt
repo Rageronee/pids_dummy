@@ -1,0 +1,332 @@
+SYSTEM REQUIREMENT SPECIFICATION
+
+PASSENGER INFORMATION DISPLAY SYSTEM
+
+HARDWARE - SELECTOR, CONTROLLER & DISPLAY PIDS
+
+
+
+Pendahuluan
+
+       1.1 Tujuan
+
+Mendeskripsikan kebutuhan perangkat keras (Hardware) untuk Passenger Information Display System (PIDS) pada bagian selector dan display.
+
+1.2 Ruang Lingkup
+
+A. Selector : Berbasis Raspberry Pi 5 sebagai antarmuka operator dan jembatan perintah dari Kereta Makan ke Controller.
+
+B. Controller PIDS : Berbasis HD-W63 (WiFi + USB) sebagai pengendali display PIDS
+
+C.    Display PIDS :
+
+a.      2 Display Outdoor : Menggunakan panel LED P10
+
+b.     2 Display Indoor :  Menggunakan panel LED P4
+
+D.    Jalur data dan kendali dari Kereta Makan → Selector → Controller → Display
+
+Gambaran Umum Sistem Hardware
+
+       2.1 Arsitektur Sistem
+
+
+
+       2.2 Prinsip Desain
+
+A.    Semua display PIDS terpusat ke satu controller HD-W63
+
+B.    Controller menerima perintah dari selector untuk menampilkan display
+
+C.    Selector berfungsi sebagai :
+
+a.      Menerima data dan status sistem dari Kereta Makan
+
+b.     Mengirim data lokasi, dan nomor gerbong ke Kereta Makan
+
+c.      Memicu perubahan tampilan berdasarkan perintah dari Kereta Makan
+
+d.     Mengirim perintah pengaturan tampilan ke Controller PIDS (HD-W63)
+
+e.      Menampilkan informasi sistem kepada operator
+
+f.      Menjadi antarmuka input (nama kereta, nomor gerbong ) operator terhadap sistem PIDS
+
+      2.3 Tujuan Desain 
+
+A.   Menjadikan Selector sebagai antarmuka operator dan gateway kontrol antara Master dan Controller.
+
+B.    Menjadikan Controller sebagai pusat eksekusi tampilan untuk panel P4/P10.
+
+
+
+Kebutuhan Fungsional 
+
+3.1 Kebutuhan Fungsional Selector
+
+
+
+Kode
+
+Deskripsi
+
+KF-SEL-01
+
+Selector harus dapat terhubung ke sistem Kereta Makan melalui jaringan IP (Ethernet kereta) untuk menerima data dan status sistem.
+
+KF-SEL-02
+
+Selector harus dapat menerima perintah atau pembaruan informasi tampilan dari Kereta Makan (stasiun berikutnya, ETA, tujuan/rute).
+
+KF-SEL-03
+
+Selector harus dapat meneruskan perintah/perubahan dari Kereta Makan ke Controller PIDS (HD-W63).
+
+KF-SEL-04
+
+Selector harus menyediakan antarmuka operator untuk input identitas operasional yakni nama kereta dan nomor gerbong.
+
+KF-SEL-05 
+
+Selector harus dapat mengirimkan identitas operasional (nama kereta & nomor gerbong) ke Kereta Makan untuk dapat dimonitoring.
+
+KF-SEL-06
+
+Selector harus dapat mengirim perintah pengaturan konten tampilan ke Controller, meliputi: teks utama, teks berjalan, serta pemilihan layout indoor/outdoor.
+
+KF-SEL-07 
+
+Selector harus menampilkan status sistem kepada operator minimal: status koneksi ke Kereta Makan dan status koneksi ke Controller (Connected/Disconnected).
+
+KF-SEL-08 
+
+Selector harus menyediakan fungsi “uji koneksi” untuk memverifikasi bahwa perintah dapat diterima oleh Controller.
+
+KF-SEL-09
+
+Selector harus dapat memperoleh data lokasi dari GPS.
+
+KF-SEL-10
+
+Selector harus dapat mengirimkan data lokasi (koordinat dan timestamp) dari gps ke Kereta Makan.
+
+KF-SEL-11
+
+Selector tidak mengendalikan modul display (P4/P10) secara langsung karena seluruh kendali display dilakukan oleh Controller.
+
+KF-SEL-12
+
+Jika koneksi Selector ke Kereta Makan terputus, Selector harus tetap dapat beroperasi untuk mengirim perintah lokal ke Controller
+
+
+
+3.2 Kebutuhan Fungsional Controller
+
+       
+
+Kode
+
+Deskripsi
+
+KF-CTRL-01
+
+Controller harus dapat menerima perintah/perubahan konten dari Selector melalui USB
+
+KF-CTRL-02
+
+Controller harus dapat mengendalikan dan menampilkan konten pada panel LED P10 (outdoor) dan P4 (indoor) sesuai konfigurasi mapping panel.
+
+KF-CTRL-03
+
+Controller harus dapat menerapkan pembaruan konten tampilan secara konsisten pada seluruh panel yang terhubung.
+
+KF-CTRL-04 
+
+Controller harus dapat menyimpan dan menampilkan konten terakhir yang valid apabila tidak menerima pembaruan konten dari Selector dalam periode tertentu.
+
+KF-CTRL-05 
+
+Controller harus menyediakan informasi status dasar (ready/error/connected) yang dapat dibaca oleh Selector.
+
+KF-CTRL-06
+
+Controller harus mendukung konfigurasi terpisah antara tampilan indoor dan outdoor (layout atau konten berbeda) sesuai perintah dari Selector.
+
+
+
+3.3 Kebutuhan Fungsional Display PIDS
+
+
+
+Kode
+
+Deskripsi
+
+KF-DISP-01
+
+Sistem harus dapat menampilkan informasi pada 2 display outdoor berbasis LED P10 yang dikendalikan oleh Controller.
+
+KF-DISP-02
+
+Sistem harus dapat menampilkan informasi pada 2 display indoor berbasis LED P4 yang dikendalikan oleh Controller.
+
+KF-DISP-03
+
+Display PIDS harus dapat menerima konten tampilan dari Controller
+
+KF-DISP-04
+
+Display PIDS harus mampu menampilkan informasi perjalanan sesuai kebijakan operasi, seperti tujuan/rute, stasiun berikutnya, ETA, dan pesan operasional.
+
+KF-DISP-05
+
+Display PIDS harus tetap menampilkan konten terakhir yang diberikan Controller apabila tidak ada pembaruan konten berikutnya.
+
+
+
+Kebutuhan Non-Fungsional
+
+4.1 Kebutuhan Non-Fungsional Selector
+
+
+
+Kode
+
+Deskripsi
+
+KNF-SEL-01 
+
+Selector harus dapat menyala otomatis saat daya tersedia dan siap digunakan untuk operasi harian.
+
+KNF-SEL-02 
+
+Antarmuka operator pada Selector harus sederhana, mudah dipahami, dan meminimalkan kesalahan input
+
+KNF-SEL-03 
+
+Selector harus mampu menangani kondisi putus koneksi (ke Kereta Makan atau ke Controller) tanpa menyebabkan Controller/Display berhenti bekerja.
+
+
+
+4.2 Kebutuhan Non-Fungsional Controller
+
+
+
+Kode
+
+Deskripsi
+
+KNF-CTRL-01
+
+Controller harus mampu beroperasi kontinu untuk mengendalikan tampilan PIDS selama jam operasi kereta.
+
+KNF-CTRL-02
+
+Jika koneksi ke Selector terputus, Controller harus mempertahankan konten terakhir yang valid dan tidak menampilkan konten acak.
+
+KNF-CTRL-03
+
+embaruan konten dari Selector harus diterapkan dalam waktu yang cepat untuk kebutuhan informasi penumpang
+
+KNF-CTRL-04
+
+Controller harus menyediakan indikator status dasar (ready/error) untuk memudahkan troubleshooting.
+
+
+
+4.3 Kebutuhan Non-Fungsional Display PIDS
+
+
+
+Kode
+
+Deskripsi
+
+KNF-DISP-01 
+
+Display P10 outdoor harus tetap terbaca pada kondisi pencahayaan luar, dan display P4 indoor harus terbaca pada jarak pandang normal di dalam gerbong.
+
+KNF-DISP-02
+
+Display harus mampu beroperasi stabil selama jam operasional dengan gangguan minimal.
+
+KNF-DISP-03 
+
+Display dan pemasangannya harus tahan terhadap getaran dan kondisi lingkungan kereta.
+
+KNF-DISP-04 
+
+Instalasi display dan kabel harus aman, rapi, dan tidak membahayakan penumpang maupun petugas.
+
+
+
+Kebutuhan Perangkat Keras
+
+5.1  Kebutuhan Perangkat Keras Selector
+
+Kode
+
+Deskripsi
+
+PK-SEL-01
+
+Selector harus menggunakan Raspberry Pi 5 sebagai unit komputasi.
+
+PK-SEL-02
+
+Selector menggunakan linux sebagai operating system
+
+PK-SEL-03
+
+Selector harus menggunakan konektivitas jaringan Ethernet kereta.
+
+PK-SEL-04
+
+Selector harus memiliki media input operator (touchscreen display, GUI)
+
+PK-SEL-05
+
+Selector harus mendapat catu daya stabil dan dapat boot otomatis saat daya menyala.
+
+PK-SEL-06
+
+Selector harus ditempatkan pada lokasi yang mudah diakses operator dan aman dari gangguan fisik.
+
+5.2  Kebutuhan Perangkat Keras Controller
+
+Kode
+
+Deskripsi
+
+PK-CTRL-01
+
+Sistem harus menggunakan controller HD-W63 (WiFi + USB).
+
+PK-CTRL-02
+
+Controller harus mampu menggerakkan panel LED P4 dan P10 sesuai kapasitas port & konfigurasi mapping.
+
+5.3  Kebutuhan Perangkat Keras Display PIDS
+
+Kode
+
+Deskripsi
+
+PK-PIDS-OUT-01
+
+Display outdoor harus menggunakan modul LED P10 dan dipasang pada area luar kereta dengan penutup yang sesuai.
+
+PK-PIDS-IN-01
+
+Display indoor harus menggunakan modul LED P4 dan dipasang pada area dalam kereta dengan perlindungan yang sesuai.
+
+PK-PIDS-02
+
+Display harus mendapat catu daya sesuai kebutuhan modul LED.
+
+PK-PIDS-03
+
+Jalur kabel data panel LED harus mengikuti standar instalasi.
+
+
+
