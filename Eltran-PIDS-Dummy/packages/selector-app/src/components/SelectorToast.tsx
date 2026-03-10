@@ -16,7 +16,7 @@ const SelectorToast = React.memo(function SelectorToast({ toast, onClose }: Sele
     if (!toast) return null;
     return (
         <AnimatePresence>
-            <motion.div key={toast.id} initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.95 }} className="fixed bottom-10 right-10 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]">
+            <motion.div key={toast.id} initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.95 }} className="fixed bottom-10 right-10 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border-none border-slate-100 min-w-[350px] max-w-[420px]">
                 <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1d2d6a]" />
                 <div className="relative p-5 pl-7 pb-6">
                     <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50"><X size={18} strokeWidth={2.5} /></button>

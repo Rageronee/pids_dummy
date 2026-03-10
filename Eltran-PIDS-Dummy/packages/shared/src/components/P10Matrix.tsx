@@ -20,7 +20,7 @@ export const P10Matrix = ({
     color = '#ff0000',
     speed = 50,
     columns = 128,
-    fixedColumns = 17,
+    fixedColumns = 16,
     dotSize = 2,
     gap = 2,
     padding = 4,
@@ -231,8 +231,8 @@ export const P10Matrix = ({
     }, [fixedText, LED_WIDTH, LED_HEIGHT, DOT_SIZE, GAP, PADDING, FONT_SIZE, color]);
 
     return (
-        <div className="inline-block p-4 bg-[#111] rounded-2xl border-4 border-[#222] shadow-2xl">
-            <canvas ref={canvasRef} className="block" />
+        <div className="w-full flex items-center justify-center bg-[#111] overflow-hidden">
+            <canvas ref={canvasRef} className="w-full h-auto block" style={{ imageRendering: 'pixelated' }} />
         </div>
     );
 };

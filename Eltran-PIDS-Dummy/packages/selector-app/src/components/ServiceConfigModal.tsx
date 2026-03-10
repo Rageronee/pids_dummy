@@ -60,7 +60,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
                 <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-visible flex flex-col">
                     <div className="bg-[#1d2d6a] px-8 py-5 text-white flex justify-between items-center shrink-0 rounded-t-[2rem]">
                         <div className="flex items-center gap-4">
-                            <div className="bg-white/10 p-3 rounded-2xl"><Train className="text-blue-300" size={28} /></div>
+                            <div className="p-3 rounded-2xl"><Train className="text-[#ee6f1f]" size={28} /></div>
                             <div>
                                 <h2 className="text-2xl font-black uppercase tracking-tight">Service Configuration</h2>
                                 <p className="text-[10px] font-bold text-white/60 tracking-widest uppercase">Select Train Route and Unit Size</p>

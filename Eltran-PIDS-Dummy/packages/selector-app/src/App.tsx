@@ -8,7 +8,7 @@
  * - A change in toast won't re-render the TV monitor
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Crosshair, Route } from 'lucide-react';
+import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Navigation, Route, ChevronRight } from 'lucide-react';
 import { LoginScreen } from './components/LoginScreen';
 import { useSelectorSync } from './hooks/useSelectorSync';
 import TVMonitor from './components/TVMonitor';
@@ -100,9 +100,6 @@ function App() {
         showNotification('Configuration Saved', `Unit configuration set to Gerbong ${gerbong}`);
     }, [sendData, showNotification]);
 
-    const handleUpdateDisplayPreferences = useCallback((prefs: Partial<typeof data>) => {
-        sendData(prefs);
-    }, [sendData]);
 
     const handleSetLedSpeed = useCallback((speedValue: number) => {
         setMasterSyncedLedSpeed(speedValue);
@@ -119,53 +116,69 @@ function App() {
     return (
         <div className="flex flex-col h-[100dvh] w-full bg-[#f4f7f9] text-slate-900 font-sans overflow-hidden select-none">
             {/* ========== TOP BAR ========== */}
-            <header className="h-[100px] bg-[#1d2d6a] text-white flex items-center px-10 shadow-md shrink-0 justify-between">
-                <button onClick={() => setShowServiceModal(true)} className="flex items-center gap-6 text-left group transition-transform active:scale-95">
-                    <div className="w-[60px] h-[60px] bg-white rounded-[16px] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
-                        <Train className="text-[#1d2d6a]" size={36} />
+            <header className="h-[90px] bg-[#1d2d6a] text-white flex items-center px-6 shadow-md shrink-0 justify-between">
+                {/* Service Configuration Button*/}
+                <button
+                    onClick={() => setShowServiceModal(true)}
+                    className="flex items-center gap-4 text-left group transition-all active:scale-95"
+                >
+                    <div className="w-[56px] h-[56px] bg-white rounded-[14px] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
+                        <Train className="text-[#1d2d6a]" size={32} />
                     </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-3xl font-black uppercase tracking-tight group-hover:text-blue-200 transition-colors duration-300">{masterSyncedServiceName || 'SERVICE NOT SET'}</h1>
-                        <p className="text-xs font-bold text-blue-200/60 tracking-widest mt-1 uppercase group-hover:text-blue-100 transition-colors duration-300">EXECUTIVE CLASS • {masterSyncedNumber || 'TRAIN NO. 1'}</p>
+                    <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-blue-200/80 tracking-[0.25em] uppercase">Service Config</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-2xl font-black uppercase tracking-tight group-hover:text-blue-100 transition-colors truncate">{masterSyncedServiceName || 'NOT SET'}</h1>
+                            <ChevronRight className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" size={24} />
+                        </div>
                     </div>
                 </button>
 
-                <div className="flex items-center gap-12">
-                    <div className="flex flex-col items-end text-right">
-                        <span className="text-[10px] font-black text-blue-200/60 tracking-wider group-hover:text-blue-200 transition-colors">SERVICE</span>
-                        <span className="text-xl font-black tracking-tight uppercase group-hover:text-white transition-colors">{masterSyncedServiceName ? 'REGULAR' : '---'}</span>
+                <div className="flex items-center gap-6">
+                    <div className="hidden lg:flex flex-col items-end text-right">
+                        <span className="text-[10px] font-black text-white/40 tracking-[0.2em] uppercase mb-0.5">Category</span>
+                        <span className="text-2xl font-black tracking-tight uppercase leading-none">{masterSyncedServiceName ? 'REGULAR' : '---'}</span>
                     </div>
-                    <div className="w-px h-10 bg-white/20" />
+
+                    <div className="w-px h-10 bg-white/20 mx-2" />
+
                     <div className="flex flex-col items-end text-right">
-                        <span className="text-[10px] font-black text-blue-200/60 tracking-wider">UNIT</span>
-                        <span className="text-xl font-black tracking-widest uppercase">{masterSyncedNumber || '---'}</span>
+                        <span className="text-[10px] font-black text-white/40 tracking-[0.2em] uppercase mb-0.5">Unit</span>
+                        <span className="text-2xl font-black tracking-widest uppercase leading-none">{masterSyncedNumber || '---'}</span>
                     </div>
-                    <div className="w-px h-10 bg-white/20" />
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-blue-200/60 tracking-wider">DESTINATION</span>
-                        <span className="text-2xl font-black text-[#ee6f1f] tracking-tight uppercase">
-                            {stations.length > 0 ? stations[stations.length - 1] : '---'}
-                        </span>
+
+                    {/* Destination Section - Flex Optimized */}
+                    <div className="flex items-center gap-4 bg-[#ee6f1f] py-2 px-6 rounded-2xl shadow-lg border border-white/20 max-w-[350px] flex-1">
+                        <div className="flex flex-col items-end min-w-0 flex-1">
+                            <span className="text-2xl font-black text-white tracking-tight uppercase truncate w-full text-right">
+                                {stations.length > 0 ? stations[stations.length - 1] : '---'}
+                            </span>
+                        </div>
+                        <div className="w-[44px] h-[44px] rounded-xl flex items-center justify-center shrink-0">
+                            <Navigation size={24} className="text-white rotate-45" />
+                        </div>
                     </div>
                 </div>
             </header>
 
             {/* ========== MAIN CONTENT ========== */}
-            <div className="flex gap-6 p-6 flex-1 min-h-0">
+            <div className="flex gap-4 p-4 flex-1 min-h-0">
 
                 {/* LEFT COLUMN - Information Display (65%) */}
                 <div className="flex-[0.65] flex flex-col gap-6">
                     {/* CURRENT STATION */}
-                    <div className="bg-white rounded-[32px] shadow-sm p-8 border border-slate-200 flex flex-col">
-                        <div className="flex items-center gap-3 text-slate-400 font-black text-xs tracking-widest uppercase mb-4">
-                            <Crosshair size={18} className="text-[#ee6f1f]" /> NOW PASSING / STOPPED AT
+                    <div className="bg-white rounded-[24px] shadow-sm p-6 border border-slate-200 flex flex-col">
+                        <div className="flex items-center gap-3 text-[#1d2d6a] font-extrabold text-xl tracking-widest uppercase mb-3">
+                            <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT POSITION
                         </div>
-                        <h2 className="text-6xl font-black text-[#1d2d6a] tracking-tight uppercase leading-[1.1] ">{currentStation}</h2>
+                        <h2 className="text-5xl font-black text-[#ee6f1f] tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
                     </div>
 
                     {/* ITINERARY */}
-                    <div className="bg-white rounded-[32px] shadow-sm py-6 px-8 border border-slate-200 flex-1 flex flex-col min-h-0 overflow-hidden">
-                        <div className="flex items-center gap-3 text-slate-400 font-black text-xs tracking-widest uppercase mb-4 shrink-0">
+                    <div className="bg-white rounded-[24px] shadow-sm py-5 px-6 border border-slate-200 flex-1 flex flex-col min-h-0 overflow-hidden">
+                        <div className="flex items-center gap-3 text-slate-400 font-extrabold text-sm tracking-widest uppercase mb-3 shrink-0">
                             <Route size={18} /> DETAILED ROUTES
                         </div>
 
@@ -174,17 +187,17 @@ function App() {
                             <div className="absolute left-[61px] top-[40px] bottom-6 w-[4px] bg-slate-100 rounded-full" />
 
                             {/* Next Stop */}
-                            <div className="flex items-center gap-6 mb-4 relative z-10 w-full group shrink-0">
+                            <div className="flex items-center gap-6 mb-4 relative z-10 w-full shrink-0">
                                 <div className="w-[68px] h-[68px] bg-white border-[4px] border-[#1d2d6a] rounded-[22px] flex items-center justify-center flex-shrink-0 shadow-sm relative z-10 mt-2">
                                     <Train className="text-[#1d2d6a]" size={36} />
                                 </div>
-                                <div className="flex-1 bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-3xl p-5 shadow-md flex justify-between items-center relative overflow-hidden">
+                                <div className="flex-1 bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-3xl p-5 shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                                     <div className="flex flex-col relative z-10 text-white">
-                                        <span className="text-[#ee6f1f] text-[10px] font-black uppercase tracking-widest mb-1 opacity-90">NEXT STOP</span>
+                                        <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Next Station</span>
                                         <span className="text-3xl font-black tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
                                     </div>
                                     <div className="text-right flex flex-col items-end relative z-10 shrink-0">
-                                        <span className="text-white/60 text-[10px] font-black uppercase tracking-wider block mb-1">ETA</span>
+                                        <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
                                         <span className="text-3xl font-black text-white">
                                             {stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--'}
                                         </span>
@@ -195,22 +208,23 @@ function App() {
                             {/* Upcoming Stops Generator */}
                             {stations.length > 2 && (() => {
                                 const renderUpcoming = [];
-                                for (let i = 2; i < Math.min(stations.length, 4); i++) {
+                                // i = 1 is the Next Station already featured above, so we start from i = 2
+                                for (let i = 2; i < Math.min(stations.length, 5); i++) {
                                     const upcomingStation = stations[(currentIndex + i) % stations.length];
                                     if (upcomingStation !== stations[stations.length - 1] && upcomingStation !== stations[currentIndex]) {
                                         renderUpcoming.push(
-                                            <div key={`upcoming-${i}`} className="flex items-center gap-6 relative z-10 w-full opacity-80 mb-3 transform transition-transform hover:scale-[1.01] hover:opacity-100 shrink-0">
+                                            <div key={`upcoming-${i}`} className="flex items-center gap-6 relative z-10 w-full mb-3 shrink-0">
                                                 <div className="w-[68px] flex justify-center relative z-10">
                                                     <div className="w-[20px] h-[20px] bg-slate-300 rounded-full border-[5px] border-white shadow-sm mt-3" />
                                                 </div>
-                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-colors hover:border-slate-200">
+                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">
                                                     <div className="flex flex-col">
-                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-0.5">UPCOMING</span>
+                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
                                                         <span className="text-lg font-bold text-slate-700 uppercase tracking-tight">{upcomingStation}</span>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-wider block mb-1">ETA</span>
-                                                        <span className="text-xl font-bold text-slate-500">
+                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
+                                                        <span className="text-xl font-bold text-slate-600">
                                                             {new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
                                                         </span>
                                                     </div>
@@ -230,18 +244,16 @@ function App() {
                     <div className="flex gap-4 h-[80px] shrink-0">
                         {/* TIMESTAMP STATUS */}
                         <div className="flex-1 bg-white rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200">
-                            <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mr-4">
+                            <div className="w-12 h-12 rounded-full bg-[]]/10 text-[#ee6f1f] flex items-center justify-center shrink-0 mr-4">
                                 <Clock size={24} strokeWidth={2.5} />
                             </div>
                             <div className="flex flex-col flex-1 border-r border-slate-100 mr-4 pr-4">
-                                <span className="text-slate-400 text-[9px] font-black tracking-widest uppercase mb-0.5">LOCAL TIME</span>
-                                <span className="text-[#1d2d6a] font-black text-2xl tracking-tighter leading-none">
+                                <span className="text-[#1d2d6a] font-black text-3xl tracking-tighter leading-none">
                                     {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
                                 </span>
                             </div>
                             <div className="flex flex-col flex-1 pl-2">
-                                <span className="text-slate-400 text-[9px] font-black tracking-widest uppercase mb-1">CURRENT DATE</span>
-                                <span className="text-slate-700 font-bold text-sm tracking-tight leading-none pt-1">
+                                <span className="text-slate-700 font-bold text-3xl tracking-tighter leading-none pt-1">
                                     {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
                                 </span>
                             </div>
@@ -252,20 +264,14 @@ function App() {
 
                 {/* RIGHT COLUMN - Action Controls (35%) */}
                 <div className="flex-[0.35] flex flex-col gap-6">
-                    <button onClick={handlePrev} className="flex-1 relative bg-white hover:bg-slate-50 border-2 border-[#ff8d4a] text-[#ee6f1f] rounded-[32px] shadow-sm flex flex-col items-center justify-center gap-4 transition-transform active:scale-95 group overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#ee6f1f]/5 to-transparent pointer-events-none" />
-                        <ChevronsUp size={72} className="transition-transform group-hover:-translate-y-2 stroke-[2.5]" />
-                        <span className="text-3xl font-black uppercase tracking-tight">Previous Station</span>
-                        <div className="absolute top-6 left-6 w-3 h-3 bg-[#ee6f1f]/20 rounded-full" />
-                        <div className="absolute right-6 top-6 w-3 h-3 bg-[#ee6f1f]/20 rounded-full" />
+                    <button onClick={handlePrev} className="flex-1 bg-[#ee6f1f] hover:bg-[#ee6f1f] text-white rounded-[32px] shadow-sm flex flex-col items-center justify-center gap-4 transition-all active:scale-95 group overflow-hidden">
+                        <ChevronsUp size={72} className="transition-transform group-hover:-translate-y-2 stroke-[3]" />
+                        <span className="text-3xl font-black uppercase tracking-tight text-white">Previous Station</span>
                     </button>
 
-                    <button onClick={handleNext} className="flex-1 relative bg-gradient-to-b from-[#ee6f1f] to-[#e45a05] hover:from-[#f37c35] hover:to-[#eb6009] text-white rounded-[32px] shadow-lg flex flex-col items-center justify-center gap-4 transition-transform active:scale-95 group overflow-hidden border border-[#f58d52]">
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none mix-blend-overlay" />
-                        <span className="text-3xl font-black uppercase tracking-tight relative z-10">Next Station</span>
-                        <ChevronsDown size={72} className="relative z-10 transition-transform group-hover:translate-y-2 stroke-[2.5]" />
-                        <div className="absolute bottom-6 left-6 w-3 h-3 bg-white/20 rounded-full" />
-                        <div className="absolute right-6 bottom-6 w-3 h-3 bg-white/20 rounded-full" />
+                    <button onClick={handleNext} className="flex-1 bg-[#ee6f1f] hover:bg-[#ee6f1f] text-white rounded-[32px] shadow-sm flex flex-col items-center justify-center gap-4 transition-all active:scale-95 group overflow-hidden">
+                        <span className="text-3xl font-black uppercase tracking-tight">Next Station</span>
+                        <ChevronsDown size={72} className="transition-transform group-hover:translate-y-2 stroke-[3]" />
                     </button>
 
                     <div className="flex gap-4 mt-2 h-[80px]">
@@ -308,7 +314,6 @@ function App() {
                     showTVPreview={showTVPreview}
                     handleToggleTV={handleToggleTV}
                     handleLogout={handleLogout}
-                    onUpdateDisplayPreferences={handleUpdateDisplayPreferences}
                 />
 
                 <TVMonitor show={showTVPreview} onClose={handleToggleTV} data={data} currentStation={currentStation} nextStation={nextStation} masterSyncedServiceName={masterSyncedServiceName} masterSyncedNumber={masterSyncedNumber} speed={speed} altitude={altitude} temp={temp} />
