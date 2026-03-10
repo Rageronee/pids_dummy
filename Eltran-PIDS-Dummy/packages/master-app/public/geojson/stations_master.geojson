@@ -1,0 +1,1822 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "id": "GMR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.8308, -6.1762]
+            },
+            "properties": {
+                "name": "GAMBIR",
+                "city": "JAKARTA",
+                "railway_ref": "GMR",
+                "ip_address": "192.168.5.1",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JKT",
+                "alamat": "Jl. Medan Merdeka Timur",
+                "provinsi": "DKI Jakarta",
+                "kabupaten_kota": "Jakarta Pusat",
+                "kecamatan": "Gambir",
+                "kelurahan_desa": "Gambir",
+                "kode_pos": "10110"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "JAKK",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.8125, -6.1376]
+            },
+            "properties": {
+                "name": "JAKARTA KOTA",
+                "city": "JAKARTA",
+                "railway_ref": "JAKK",
+                "ip_address": "192.168.5.2",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JKT",
+                "alamat": "Jl. Stasiun Kota No.1",
+                "provinsi": "DKI Jakarta",
+                "kabupaten_kota": "Jakarta Barat",
+                "kecamatan": "Taman Sari",
+                "kelurahan_desa": "Pinangsia",
+                "kode_pos": "11110"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PSEN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.8467, -6.1844]
+            },
+            "properties": {
+                "name": "PASAR SENEN",
+                "city": "JAKARTA",
+                "railway_ref": "PSEN",
+                "ip_address": "192.168.5.19",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JKT",
+                "alamat": "Jl. Stasiun Senen",
+                "provinsi": "DKI Jakarta",
+                "kabupaten_kota": "Jakarta Pusat",
+                "kecamatan": "Senen",
+                "kelurahan_desa": "Paseban",
+                "kode_pos": "10440"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "JTE",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.8567, -6.2167]
+            },
+            "properties": {
+                "name": "JATINEGARA",
+                "city": "JAKARTA",
+                "railway_ref": "JTE",
+                "ip_address": "192.168.5.20",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JKT",
+                "alamat": "Jl. Raya Jatinegara Timur",
+                "provinsi": "DKI Jakarta",
+                "kabupaten_kota": "Jakarta Timur",
+                "kecamatan": "Jatinegara",
+                "kelurahan_desa": "Kampung Melayu",
+                "kode_pos": "13330"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BKS",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.9994, -6.2361]
+            },
+            "properties": {
+                "name": "BEKASI",
+                "city": "BEKASI",
+                "railway_ref": "BKS",
+                "ip_address": "192.168.5.3",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BKS",
+                "alamat": "Jl. Ir. H. Juanda No.1",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Bekasi",
+                "kecamatan": "Bekasi Timur",
+                "kelurahan_desa": "Margahayu",
+                "kode_pos": "17113"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "CKP",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.4467, -6.4267]
+            },
+            "properties": {
+                "name": "CIKAMPEK",
+                "city": "CIKAMPEK",
+                "railway_ref": "CKP",
+                "ip_address": "192.168.5.21",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "CKP",
+                "alamat": "Jl. Stasiun Cikampek",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Karawang",
+                "kecamatan": "Cikampek",
+                "kelurahan_desa": "Cikampek Timur",
+                "kode_pos": "41373"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KAG",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.3019, -6.3235]
+            },
+            "properties": {
+                "name": "KARAWANG",
+                "city": "KARAWANG",
+                "railway_ref": "KAG",
+                "ip_address": "192.168.5.4",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KRW",
+                "alamat": "Jl. Arif Rahman Hakim",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Karawang",
+                "kecamatan": "Karawang Barat",
+                "kelurahan_desa": "Karawang",
+                "kode_pos": "41311"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PURW",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.4267, -6.5567]
+            },
+            "properties": {
+                "name": "PURWAKARTA",
+                "city": "PURWAKARTA",
+                "railway_ref": "PURW",
+                "ip_address": "192.168.5.22",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PUR",
+                "alamat": "Jl. Stasiun Purwakarta",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Purwakarta",
+                "kecamatan": "Purwakarta",
+                "kelurahan_desa": "Nagri Kidul",
+                "kode_pos": "41115"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "CN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [108.5567, -6.7069]
+            },
+            "properties": {
+                "name": "CIREBON",
+                "city": "CIREBON",
+                "railway_ref": "CN",
+                "ip_address": "192.168.5.5",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "CRB",
+                "alamat": "Jl. Siliwangi No.82",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Cirebon",
+                "kecamatan": "Kejaksan",
+                "kelurahan_desa": "Kejaksan",
+                "kode_pos": "45123"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "CNP",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [108.5367, -6.7269]
+            },
+            "properties": {
+                "name": "CIREBON PRUJAKAN",
+                "city": "CIREBON",
+                "railway_ref": "CNP",
+                "ip_address": "192.168.5.23",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "CRB",
+                "alamat": "Jl. Yos Sudarso",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Cirebon",
+                "kecamatan": "Pekalipan",
+                "kelurahan_desa": "Pekalipan",
+                "kode_pos": "45117"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "CMI",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.5421, -6.8842]
+            },
+            "properties": {
+                "name": "CIMAHI",
+                "city": "CIMAHI",
+                "railway_ref": "CMI",
+                "ip_address": "192.168.5.6",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "CMI",
+                "alamat": "Jl. Stasiun Cimahi",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Cimahi",
+                "kecamatan": "Cimahi Tengah",
+                "kelurahan_desa": "Cimahi",
+                "kode_pos": "40511"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BD",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.6036, -6.9125]
+            },
+            "properties": {
+                "name": "BANDUNG",
+                "city": "BANDUNG",
+                "railway_ref": "BD",
+                "ip_address": "192.168.5.7",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BDG",
+                "alamat": "Jl. Stasiun Selatan No.1",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Bandung",
+                "kecamatan": "Regol",
+                "kelurahan_desa": "Kebon Kalapa",
+                "kode_pos": "40253"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KCD",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.6536, -6.9525]
+            },
+            "properties": {
+                "name": "KIARACONDONG",
+                "city": "BANDUNG",
+                "railway_ref": "KCD",
+                "ip_address": "192.168.5.24",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BDG",
+                "alamat": "Jl. Kiaracondong",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Bandung",
+                "kecamatan": "Kiaracondong",
+                "kelurahan_desa": "Kebon Jayanti",
+                "kode_pos": "40283"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "CCL",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.7636, -7.0125]
+            },
+            "properties": {
+                "name": "CICALLENGKA",
+                "city": "CICALLENGKA",
+                "railway_ref": "CCL",
+                "ip_address": "192.168.5.25",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "CCL",
+                "alamat": "Jl. Raya Cicalengka",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Bandung",
+                "kecamatan": "Cicalengka",
+                "kelurahan_desa": "Cicalengka Wetan",
+                "kode_pos": "40395"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "GRUT",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.9036, -7.2125]
+            },
+            "properties": {
+                "name": "GARUT",
+                "city": "GARUT",
+                "railway_ref": "GRUT",
+                "ip_address": "192.168.5.26",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "GRT",
+                "alamat": "Jl. Stasiun Garut",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Garut",
+                "kecamatan": "Tarogong Kidul",
+                "kelurahan_desa": "Tarogong",
+                "kode_pos": "44151"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "TSM",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [108.2207, -7.3278]
+            },
+            "properties": {
+                "name": "TASIKMALAYA",
+                "city": "TASIKMALAYA",
+                "railway_ref": "TSM",
+                "ip_address": "192.168.5.8",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "TSM",
+                "alamat": "Jl. Stasiun No.1",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Tasikmalaya",
+                "kecamatan": "Cipedes",
+                "kelurahan_desa": "Nagarasari",
+                "kode_pos": "46133"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BJR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [108.5407, -7.3678]
+            },
+            "properties": {
+                "name": "BANJAR",
+                "city": "BANJAR",
+                "railway_ref": "BJR",
+                "ip_address": "192.168.5.27",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BJR",
+                "alamat": "Jl. Stasiun Banjar",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Banjar",
+                "kecamatan": "Banjar",
+                "kelurahan_desa": "Hegarsari",
+                "kode_pos": "46311"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KTA",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.9117, -7.7258]
+            },
+            "properties": {
+                "name": "KUTOARJO",
+                "city": "KUTOARJO",
+                "railway_ref": "KTA",
+                "ip_address": "192.168.5.9",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KTA",
+                "alamat": "Jl. Stasiun Kutoarjo",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Purworejo",
+                "kecamatan": "Kutoarjo",
+                "kelurahan_desa": "Kutoarjo",
+                "kode_pos": "54213"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "YK",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [110.3633, -7.7891]
+            },
+            "properties": {
+                "name": "YOGYAKARTA",
+                "city": "YOGYAKARTA",
+                "railway_ref": "YK",
+                "ip_address": "192.168.5.10",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "YOG",
+                "alamat": "Jl. Mangkubumi No.1",
+                "provinsi": "DIY",
+                "kabupaten_kota": "Kota Yogyakarta",
+                "kecamatan": "Jetis",
+                "kelurahan_desa": "Bumijo",
+                "kode_pos": "55232"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SLO",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [110.8213, -7.5579]
+            },
+            "properties": {
+                "name": "SOLO BALAPAN",
+                "city": "SURAKARTA",
+                "railway_ref": "SLO",
+                "ip_address": "192.168.5.11",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SLO",
+                "alamat": "Jl. Wolter Monginsidi No.112",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Surakarta",
+                "kecamatan": "Banjarsari",
+                "kelurahan_desa": "Kestalan",
+                "kode_pos": "57133"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SLW",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [110.8413, -7.5779]
+            },
+            "properties": {
+                "name": "SOLO TAWANG",
+                "city": "SURAKARTA",
+                "railway_ref": "SLW",
+                "ip_address": "192.168.5.28",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SLO",
+                "alamat": "Jl. Adi Sucipto",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Surakarta",
+                "kecamatan": "Banjarsari",
+                "kelurahan_desa": "Joglo",
+                "kode_pos": "57139"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KLN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [110.6033, -7.7091]
+            },
+            "properties": {
+                "name": "KLATEN",
+                "city": "KLATEN",
+                "railway_ref": "KLN",
+                "ip_address": "192.168.5.29",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KLT",
+                "alamat": "Jl. Stasiun Klaten",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Klaten",
+                "kecamatan": "Klaten Tengah",
+                "kelurahan_desa": "Bareng Lor",
+                "kode_pos": "57411"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [111.02056, -7.42861]
+            },
+            "properties": {
+                "name": "SRAGEN",
+                "city": "SRAGEN",
+                "railway_ref": "SR",
+                "ip_address": "192.168.5.30",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SRG",
+                "alamat": "Jl. Stasiun Sragen",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Sragen",
+                "kecamatan": "Sragen",
+                "kelurahan_desa": "Sragen Kulon",
+                "kode_pos": "57211"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [111.5238, -7.6188]
+            },
+            "properties": {
+                "name": "MADIUN",
+                "city": "MADIUN",
+                "railway_ref": "MN",
+                "ip_address": "192.168.5.12",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MDN",
+                "alamat": "Jl. Kompol Sunaryo",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Madiun",
+                "kecamatan": "Manguharjo",
+                "kelurahan_desa": "Madiun Lor",
+                "kode_pos": "63121"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KD",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.0133, -7.8116]
+            },
+            "properties": {
+                "name": "KEDIRI",
+                "city": "KEDIRI",
+                "railway_ref": "KD",
+                "ip_address": "192.168.5.13",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KDR",
+                "alamat": "Jl. Stasiun Kediri",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Kediri",
+                "kecamatan": "Kota",
+                "kelurahan_desa": "Pocanan",
+                "kode_pos": "64129"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BL",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.1617, -8.0996]
+            },
+            "properties": {
+                "name": "BLITAR",
+                "city": "BLITAR",
+                "railway_ref": "BL",
+                "ip_address": "192.168.5.14",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BLT",
+                "alamat": "Jl. Stasiun Blitar",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Blitar",
+                "kecamatan": "Sananwetan",
+                "kelurahan_desa": "Sananwetan",
+                "kode_pos": "66137"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "ML",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.636, -7.9771]
+            },
+            "properties": {
+                "name": "MALANG",
+                "city": "MALANG",
+                "railway_ref": "ML",
+                "ip_address": "192.168.5.15",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MLG",
+                "alamat": "Jl. Trunojoyo No.10",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Malang",
+                "kecamatan": "Klojen",
+                "kelurahan_desa": "Klojen",
+                "kode_pos": "65111"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SMT",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [110.4267, -6.9644]
+            },
+            "properties": {
+                "name": "SEMARANG TAWANG",
+                "city": "SEMARANG",
+                "railway_ref": "SMT",
+                "ip_address": "192.168.5.16",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SMG",
+                "alamat": "Jl. Taman Tawang No.1",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Kota Semarang",
+                "kecamatan": "Semarang Utara",
+                "kelurahan_desa": "Tanjung Mas",
+                "kode_pos": "50174"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SMP",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [110.4067, -6.9844]
+            },
+            "properties": {
+                "name": "SEMARANG PONCOL",
+                "city": "SEMARANG",
+                "railway_ref": "SMP",
+                "ip_address": "192.168.5.31",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SMG",
+                "alamat": "Jl. Imam Bonjol No.203",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Kota Semarang",
+                "kecamatan": "Semarang Utara",
+                "kelurahan_desa": "Tanjung Mas",
+                "kode_pos": "50174"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "TGL",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.1407, -6.8769]
+            },
+            "properties": {
+                "name": "TEGAL",
+                "city": "TEGAL",
+                "railway_ref": "TGL",
+                "ip_address": "192.168.5.32",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "TGL",
+                "alamat": "Jl. Stasiun Tegal",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Kota Tegal",
+                "kecamatan": "Tegal Timur",
+                "kelurahan_desa": "Mangkukusuman",
+                "kode_pos": "52124"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PKN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.6707, -6.8869]
+            },
+            "properties": {
+                "name": "PEKALONGAN",
+                "city": "PEKALONGAN",
+                "railway_ref": "PKN",
+                "ip_address": "192.168.5.33",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PKL",
+                "alamat": "Jl. Stasiun Pekalongan",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Kota Pekalongan",
+                "kecamatan": "Pekalongan Barat",
+                "kelurahan_desa": "Panjang Wetan",
+                "kode_pos": "51119"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PWT",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.2607, -7.4269]
+            },
+            "properties": {
+                "name": "PURWOKERTO",
+                "city": "PURWOKERTO",
+                "railway_ref": "PWT",
+                "ip_address": "192.168.5.34",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PWT",
+                "alamat": "Jl. Jend. Sudirman No.1",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Banyumas",
+                "kecamatan": "Purwokerto Timur",
+                "kelurahan_desa": "Purwokerto Lor",
+                "kode_pos": "53114"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KBN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.0607, -7.5569]
+            },
+            "properties": {
+                "name": "KEBUMEN",
+                "city": "KEBUMEN",
+                "railway_ref": "KBN",
+                "ip_address": "192.168.5.35",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KBM",
+                "alamat": "Jl. Stasiun Kebumen",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Kebumen",
+                "kecamatan": "Kebumen",
+                "kelurahan_desa": "Kebumen",
+                "kode_pos": "54311"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KYA",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.2307, -7.5369]
+            },
+            "properties": {
+                "name": "KROYA",
+                "city": "KROYA",
+                "railway_ref": "KYA",
+                "ip_address": "192.168.5.36",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KYA",
+                "alamat": "Jl. Stasiun Kroya",
+                "provinsi": "Jawa Tengah",
+                "kabupaten_kota": "Cilacap",
+                "kecamatan": "Kroya",
+                "kelurahan_desa": "Kroya Wetan",
+                "kode_pos": "53221"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SBI",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.7321, -7.2466]
+            },
+            "properties": {
+                "name": "SURABAYA PASARTURI",
+                "city": "SURABAYA",
+                "railway_ref": "SBI",
+                "ip_address": "192.168.5.17",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SBY",
+                "alamat": "Jl. Stasiun Pasar Turi",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Surabaya",
+                "kecamatan": "Bubutan",
+                "kelurahan_desa": "Bubutan",
+                "kode_pos": "60174"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SGU",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.7517, -7.2647]
+            },
+            "properties": {
+                "name": "SURABAYA GUBENG",
+                "city": "SURABAYA",
+                "railway_ref": "SGU",
+                "ip_address": "192.168.5.18",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SBY",
+                "alamat": "Jl. Gubeng Masjid No.1",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Surabaya",
+                "kecamatan": "Gubeng",
+                "kelurahan_desa": "Gubeng",
+                "kode_pos": "60281"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "WKRO",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.7121, -7.2866]
+            },
+            "properties": {
+                "name": "SURABAYA WONOKROMO",
+                "city": "SURABAYA",
+                "railway_ref": "WKRO",
+                "ip_address": "192.168.5.37",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SBY",
+                "alamat": "Jl. Wonokromo",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Surabaya",
+                "kecamatan": "Wonokromo",
+                "kelurahan_desa": "Wonokromo",
+                "kode_pos": "60243"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MDN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.4267, -7.4666]
+            },
+            "properties": {
+                "name": "MOJOKERTO",
+                "city": "MOJOKERTO",
+                "railway_ref": "MDN",
+                "ip_address": "192.168.5.38",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MJK",
+                "alamat": "Jl. Stasiun Mojokerto",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Mojokerto",
+                "kecamatan": "Prajurit Kulon",
+                "kelurahan_desa": "Prajurit Kulon",
+                "kode_pos": "61321"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "JMG",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.2367, -7.5466]
+            },
+            "properties": {
+                "name": "JOMBANG",
+                "city": "JOMBANG",
+                "railway_ref": "JMG",
+                "ip_address": "192.168.5.39",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JBG",
+                "alamat": "Jl. Stasiun Jombang",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Jombang",
+                "kecamatan": "Jombang",
+                "kelurahan_desa": "Jombatan",
+                "kode_pos": "61419"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KTS",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.1467, -7.6066]
+            },
+            "properties": {
+                "name": "KERTOSONO",
+                "city": "KERTOSONO",
+                "railway_ref": "KTS",
+                "ip_address": "192.168.5.40",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KTS",
+                "alamat": "Jl. Stasiun Kertosono",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Nganjuk",
+                "kecamatan": "Kertosono",
+                "kelurahan_desa": "Kertosono",
+                "kode_pos": "64311"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "NGU",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [111.9067, -7.6066]
+            },
+            "properties": {
+                "name": "NGANJUK",
+                "city": "NGANJUK",
+                "railway_ref": "NGU",
+                "ip_address": "192.168.5.41",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "NJU",
+                "alamat": "Jl. Stasiun Nganjuk",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Nganjuk",
+                "kecamatan": "Nganjuk",
+                "kelurahan_desa": "Nganjuk",
+                "kode_pos": "64411"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "NGW",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [111.4467, -7.4066]
+            },
+            "properties": {
+                "name": "NGAWI",
+                "city": "NGAWI",
+                "railway_ref": "NGW",
+                "ip_address": "192.168.5.42",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "NGW",
+                "alamat": "Jl. Stasiun Ngawi",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Ngawi",
+                "kecamatan": "Ngawi",
+                "kelurahan_desa": "Ngawi",
+                "kode_pos": "63211"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PRN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.8867, -7.6366]
+            },
+            "properties": {
+                "name": "PASURUAN",
+                "city": "PASURUAN",
+                "railway_ref": "PRN",
+                "ip_address": "192.168.5.43",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PSR",
+                "alamat": "Jl. Stasiun Pasuruan",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Pasuruan",
+                "kecamatan": "Panggungrejo",
+                "kelurahan_desa": "Panggungrejo",
+                "kode_pos": "67511"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PRB",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [113.2067, -7.7566]
+            },
+            "properties": {
+                "name": "PROBOLINGGO",
+                "city": "PROBOLINGGO",
+                "railway_ref": "PRB",
+                "ip_address": "192.168.5.44",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PBL",
+                "alamat": "Jl. Stasiun Probolinggo",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Kota Probolinggo",
+                "kecamatan": "Kademangan",
+                "kelurahan_desa": "Kademangan",
+                "kode_pos": "67211"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "JBR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [113.6867, -8.1066]
+            },
+            "properties": {
+                "name": "JEMBER",
+                "city": "JEMBER",
+                "railway_ref": "JBR",
+                "ip_address": "192.168.5.45",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JMB",
+                "alamat": "Jl. Stasiun Jember",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Jember",
+                "kecamatan": "Kaliwates",
+                "kelurahan_desa": "Kaliwates",
+                "kode_pos": "68131"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BWI",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.6867, -8.2066]
+            },
+            "properties": {
+                "name": "BONDOWOSO",
+                "city": "BONDOWOSO",
+                "railway_ref": "BWI",
+                "ip_address": "192.168.5.46",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BDW",
+                "alamat": "Jl. Stasiun Bondowoso",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Bondowoso",
+                "kecamatan": "Bondowoso",
+                "kelurahan_desa": "Bondowoso",
+                "kode_pos": "68211"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SMH",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [113.9867, -8.1566]
+            },
+            "properties": {
+                "name": "SITUBONDO",
+                "city": "SITUBONDO",
+                "railway_ref": "SMH",
+                "ip_address": "192.168.5.47",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "STB",
+                "alamat": "Jl. Stasiun Situbondo",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Situbondo",
+                "kecamatan": "Situbondo",
+                "kelurahan_desa": "Patokan",
+                "kode_pos": "68311"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BMR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [114.3867, -8.2066]
+            },
+            "properties": {
+                "name": "BANYUWANGI BARU",
+                "city": "BANYUWANGI",
+                "railway_ref": "BMR",
+                "ip_address": "192.168.5.48",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BWI",
+                "alamat": "Jl. Stasiun Banyuwangi Baru",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Banyuwangi",
+                "kecamatan": "Kalipuro",
+                "kelurahan_desa": "Kalipuro",
+                "kode_pos": "68453"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MD",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [112.7567, -7.0266]
+            },
+            "properties": {
+                "name": "MADURA",
+                "city": "MADURA",
+                "railway_ref": "MD",
+                "ip_address": "192.168.5.49",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MDR",
+                "alamat": "Jl. Stasiun Madura",
+                "provinsi": "Jawa Timur",
+                "kabupaten_kota": "Bangkalan",
+                "kecamatan": "Bangkalan",
+                "kelurahan_desa": "Demangan",
+                "kode_pos": "69116"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MDN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.8067, -6.2266]
+            },
+            "properties": {
+                "name": "MERAK",
+                "city": "MERAK",
+                "railway_ref": "MRK",
+                "ip_address": "192.168.5.50",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MRK",
+                "alamat": "Jl. Stasiun Merak",
+                "provinsi": "Banten",
+                "kabupaten_kota": "Cilegon",
+                "kecamatan": "Cibeber",
+                "kelurahan_desa": "Merak",
+                "kode_pos": "42166"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SRG",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.1567, -6.1166]
+            },
+            "properties": {
+                "name": "SERANG",
+                "city": "SERANG",
+                "railway_ref": "SRG",
+                "ip_address": "192.168.5.51",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SRG",
+                "alamat": "Jl. Stasiun Serang",
+                "provinsi": "Banten",
+                "kabupaten_kota": "Kota Serang",
+                "kecamatan": "Serang",
+                "kelurahan_desa": "Serang",
+                "kode_pos": "42111"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "RKS",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.1767, -6.3566]
+            },
+            "properties": {
+                "name": "RANGKASBITUNG",
+                "city": "RANGKASBITUNG",
+                "railway_ref": "RKS",
+                "ip_address": "192.168.5.52",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "RKS",
+                "alamat": "Jl. Stasiun Rangkasbitung",
+                "provinsi": "Banten",
+                "kabupaten_kota": "Lebak",
+                "kecamatan": "Rangkasbitung",
+                "kelurahan_desa": "Rangkasbitung Timur",
+                "kode_pos": "42311"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SKB",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [106.9267, -6.9266]
+            },
+            "properties": {
+                "name": "SUKABUMI",
+                "city": "SUKABUMI",
+                "railway_ref": "SKB",
+                "ip_address": "192.168.5.53",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SKB",
+                "alamat": "Jl. Stasiun Sukabumi",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Kota Sukabumi",
+                "kecamatan": "Cikole",
+                "kelurahan_desa": "Cikole",
+                "kode_pos": "43113"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "CJR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.1367, -6.8166]
+            },
+            "properties": {
+                "name": "CIANJUR",
+                "city": "CIANJUR",
+                "railway_ref": "CJR",
+                "ip_address": "192.168.5.54",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "CJR",
+                "alamat": "Jl. Stasiun Cianjur",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Cianjur",
+                "kecamatan": "Cianjur",
+                "kelurahan_desa": "Sayang",
+                "kode_pos": "43216"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PDR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [107.5167, -6.8466]
+            },
+            "properties": {
+                "name": "PADALARANG",
+                "city": "PADALARANG",
+                "railway_ref": "PDR",
+                "ip_address": "192.168.5.55",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PDR",
+                "alamat": "Jl. Stasiun Padalarang",
+                "provinsi": "Jawa Barat",
+                "kabupaten_kota": "Bandung Barat",
+                "kecamatan": "Padalarang",
+                "kelurahan_desa": "Kertamulya",
+                "kode_pos": "40553"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "LPN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [108.0607, -7.4578]
+            },
+            "properties": {
+                "name": "LAMPUNG",
+                "city": "LAMPUNG",
+                "railway_ref": "LPN",
+                "ip_address": "192.168.5.56",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "LPG",
+                "alamat": "Jl. Stasiun Tanjung Karang",
+                "provinsi": "Lampung",
+                "kabupaten_kota": "Bandar Lampung",
+                "kecamatan": "Teluk Betung",
+                "kelurahan_desa": "Tanjung Karang",
+                "kode_pos": "35214"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KPT",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [104.7567, -2.9866]
+            },
+            "properties": {
+                "name": "KERTAPATI",
+                "city": "PALEMBANG",
+                "railway_ref": "KPT",
+                "ip_address": "192.168.5.57",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PLG",
+                "alamat": "Jl. Stasiun Kertapati",
+                "provinsi": "Sumatera Selatan",
+                "kabupaten_kota": "Kota Palembang",
+                "kecamatan": "Kertapati",
+                "kelurahan_desa": "Kertapati",
+                "kode_pos": "30258"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "LLG",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [102.8567, -3.2866]
+            },
+            "properties": {
+                "name": "LUBUKLINGGAU",
+                "city": "LUBUKLINGGAU",
+                "railway_ref": "LLG",
+                "ip_address": "192.168.5.58",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "LLG",
+                "alamat": "Jl. Stasiun Lubuklinggau",
+                "provinsi": "Sumatera Selatan",
+                "kabupaten_kota": "Kota Lubuklinggau",
+                "kecamatan": "Lubuklinggau Timur",
+                "kelurahan_desa": "Pasar Permiri",
+                "kode_pos": "31625"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MDN",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [98.6767, 3.5866]
+            },
+            "properties": {
+                "name": "MEDAN",
+                "city": "MEDAN",
+                "railway_ref": "MDN",
+                "ip_address": "192.168.5.59",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MDN",
+                "alamat": "Jl. Stasiun Medan",
+                "provinsi": "Sumatera Utara",
+                "kabupaten_kota": "Kota Medan",
+                "kecamatan": "Medan Barat",
+                "kelurahan_desa": "Kesawan",
+                "kode_pos": "20111"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PMS",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [99.0667, 2.9566]
+            },
+            "properties": {
+                "name": "PEMATANGSIANTAR",
+                "city": "PEMATANGSIANTAR",
+                "railway_ref": "PMS",
+                "ip_address": "192.168.5.60",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PMS",
+                "alamat": "Jl. Stasiun Pematangsiantar",
+                "provinsi": "Sumatera Utara",
+                "kabupaten_kota": "Kota Pematangsiantar",
+                "kecamatan": "Siantar Timur",
+                "kelurahan_desa": "Timbang Galung",
+                "kode_pos": "21142"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "RPR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [99.2567, 1.0066]
+            },
+            "properties": {
+                "name": "RANTAUPRAPAT",
+                "city": "RANTAUPRAPAT",
+                "railway_ref": "RPR",
+                "ip_address": "192.168.5.61",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "RPR",
+                "alamat": "Jl. Stasiun Rantauprapat",
+                "provinsi": "Sumatera Utara",
+                "kabupaten_kota": "Labuhanbatu",
+                "kecamatan": "Rantau Utara",
+                "kelurahan_desa": "Rantau Prapat",
+                "kode_pos": "21411"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PDG",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [100.3567, -0.9466]
+            },
+            "properties": {
+                "name": "PADANG",
+                "city": "PADANG",
+                "railway_ref": "PDG",
+                "ip_address": "192.168.5.62",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PDG",
+                "alamat": "Jl. Stasiun Padang",
+                "provinsi": "Sumatera Barat",
+                "kabupaten_kota": "Kota Padang",
+                "kecamatan": "Padang Selatan",
+                "kelurahan_desa": "Seberang Padang",
+                "kode_pos": "25129"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PKB",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [100.3667, -0.3066]
+            },
+            "properties": {
+                "name": "BUKITTINGGI",
+                "city": "BUKITTINGGI",
+                "railway_ref": "PKB",
+                "ip_address": "192.168.5.63",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BKT",
+                "alamat": "Jl. Stasiun Bukittinggi",
+                "provinsi": "Sumatera Barat",
+                "kabupaten_kota": "Kota Bukittinggi",
+                "kecamatan": "Guguk Panjang",
+                "kelurahan_desa": "Guguk Panjang",
+                "kode_pos": "26115"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PBR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [101.4467, 0.5066]
+            },
+            "properties": {
+                "name": "PEKANBARU",
+                "city": "PEKANBARU",
+                "railway_ref": "PBR",
+                "ip_address": "192.168.5.64",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PKB",
+                "alamat": "Jl. Stasiun Pekanbaru",
+                "provinsi": "Riau",
+                "kabupaten_kota": "Kota Pekanbaru",
+                "kecamatan": "Sail",
+                "kelurahan_desa": "Simpang Tiga",
+                "kode_pos": "28126"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "JMB",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [103.6167, -1.4866]
+            },
+            "properties": {
+                "name": "JAMBI",
+                "city": "JAMBI",
+                "railway_ref": "JMB",
+                "ip_address": "192.168.5.65",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JMB",
+                "alamat": "Jl. Stasiun Jambi",
+                "provinsi": "Jambi",
+                "kabupaten_kota": "Kota Jambi",
+                "kecamatan": "Telanaipura",
+                "kelurahan_desa": "Telanaipura",
+                "kode_pos": "36122"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BPL",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [104.0467, -5.1366]
+            },
+            "properties": {
+                "name": "BANDAR LAMPUNG",
+                "city": "BANDAR LAMPUNG",
+                "railway_ref": "BPL",
+                "ip_address": "192.168.5.66",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BPL",
+                "alamat": "Jl. Stasiun Tanjung Karang",
+                "provinsi": "Lampung",
+                "kabupaten_kota": "Bandar Lampung",
+                "kecamatan": "Tanjung Karang Pusat",
+                "kelurahan_desa": "Pasir Gintung",
+                "kode_pos": "35212"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MJS",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [116.0567, -8.6866]
+            },
+            "properties": {
+                "name": "MATARAM",
+                "city": "MATARAM",
+                "railway_ref": "MJS",
+                "ip_address": "192.168.5.67",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MTR",
+                "alamat": "Jl. Stasiun Mataram",
+                "provinsi": "Nusa Tenggara Barat",
+                "kabupaten_kota": "Kota Mataram",
+                "kecamatan": "Mataram",
+                "kelurahan_desa": "Mataram Timur",
+                "kode_pos": "83125"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "KUP",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [123.6067, -10.1766]
+            },
+            "properties": {
+                "name": "KUPANG",
+                "city": "KUPANG",
+                "railway_ref": "KUP",
+                "ip_address": "192.168.5.68",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "KPG",
+                "alamat": "Jl. Stasiun Kupang",
+                "provinsi": "Nusa Tenggara Timur",
+                "kabupaten_kota": "Kota Kupang",
+                "kecamatan": "Kelapa Lima",
+                "kelurahan_desa": "Kelapa Lima",
+                "kode_pos": "85228"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MKS",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [119.4267, -5.1366]
+            },
+            "properties": {
+                "name": "MAKASSAR",
+                "city": "MAKASSAR",
+                "railway_ref": "MKS",
+                "ip_address": "192.168.5.69",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MKS",
+                "alamat": "Jl. Stasiun Makassar",
+                "provinsi": "Sulawesi Selatan",
+                "kabupaten_kota": "Kota Makassar",
+                "kecamatan": "Makassar",
+                "kelurahan_desa": "Losari",
+                "kode_pos": "90111"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MND",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [124.8467, 1.4866]
+            },
+            "properties": {
+                "name": "MANADO",
+                "city": "MANADO",
+                "railway_ref": "MND",
+                "ip_address": "192.168.5.70",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MND",
+                "alamat": "Jl. Stasiun Manado",
+                "provinsi": "Sulawesi Utara",
+                "kabupaten_kota": "Kota Manado",
+                "kecamatan": "Malalayang",
+                "kelurahan_desa": "Malalayang",
+                "kode_pos": "95162"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PLM",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [113.9167, -3.3166]
+            },
+            "properties": {
+                "name": "PALANGKA RAYA",
+                "city": "PALANGKA RAYA",
+                "railway_ref": "PLM",
+                "ip_address": "192.168.5.71",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PKY",
+                "alamat": "Jl. Stasiun Palangka Raya",
+                "provinsi": "Kalimantan Tengah",
+                "kabupaten_kota": "Kota Palangka Raya",
+                "kecamatan": "Pahandut",
+                "kelurahan_desa": "Pahandut",
+                "kode_pos": "73111"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "BPP",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [116.8367, -1.2666]
+            },
+            "properties": {
+                "name": "BALIKPAPAN",
+                "city": "BALIKPAPAN",
+                "railway_ref": "BPP",
+                "ip_address": "192.168.5.72",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "BPN",
+                "alamat": "Jl. Stasiun Balikpapan",
+                "provinsi": "Kalimantan Timur",
+                "kabupaten_kota": "Kota Balikpapan",
+                "kecamatan": "Balikpapan Kota",
+                "kelurahan_desa": "Klandasan Ulu",
+                "kode_pos": "76111"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SMR",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [117.1467, -0.5066]
+            },
+            "properties": {
+                "name": "SAMARINDA",
+                "city": "SAMARINDA",
+                "railway_ref": "SMR",
+                "ip_address": "192.168.5.73",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SMD",
+                "alamat": "Jl. Stasiun Samarinda",
+                "provinsi": "Kalimantan Timur",
+                "kabupaten_kota": "Kota Samarinda",
+                "kecamatan": "Samarinda Kota",
+                "kelurahan_desa": "Pelita",
+                "kode_pos": "75112"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "PNK",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [109.3367, -0.0266]
+            },
+            "properties": {
+                "name": "PONTIANAK",
+                "city": "PONTIANAK",
+                "railway_ref": "PNK",
+                "ip_address": "192.168.5.74",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "PNK",
+                "alamat": "Jl. Stasiun Pontianak",
+                "provinsi": "Kalimantan Barat",
+                "kabupaten_kota": "Kota Pontianak",
+                "kecamatan": "Pontianak Kota",
+                "kelurahan_desa": "Benua Melayu Darat",
+                "kode_pos": "78121"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "TTE",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [117.8967, 3.5566]
+            },
+            "properties": {
+                "name": "TANJUNG SELOR",
+                "city": "TANJUNG SELOR",
+                "railway_ref": "TTE",
+                "ip_address": "192.168.5.75",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "TJS",
+                "alamat": "Jl. Stasiun Tanjung Selor",
+                "provinsi": "Kalimantan Utara",
+                "kabupaten_kota": "Bulungan",
+                "kecamatan": "Tanjung Selor",
+                "kelurahan_desa": "Tanjung Selor Hilir",
+                "kode_pos": "77211"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "AMB",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [128.1767, -3.6866]
+            },
+            "properties": {
+                "name": "AMBON",
+                "city": "AMBON",
+                "railway_ref": "AMB",
+                "ip_address": "192.168.5.76",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "AMB",
+                "alamat": "Jl. Stasiun Ambon",
+                "provinsi": "Maluku",
+                "kabupaten_kota": "Kota Ambon",
+                "kecamatan": "Sirimau",
+                "kelurahan_desa": "Ahusen",
+                "kode_pos": "97124"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "SOF",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [127.3667, -0.6866]
+            },
+            "properties": {
+                "name": "SOFIFI",
+                "city": "SOFIFI",
+                "railway_ref": "SOF",
+                "ip_address": "192.168.5.77",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "SOF",
+                "alamat": "Jl. Stasiun Sofifi",
+                "provinsi": "Maluku Utara",
+                "kabupaten_kota": "Tidore Kepulauan",
+                "kecamatan": "Oba Utara",
+                "kelurahan_desa": "Sofifi",
+                "kode_pos": "97812"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "DJJ",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [140.7067, -2.5366]
+            },
+            "properties": {
+                "name": "JAYAPURA",
+                "city": "JAYAPURA",
+                "railway_ref": "DJJ",
+                "ip_address": "192.168.5.78",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "JPR",
+                "alamat": "Jl. Stasiun Jayapura",
+                "provinsi": "Papua",
+                "kabupaten_kota": "Kota Jayapura",
+                "kecamatan": "Jayapura Utara",
+                "kelurahan_desa": "Gurabesi",
+                "kode_pos": "99112"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "MKW",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [134.0567, -0.8566]
+            },
+            "properties": {
+                "name": "MANOKWARI",
+                "city": "MANOKWARI",
+                "railway_ref": "MKW",
+                "ip_address": "192.168.5.79",
+                "nama_pic": "",
+                "kontak_pic": "",
+                "kode_kota": "MKW",
+                "alamat": "Jl. Stasiun Manokwari",
+                "provinsi": "Papua Barat",
+                "kabupaten_kota": "Manokwari",
+                "kecamatan": "Manokwari Barat",
+                "kelurahan_desa": "Manokwari Barat",
+                "kode_pos": "98312"
+            }
+        }
+    ]
+}

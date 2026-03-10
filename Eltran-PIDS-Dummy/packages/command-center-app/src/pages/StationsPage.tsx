@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, CheckCircle2, X } from 'lucide-react';
+import { MapPin, Plus, Trash2, Pencil, CheckCircle2, X, FileJson, Search } from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
 import { ConfirmModal, ToastNotification } from '../components/SharedUI';
@@ -13,24 +13,65 @@ export default function StationsPage({ token }: { token: string }) {
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const { toast, showToast, closeToast } = useToast();
     const [search, setSearch] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState({ id: '', name: '', city: '', latitude: '', longitude: '', ip_address: '', nama_pic: '', kontak_pic: '', kode_kota: '', alamat: '', provinsi: '', kabupaten_kota: '', kecamatan: '', kelurahan_desa: '', kode_pos: '' });
-    const resetForm = () => setForm({ id: '', name: '', city: '', latitude: '', longitude: '', ip_address: '', nama_pic: '', kontak_pic: '', kode_kota: '', alamat: '', provinsi: '', kabupaten_kota: '', kecamatan: '', kelurahan_desa: '', kode_pos: '' });
+    const [isEditing, setIsEditing] = useState(false);
+    const resetForm = () => {
+        setForm({ id: '', name: '', city: '', latitude: '', longitude: '', ip_address: '', nama_pic: '', kontak_pic: '', kode_kota: '', alamat: '', provinsi: '', kabupaten_kota: '', kecamatan: '', kelurahan_desa: '', kode_pos: '' });
+        setIsEditing(false);
+        setShowForm(false);
+    };
 
     const fetchStations = useCallback(async () => {
         try { const res = await fetch(`${API}/api/stations`); const d = await res.json(); if (d.success) setStations(d.stations); } catch { } finally { setLoading(false); }
     }, []);
     useEffect(() => { fetchStations(); }, [fetchStations]);
 
-    const handleAdd = async () => {
+    const handleSave = async () => {
         if (!form.id.trim() || !form.name.trim() || !form.city.trim()) { showToast('ID, Nama, dan Kota wajib diisi', false); return; }
         setSaving(true);
         try {
-            const res = await fetch(`${API}/api/admin/stations`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...form, latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0 }) });
+            const url = isEditing ? `${API}/api/admin/stations/${form.id}` : `${API}/api/admin/stations`;
+            const method = isEditing ? 'PUT' : 'POST';
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ ...form, latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0 })
+            });
             const d = await res.json();
-            if (d.success) { showToast('Stasiun berhasil ditambahkan', true); fetchStations(); setShowForm(false); resetForm(); }
+            if (d.success) {
+                showToast(isEditing ? 'Stasiun berhasil diperbarui' : 'Stasiun berhasil ditambahkan', true);
+                fetchStations();
+                setShowForm(false);
+                resetForm();
+            }
             else showToast(d.error || 'Gagal', false);
         } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); }
+    };
+
+    const handleEdit = (s: any) => {
+        setForm({
+            id: s.id || '',
+            name: s.name || '',
+            city: s.city || '',
+            latitude: s.latitude?.toString() || '',
+            longitude: s.longitude?.toString() || '',
+            ip_address: s.ip_address || '',
+            nama_pic: s.nama_pic || '',
+            kontak_pic: s.kontak_pic || '',
+            kode_kota: s.kode_kota || '',
+            alamat: s.alamat || '',
+            provinsi: s.provinsi || '',
+            kabupaten_kota: s.kabupaten_kota || '',
+            kecamatan: s.kecamatan || '',
+            kelurahan_desa: s.kelurahan_desa || '',
+            kode_pos: s.kode_pos || ''
+        });
+        setIsEditing(true);
+        setShowForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const confirmDelete = async () => {
@@ -38,7 +79,59 @@ export default function StationsPage({ token }: { token: string }) {
         try { const res = await fetch(`${API}/api/admin/stations/${deleteTarget.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); const d = await res.json(); if (d.success) { showToast(`Stasiun "${deleteTarget.name}" dihapus`, true); fetchStations(); } else showToast(d.error || 'Gagal', false); } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
     };
 
-    const filtered = search ? stations.filter(s => s.name.includes(search.toUpperCase()) || s.city.includes(search.toUpperCase()) || s.id.includes(search.toUpperCase())) : stations;
+    const handleSeed = async () => {
+        if (!confirm('Apakah Anda yakin ingin memetakan stasiun dari data GeoJSON master? Aksi ini akan memperbarui data yang sudah ada.')) return;
+        setSaving(true);
+        try {
+            const res = await fetch(`${API}/api/admin/seed-stations`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            const d = await res.json();
+            if (d.success) { showToast(`${d.count} stasiun berhasil dipetakan`, true); fetchStations(); } else showToast(d.error || 'Gagal', false);
+        } catch (err) { showToast('Koneksi gagal', false); } finally { setSaving(false); }
+    };
+
+    const handleImportGeoJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const geojson = JSON.parse(event.target?.result as string);
+                // const token = localStorage.getItem('pids_admin_token'); // Token is already passed as prop
+
+                showToast('Mengimpor stasiun...', true);
+
+                const response = await fetch(`${API}/api/admin/stations/import`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ geojson })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Berhasil mengimpor ${result.count} stasiun`, true);
+                    fetchStations();
+                    if (result.errors) {
+                        console.warn('Import completed with some errors:', result.errors);
+                    }
+                } else {
+                    showToast(result.error || 'Gagal mengimpor GeoJSON', false);
+                }
+            } catch (err) {
+                showToast('File GeoJSON tidak valid', false);
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+        // Reset input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const filtered = search ? stations.filter(s => (s.name || '').toUpperCase().includes(search.toUpperCase()) || (s.city || '').toUpperCase().includes(search.toUpperCase()) || (s.id || '').toUpperCase().includes(search.toUpperCase())) : stations;
     const FORM_FIELDS = [
         { key: 'id', label: 'Kode Stasiun', placeholder: 'e.g. BD' }, { key: 'name', label: 'Nama Stasiun', placeholder: 'e.g. BANDUNG' },
         { key: 'city', label: 'Kota', placeholder: 'e.g. BANDUNG' }, { key: 'latitude', label: 'Latitude', placeholder: '-6.9125' },
@@ -54,36 +147,68 @@ export default function StationsPage({ token }: { token: string }) {
         <div className="space-y-8">
             <ConfirmModal isOpen={!!deleteTarget} title="Hapus Stasiun" message={`Yakin ingin menghapus stasiun "${deleteTarget?.name}"?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
             <div className="flex items-end justify-between">
-                <div><h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Manajemen Stasiun</h2><p className="text-slate-500 text-sm font-medium">{stations.length} stasiun terdaftar</p></div>
-                <div className="flex gap-3">
-                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari stasiun..." className="px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-[#1d2d6a] placeholder-slate-400 focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all w-52 shadow-sm" />
-                    <button onClick={() => { setShowForm(v => !v); if (showForm) resetForm(); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-sm transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
-                        {showForm ? <><X size={16} />Batal</> : <><Plus size={16} />Tambah Stasiun</>}
+                <div><h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight mb-2">Manajemen Stasiun</h2><p className="text-slate-500 text-base font-medium">{stations.length} stasiun terdaftar</p></div>
+                <div className="flex gap-4">
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari stasiun..." className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-base font-medium text-[#1d2d6a] placeholder-slate-400 focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all w-64 shadow-sm" />
+                    <button onClick={handleSeed} disabled={saving} className="flex items-center gap-2 px-6 py-3 bg-slate-100 text-[#1d2d6a] hover:bg-slate-200 rounded-2xl font-black text-base transition-all active:scale-95 border border-slate-200 shadow-sm disabled:opacity-50">
+                        Map Stasiun
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImportGeoJSON}
+                        accept=".geojson,application/json"
+                        className="hidden"
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl transition-all font-black text-base border border-slate-600 shadow-sm"
+                    >
+                        <FileJson size={18} />
+                        <span>Import GeoJSON</span>
+                    </button>
+                    <button onClick={() => { if (showForm) resetForm(); else setShowForm(true); }} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-base transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+                        {showForm ? <><X size={18} />Batal</> : <><Plus size={18} />Tambah Stasiun</>}
                     </button>
                 </div>
             </div>
-            <AnimatePresence>{showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden">
-                <h3 className="text-slate-400 font-black text-xs">Stasiun Baru</h3>
-                <div className="grid grid-cols-3 gap-4">
-                    {FORM_FIELDS.map(f => (<input key={f.key} value={(form as any)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} title={f.label} className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] placeholder-slate-400 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />))}
+            <AnimatePresence>{showForm && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-white border border-slate-200 shadow-sm rounded-3xl p-8 space-y-6 overflow-hidden">
+                <h3 className="text-slate-400 font-black text-sm">{isEditing ? 'Edit Stasiun' : 'Stasiun Baru'}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                    {FORM_FIELDS.map(f => (
+                        <div key={f.key} className="space-y-2">
+                            <label className="text-xs font-black text-slate-400 uppercase ml-1 tracking-wider">{f.label}</label>
+                            <input
+                                value={(form as any)[f.key]}
+                                onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                                placeholder={f.placeholder}
+                                disabled={isEditing && f.key === 'id'}
+                                className={`w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] placeholder-slate-400 font-bold text-base focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all ${isEditing && f.key === 'id' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            />
+                        </div>
+                    ))}
                 </div>
-                <button onClick={handleAdd} disabled={saving} className="px-6 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-black rounded-2xl text-sm transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)]">
-                    {saving ? 'Menyimpan...' : <><CheckCircle2 size={18} />Simpan Stasiun</>}
+                <button onClick={handleSave} disabled={saving} className="px-8 py-4 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-black rounded-2xl text-base transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)]">
+                    {saving ? 'Menyimpan...' : <><CheckCircle2 size={20} />{isEditing ? 'Perbarui Stasiun' : 'Simpan Stasiun'}</>}
                 </button>
             </motion.div>}</AnimatePresence>
             {loading ? <div className="p-8 text-center text-slate-500">Memuat stasiun...</div> : (
                 <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                    <div className="grid grid-cols-[70px_1fr_1fr_120px_1fr_100px_60px] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black"><span>Kode</span><span>Nama</span><span>Kota</span><span>Kode Pos</span><span>PIC</span><span>Koordinat</span><span></span></div>
-                    <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
+                    <div className="grid grid-cols-[80px_1fr_1fr_130px_1fr_110px_100px] gap-0 px-6 py-4 bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-black"><span>Kode</span><span>Nama</span><span>Kota</span><span>Kode Pos</span><span>PIC</span><span>Koordinat</span><span></span></div>
+                    <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
                         {filtered.map((s, i) => (
-                            <motion.div key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i * 0.02, 0.5) }} className="grid grid-cols-[70px_1fr_1fr_120px_1fr_100px_60px] gap-0 px-6 py-4 hover:bg-slate-50 transition-colors items-center group">
-                                <span className="text-[#ee6f1f] font-mono font-black text-sm">{s.id}</span>
-                                <span className="text-[#1d2d6a] font-black text-sm">{s.name}</span>
-                                <span className="text-slate-500 text-sm">{s.city}</span>
-                                <span className="text-slate-400 font-mono text-xs">{s.kode_pos || '-'}</span>
-                                <span className="text-slate-500 text-sm">{s.nama_pic || '-'}</span>
-                                <span className="text-slate-400 font-mono text-[10px]">{s.latitude ? `${s.latitude.toFixed(2)},${s.longitude.toFixed(2)}` : '-'}</span>
-                                <button onClick={() => setDeleteTarget(s)} className="opacity-0 group-hover:opacity-100 p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"><Trash2 size={14} /></button>
+                            <motion.div key={s.id} onClick={() => handleEdit(s)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i * 0.02, 0.5) }}
+                                className="grid grid-cols-[80px_1fr_1fr_130px_1fr_110px_100px] gap-0 px-6 py-5 hover:bg-slate-50 transition-colors items-center group cursor-pointer active:scale-[0.99]">
+                                <span className="text-[#ee6f1f] font-mono font-black text-base">{s.id}</span>
+                                <span className="text-[#1d2d6a] font-black text-base">{s.name}</span>
+                                <span className="text-slate-500 text-base">{s.city}</span>
+                                <span className="text-slate-400 font-mono text-sm">{s.kode_pos || '-'}</span>
+                                <span className="text-slate-500 text-base">{s.nama_pic || '-'}</span>
+                                <span className="text-slate-400 font-mono text-xs">{s.latitude ? `${s.latitude.toFixed(2)},${s.longitude.toFixed(2)}` : '-'}</span>
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                    <button onClick={(e) => { e.stopPropagation(); handleEdit(s); }} className="p-2.5 rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 transition-all active:scale-95"><Pencil size={16} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(s); }} className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"><Trash2 size={16} /></button>
+                                </div>
                             </motion.div>
                         ))}
                     </div>

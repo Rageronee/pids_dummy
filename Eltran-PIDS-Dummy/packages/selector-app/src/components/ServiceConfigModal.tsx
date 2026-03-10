@@ -8,13 +8,13 @@ interface ServiceConfigProps {
     trainNames: string[];
     routes: any;
     jumlahKereta: number;
-    onSetService: (name: string, routeData: any, newStations: string[]) => void;
+    onSetConfig: (name: string, routeData: any, newStations: string[], gerbong: number) => void;
     onSetGerbong: (gerbong: number) => void;
     initialTrainNameIndex: number;
 }
 
 const ServiceConfigModal = React.memo(function ServiceConfigModal({
-    show, onClose, trainNames, routes, jumlahKereta, onSetService, onSetGerbong, initialTrainNameIndex
+    show, onClose, trainNames, routes, jumlahKereta, onSetConfig, onSetGerbong, initialTrainNameIndex
 }: ServiceConfigProps) {
     const [trainNameIndex, setTrainNameIndex] = useState(initialTrainNameIndex);
     const [trainSearchQuery, setTrainSearchQuery] = useState('');
@@ -35,19 +35,19 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
     }, []);
 
     const handleApply = useCallback(() => {
-        // Apply Service/Route
+        // Apply Service/Route + Unit/Gerbong in one atomic update
         if (trainNameIndex >= 0 && trainNameIndex < trainNames.length) {
             const newName = trainNames[trainNameIndex];
             const routeData = routes[newName];
             const newStations = routeData?.stations || [];
-            onSetService(newName, routeData, newStations);
+            onSetConfig(newName, routeData, newStations, selectedGerbong);
+        } else {
+            // Fallback if no service selected but we still want to set gerbong
+            onSetGerbong(selectedGerbong);
         }
 
-        // Apply Unit/Gerbong
-        onSetGerbong(selectedGerbong);
-
         onClose();
-    }, [trainNameIndex, trainNames, routes, selectedGerbong, onSetService, onSetGerbong, onClose]);
+    }, [trainNameIndex, trainNames, routes, selectedGerbong, onSetConfig, onSetGerbong, onClose]);
 
     const maxWagons = jumlahKereta > 0 ? jumlahKereta : 10;
     const filtered = trainNames.map((name, idx) => ({ name, idx })).filter(t => t.name.toUpperCase().includes(trainSearchQuery.toUpperCase()));

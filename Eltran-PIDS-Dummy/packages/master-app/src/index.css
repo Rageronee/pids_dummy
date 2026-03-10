@@ -38,23 +38,23 @@
 
 @layer components {
     .kai-card {
-        @apply rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden;
+        @apply rounded-[2.5rem] border border-slate-200 bg-white shadow-md overflow-hidden;
     }
 
     .kai-sidebar-item {
-        @apply flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/10 transition-colors;
+        @apply flex items-center gap-4 px-6 py-4 text-slate-300 hover:text-white hover:bg-white/10 transition-colors text-lg font-bold;
     }
 
     .kai-sidebar-item.active {
-        @apply text-white bg-orange-600;
+        @apply text-white bg-orange-600 shadow-lg scale-[1.02];
     }
 
     .kai-table-row {
-        @apply border-b border-slate-100 last:border-0;
+        @apply border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors;
     }
 
     .kai-table-cell {
-        @apply py-2 px-4 text-sm;
+        @apply py-4 px-6 text-base;
     }
 }
 

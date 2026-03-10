@@ -24,7 +24,8 @@ import {
     getGpsFleet, getGpsGerbong,
     getDbDump,
     closeDatabase,
-    updateRouteGeoJSON
+    updateRouteGeoJSON,
+    importStationsFromGeoJSON
 } from './database.js';
 
 export async function startApiServer() {
@@ -151,6 +152,18 @@ export async function startApiServer() {
         res.json({ success: true, stations: await getStations() });
     });
 
+    apiApp.get('/api/stations-master', async (req, res) => {
+        try {
+            const fs = await import('fs/promises');
+            const path = await import('path');
+            const masterPath = path.join(process.cwd(), 'public', 'geojson', 'stations_master.geojson');
+            const data = await fs.readFile(masterPath, 'utf8');
+            res.json({ success: true, data: JSON.parse(data) });
+        } catch (e) {
+            res.status(500).json({ success: false, error: 'Master stasiun tidak ditemukan atau korup' });
+        }
+    });
+
     apiApp.post('/api/admin/stations', requireAdmin, async (req, res) => {
         const result = await addStation(req.body);
         if (result.error) return res.status(409).json({ success: false, error: result.error });
@@ -160,9 +173,9 @@ export async function startApiServer() {
 
     apiApp.put('/api/admin/stations/:id', requireAdmin, async (req, res) => {
         const result = await updateStation(req.params.id, req.body);
-        if (result.error) return res.status(404).json({ success: false, error: result.error });
-        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Stasiun update: ${req.params.id}` });
-        res.json({ success: true, station: result.station });
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Stasiun diperbarui: ${req.body.name} (${req.params.id})` });
+        res.json({ success: true });
     });
 
     apiApp.delete('/api/admin/stations/:id', requireAdmin, async (req, res) => {
@@ -170,6 +183,29 @@ export async function startApiServer() {
         if (result.error) return res.status(404).json({ success: false, error: result.error });
         await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Stasiun hapus: ${req.params.id}` });
         res.json({ success: true });
+    });
+
+    apiApp.post('/api/admin/seed-stations', requireAdmin, async (req, res) => {
+        const result = await seedStationsFromGeoJSON();
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Seeding stasiun: ${result.count} data` });
+        res.json(result);
+    });
+
+    apiApp.post('/api/admin/stations/import', requireAdmin, async (req, res) => {
+        const { geojson } = req.body;
+        if (!geojson) return res.status(400).json({ success: false, error: 'GeoJSON data required' });
+
+        const result = await importStationsFromGeoJSON(geojson);
+        if (result.error) return res.status(500).json({ success: false, error: result.error });
+
+        await writeLog({
+            action: 'ADMIN_CRUD',
+            user: req.user.username,
+            role: req.user.role,
+            details: `Import stasiun via GeoJSON: ${result.count} stasiun berhasil`
+        });
+        res.json(result);
     });
 
     // SCHEDULES

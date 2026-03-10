@@ -44,8 +44,8 @@ export function ToastNotification({ toast, onClose }: { toast: { msg: string; ok
                     key={toast.id}
                     initial={{ opacity: 0, y: 50, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
+                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                    className="fixed bottom-10 right-10 z-[100] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
                 >
                     <div className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? 'bg-[#1d2d6a]' : 'bg-red-500'}`} />
                     <div className="relative p-5 pl-7 pb-6">

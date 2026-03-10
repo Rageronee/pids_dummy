@@ -61,6 +61,19 @@ function App() {
         return () => clearInterval(t);
     }, []);
 
+    // Direction for Malabar (KA 67 / KA 68)
+    const [activeKa, setActiveKa] = useState<'ka67' | 'ka68'>('ka68');
+
+    const getScheduledTime = useCallback((stationName: string) => {
+        const activeRoute = data?.activeRoute as any;
+        if (!activeRoute?.features) return null;
+        const stationFeature = activeRoute.features.find((f: any) =>
+            f.geometry.type === 'Point' && f.properties.name.toUpperCase() === stationName.toUpperCase()
+        );
+        if (!stationFeature) return null;
+        return stationFeature.properties[`schedule_${activeKa}`];
+    }, [data?.activeRoute, activeKa]);
+
     const showNotification = useCallback((title: string, message: string) => {
         setToastMsg({ title, message, id: Date.now() });
         if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -89,11 +102,17 @@ function App() {
         });
     }, [sendData]);
 
-    const handleSetService = useCallback((name: string, routeData: any, newStations: string[]) => {
+    const handleSetConfig = useCallback((serviceName: string, routeData: any, newStations: string[], gerbong: number) => {
         if (newStations.length > 0) { setStations(newStations); setCurrentIndex(0); }
-        sendData({ serviceName: name, stations: newStations, activeRoute: routeData });
-        showNotification('Configuration Saved', `Service name set to ${name}`);
+        sendData({
+            serviceName,
+            stations: newStations,
+            activeRoute: routeData,
+            trainNumber: `Gerbong ${gerbong}`
+        });
+        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to Gerbong ${gerbong}`);
     }, [sendData, setStations, showNotification]);
+
 
     const handleSetGerbong = useCallback((gerbong: number) => {
         sendData({ trainNumber: `Gerbong ${gerbong}` });
@@ -118,23 +137,43 @@ function App() {
             {/* ========== TOP BAR ========== */}
             <header className="h-[90px] bg-[#1d2d6a] text-white flex items-center px-6 shadow-md shrink-0 justify-between">
                 {/* Service Configuration Button*/}
-                <button
-                    onClick={() => setShowServiceModal(true)}
-                    className="flex items-center gap-4 text-left group transition-all active:scale-95"
-                >
-                    <div className="w-[56px] h-[56px] bg-white rounded-[14px] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
-                        <Train className="text-[#1d2d6a]" size={32} />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-blue-200/80 tracking-[0.25em] uppercase">Service Config</span>
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => setShowServiceModal(true)}
+                        className="flex items-center gap-4 text-left group transition-all active:scale-95"
+                    >
+                        <div className="w-[56px] h-[56px] bg-white rounded-[14px] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
+                            <Train className="text-[#1d2d6a]" size={32} />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-2xl font-black uppercase tracking-tight group-hover:text-blue-100 transition-colors truncate">{masterSyncedServiceName || 'NOT SET'}</h1>
-                            <ChevronRight className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" size={24} />
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-blue-200/80 tracking-[0.25em] uppercase">Service Config</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-2xl font-black uppercase tracking-tight group-hover:text-blue-100 transition-colors truncate">{masterSyncedServiceName || 'NOT SET'}</h1>
+                                <ChevronRight className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" size={24} />
+                            </div>
                         </div>
-                    </div>
-                </button>
+                    </button>
+
+                    {/* Direction Toggle for Malabar */}
+                    {(masterSyncedServiceName?.toUpperCase().includes('MALABAR')) && (
+                        <div className="flex bg-white/10 p-1 rounded-xl items-center border border-white/10">
+                            <button
+                                onClick={() => setActiveKa('ka68')}
+                                className={`px-4 py-1.5 rounded-lg text-[15px] font-black transition-all ${activeKa === 'ka68' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
+                            >
+                                KA 68 (BD-ML)
+                            </button>
+                            <button
+                                onClick={() => setActiveKa('ka67')}
+                                className={`px-4 py-1.5 rounded-lg text-[15px] font-black transition-all ${activeKa === 'ka67' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
+                            >
+                                KA 67 (ML-BD)
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex items-center gap-6">
                     <div className="hidden lg:flex flex-col items-end text-right">
@@ -199,7 +238,7 @@ function App() {
                                     <div className="text-right flex flex-col items-end relative z-10 shrink-0">
                                         <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
                                         <span className="text-3xl font-black text-white">
-                                            {stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--'}
+                                            {getScheduledTime(nextStation) || (stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--')}
                                         </span>
                                     </div>
                                 </div>
@@ -225,7 +264,7 @@ function App() {
                                                     <div className="text-right">
                                                         <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
                                                         <span className="text-xl font-bold text-slate-600">
-                                                            {new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
+                                                            {getScheduledTime(upcomingStation) || new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -293,7 +332,7 @@ function App() {
                     trainNames={trainNames}
                     routes={routes}
                     jumlahKereta={jumlahKereta}
-                    onSetService={handleSetService}
+                    onSetConfig={handleSetConfig}
                     onSetGerbong={handleSetGerbong}
                     initialTrainNameIndex={trainNameIndex}
                 />

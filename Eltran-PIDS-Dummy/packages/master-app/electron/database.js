@@ -126,7 +126,9 @@ async function createTables() {
             notes TEXT DEFAULT '',
             catatan TEXT DEFAULT '',
             media TEXT DEFAULT '',
-            CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
+            CONSTRAINT uq_route_date UNIQUE (route_id, schedule_date)
         )
     `);
 
@@ -437,7 +439,7 @@ export async function updateState(updates) {
     }
 
     await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, jumlah_kereta) 
-                 VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
                  ON CONFLICT (id) DO UPDATE SET 
                     service_name = EXCLUDED.service_name,
                     current_station = EXCLUDED.current_station,
@@ -479,14 +481,14 @@ export async function updateState(updates) {
 export async function getLogs(filter = {}) {
     let sql = 'SELECT * FROM system_logs';
     const params = [];
-    if (filter.action) { sql += ' WHERE action = ?'; params.push(filter.action); }
+    if (filter.action) { sql += ' WHERE action = $1'; params.push(filter.action); }
     sql += ' ORDER BY timestamp DESC';
     sql += filter.limit ? ` LIMIT ${parseInt(filter.limit)}` : ' LIMIT 1000';
     return await getAll(sql, params);
 }
 
 export async function writeLog(entry) {
-    await query('INSERT INTO system_logs (id, timestamp, action, "user", role, details, data_json) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    await query('INSERT INTO system_logs (id, timestamp, action, "user", role, details, data_json) VALUES ($1, $2, $3, $4, $5, $6, $7)',
         [crypto.randomUUID(), new Date().toISOString(), entry.action, entry.user, entry.role || 'System', entry.details || '', entry.data ? JSON.stringify(entry.data) : '']);
 }
 
@@ -496,7 +498,7 @@ export async function writeLog(entry) {
 
 export async function getUsers() { return await getAll('SELECT id, username, role, nama FROM users'); }
 export async function getUsersWithPassword() { return await getAll('SELECT * FROM users'); }
-export async function findUser(username, password) { return await getOne('SELECT * FROM users WHERE username = ? AND password = ?', [username, password]); }
+export async function findUser(username, password) { return await getOne('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]); }
 export async function getTrainNames() {
     const rows = await getAll('SELECT name FROM train_services ORDER BY id');
     return rows.map(r => r.name);
@@ -506,7 +508,7 @@ export async function getRoutes() {
     const services = await getAll('SELECT * FROM train_services ORDER BY id');
     const routes = {};
     for (const service of services) {
-        const dbRoute = await getOne('SELECT * FROM routes WHERE train_service_id = ?', [service.id]);
+        const dbRoute = await getOne('SELECT * FROM routes WHERE train_service_id = $1', [service.id]);
 
         // Always try to fetch stations from route_stations table as source of truth
         let stations = [];
@@ -515,7 +517,7 @@ export async function getRoutes() {
                 SELECT s.name 
                 FROM route_stations rs
                 JOIN stations s ON rs.station_id = s.id
-                WHERE rs.route_id = ?
+                WHERE rs.route_id = $1
                 ORDER BY rs.sequence_order
             `, [dbRoute.id]);
             stations = stationRows.map(r => r.name);
@@ -562,17 +564,19 @@ export async function closeDatabase() { if (pool) { await pool.end(); pool = nul
 
 export async function addStation(data) {
     try {
-        await query('INSERT INTO stations (id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, city = EXCLUDED.city, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, ip_address = EXCLUDED.ip_address, nama_pic = EXCLUDED.nama_pic, kontak_pic = EXCLUDED.kontak_pic, kode_kota = EXCLUDED.kode_kota, alamat = EXCLUDED.alamat, provinsi = EXCLUDED.provinsi, kabupaten_kota = EXCLUDED.kabupaten_kota, kecamatan = EXCLUDED.kecamatan, kelurahan_desa = EXCLUDED.kelurahan_desa, kode_pos = EXCLUDED.kode_pos',
+        await query('INSERT INTO stations (id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, city = EXCLUDED.city, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, ip_address = EXCLUDED.ip_address, nama_pic = EXCLUDED.nama_pic, kontak_pic = EXCLUDED.kontak_pic, kode_kota = EXCLUDED.kode_kota, alamat = EXCLUDED.alamat, provinsi = EXCLUDED.provinsi, kabupaten_kota = EXCLUDED.kabupaten_kota, kecamatan = EXCLUDED.kecamatan, kelurahan_desa = EXCLUDED.kelurahan_desa, kode_pos = EXCLUDED.kode_pos',
             [data.id, data.name, data.city, data.latitude, data.longitude, data.ip_address, data.nama_pic, data.kontak_pic, data.kode_kota, data.alamat, data.provinsi, data.kabupaten_kota, data.kecamatan, data.kelurahan_desa, data.kode_pos]);
         return { success: true, station: data };
     } catch (e) { return { error: e.message }; }
 }
 
-export async function updateStation(id, data) { return await addStation({ ...data, id }); }
+export async function updateStation(id, data) {
+    return await addStation({ ...data, id });
+}
 
 export async function deleteStation(id) {
     try {
-        await query('DELETE FROM stations WHERE id = ?', [id]);
+        await query('DELETE FROM stations WHERE id = $1', [id]);
         return { success: true };
     } catch (e) { return { error: e.message }; }
 }
@@ -588,7 +592,7 @@ export async function addSchedule(data) {
 export async function updateSchedule(id, data) { return { success: true }; }
 export async function deleteSchedule(id) {
     try {
-        await query('DELETE FROM schedules WHERE id = ?', [id]);
+        await query('DELETE FROM schedules WHERE id = $1', [id]);
         return { success: true };
     } catch (e) { return { error: e.message }; }
 }
@@ -604,6 +608,54 @@ export async function getSchedules() {
         `);
         return schedules || [];
     } catch (e) { return []; }
+}
+
+export async function importStationsFromGeoJSON(geojson) {
+    if (!geojson || !geojson.features) return { error: 'Invalid GeoJSON: FeatureCollection expected' };
+
+    let count = 0;
+    const errors = [];
+
+    for (const feature of geojson.features) {
+        if (feature.geometry?.type === 'Point' && feature.properties) {
+            const p = feature.properties;
+            const name = p.name || p.Name || p.nama || p.Nama || '';
+            if (!name) continue;
+
+            // Extract a clean ID: railway:ref or ref or slugify name
+            let id = p['railway:ref'] || p.ref || p.id || '';
+            if (!id) {
+                id = String(name || '').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 5);
+                // Add a small random suffix if ID might collide
+                id += Math.random().toString(36).substring(2, 4).toUpperCase();
+            }
+
+            const city = p.city || p.City || p.kota || p.Kota || name;
+            const [lon, lat] = feature.geometry.coordinates;
+
+            const stationData = {
+                id: id.toString().toUpperCase(),
+                name: name.toString(),
+                city: city.toString(),
+                latitude: lat || 0,
+                longitude: lon || 0,
+                ip_address: p.ip_address || '',
+                nama_pic: p.nama_pic || '',
+                kontak_pic: p.kontak_pic || '',
+                kode_kota: p.kode_kota || p.ref || '',
+                alamat: p.alamat || p.address || ''
+            };
+
+            const result = await addStation(stationData);
+            if (result.success) {
+                count++;
+            } else {
+                errors.push(`${name}: ${result.error}`);
+            }
+        }
+    }
+
+    return { success: true, count, errors: errors.length > 0 ? errors : null };
 }
 
 export async function getGerbong(id) { return []; }
@@ -646,7 +698,8 @@ export async function updateRouteGeoJSON(name, geojson, filename = '') {
             let st = await getOne('SELECT id FROM stations WHERE name = ?', [stationName]);
             if (!st) {
                 // Create dummy station entry if not exists in master station list
-                const newId = stationName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+                const sName = String(stationName || 'STN');
+                const newId = sName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
                 await query('INSERT INTO stations (id, name, city) VALUES (?, ?, ?)', [newId, stationName, 'AUTO-GEN']);
                 st = { id: newId };
             }
@@ -695,26 +748,89 @@ export async function saveRoute(name, stations) {
             service = result.rows[0];
         }
 
-        let route = await getOne('SELECT id FROM routes WHERE train_service_id = ?', [service.id]);
+        let route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [service.id]);
         if (!route) {
-            const result = await query('INSERT INTO routes (train_service_id) VALUES (?) RETURNING id', [service.id]);
+            const result = await query('INSERT INTO routes (train_service_id) VALUES ($1) RETURNING id', [service.id]);
             route = result.rows[0];
         } else {
-            await query('DELETE FROM route_stations WHERE route_id = ?', [route.id]);
+            // Cleanup existing stops and stations to prevent FK errors and duplicates
+            await query('DELETE FROM schedule_stops WHERE schedule_id IN (SELECT id FROM schedules WHERE route_id = $1)', [route.id]);
+            await query('DELETE FROM route_stations WHERE route_id = $1', [route.id]);
         }
 
+        const geojsonFeatures = [];
+        const coordinates = [];
         let seq = 1;
-        for (const stationName of stations) {
-            let st = await getOne('SELECT id FROM stations WHERE name = ?', [stationName]);
+
+        // UPSERT a default schedule for this route on current date
+        const schedRes = await query(`
+            INSERT INTO schedules (route_id, schedule_date) 
+            VALUES ($1, CURRENT_DATE::text) 
+            ON CONFLICT (route_id, schedule_date) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+            RETURNING id
+        `, [route.id]);
+        const scheduleId = schedRes.rows[0].id;
+
+        for (const stObj of stations) {
+            if (!stObj) continue;
+            const stationName = typeof stObj === 'string' ? stObj : (stObj.name || '');
+            const stationTime = typeof stObj === 'string' ? '' : (stObj.time || '');
+
+            let st = await getOne('SELECT * FROM stations WHERE name = $1', [stationName]);
             if (!st) {
-                const newId = stationName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
-                await query('INSERT INTO stations (id, name, city) VALUES (?, ?, ?)', [newId, stationName, stationName]);
-                st = { id: newId };
+                const sName = String(stationName || 'STN');
+                const newId = sName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+                await query('INSERT INTO stations (id, name, city) VALUES ($1, $2, $3)', [newId, stationName, stationName]);
+                st = { id: newId, name: stationName, latitude: 0, longitude: 0, city: stationName };
             }
-            await query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES (?, ?, ?)', [route.id, st.id, seq++]);
+
+            const rsRes = await query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES ($1, $2, $3) RETURNING id', [route.id, st.id, seq++]);
+            const routeStationId = rsRes.rows[0].id;
+
+            // Add to schedule_stops
+            await query('INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time) VALUES ($1, $2, $3)', [scheduleId, routeStationId, stationTime]);
+
+            // Add to GeoJSON
+            geojsonFeatures.push({
+                type: "Feature",
+                geometry: { type: "Point", coordinates: [st.longitude || 0, st.latitude || 0] },
+                properties: { name: st.name, city: st.city, time: stationTime }
+            });
+            if (st.longitude && st.latitude) {
+                coordinates.push([st.longitude, st.latitude]);
+            }
         }
-        return { success: true, name, stations };
+
+        // Add LineString if we have coordinates
+        if (coordinates.length > 1) {
+            geojsonFeatures.push({
+                type: "Feature",
+                geometry: { type: "LineString", coordinates },
+                properties: { name: `Path for ${name}` }
+            });
+        }
+
+        const finalGeoJSON = { type: "FeatureCollection", features: geojsonFeatures };
+        const geojsonString = JSON.stringify(finalGeoJSON, null, 2);
+        const filename = `${name.toLowerCase().replace(/\s+/g, '_')}_autogen.geojson`;
+
+        // Save metadata to DB
+        await query('UPDATE routes SET geojson = ?, geojson_filename = ? WHERE id = ?', [geojsonString, filename, route.id]);
+
+        // Attempt to write to file system
+        try {
+            const fs = await import('fs/promises');
+            const path = await import('path');
+            const geojsonDir = path.join(process.cwd(), 'public', 'geojson');
+            await fs.mkdir(geojsonDir, { recursive: true });
+            await fs.writeFile(path.join(geojsonDir, filename), geojsonString);
+        } catch (e) {
+            console.error('[PIDS-DB] File write failed:', e);
+        }
+
+        return { success: true, name, stations, filename };
     } catch (e) {
+        console.error('[PIDS-DB] Error in saveRoute:', e);
         return { error: e.message };
     }
 }
@@ -740,3 +856,51 @@ export async function deleteUser(id) {
 }
 
 export function getTrainNumbers() { return ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']; }
+
+export async function seedStationsFromGeoJSON() {
+    try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const masterPath = path.join(process.cwd(), 'public', 'geojson', 'stations_master.geojson');
+        const data = await fs.readFile(masterPath, 'utf8');
+        const geojson = JSON.parse(data);
+
+        let count = 0;
+        for (const feature of geojson.features) {
+            const p = feature.properties;
+            const [lng, lat] = feature.geometry.coordinates;
+
+            await query(`
+                INSERT INTO stations (
+                    id, name, city, latitude, longitude, ip_address, 
+                    nama_pic, kontak_pic, kode_kota, alamat, provinsi, 
+                    kabupaten_kota, kecamatan, kelurahan_desa, kode_pos
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    city = EXCLUDED.city,
+                    latitude = EXCLUDED.latitude,
+                    longitude = EXCLUDED.longitude,
+                    ip_address = EXCLUDED.ip_address,
+                    nama_pic = EXCLUDED.nama_pic,
+                    kontak_pic = EXCLUDED.kontak_pic,
+                    kode_kota = EXCLUDED.kode_kota,
+                    alamat = EXCLUDED.alamat,
+                    provinsi = EXCLUDED.provinsi,
+                    kabupaten_kota = EXCLUDED.kabupaten_kota,
+                    kecamatan = EXCLUDED.kecamatan,
+                    kelurahan_desa = EXCLUDED.kelurahan_desa,
+                    kode_pos = EXCLUDED.kode_pos
+            `, [
+                p.id, p.name, p.city, lat, lng, p.ip_address || '',
+                p.nama_pic || '', p.kontak_pic || '', p.kode_kota || '', p.alamat || '',
+                p.provinsi || '', p.kabupaten_kota || '', p.kecamatan || '', p.kelurahan_desa || '', p.kode_pos || ''
+            ]);
+            count++;
+        }
+        return { success: true, count };
+    } catch (e) {
+        console.error('Seeding error:', e);
+        return { error: e.message };
+    }
+}

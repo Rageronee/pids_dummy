@@ -29,7 +29,7 @@ const NAV = [
 ];
 
 function PageLoader() {
-    return <div className="flex items-center justify-center h-64 text-slate-400 font-bold text-sm animate-pulse">Memuat halaman...</div>;
+    return <div className="flex items-center justify-center h-64 text-slate-400 font-bold text-base animate-pulse">Memuat halaman...</div>;
 }
 
 export default function App() {
@@ -82,25 +82,25 @@ export default function App() {
     return (
         <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
             {/* Sidebar */}
-            <aside className="w-72 bg-[#1d2d6a] border-r border-blue-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] relative z-10">
+            <aside className="w-80 bg-[#1d2d6a] border-r border-blue-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] relative z-10">
                 <div className="p-8 pb-10">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-8 w-auto mb-4 brightness-0 invert" />
-                    <h1 className="text-xl font-black text-white tracking-tight leading-tight">Command Center</h1>
-                    <p className="text-[9px] font-bold text-blue-200/40 mt-0.5 font-mono">Control Panel V1.0</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-10 w-auto mb-6 brightness-0 invert" />
+                    <h1 className="text-2xl font-black text-white tracking-tight leading-tight">Command Center</h1>
+                    <p className="text-xs font-bold text-blue-200/40 mt-1 font-mono">Control Panel</p>
                 </div>
                 <nav className="flex-1 px-4 space-y-1">
                     {NAV.map(item => (
                         <button key={item.id} onClick={() => setActivePage(item.id)}
-                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold text-sm ${activePage === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
-                            <item.icon size={20} strokeWidth={2.5} />
+                            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-bold text-base ${activePage === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
+                            <item.icon size={22} strokeWidth={2.5} />
                             {item.label}
                         </button>
                     ))}
                 </nav>
                 <div className="p-6 border-t border-white/5 bg-black/10">
                     <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] border border-white/5 active:scale-95 group">
-                        <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
+                        className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-xs border border-white/5 active:scale-95 group">
+                        <LogOut size={18} className="text-white/20 group-hover:text-red-400 transition-colors" />
                         <span>Logout dari Sistem</span>
                     </button>
                 </div>
@@ -112,18 +112,18 @@ export default function App() {
                     <div className="flex items-center gap-4">
                         <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Shield className="text-[#1d2d6a]" size={20} /></div>
                         <div>
-                            <h1 className="text-lg font-black text-[#1d2d6a] tracking-tight leading-none mb-1">Command Center</h1>
+                            <h1 className="text-xl font-black text-[#1d2d6a] tracking-tight leading-none mb-1.5">Command Center</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-slate-400">{NAV.find(n => n.id === activePage)?.label}</span>
-                                <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                <span className="text-[10px] font-bold text-slate-400">Active session</span>
+                                <span className="text-xs font-bold text-slate-400">{NAV.find(n => n.id === activePage)?.label}</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                <span className="text-xs font-bold text-slate-400">Active session</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-3 text-[#1d2d6a]">
-                            <div className="bg-slate-50 p-2 rounded-lg text-slate-400"><Clock size={18} /></div>
-                            <span className="text-2xl font-black font-mono tracking-tighter opacity-90">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</span>
+                            <div className="bg-slate-50 p-2.5 rounded-xl text-slate-400"><Clock size={20} /></div>
+                            <span className="text-3xl font-black font-mono tracking-tighter opacity-90">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</span>
                         </div>
                     </div>
                 </header>
