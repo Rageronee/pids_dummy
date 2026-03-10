@@ -24,6 +24,9 @@ export async function initDatabase() {
         try {
             await pool.query('ALTER TABLE routes ADD COLUMN IF NOT EXISTS geojson_filename TEXT DEFAULT \'\'');
         } catch (e) { console.error('[PIDS-DB] Migration failed (geojson_filename):', e.message); }
+        try {
+            await pool.query('ALTER TABLE schedules ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+        } catch (e) { console.error('[PIDS-DB] Migration failed (updated_at):', e.message); }
         await seedData();
         console.log('[PIDS-DB] Database schema and seed data verified');
     } catch (err) {
@@ -499,6 +502,10 @@ export async function writeLog(entry) {
 export async function getUsers() { return await getAll('SELECT id, username, role, nama FROM users'); }
 export async function getUsersWithPassword() { return await getAll('SELECT * FROM users'); }
 export async function findUser(username, password) { return await getOne('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]); }
+export async function getTrains() {
+    return await getAll('SELECT * FROM train_services ORDER BY id');
+}
+
 export async function getTrainNames() {
     const rows = await getAll('SELECT name FROM train_services ORDER BY id');
     return rows.map(r => r.name);
@@ -726,17 +733,17 @@ export async function deleteRoute(name) {
     return { success: true };
 }
 
-export async function addTrainName(name) {
+export async function addTrain(data) {
     try {
-        await query('INSERT INTO train_services (name) VALUES (?) ON CONFLICT DO NOTHING', [name]);
-        return { success: true, trains: await getTrainNames() };
+        await query('INSERT INTO train_services (name, ka_number, ip_address) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET ka_number = EXCLUDED.ka_number, ip_address = EXCLUDED.ip_address', [data.name, data.ka_number || '', data.ip_address || '']);
+        return { success: true, trains: await getTrains() };
     } catch (e) { return { error: e.message }; }
 }
 
-export async function deleteTrainName(name) {
+export async function deleteTrain(name) {
     try {
-        await query('DELETE FROM train_services WHERE name = ?', [name]);
-        return { success: true, trains: await getTrainNames() };
+        await query('DELETE FROM train_services WHERE name = $1', [name]);
+        return { success: true, trains: await getTrains() };
     } catch (e) { return { error: e.message }; }
 }
 

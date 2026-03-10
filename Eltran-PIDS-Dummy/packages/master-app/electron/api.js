@@ -12,7 +12,7 @@ import {
     getState, updateState,
     getLogs, writeLog,
     findUser, getUsers as dbGetUsers, addUser, deleteUser,
-    getTrainNames, getTrainNumbers, addTrainName, deleteTrainName,
+    getTrainNames, getTrains, addTrain, deleteTrain,
     getRoutes, saveRoute, deleteRoute,
     getUnits, addUnit, updateUnit, deleteUnit,
     getStations, addStation, updateStation, deleteStation,
@@ -227,25 +227,23 @@ export async function startApiServer() {
         res.json({ success: true });
     });
 
-    // TRAINS (Layanan)
+    // TRAINS (Manajemen Kereta)
     apiApp.get('/api/admin/trains', requireAdmin, async (req, res) => {
-        res.json({ success: true, trains: await getTrainNames() });
+        res.json({ success: true, trains: await getTrains() });
     });
 
     apiApp.post('/api/admin/trains', requireAdmin, async (req, res) => {
-        const { name } = req.body;
-        if (!name) return res.status(400).json({ success: false, error: 'Name required' });
-        const result = await addTrainName(name);
+        const result = await addTrain(req.body);
         if (result.error) return res.status(500).json({ success: false, error: result.error });
-        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Layanan Kereta baru: ${name}` });
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Kereta diperbarui: ${req.body.name}` });
         res.json({ success: true, trains: result.trains });
     });
 
     apiApp.delete('/api/admin/trains/:name', requireAdmin, async (req, res) => {
-        const result = await deleteTrainName(req.params.name);
+        const result = await deleteTrain(req.params.name);
         if (result.error) return res.status(404).json({ success: false, error: result.error });
-        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Layanan Kereta dihapus: ${req.params.name}` });
-        await broadcastDbUpdate(); // Since deleting train cascades to routes
+        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Kereta dihapus: ${req.params.name}` });
+        await broadcastDbUpdate();
         res.json({ success: true, trains: result.trains });
     });
 

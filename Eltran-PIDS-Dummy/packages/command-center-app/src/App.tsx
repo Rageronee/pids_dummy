@@ -20,9 +20,8 @@ interface AuthUser { id: string; username: string; role: string; nama: string; }
 
 const NAV = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'trains', label: 'Layanan Kereta', icon: Train },
+    { id: 'trains', label: 'Manajemen Kereta', icon: Train },
     { id: 'routes', label: 'Manajemen Rute', icon: MapPin },
-    { id: 'stations', label: 'Manajemen Stasiun', icon: Building2 },
     { id: 'schedules', label: 'Jadwal Kereta', icon: Calendar },
     { id: 'users', label: 'Akun Operator', icon: Users },
     { id: 'logs', label: 'System Logs', icon: ScrollText },
@@ -73,7 +72,6 @@ export default function App() {
         dashboard: <DashboardPage token={authToken} />,
         trains: <TrainsPage token={authToken} />,
         routes: <RoutesPage token={authToken} />,
-        stations: <StationsPage token={authToken} />,
         schedules: <SchedulesPage token={authToken} />,
         users: <UsersPage token={authToken} />,
         logs: <LogsPage token={authToken} />,

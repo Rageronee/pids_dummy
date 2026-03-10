@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Train, Trash2, RefreshCcw, ChevronRight, MapPinned } from 'lucide-react';
+import { Train, Trash2, RefreshCcw, ChevronRight, MapPinned, Plus, X, CheckCircle2, Clock, MapPin, Info, Paperclip } from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
 import { ConfirmModal, ToastNotification } from '../components/SharedUI';
@@ -14,15 +14,52 @@ const STATUS_COLOR: Record<string, string> = {
 export default function SchedulesPage({ token }: { token: string }) {
     const [schedules, setSchedules] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const [saving, setSaving] = useState(false);
     const { toast, showToast, closeToast } = useToast();
     const [expanded, setExpanded] = useState<number | null>(null);
 
+    const [form, setForm] = useState({
+        train_name: '', ka_number: '',
+        dep_station: '', dep_city_code: '',
+        arr_station: '', arr_city_code: '',
+        dep_sched: '', dep_real: '', dep_diff: '0', dep_status: 'Tepat Waktu',
+        arr_sched: '', arr_real: '', arr_diff: '0', arr_status: 'Tepat Waktu',
+        notes: '', media: ''
+    });
+
     const fetchSchedules = useCallback(async () => {
         try { const res = await fetch(`${API}/api/schedules`); const d = await res.json(); if (d.success) setSchedules(d.schedules); } catch { } finally { setLoading(false); }
     }, []);
     useEffect(() => { fetchSchedules(); }, [fetchSchedules]);
+
+    const handleSave = async () => {
+        if (!form.train_name || !form.dep_station || !form.arr_station) {
+            showToast('Mohon lengkapi data wajib (Nama, Keberangkatan, Tujuan)', false);
+            return;
+        }
+        setSaving(true);
+        try {
+            const res = await fetch(`${API}/api/admin/schedules`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify(form)
+            });
+            const d = await res.json();
+            if (d.success) {
+                showToast('Jadwal berhasil disimpan', true);
+                fetchSchedules();
+                setShowForm(false);
+                setForm({
+                    train_name: '', ka_number: '', dep_station: '', dep_city_code: '', arr_station: '', arr_city_code: '',
+                    dep_sched: '', dep_real: '', dep_diff: '0', dep_status: 'Tepat Waktu',
+                    arr_sched: '', arr_real: '', arr_diff: '0', arr_status: 'Tepat Waktu',
+                    notes: '', media: ''
+                });
+            } else showToast(d.error || 'Gagal', false);
+        } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); }
+    };
 
     const confirmDelete = async () => {
         if (!deleteTarget) return; setSaving(true);
@@ -33,9 +70,139 @@ export default function SchedulesPage({ token }: { token: string }) {
         <div className="space-y-8">
             <ConfirmModal isOpen={!!deleteTarget} title="Hapus Jadwal" message={`Hapus jadwal ${deleteTarget?.train_name}?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
             <div className="flex items-end justify-between">
-                <div><h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Jadwal Kereta</h2><p className="text-slate-500 text-sm font-medium">{schedules.length} jadwal aktif</p></div>
-                <button onClick={fetchSchedules} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
+                <div><h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight mb-2">Jadwal Kereta</h2><p className="text-slate-500 text-base font-medium">{schedules.length} jadwal aktif</p></div>
+                <div className="flex gap-3">
+                    <button onClick={fetchSchedules} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={20} /></button>
+                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-base transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+                        {showForm ? <><X size={18} />Batal</> : <><Plus size={18} />Tambah Jadwal</>}
+                    </button>
+                </div>
             </div>
+
+            <AnimatePresence>
+                {showForm && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 text-[#1d2d6a] pb-2 border-b border-slate-100">
+                                <Train size={24} className="text-[#ee6f1f]" />
+                                <h3 className="font-black text-lg">Informasi Kereta</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase">Nama Kereta</label>
+                                    <input value={form.train_name} onChange={e => setForm({ ...form, train_name: e.target.value })} placeholder="e.g. ARGO WILIS" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase">Kode Kereta</label>
+                                    <input value={form.ka_number} onChange={e => setForm({ ...form, ka_number: e.target.value })} placeholder="e.g. KA-001" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 text-[#1d2d6a] pb-2 border-b border-slate-100">
+                                        <MapPin size={20} className="text-[#ee6f1f]" />
+                                        <h3 className="font-black text-base">Stasiun Keberangkatan</h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase">Stasiun</label>
+                                            <input value={form.dep_station} onChange={e => setForm({ ...form, dep_station: e.target.value })} placeholder="GAMBIR" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase">Kode Kota</label>
+                                            <input value={form.dep_city_code} onChange={e => setForm({ ...form, dep_city_code: e.target.value })} placeholder="JKT" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase italic">Penjadwalan</label>
+                                            <input type="time" value={form.dep_sched} onChange={e => setForm({ ...form, dep_sched: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-[#ee6f1f]" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase italic">Realisasi</label>
+                                            <input type="time" value={form.dep_real} onChange={e => setForm({ ...form, dep_real: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase italic">Selisih (Menit)</label>
+                                            <input type="number" value={form.dep_diff} onChange={e => setForm({ ...form, dep_diff: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase">Status</label>
+                                            <select value={form.dep_status} onChange={e => setForm({ ...form, dep_status: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                                                <option>Tepat Waktu</option>
+                                                <option>Terlambat</option>
+                                                <option>Dibatalkan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 text-[#1d2d6a] pb-2 border-b border-slate-100">
+                                        <MapPinned size={20} className="text-[#ee6f1f]" />
+                                        <h3 className="font-black text-base">Stasiun Tujuan</h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase">Stasiun</label>
+                                            <input value={form.arr_station} onChange={e => setForm({ ...form, arr_station: e.target.value })} placeholder="BANDUNG" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase">Kode Kota</label>
+                                            <input value={form.arr_city_code} onChange={e => setForm({ ...form, arr_city_code: e.target.value })} placeholder="BDG" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase italic">Penjadwalan</label>
+                                            <input type="time" value={form.arr_sched} onChange={e => setForm({ ...form, arr_sched: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-[#ee6f1f]" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase italic">Realisasi</label>
+                                            <input type="time" value={form.arr_real} onChange={e => setForm({ ...form, arr_real: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase italic">Selisih (Menit)</label>
+                                            <input type="number" value={form.arr_diff} onChange={e => setForm({ ...form, arr_diff: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-400 uppercase">Status</label>
+                                            <select value={form.arr_status} onChange={e => setForm({ ...form, arr_status: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                                                <option>Tepat Waktu</option>
+                                                <option>Terlambat</option>
+                                                <option>Dibatalkan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1"><Info size={14} className="text-slate-400" /><label className="text-xs font-black text-slate-400 uppercase">Catatan Tambahan</label></div>
+                                    <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Keterangan operasional..." rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-medium text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1"><Paperclip size={14} className="text-slate-400" /><label className="text-xs font-black text-slate-400 uppercase">Media / Lampiran</label></div>
+                                    <div className="w-full h-[104px] border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                                        <Plus className="text-slate-300" size={24} />
+                                        <span className="text-xs font-bold text-slate-400 mt-1">Upload File / Gambar</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onClick={handleSave} disabled={saving} className="px-10 py-5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-black rounded-3xl text-lg transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]">
+                            {saving ? 'Menyimpan...' : <><CheckCircle2 size={24} />Simpan Penjadwalan</>}
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {loading ? <div className="p-8 text-center text-slate-500">Memuat jadwal...</div> : (
                 <div className="space-y-4">
                     {schedules.map((sched, i) => (
@@ -54,19 +221,25 @@ export default function SchedulesPage({ token }: { token: string }) {
                                 <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(sched); }} className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"><Trash2 size={14} /></button>
                             </div>
                             <AnimatePresence>
-                                {expanded === sched.id && sched.stops && (
+                                {expanded === sched.id && (
                                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-t border-slate-100 overflow-hidden">
-                                        <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-black"><span>#</span><span>Stasiun</span><span>Datang</span><span>Berangkat</span><span>Peron</span><span>Status</span></div>
-                                        {sched.stops.map((stop: any, j: number) => (
-                                            <div key={j} className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 border-t border-slate-50 hover:bg-slate-50/50 items-center text-sm">
-                                                <span className="text-slate-300 font-mono font-bold text-xs">{String(stop.sequence_order).padStart(2, '0')}</span>
-                                                <div className="flex items-center gap-2"><MapPinned size={14} className="text-[#ee6f1f]" /><span className="text-[#1d2d6a] font-black text-sm">{stop.station_name}</span><span className="text-slate-400 font-mono text-[10px]">{stop.station_code}</span></div>
-                                                <span className="text-slate-600 font-mono font-medium">{stop.arrival_time || '-'}</span>
-                                                <span className="text-slate-600 font-mono font-medium">{stop.departure_time || '-'}</span>
-                                                <span className="text-slate-400 font-mono text-xs text-center">{stop.platform}</span>
-                                                <span className={`text-[10px] font-bold ${stop.stop_status === 'SCHEDULED' ? 'text-blue-500' : stop.stop_status === 'ARRIVED' ? 'text-green-500' : 'text-slate-400'}`}>{stop.stop_status}</span>
-                                            </div>
-                                        ))}
+                                        {sched.stops ? (
+                                            <>
+                                                <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-black"><span>#</span><span>Stasiun</span><span>Datang</span><span>Berangkat</span><span>Peron</span><span>Status</span></div>
+                                                {sched.stops.map((stop: any, j: number) => (
+                                                    <div key={j} className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 border-t border-slate-50 hover:bg-slate-50/50 items-center text-sm">
+                                                        <span className="text-slate-300 font-mono font-bold text-xs">{String(stop.sequence_order).padStart(2, '0')}</span>
+                                                        <div className="flex items-center gap-2"><MapPinned size={14} className="text-[#ee6f1f]" /><span className="text-[#1d2d6a] font-black text-sm">{stop.station_name}</span><span className="text-slate-400 font-mono text-[10px]">{stop.station_code}</span></div>
+                                                        <span className="text-slate-600 font-mono font-medium">{stop.arrival_time || '-'}</span>
+                                                        <span className="text-slate-600 font-mono font-medium">{stop.departure_time || '-'}</span>
+                                                        <span className="text-slate-400 font-mono text-xs text-center">{stop.platform}</span>
+                                                        <span className={`text-[10px] font-bold ${stop.stop_status === 'SCHEDULED' ? 'text-blue-500' : stop.stop_status === 'ARRIVED' ? 'text-green-500' : 'text-slate-400'}`}>{stop.stop_status}</span>
+                                                    </div>
+                                                ))}
+                                            </>
+                                        ) : (
+                                            <div className="p-6 text-center text-slate-400 text-xs italic">Detail pemberhentian tidak tersedia.</div>
+                                        )}
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -78,3 +251,4 @@ export default function SchedulesPage({ token }: { token: string }) {
         </div>
     );
 }
+
