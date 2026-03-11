@@ -10,7 +10,6 @@ import { API } from './config';
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const TrainsPage = lazy(() => import('./pages/TrainsPage'));
 const RoutesPage = lazy(() => import('./pages/RoutesPage'));
-const StationsPage = lazy(() => import('./pages/StationsPage'));
 const SchedulesPage = lazy(() => import('./pages/SchedulesPage'));
 const UsersPage = lazy(() => import('./pages/UsersPage'));
 const LogsPage = lazy(() => import('./pages/LogsPage'));
@@ -99,7 +98,7 @@ export default function App() {
                     <button onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-xs border border-white/5 active:scale-95 group">
                         <LogOut size={18} className="text-white/20 group-hover:text-red-400 transition-colors" />
-                        <span>Logout dari Sistem</span>
+                        <span>Logout</span>
                     </button>
                 </div>
             </aside>
@@ -108,13 +107,15 @@ export default function App() {
             <main className="flex-1 overflow-auto flex flex-col relative bg-slate-50/50">
                 <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
                     <div className="flex items-center gap-4">
-                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Shield className="text-[#1d2d6a]" size={20} /></div>
+                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm">
+                            {(() => {
+                                const Icon = NAV.find(n => n.id === activePage)?.icon || Shield;
+                                return <Icon className="text-[#1d2d6a]" size={20} strokeWidth={2.5} />;
+                            })()}
+                        </div>
                         <div>
-                            <h1 className="text-xl font-black text-[#1d2d6a] tracking-tight leading-none mb-1.5">Command Center</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-slate-400">{NAV.find(n => n.id === activePage)?.label}</span>
-                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                                <span className="text-xs font-bold text-slate-400">Active session</span>
+                                <span className="text-xl font-black text-[#1d2d6a] uppercase tracking-normal">{NAV.find(n => n.id === activePage)?.label}</span>
                             </div>
                         </div>
                     </div>

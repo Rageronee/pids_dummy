@@ -208,11 +208,11 @@ function App() {
                 {/* LEFT COLUMN - Information Display (65%) */}
                 <div className="flex-[0.65] flex flex-col gap-6">
                     {/* CURRENT STATION */}
-                    <div className="bg-white rounded-[24px] shadow-sm p-6 border border-slate-200 flex flex-col">
-                        <div className="flex items-center gap-3 text-[#1d2d6a] font-extrabold text-xl tracking-widest uppercase mb-3">
+                    <div className="bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-[24px] shadow-sm p-6 border border-slate-200 flex flex-col">
+                        <div className="flex items-center gap-3 text-[#ffffff] font-extrabold text-xl tracking-widest uppercase mb-3">
                             <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT POSITION
                         </div>
-                        <h2 className="text-5xl font-black text-[#ee6f1f] tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
+                        <h2 className="text-5xl font-black text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
                     </div>
 
                     {/* ITINERARY */}
@@ -227,17 +227,17 @@ function App() {
 
                             {/* Next Stop */}
                             <div className="flex items-center gap-6 mb-4 relative z-10 w-full shrink-0">
-                                <div className="w-[68px] h-[68px] bg-white border-[4px] border-[#1d2d6a] rounded-[22px] flex items-center justify-center flex-shrink-0 shadow-sm relative z-10 mt-2">
+                                <div className="w-[68px] h-[68px] bg-white border-[3px] border-[#1d2d6a] rounded-[22px] flex items-center justify-center flex-shrink-0 shadow-sm relative z-10 mt-2">
                                     <Train className="text-[#1d2d6a]" size={36} />
                                 </div>
-                                <div className="flex-1 bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-3xl p-5 shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-                                    <div className="flex flex-col relative z-10 text-white">
-                                        <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Next Station</span>
-                                        <span className="text-3xl font-black tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
+                                <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-[#1d2d6a] shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                                    <div className="flex flex-col relative z-10 text-slate-400">
+                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Next Station</span>
+                                        <span className="text-3xl text-slate-700 font-black tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
                                     </div>
                                     <div className="text-right flex flex-col items-end relative z-10 shrink-0">
-                                        <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
-                                        <span className="text-3xl font-black text-white">
+                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
+                                        <span className="text-3xl font-black text-slate-600">
                                             {getScheduledTime(nextStation) || (stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--')}
                                         </span>
                                     </div>

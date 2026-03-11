@@ -713,24 +713,22 @@ function App() {
         <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden">
             {/* Sidebar */}
             <aside className="w-80 bg-[#1d2d6a] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
-                <div className="px-10 py-16 mb-4">
+                <div className="p-10 pb-6">
                     <img
                         src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
                         alt="KAI Logo"
                         className="h-12 w-auto mb-6 brightness-0 invert"
                     />
-                    <h1 className="text-2xl font-black text-white tracking-tight leading-tight">PIDS Master</h1>
-                    <p className="text-[11px] font-bold text-blue-200/40 mt-1">Central Processing System</p>
+                    <h1 className="text-3xl font-black text-white tracking-tight leading-tight">PIDS Master</h1>
+                    <p className="text-[15px] font-bold text-blue-200/40 mt-1">Kereta Makan</p>
                 </div>
 
-                {/* User info was removed here */}
-
-                <nav className="flex-1 px-4 space-y-2 pt-6">
-                    <ul className="space-y-3">
+                <nav className="flex-1 px-4 space-y-2">
+                    <ul className="space-y-2">
                         {NAV_ITEMS.map((item) => (
                             <li key={item.id}>
                                 <button onClick={() => setActiveTab(item.id)}
-                                    className={`w-full flex items-center gap-5 px-8 py-5 rounded-[2rem] transition-all duration-300 font-bold text-lg ${activeTab === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
+                                    className={`w-full flex items-center gap-5 px-8 py-5 rounded-2xl transition-all duration-300 font-bold text-lg ${activeTab === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
                                     <item.icon size={28} strokeWidth={2.5} />
                                     <span>{item.label}</span>
                                 </button>
@@ -750,26 +748,40 @@ function App() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative">
-                <header className="h-28 bg-white border-b border-slate-200 flex items-center justify-between px-12 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10">
-                    <div className="flex items-center gap-6">
-                        <div className="bg-[#1d2d6a] p-3.5 rounded-2xl border border-slate-100"><Train className="text-slate-50" size={28} /></div>
+                <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+                    <div className="flex items-center gap-5">
+                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm">
+                            {(() => {
+                                const Icon = NAV_ITEMS.find(n => n.id === activeTab)?.icon || Train;
+                                return <Icon className="text-[#1d2d6a]" size={22} strokeWidth={2.5} />;
+                            })()}
+                        </div>
                         <div>
-                            <h1 className="text-2xl font-black text-[#1d2d6a] tracking-tight leading-none mb-1.5">Master Controller</h1>
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{NAV_ITEMS.find(n => n.id === activeTab)?.label}</span>
-                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active session</span>
-                            </div>
+                            <span className="text-xl font-black text-[#1d2d6a] uppercase tracking-normal">
+                                {NAV_ITEMS.find(n => n.id === activeTab)?.label}
+                            </span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-12">
-                        <div className="text-right border-r border-slate-100 pr-12">
-                            <div className="text-sm font-bold text-slate-400 leading-none mb-2 uppercase tracking-wide">Active Unit</div>
-                            <div className="text-2xl font-black text-[#1d2d6a] tracking-tight">{activeTrainName} <span className="text-[#ee6f1f] ml-2">K1-90-{activeTrainNumber}</span></div>
+
+                    <div className="flex items-center gap-10">
+                        {/* Active Unit Badge Style */}
+                        <div className="flex items-center gap-4 border-r border-slate-100 pr-10">
+                            <div className="text-right">
+                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">Active Unit</div>
+                                <div className="text-base font-black text-[#1d2d6a] tracking-tight">
+                                    {activeTrainName} <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-xs border border-orange-100">K1-90-{activeTrainNumber}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-4 text-[#1d2d6a]">
-                            <div className="bg-slate-50 p-3 rounded-xl text-slate-400"><Clock size={24} /></div>
-                            <span className="text-5xl font-black font-mono tracking-tighter opacity-90">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</span>
+
+                        {/* Clock Style */}
+                        <div className="flex items-center gap-3 text-[#1d2d6a]">
+                            <div className="bg-slate-50 p-2 rounded-xl text-slate-400 border border-slate-100">
+                                <Clock size={18} />
+                            </div>
+                            <span className="text-3xl font-black font-mono tracking-tighter opacity-90">
+                                {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
+                            </span>
                         </div>
                     </div>
                 </header>
