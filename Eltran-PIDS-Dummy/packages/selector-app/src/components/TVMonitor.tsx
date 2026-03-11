@@ -102,7 +102,7 @@ const TVMonitor = React.memo(function TVMonitor({
                                 }
                                 return (
                                     <div className="flex-1 flex items-center justify-center w-full h-full bg-black">
-                                        <video key={videoUrl} src={videoUrl} autoPlay={data?.isPlaying ?? false} loop muted={false} className="w-full h-full object-contain" ref={(el) => { if (el) { if (data?.isPlaying !== undefined) { if (data.isPlaying && el.paused) el.play().catch(() => { }); if (!data.isPlaying && !el.paused) el.pause(); } el.volume = (data?.volume ?? 50) / 100; } }} />
+                                        <video key={videoUrl} src={videoUrl} autoPlay={data?.isPlaying ?? false} loop muted={data?.muteVideo ?? false} className="w-full h-full object-contain" ref={(el) => { if (el) { if (data?.isPlaying !== undefined) { if (data.isPlaying && el.paused) el.play().catch(() => { }); if (!data.isPlaying && !el.paused) el.pause(); } el.volume = (data?.volume ?? 50) / 100; } }} />
                                         <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
                                             <div className={`w-2 h-2 rounded-full ${data?.isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} /><span className="text-[10px] font-black">{data?.isPlaying ? 'Now Playing' : 'Paused'}: {activeFile}</span>
                                         </div>

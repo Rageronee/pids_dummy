@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, ChangeEvent } from 'react';
+import React, { useState, useEffect, useRef, useCallback, ChangeEvent } from 'react';
 import maplibregl from 'maplibre-gl';
 import * as turf from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -24,6 +24,18 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const [jumlahKereta, setJumlahKereta] = useState(data?.jumlahKereta || 4);
     const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>({});
     const [mediaSource, setMediaSource] = useState('Line In');
+    const [audioList, setAudioList] = useState<{ name: string, url: string }[]>([]);
+    const [selectedAudio, setSelectedAudio] = useState<string>('');
+    const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [audioSettings, setAudioSettings] = useState({ autoPlay: true, repeatMode: 'off' as 'off' | 'all' | 'one', shuffle: false });
+    const [showAudioSettings, setShowAudioSettings] = useState(false);
+    const audioStateRef = useRef({ list: audioList, selected: selectedAudio, settings: audioSettings });
+    const [showVideoSettings, setShowVideoSettings] = useState(false);
+
+    useEffect(() => {
+        audioStateRef.current = { list: audioList, selected: selectedAudio, settings: audioSettings };
+    }, [audioList, selectedAudio, audioSettings]);
     const [outerRadius, setOuterRadius] = useState(data?.geofencingOuterRadius || 750);
     const [innerRadius, setInnerRadius] = useState(data?.geofencingInnerRadius || 250);
     const radiusRef = useRef({ inner: data?.geofencingInnerRadius || 250, outer: data?.geofencingOuterRadius || 750 });
@@ -121,6 +133,37 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             .catch(console.error);
     }, [activeTrainName]);
 
+    // Fetch initial audio list
+    const fetchAudios = useCallback(async () => {
+        try {
+            const res = await fetch('http://localhost:3001/api/media/audios');
+            const d = await res.json();
+            if (d.success) {
+                const fetched = d.audios.map((a: string) => ({ name: a, url: `http://localhost:3001/media/audio/${encodeURIComponent(a)}` }));
+                setAudioList(fetched);
+                if (fetched.length > 0 && !selectedAudio) {
+                    setSelectedAudio(fetched[0].url);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch audios:", e);
+        }
+    }, [selectedAudio]);
+
+    useEffect(() => {
+        fetchAudios();
+    }, [fetchAudios]);
+    useEffect(() => {
+        fetch('http://localhost:3001/api/schedules')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.schedules) {
+                    setScheduleData(res.schedules);
+                }
+            })
+            .catch(console.error);
+    }, [activeTrainName]);
+
     // Fetch gerbong counts from db
     useEffect(() => {
         fetch('http://localhost:3001/api/db')
@@ -139,6 +182,94 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             setJumlahKereta(gerbongCounts[activeTrainName]);
         }
     }, [activeTrainName, gerbongCounts]);
+
+    const handleLoadAudioFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const newAudios = Array.from(files).map(file => ({
+                name: file.name,
+                url: URL.createObjectURL(file) // Create object URL for local playback
+            }));
+
+            setAudioList(prev => {
+                const updated = [...prev, ...newAudios];
+                if (!selectedAudio && updated.length > 0) {
+                    setSelectedAudio(updated[0].url);
+                }
+                return updated;
+            });
+            showToast(`${files.length} file audio dimuat`);
+        }
+    };
+
+    const handlePlayAudio = (overrideUrl?: string | React.MouseEvent) => {
+        // overrideUrl can be an event object if directly called from onClick without params, so we check type
+        const targetUrl = typeof overrideUrl === 'string' ? overrideUrl : selectedAudio;
+
+        if (!targetUrl) {
+            showToast('Pilih audio terlebih dahulu', false);
+            return;
+        }
+
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.pause();
+        }
+
+        const audio = new Audio(targetUrl);
+        audioPlayerRef.current = audio;
+
+        audio.onended = () => {
+            const state = audioStateRef.current;
+            if (state.settings.repeatMode === 'one') {
+                handlePlayAudio(targetUrl);
+                return;
+            }
+            if (!state.settings.autoPlay) return;
+
+            let currentIndex = state.list.findIndex(a => a.url === targetUrl);
+            let nextIndex = currentIndex + 1;
+
+            if (state.settings.shuffle) {
+                nextIndex = Math.floor(Math.random() * state.list.length);
+            } else if (nextIndex >= state.list.length) {
+                if (state.settings.repeatMode === 'all') {
+                    nextIndex = 0;
+                } else {
+                    return;
+                }
+            }
+
+            if (nextIndex >= 0 && nextIndex < state.list.length) {
+                const nextUrl = state.list[nextIndex].url;
+                setSelectedAudio(nextUrl);
+                handlePlayAudio(nextUrl);
+            }
+        };
+
+        audio.play()
+            .then(() => {
+                // If it was programmatic, ensure state updates to match playing track
+                if (targetUrl !== selectedAudio) {
+                    setSelectedAudio(targetUrl);
+                }
+                const ad = audioList.find(a => a.url === targetUrl);
+                showToast(`Memainkan: ${ad?.name || 'Audio'}`);
+            })
+            .catch(e => {
+                console.error("Audio playback failed:", e);
+                showToast('Gagal memainkan audio', false);
+            });
+    };
+
+    const handleStopAudio = () => {
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.pause();
+            audioPlayerRef.current.currentTime = 0;
+            showToast('Audio dihentikan');
+        } else {
+            showToast('Tidak ada audio yang sedang dimainkan', false);
+        }
+    };
 
     // Sync geofencing radius from data prop
     useEffect(() => {
@@ -1054,9 +1185,34 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                     {/* Audio Broadcast */}
                     <div className="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col">
-                        <h4 className="flex items-center gap-2 text-xs font-black text-slate-400 border-b border-slate-100 pb-2">
-                            <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
-                        </h4>
+                        <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-2">
+                            <h4 className="flex items-center gap-2 text-xs font-black text-slate-400">
+                                <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
+                            </h4>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    onClick={() => setShowAudioSettings(!showAudioSettings)}
+                                    className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showAudioSettings ? 'bg-slate-200 border-slate-300 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                >
+                                    <Settings size={14} /> Pengaturan
+                                </button>
+                                <input
+                                    type="file"
+                                    accept="audio/*"
+                                    multiple
+                                    ref={fileInputRef}
+                                    onChange={handleLoadAudioFiles}
+                                    className="hidden"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                                >
+                                    <FolderOpen size={14} /> Load File Audio
+                                </button>
+                            </div>
+                        </div>
+
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
@@ -1085,22 +1241,37 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 placeholder="Ketik pesan darurat/info..."
                             />
                         </div>
-                        <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
-                            <label className="text-[10px] font-bold">Pilihan Suara</label>
-                            <select
-                                className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
-                            >
-                                <option value="audio1">Pengumuman_Kedatangan.mp3</option>
-                                <option value="audio2">Safety_Briefing_KAI.wav</option>
-                                <option value="audio3">Emergency_Alert_01.mp3</option>
-                                <option value="audio4">Jingle_KAI.mp3</option>
-                            </select>
+                        <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 rounded-xl overflow-hidden shadow-inner bg-slate-50">
+                            <div className="flex justify-between items-center bg-slate-100 px-3 py-2 border-b border-slate-200">
+                                <span className="text-[10px] font-black text-slate-500 flex items-center gap-1.5"><ListVideo size={12} /> Audio Playlist ({audioList.length})</span>
+                                {audioList.length > 0 && (
+                                    <button onClick={() => { setAudioList([]); setSelectedAudio(''); handleStopAudio(); }} className="text-[9px] font-black text-red-500 hover:text-red-700 transition-colors px-2 py-0.5 bg-red-50 rounded border border-red-100">Bersihkan</button>
+                                )}
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar max-h-[160px]">
+                                {audioList.length === 0 ? (
+                                    <div className="text-center text-[10px] font-bold text-slate-400 py-8">Playlist masih kosong. Silakan muat file audio.</div>
+                                ) : (
+                                    audioList.map((audio, i) => (
+                                        <div
+                                            key={i}
+                                            onClick={() => { setSelectedAudio(audio.url); handlePlayAudio(audio.url); }}
+                                            className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer text-xs transition-all border ${selectedAudio === audio.url ? 'bg-[#1d2d6a] text-white border-[#1d2d6a] shadow-md relative overflow-hidden' : 'bg-white text-slate-600 border-slate-200 hover:border-[#1d2d6a]/30 hover:bg-blue-50/50'}`}
+                                        >
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-black/10">
+                                                {selectedAudio === audio.url ? <Volume2 size={12} className="animate-pulse" /> : <Mic size={10} className="opacity-50" />}
+                                            </div>
+                                            <span className="font-bold truncate flex-1">{audio.name}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                         <div className="flex justify-end gap-3 pt-2">
-                            <button onClick={() => showToast('Audio dinonaktifkan')} className="text-xs font-black text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
-                                Reset
+                            <button onClick={handleStopAudio} className="text-xs font-black text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
+                                Stop
                             </button>
-                            <button onClick={() => showToast('Memainkan Audio Announcer')} className="text-xs font-black text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
+                            <button onClick={handlePlayAudio} className="text-xs font-black text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
                                 <Volume2 size={14} /> Mainkan
                             </button>
                         </div>
@@ -1114,21 +1285,12 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <Video size={16} className="text-[#1d2d6a]" /> Manajemen TV / Video
                             </h4>
                             <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-                                <label className="flex items-center gap-2 text-[10px] font-black cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all text-slate-600 shadow-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={data?.tvStandby !== false}
-                                        onChange={(e) => {
-                                            const newVal = e.target.checked;
-                                            if (!newVal) {
-                                                setShowStandbyConfirm(true);
-                                            } else {
-                                                handleVideoAction({ tvStandby: true });
-                                            }
-                                        }}
-                                        className="w-3.5 h-3.5 rounded border-slate-300 accent-[#1d2d6a] focus:ring-[#1d2d6a]"
-                                    /> Standby
-                                </label>
+                                <button
+                                    onClick={() => setShowVideoSettings(!showVideoSettings)}
+                                    className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showVideoSettings ? 'bg-slate-200 border-slate-300 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                >
+                                    <Settings size={14} /> Pengaturan
+                                </button>
                                 <button
                                     onClick={handleSelectDirectory}
                                     className="flex items-center gap-2 text-[10px] font-black px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
@@ -1140,6 +1302,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 </button>
                             </div>
                         </div>
+
 
                         {/* Video Preview Block */}
                         <div className="bg-black rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
@@ -1161,6 +1324,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                 src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
                                                 autoPlay={isPlaying}
                                                 loop={playbackMode.includes('repeat')}
+                                                muted={data?.muteVideo ?? false}
                                                 className="w-full h-full object-contain"
                                                 onTimeUpdate={(e) => {
                                                     const el = e.currentTarget;
@@ -1172,6 +1336,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                     }
                                                 }}
                                                 onEnded={() => {
+                                                    const autoPlayNext = data?.autoPlayNext ?? true;
+                                                    if (!autoPlayNext && playbackMode !== 'repeat-one') {
+                                                        if (isPlaying) togglePlay();
+                                                        return;
+                                                    }
                                                     if (playbackMode !== 'repeat-one' && isPlaying) nextVideo();
                                                 }}
                                             />
@@ -1390,6 +1559,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 setShowClearPlaylistConfirm={setShowClearPlaylistConfirm}
                 showToast={showToast}
                 uploading={uploading}
+                showAudioSettings={showAudioSettings}
+                setShowAudioSettings={setShowAudioSettings}
+                audioSettings={audioSettings}
+                setAudioSettings={setAudioSettings}
+                showVideoSettings={showVideoSettings}
+                setShowVideoSettings={setShowVideoSettings}
+                data={data}
             />
 
         </div >

@@ -25,6 +25,15 @@ interface MasterModalsProps {
     showToast: (msg: string, ok?: boolean) => void;
 
     uploading: boolean;
+
+    showAudioSettings: boolean;
+    setShowAudioSettings: (v: boolean) => void;
+    audioSettings: { autoPlay: boolean; repeatMode: 'off' | 'all' | 'one'; shuffle: boolean };
+    setAudioSettings: React.Dispatch<React.SetStateAction<{ autoPlay: boolean; repeatMode: 'off' | 'all' | 'one'; shuffle: boolean }>>;
+
+    showVideoSettings: boolean;
+    setShowVideoSettings: (v: boolean) => void;
+    data: any;
 }
 
 export function MasterModals({
@@ -32,7 +41,9 @@ export function MasterModals({
     showStandbyConfirm, setShowStandbyConfirm, handleVideoAction,
     showDeleteModal, setShowDeleteModal, confirmDeleteGeoJSON, routeName,
     showClearPlaylistConfirm, setShowClearPlaylistConfirm, showToast,
-    uploading
+    uploading,
+    showAudioSettings, setShowAudioSettings, audioSettings, setAudioSettings,
+    showVideoSettings, setShowVideoSettings, data
 }: MasterModalsProps) {
     return (
         <>
@@ -131,6 +142,64 @@ export function MasterModals({
                         <h3 className="text-white font-black text-2xl mb-2 drop-shadow-lg">Memproses Data Peta</h3>
                         <p className="text-slate-300 text-center max-w-sm px-6 text-sm font-bold tracking-tight leading-relaxed">Mohon tunggu sebentar. Sistem sedang mensinkronisasi rute dan waypoint navigasi.</p>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Audio Settings Modal */}
+            <AnimatePresence>
+                {showAudioSettings && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
+                            <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-b border-slate-200 relative">
+                                <button onClick={() => setShowAudioSettings(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-transparent border-none p-1 rounded-full"><X size={18} strokeWidth={2.5} /></button>
+                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Pengaturan Audio</h3>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <label className="flex items-center gap-3 text-sm font-bold text-slate-600 cursor-pointer hover:text-[#1d2d6a] transition-colors bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <input type="checkbox" checked={audioSettings.autoPlay} onChange={e => setAudioSettings(s => ({ ...s, autoPlay: e.target.checked }))} className="w-5 h-5 rounded text-[#1d2d6a] focus:ring-[#1d2d6a] border-slate-300" />
+                                    <span>Putar Otomatis Berikutnya (Auto-play)</span>
+                                </label>
+                                <label className="flex items-center gap-3 text-sm font-bold text-slate-600 cursor-pointer hover:text-[#1d2d6a] transition-colors bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <input type="checkbox" checked={audioSettings.shuffle} onChange={e => setAudioSettings(s => ({ ...s, shuffle: e.target.checked }))} className="w-5 h-5 rounded text-[#1d2d6a] focus:ring-[#1d2d6a] border-slate-300" />
+                                    <span>Mode Acak (Shuffle)</span>
+                                </label>
+                                <div className="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span className="text-sm font-bold text-slate-600">Mode Ulang (Repeat):</span>
+                                    <select value={audioSettings.repeatMode} onChange={e => setAudioSettings(s => ({ ...s, repeatMode: e.target.value as any }))} className="text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-lg py-1.5 px-3 focus:outline-none focus:border-[#ee6f1f] cursor-pointer outline-none">
+                                        <option value="off">Mati (Off)</option>
+                                        <option value="all">Ulangi Semua</option>
+                                        <option value="one">Ulangi Satu Lagu</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="p-6 pt-0 border-t border-slate-100 mt-4 flex justify-end">
+                                <button onClick={() => setShowAudioSettings(false)} className="py-2.5 px-6 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-sm">Tutup</button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Video Settings Modal */}
+            <AnimatePresence>
+                {showVideoSettings && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 backdrop-blur-sm">
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
+                            <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-b border-slate-200 relative">
+                                <button onClick={() => setShowVideoSettings(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-transparent border-none p-1 rounded-full"><X size={18} strokeWidth={2.5} /></button>
+                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Pengaturan Video</h3>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <label className="flex items-center gap-3 text-sm font-bold text-slate-600 cursor-pointer hover:text-[#1d2d6a] transition-colors bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <input type="checkbox" checked={data?.autoPlayNext ?? true} onChange={e => handleVideoAction({ autoPlayNext: e.target.checked })} className="w-5 h-5 rounded text-[#1d2d6a] focus:ring-[#1d2d6a] border-slate-300" />
+                                    <span>Putar Otomatis Berikutnya (Auto-play)</span>
+                                </label>
+                            </div>
+                            <div className="p-6 pt-0 border-t border-slate-100 mt-4 flex justify-end">
+                                <button onClick={() => setShowVideoSettings(false)} className="py-2.5 px-6 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-sm">Tutup</button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </>

@@ -133,11 +133,19 @@ export const P10Matrix = ({
         const ctx = canvas.getContext('2d', { alpha: false });
         if (!ctx) return;
 
+        // Use a scale factor for high-DPI rendering to make perfect circles
+        const SCALE = 4;
+
         // Fixed physical layout
         const displayWidth = LED_WIDTH * (DOT_SIZE + GAP) + PADDING * 2;
         const displayHeight = LED_HEIGHT * (DOT_SIZE + GAP) + PADDING * 2;
-        canvas.width = displayWidth;
-        canvas.height = displayHeight;
+
+        // Scale the internal canvas resolution
+        canvas.width = displayWidth * SCALE;
+        canvas.height = displayHeight * SCALE;
+
+        // Scale the context so drawing commands stay the same
+        ctx.scale(SCALE, SCALE);
 
         // Initial Bitmap Load
         updateBitmap(currentText.current, fixedText);
@@ -168,7 +176,8 @@ export const P10Matrix = ({
 
             // --- DRAWING ---
             ctx.fillStyle = '#050505';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Use displayWidth/Height because ctx is scaled
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
 
             const offset = Math.floor(scrollOffset.current);
             const data = fullTextDataRef.current;
@@ -232,7 +241,7 @@ export const P10Matrix = ({
 
     return (
         <div className="w-full flex items-center justify-center bg-[#111] overflow-hidden">
-            <canvas ref={canvasRef} className="w-full h-auto block" style={{ imageRendering: 'pixelated' }} />
+            <canvas ref={canvasRef} className="w-full h-auto block" />
         </div>
     );
 };

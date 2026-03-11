@@ -66,6 +66,7 @@ export interface PidsState {
     playbackProgress?: number;
     playbackMode?: string;
     volume?: number;
+    muteVideo?: boolean;
     jumlahKereta?: number;
 }
 

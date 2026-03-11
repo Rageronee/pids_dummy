@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, ScrollText, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
@@ -13,19 +13,30 @@ const API_URL = 'http://localhost:3001';
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
-    const cameras = [
-        { id: 'CAM-01', location: 'GERBONG 05 - DEPAN', url: "https://img.harianjogja.com/posts/2024/03/26/1169359/kereta-api-ekonomi-generasi-baru.jpg" },
-        { id: 'CAM-02', location: 'GERBONG 05 - BELAKANG', url: "https://image.fortuneidn.com/post/20250821/upload_e179f189ddfbf16b0482c14a7295b474_2940c5af-a990-4232-ad05-4c52dd5d0431.jpg" },
-        { id: 'CAM-03', location: 'AREA BORDES - KIRI', url: "https://awsimages.detik.net.id/visual/2022/12/25/kereta-panoramic-kini-bisa-dicoba-oleh-masyarakat-umum-setelah-soft-launching-yang-dilakukan-pt-kereta-api-indonesia-pada-24-d-2_169.jpeg?w=1200" },
-        { id: 'CAM-04', location: 'AREA BORDES - KANAN', url: "https://asset.kompas.com/crops/RRMwhqmwIwdwA3xhcoXZY6wdHjE=/0x0:999x666/1200x800/data/photo/2022/07/15/62d0ce5c7389a.jpeg" }
+    const numGerbong = _data?.jumlahKereta || 4;
+    const sampleImages = [
+        "https://img.harianjogja.com/posts/2024/03/26/1169359/kereta-api-ekonomi-generasi-baru.jpg",
+        "https://image.fortuneidn.com/post/20250821/upload_e179f189ddfbf16b0482c14a7295b474_2940c5af-a990-4232-ad05-4c52dd5d0431.jpg",
+        "https://awsimages.detik.net.id/visual/2022/12/25/kereta-panoramic-kini-bisa-dicoba-oleh-masyarakat-umum-setelah-soft-launching-yang-dilakukan-pt-kereta-api-indonesia-pada-24-d-2_169.jpeg?w=1200",
+        "https://asset.kompas.com/crops/RRMwhqmwIwdwA3xhcoXZY6wdHjE=/0x0:999x666/1200x800/data/photo/2022/07/15/62d0ce5c7389a.jpeg"
     ];
+
+    const cameras = Array.from({ length: numGerbong }, (_, i) => ({
+        id: `CAM-${String(i + 1).padStart(2, '0')}`,
+        location: `GERBONG ${String(i + 1).padStart(2, '0')} - INTERIOR`,
+        url: sampleImages[i % sampleImages.length],
+        gerbongIndex: i + 1
+    }));
+
     const [currentCamIndex, setCurrentCamIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isAutoPlay, setIsAutoPlay] = useState(true);
 
     useEffect(() => {
+        if (!isAutoPlay) return;
         const interval = setInterval(() => setCurrentCamIndex((prev) => (prev + 1) % cameras.length), 5000);
         return () => clearInterval(interval);
-    }, [currentCamIndex]);
+    }, [isAutoPlay, cameras.length]);
 
     useEffect(() => {
         const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -34,10 +45,17 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
 
     const handlePrevCam = () => {
         setCurrentCamIndex((prev) => (prev - 1 + cameras.length) % cameras.length);
+        setIsAutoPlay(false);
     };
 
     const handleNextCam = () => {
         setCurrentCamIndex((prev) => (prev + 1) % cameras.length);
+        setIsAutoPlay(false);
+    };
+
+    const handleSelectGerbong = (idx: number) => {
+        setCurrentCamIndex(idx);
+        setIsAutoPlay(false);
     };
 
     return (
@@ -58,7 +76,10 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                     <div className="text-[10px] font-bold text-white/40">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 </div>
             </div>
+            {/* Main Center Overlay Text */}
             <div className="absolute top-1/2 left-8 -translate-y-1/2 z-20"><div className="text-white/20 font-mono text-[80px] font-black leading-none select-none">{cameras[currentCamIndex].id}</div></div>
+
+
 
             {/* Manual Navigation Overlay (appears on hover) */}
             <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -75,7 +96,24 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
             <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end z-20">
                 <div className="bg-black/80 backdrop-blur-3xl px-10 py-6 rounded-[2.5rem] border border-white/10 shadow-2xl flex items-center gap-6">
                     <div className="bg-blue-600 p-4 rounded-2xl shadow-lg"><Activity size={24} className="text-white" /></div>
-                    <div className="flex flex-col"><span className="text-[10px] font-black text-white/40 leading-none mb-2">Current Location</span><span className="text-2xl font-black text-white italic">{cameras[currentCamIndex].location}</span></div>
+                    <div className="flex flex-col relative w-[300px]">
+                        <label htmlFor="cctv-location-select" className="text-[10px] font-black text-white/40 leading-none mb-2">Location Selector</label>
+                        <select
+                            id="cctv-location-select"
+                            value={currentCamIndex}
+                            onChange={(e) => handleSelectGerbong(Number(e.target.value))}
+                            className="text-2xl font-black text-white italic bg-transparent border-none appearance-none outline-none cursor-pointer placeholder-white/50"
+                        >
+                            {cameras.map((cam, idx) => (
+                                <option key={cam.id} value={idx} className="text-black not-italic text-sm">
+                                    {cam.location}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute right-0 bottom-1 pointer-events-none text-white/50">
+                            <ChevronDown size={28} />
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />

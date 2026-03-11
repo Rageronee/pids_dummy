@@ -43,9 +43,11 @@ export async function startApiServer() {
     apiApp.use(express.json({ limit: '50mb' }));
 
     let currentVideoDir = '';
+    let currentAudioDir = '';
     try {
         const path = await import('path');
         currentVideoDir = path.join(process.cwd(), 'public', 'videos');
+        currentAudioDir = path.join(process.cwd(), 'public', 'audio');
     } catch (e) { }
 
     const sessions = new Map();
@@ -356,6 +358,75 @@ export async function startApiServer() {
             const ext = path.extname(filePath).toLowerCase();
             const mimeTypes = { '.mp4': 'video/mp4', '.avi': 'video/x-msvideo', '.mkv': 'video/x-matroska', '.mov': 'video/quicktime' };
             const contentType = mimeTypes[ext] || 'video/mp4';
+
+            const range = req.headers.range;
+            if (range) {
+                const parts = range.replace(/bytes=/, '').split('-');
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+                const chunksize = (end - start) + 1;
+                const file = fs.createReadStream(filePath, { start, end });
+                res.writeHead(206, {
+                    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': chunksize,
+                    'Content-Type': contentType
+                });
+                file.pipe(res);
+            } else {
+                res.writeHead(200, {
+                    'Content-Length': fileSize,
+                    'Content-Type': contentType
+                });
+                fs.createReadStream(filePath).pipe(res);
+            }
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    });
+
+    apiApp.get('/api/media/audios', async (req, res) => {
+        try {
+            const fs = await import('fs/promises');
+            // Ensure dir exists
+            try { await fs.access(currentAudioDir); } catch { await fs.mkdir(currentAudioDir, { recursive: true }); }
+
+            const files = await fs.readdir(currentAudioDir);
+            const audios = files.filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f));
+            res.json({ success: true, audios, directory: currentAudioDir });
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    });
+
+    apiApp.post('/api/media/audio-directory', async (req, res) => {
+        const { directory } = req.body;
+        if (!directory) return res.status(400).json({ success: false, error: 'Directory required' });
+        currentAudioDir = directory;
+        res.json({ success: true, directory: currentAudioDir });
+    });
+
+    // Audio streaming endpoint
+    apiApp.get('/media/audio/:filename', async (req, res) => {
+        try {
+            const path = await import('path');
+            const fs = await import('fs');
+            const filePath = path.join(currentAudioDir, req.params.filename);
+
+            // Security: prevent path traversal
+            if (!filePath.startsWith(currentAudioDir)) {
+                return res.status(403).json({ success: false, error: 'Forbidden' });
+            }
+
+            if (!fs.existsSync(filePath)) {
+                return res.status(404).json({ success: false, error: 'Audio not found' });
+            }
+
+            const stat = fs.statSync(filePath);
+            const fileSize = stat.size;
+            const ext = path.extname(filePath).toLowerCase();
+            const mimeTypes = { '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4' };
+            const contentType = mimeTypes[ext] || 'audio/mpeg';
 
             const range = req.headers.range;
             if (range) {
