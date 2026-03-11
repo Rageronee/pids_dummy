@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Activity, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
@@ -31,6 +31,8 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     const [currentCamIndex, setCurrentCamIndex] = useState(0);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isAutoPlay, setIsAutoPlay] = useState(true);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!isAutoPlay) return;
@@ -41,6 +43,16 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     useEffect(() => {
         const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(clockTimer);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const handlePrevCam = () => {
@@ -66,14 +78,10 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                 </motion.div>
             </AnimatePresence>
             <motion.div animate={{ y: ["0%", "100%", "0%"] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 bg-white/10 h-px z-10 pointer-events-none shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-            <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
-                <div className="flex items-center gap-4">
-                    <div className="bg-white/90 p-3 rounded-xl shadow-2xl"><img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-6" /></div>
-                    <div className="flex flex-col text-white"><span className="text-[10px] font-black opacity-60 leading-none mb-1">Security System</span><span className="text-xl font-black italic tracking-tighter leading-none">CCTV Monitor</span></div>
-                </div>
-                <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-3xl border border-white/20 shadow-2xl flex flex-col items-end">
-                    <div className="text-3xl font-black text-white font-mono tracking-tighter tabular-nums leading-none mb-1">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
-                    <div className="text-[10px] font-bold text-white/40">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+            <div className="absolute top-8 left-8 right-8 flex justify-start items-start z-20">
+                <div className="px-4 py-2 flex flex-col items-start drop-shadow-2xl">
+                    <div className="text-3xl font-black text-white font-mono tracking-tighter tabular-nums leading-none mb-1 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
+                    <div className="text-[10px] font-bold text-white/90 [text-shadow:0_1px_5px_rgba(0,0,0,0.8)]">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 </div>
             </div>
             {/* Main Center Overlay Text */}
@@ -82,38 +90,81 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
 
 
             {/* Manual Navigation Overlay (appears on hover) */}
-            <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <button onClick={handlePrevCam} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110">
                     <ChevronLeft size={36} />
                 </button>
             </div>
-            <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <button onClick={handleNextCam} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110">
                     <ChevronRight size={36} />
                 </button>
             </div>
 
-            <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end z-20">
-                <div className="bg-black/80 backdrop-blur-3xl px-10 py-6 rounded-[2.5rem] border border-white/10 shadow-2xl flex items-center gap-6">
-                    <div className="bg-blue-600 p-4 rounded-2xl shadow-lg"><Activity size={24} className="text-white" /></div>
-                    <div className="flex flex-col relative w-[300px]">
-                        <label htmlFor="cctv-location-select" className="text-[10px] font-black text-white/40 leading-none mb-2">Location Selector</label>
-                        <select
-                            id="cctv-location-select"
-                            value={currentCamIndex}
-                            onChange={(e) => handleSelectGerbong(Number(e.target.value))}
-                            className="text-2xl font-black text-white italic bg-transparent border-none appearance-none outline-none cursor-pointer placeholder-white/50"
-                        >
-                            {cameras.map((cam, idx) => (
-                                <option key={cam.id} value={idx} className="text-black not-italic text-sm">
-                                    {cam.location}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="absolute right-0 bottom-1 pointer-events-none text-white/50">
-                            <ChevronDown size={28} />
+            <div className="absolute bottom-8 left-8 right-8 flex justify-end items-end z-40" ref={dropdownRef}>
+                <div className="relative">
+                    <AnimatePresence>
+                        {isDropdownOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="absolute bottom-full right-0 mb-4 w-[400px] bg-black/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
+                            >
+                                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
+                                    Pilih Lokasi Kamera
+                                </div>
+                                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                    {cameras.map((cam, idx) => (
+                                        <motion.button
+                                            key={cam.id}
+                                            whileHover={{ x: 5 }}
+                                            onClick={() => {
+                                                handleSelectGerbong(idx);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                                                currentCamIndex === idx 
+                                                    ? 'bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]' 
+                                                    : 'text-white/70 hover:bg-white/5 hover:text-white'
+                                            }`}
+                                        >
+                                            <div className={`p-1.5 rounded-lg ${currentCamIndex === idx ? 'bg-white/20' : 'bg-white/5'}`}>
+                                                <Cctv size={14} />
+                                            </div>
+                                            <span className="text-sm font-bold truncate">{cam.location}</span>
+                                        </motion.button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <motion.button
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${
+                            isDropdownOpen ? 'border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20' : 'border-white/10 hover:border-[#ee6f1f]/40'
+                        }`}
+                    >
+                        <div className={`p-2.5 rounded-xl transition-colors ${isDropdownOpen ? 'bg-[#ee6f1f] text-white' : 'bg-[#ee6f1f]/20 text-[#ee6f1f]'}`}>
+                            <Cctv size={20} />
                         </div>
-                    </div>
+                        
+                        <div className="flex items-center gap-6 min-w-[300px]">
+                            <span className="text-xl font-bold text-white truncate px-2">
+                                {cameras[currentCamIndex].location}
+                            </span>
+                            <motion.div
+                                animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+                                className="text-[#ee6f1f]/60"
+                            >
+                                <ChevronDown size={22} />
+                            </motion.div>
+                        </div>
+                    </motion.button>
                 </div>
             </div>
             <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
