@@ -83,7 +83,7 @@ export default function App() {
                 <div className="p-8 pb-10">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="h-10 w-auto mb-6 brightness-0 invert" />
                     <h1 className="text-2xl font-black text-white tracking-tight leading-tight">Command Center</h1>
-                    <p className="text-xs font-bold text-blue-200/40 mt-1 font-mono">Control Panel</p>
+                    <p className="text-l font-bold text-blue-200/40 mt-1 font-mono">Control Panel</p>
                 </div>
                 <nav className="flex-1 px-4 space-y-1">
                     {NAV.map(item => (

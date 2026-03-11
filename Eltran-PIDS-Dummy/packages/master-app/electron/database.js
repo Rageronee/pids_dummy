@@ -6,6 +6,26 @@ import pg from 'pg';
 const { Pool } = pg;
 import crypto from 'crypto';
 
+// ---- Password Hashing Utilities (scrypt, built-in Node.js) ----
+const SALT_LENGTH = 16;
+const KEY_LENGTH = 64;
+
+function hashPassword(password) {
+    const salt = crypto.randomBytes(SALT_LENGTH).toString('hex');
+    const hash = crypto.scryptSync(password, salt, KEY_LENGTH).toString('hex');
+    return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+    // Support legacy plaintext passwords during migration
+    if (!storedHash.includes(':')) {
+        return password === storedHash;
+    }
+    const [salt, hash] = storedHash.split(':');
+    const derivedHash = crypto.scryptSync(password, salt, KEY_LENGTH).toString('hex');
+    return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(derivedHash, 'hex'));
+}
+
 let pool = null;
 
 // ============================================================
@@ -348,8 +368,9 @@ async function seedData() {
                  VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10)
                  ON CONFLICT (id) DO NOTHING`);
 
+    const hashedAdminPw = hashPassword('admin123');
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING',
-        ['USR001', 'admin', 'admin123', 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
+        ['USR001', 'admin', hashedAdminPw, 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
 }
 
 function extractStationsFromGeoJSON(geojson) {
@@ -484,9 +505,12 @@ export async function updateState(updates) {
 export async function getLogs(filter = {}) {
     let sql = 'SELECT * FROM system_logs';
     const params = [];
-    if (filter.action) { sql += ' WHERE action = $1'; params.push(filter.action); }
+    let paramIdx = 1;
+    if (filter.action) { sql += ` WHERE action = $${paramIdx++}`; params.push(filter.action); }
     sql += ' ORDER BY timestamp DESC';
-    sql += filter.limit ? ` LIMIT ${parseInt(filter.limit)}` : ' LIMIT 1000';
+    const limit = Math.min(Math.max(parseInt(filter.limit) || 1000, 1), 5000);
+    sql += ` LIMIT $${paramIdx++}`;
+    params.push(limit);
     return await getAll(sql, params);
 }
 
@@ -501,7 +525,12 @@ export async function writeLog(entry) {
 
 export async function getUsers() { return await getAll('SELECT id, username, role, nama FROM users'); }
 export async function getUsersWithPassword() { return await getAll('SELECT * FROM users'); }
-export async function findUser(username, password) { return await getOne('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]); }
+export async function findUser(username, password) {
+    const user = await getOne('SELECT * FROM users WHERE username = $1', [username]);
+    if (!user) return null;
+    if (!verifyPassword(password, user.password)) return null;
+    return user;
+}
 export async function getTrains() {
     return await getAll('SELECT * FROM train_services ORDER BY id');
 }
@@ -849,8 +878,9 @@ export async function deleteUnit(id) { return { success: true }; }
 export async function addUser(data) {
     try {
         const id = crypto.randomUUID();
+        const hashedPw = hashPassword(data.password);
         await query('INSERT INTO users (id, username, password, role, nama) VALUES (?, ?, ?, ?, ?)',
-            [id, data.username, data.password, data.role || 'Operator', data.nama]);
+            [id, data.username, hashedPw, data.role || 'Operator', data.nama]);
         return { success: true };
     } catch (e) { return { error: e.message }; }
 }

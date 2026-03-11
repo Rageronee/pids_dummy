@@ -143,11 +143,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                         >
                             {isLoading ? 'Memproses...' : 'Masuk Ke Sistem'}
                         </button>
-
-                        {/* Hint Info */}
-                        <p className="text-center w-full text-[15px] tracking-wider text-slate-400 font-medium mt-6">
-                            Demo: operator / operator123
-                        </p>
                     </form>
                 </motion.div>
             </div>

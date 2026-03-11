@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 
 interface P10MatrixProps {
     text: string;
@@ -14,7 +14,7 @@ interface P10MatrixProps {
     fontSize?: number;
 }
 
-export const P10Matrix = ({
+const P10MatrixInner = ({
     text,
     fixedText = '',
     color = '#ff0000',
@@ -245,3 +245,4 @@ export const P10Matrix = ({
         </div>
     );
 };
+export const P10Matrix = memo(P10MatrixInner);

@@ -11,9 +11,9 @@ function createWindow() {
         height: 900,
         fullscreen: true,
         webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            webSecurity: false,
+            nodeIntegration: false,
+            contextIsolation: true,
+            webSecurity: true,
         },
         backgroundColor: '#0a0f1e',
         titleBarStyle: 'hidden',

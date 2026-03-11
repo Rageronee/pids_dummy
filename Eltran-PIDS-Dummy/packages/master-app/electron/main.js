@@ -13,10 +13,9 @@ function createWindow() {
         height: 720,
         fullscreen: true,
         webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false, // For dummy simulation, reducing complexity
-            webSecurity: false,
-            allowRunningInsecureContent: true,
+            nodeIntegration: false,
+            contextIsolation: true,
+            webSecurity: true,
         },
         backgroundColor: '#0f172a', // Slate-900
         titleBarStyle: 'hidden',

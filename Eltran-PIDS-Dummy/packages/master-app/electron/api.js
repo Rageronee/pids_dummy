@@ -36,11 +36,44 @@ export async function startApiServer() {
     const httpServer = createServer(apiApp);
 
     const io = new SocketIOServer(httpServer, {
-        cors: { origin: '*', methods: ['GET', 'POST'] },
+        cors: {
+            origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176'],
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        },
     });
 
-    apiApp.use(cors());
+    apiApp.use(cors({
+        origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176'],
+    }));
     apiApp.use(express.json({ limit: '50mb' }));
+
+    // ---- Rate Limiter for Login (brute-force protection) ----
+    const loginAttempts = new Map(); // ip -> { count, resetAt }
+    const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+    const RATE_LIMIT_MAX = 5;
+
+    const loginRateLimiter = (req, res, next) => {
+        const ip = req.ip || req.connection.remoteAddress || 'unknown';
+        const now = Date.now();
+        const record = loginAttempts.get(ip);
+        if (record && now < record.resetAt) {
+            if (record.count >= RATE_LIMIT_MAX) {
+                return res.status(429).json({ success: false, error: 'Terlalu banyak percobaan login. Coba lagi dalam 1 menit.' });
+            }
+            record.count++;
+        } else {
+            loginAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        }
+        next();
+    };
+
+    // Cleanup expired rate-limit entries every 5 minutes
+    setInterval(() => {
+        const now = Date.now();
+        for (const [ip, record] of loginAttempts) {
+            if (now >= record.resetAt) loginAttempts.delete(ip);
+        }
+    }, 5 * 60 * 1000);
 
     let currentVideoDir = '';
     let currentAudioDir = '';
@@ -50,13 +83,28 @@ export async function startApiServer() {
         currentAudioDir = path.join(process.cwd(), 'public', 'audio');
     } catch (e) { }
 
-    const sessions = new Map();
+    const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 hours
+    const sessions = new Map(); // token -> { user, expiresAt }
+
+    // Cleanup expired sessions every 30 minutes
+    setInterval(() => {
+        const now = Date.now();
+        for (const [token, session] of sessions) {
+            if (now >= session.expiresAt) sessions.delete(token);
+        }
+    }, 30 * 60 * 1000);
 
     const getSessionUser = (req) => {
         const authHeader = req.headers['authorization'];
         if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
         const token = authHeader.slice(7);
-        return sessions.get(token) || null;
+        const session = sessions.get(token);
+        if (!session) return null;
+        if (Date.now() >= session.expiresAt) {
+            sessions.delete(token);
+            return null;
+        }
+        return session.user;
     };
 
     const requireAuth = (req, res, next) => {
@@ -91,7 +139,7 @@ export async function startApiServer() {
     };
 
     // AUTH
-    apiApp.post('/api/auth/login', async (req, res) => {
+    apiApp.post('/api/auth/login', loginRateLimiter, async (req, res) => {
         const { username, password } = req.body;
         const user = await findUser(username, password);
         if (!user) {
@@ -100,7 +148,7 @@ export async function startApiServer() {
         }
         const token = crypto.randomUUID();
         const sessionUser = { id: user.id, username: user.username, role: user.role, nama: user.nama };
-        sessions.set(token, sessionUser);
+        sessions.set(token, { user: sessionUser, expiresAt: Date.now() + SESSION_TTL });
         await writeLog({ action: 'LOGIN', user: user.username, role: user.role, details: `${user.nama} (${user.role}) berhasil login` });
         res.json({ success: true, token, user: sessionUser });
     });
@@ -124,8 +172,21 @@ export async function startApiServer() {
         res.json(await getState());
     });
 
-    apiApp.post('/api/state', async (req, res) => {
+    apiApp.post('/api/state', requireAuth, async (req, res) => {
         const updates = { ...req.body };
+
+        // Input validation: only allow known keys
+        const ALLOWED_KEYS = new Set([
+            'serviceName', 'currentStation', 'trainNumber', 'nextStation', 'status',
+            'ledSpeed', 'speed', 'altitude', 'temperature', 'airQuality', 'displayMode',
+            'stations', 'activeRoute', 'geofencingInnerRadius', 'geofencingOuterRadius',
+            'showTrainNumber', 'ledActive', 'videoPlaylist', 'activeVideoIndex', 'isPlaying',
+            'playbackProgress', 'playbackMode', 'volume', 'tvStandby', 'isSyncing',
+            'jumlahKereta', 'muteVideo', 'showTelemetry', 'showClock', 'ledType'
+        ]);
+        for (const key of Object.keys(updates)) {
+            if (!ALLOWED_KEYS.has(key)) delete updates[key];
+        }
         const prevState = await getState();
         const newState = await updateState(updates);
 
@@ -330,7 +391,7 @@ export async function startApiServer() {
         }
     });
 
-    apiApp.post('/api/media/directory', async (req, res) => {
+    apiApp.post('/api/media/directory', requireAuth, async (req, res) => {
         const { directory } = req.body;
         if (!directory) return res.status(400).json({ success: false, error: 'Directory required' });
         currentVideoDir = directory;
@@ -399,7 +460,7 @@ export async function startApiServer() {
         }
     });
 
-    apiApp.post('/api/media/audio-directory', async (req, res) => {
+    apiApp.post('/api/media/audio-directory', requireAuth, async (req, res) => {
         const { directory } = req.body;
         if (!directory) return res.status(400).json({ success: false, error: 'Directory required' });
         currentAudioDir = directory;

@@ -11,10 +11,9 @@ function createWindow() {
         height: 480, // Raspberry Pi Touchscreen size
         fullscreen: true,
         webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            webSecurity: false,
-            allowRunningInsecureContent: true,
+            nodeIntegration: false,
+            contextIsolation: true,
+            webSecurity: true,
         },
         backgroundColor: '#0f172a',
         titleBarStyle: 'hidden',

@@ -47,12 +47,20 @@ export function usePidsData() {
             setConnected(false);
         });
 
-        // Receive real-time state updates
+        // Receive real-time state updates — lightweight diff instead of JSON.stringify
+        const STATE_KEYS: (keyof PidsState)[] = [
+            'serviceName', 'currentStation', 'trainNumber', 'nextStation', 'status',
+            'ledSpeed', 'displayMode', 'speed', 'altitude', 'temperature', 'airQuality',
+        ];
         socket.on('state:update', (newState: PidsState) => {
             setData(prev => {
-                // Only update if data actually changed
-                if (JSON.stringify(prev) === JSON.stringify(newState)) return prev;
-                return newState;
+                // Fast shallow check on most-changing keys
+                for (const key of STATE_KEYS) {
+                    if (prev[key] !== newState[key]) return newState;
+                }
+                // Full reference check on complex objects
+                if (prev.stations !== newState.stations || prev.activeRoute !== newState.activeRoute) return newState;
+                return prev;
             });
         });
 
@@ -74,9 +82,13 @@ export function usePidsData() {
 
     const sendData = useCallback(async (updates: Partial<PidsState>) => {
         try {
+            const token = sessionStorage.getItem('pids_token');
             const response = await fetch(`${API_URL}/api/state`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify(updates),
             });
             const result = await response.json();

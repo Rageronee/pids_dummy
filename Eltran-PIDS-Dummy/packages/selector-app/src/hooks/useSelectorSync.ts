@@ -114,13 +114,20 @@ export function useSelectorSync() {
         return () => clearInterval(timer);
     }, []);
 
-    // Sync telemetry to master every 2 seconds (reduced from every 1s for RPi5)
+    // Use refs to avoid interval recreation when telemetry values change
+    const telemetryRef = useRef({ speed, altitude, temp });
+    useEffect(() => {
+        telemetryRef.current = { speed, altitude, temp };
+    }, [speed, altitude, temp]);
+
+    // Sync telemetry to master every 2 seconds (stable interval — no recreation)
     useEffect(() => {
         const syncTimer = setInterval(() => {
-            sendData({ speed, altitude, temperature: temp });
+            const { speed: s, altitude: a, temp: t } = telemetryRef.current;
+            sendData({ speed: s, altitude: a, temperature: t });
         }, 2000);
         return () => clearInterval(syncTimer);
-    }, [speed, altitude, temp, sendData]);
+    }, [sendData]);
 
     // ---- Auth handlers ----
     const handleLogin = useCallback((user: AuthUser, token: string) => {

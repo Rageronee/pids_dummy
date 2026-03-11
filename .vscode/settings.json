@@ -1,3 +1,10 @@
 {
-    "terminal.integrated.cwd": "${workspaceFolder}"
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "css.customData": [
+        ".vscode/tailwind.json"
+    ],
+    "css.lint.unknownAtRules": "ignore",
+    "tailwindCSS.includeLanguages": {
+        "plaintext": "css"
+    }
 }
