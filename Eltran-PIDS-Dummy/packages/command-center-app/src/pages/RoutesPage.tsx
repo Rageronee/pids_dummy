@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    MapPin, Plus, Trash2, Pencil, CheckCircle2, ChevronRight, 
-    X, Search, ArrowUp, ArrowDown, FileJson, MapPinned, 
+import { io } from 'socket.io-client';
+import {
+    MapPin, Plus, Trash2, Pencil, CheckCircle2, ChevronRight, ChevronLeft,
+    X, Search, ArrowUp, ArrowDown, FileJson, MapPinned,
     Save, Navigation, Map as MapIcon, Train, Users, Clock,
     AlertCircle, ExternalLink, MoreVertical, LayoutGrid, List,
-    Lock, Unlock
+    Lock, Unlock, RefreshCw
 } from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
@@ -28,7 +29,7 @@ interface Route {
     is_active?: boolean;
 }
 
-export default function RoutesPage({ token }: { token: string }) {
+export default function RoutesPage({ token, setHeader }: { token: string, setHeader: (node: React.ReactNode) => void }) {
     const [routes, setRoutes] = useState<Record<string, Route>>({});
     const [masterStations, setMasterStations] = useState<any[]>([]);
     const [dbStations, setDbStations] = useState<any[]>([]);
@@ -44,8 +45,11 @@ export default function RoutesPage({ token }: { token: string }) {
     const [stationSearch, setStationSearch] = useState('');
     const [currentRouteGeojson, setCurrentRouteGeojson] = useState<any>(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
 
     const [saving, setSaving] = useState(false);
+    const [connected, setConnected] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const { toast, showToast, closeToast } = useToast();
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -63,12 +67,12 @@ export default function RoutesPage({ token }: { token: string }) {
                     // Logic for conventional train numbers vs PLB
                     const isPLB = idx % 5 === 0;
                     const conventionalNum = `${Math.floor(Math.random() * 200) + 1}`;
-                    
+
                     enhancedRoutes[key] = {
                         ...r,
                         status: idx % 3 === 1 ? 'DELAYED' : 'ON TRACK',
                         type: idx % 4 === 3 ? 'Commuter' : (idx % 4 === 2 ? 'Lokal' : 'Intercity'),
-                        is_active: idx % 3 === 0, 
+                        is_active: idx % 3 === 0,
                         train_number: r.kereta_code || (isPLB ? `PLB ${conventionalNum}A` : `KA ${conventionalNum}`),
                         units: Math.floor(Math.random() * 10) + 5,
                         distance: 600 + Math.floor(Math.random() * 200),
@@ -139,37 +143,76 @@ export default function RoutesPage({ token }: { token: string }) {
         if (route?.geojson && mapRef.current) {
             try {
                 const geojson = JSON.parse(route.geojson);
-                mapRef.current.on('load', () => {
+                const onMapLoad = () => {
                     if (!mapRef.current) return;
-                    mapRef.current.addSource('route', { type: 'geojson', data: geojson });
-                    mapRef.current.addLayer({
-                        id: 'route-line', type: 'line', source: 'route',
-                        layout: { 'line-join': 'round', 'line-cap': 'round' },
-                        paint: { 'line-color': '#ee6f1f', 'line-width': 4 }
-                    });
-                    
+                    if (mapRef.current.getSource('route')) {
+                        (mapRef.current.getSource('route') as maplibregl.GeoJSONSource).setData(geojson);
+                    } else {
+                        mapRef.current.addSource('route', { type: 'geojson', data: geojson });
+                        mapRef.current.addLayer({
+                            id: 'route-line', type: 'line', source: 'route',
+                            layout: { 'line-join': 'round', 'line-cap': 'round' },
+                            paint: { 'line-color': '#ee6f1f', 'line-width': 4 }
+                        });
+                    }
+
                     const bounds = new maplibregl.LngLatBounds();
+                    let hasPoints = false;
                     geojson.features.forEach((f: any) => {
-                        if (f.geometry.type === 'Point') bounds.extend(f.geometry.coordinates);
-                        else if (f.geometry.type === 'LineString') f.geometry.coordinates.forEach((c: any) => bounds.extend(c));
+                        if (f.geometry.type === 'Point') {
+                            bounds.extend(f.geometry.coordinates);
+                            hasPoints = true;
+                        } else if (f.geometry.type === 'LineString') {
+                            f.geometry.coordinates.forEach((c: any) => {
+                                bounds.extend(c);
+                                hasPoints = true;
+                            });
+                        }
                     });
-                    mapRef.current.fitBounds(bounds, { padding: 40 });
-                });
-            } catch {}
+                    if (hasPoints) {
+                        mapRef.current.fitBounds(bounds, { padding: 40, duration: 1000 });
+                    }
+                };
+
+                if (mapRef.current.loaded()) onMapLoad();
+                else mapRef.current.on('load', onMapLoad);
+            } catch (e) { console.error("Map GeoJSON error:", e); }
         }
 
         return () => { mapRef.current?.remove(); mapRef.current = null; };
     }, [selectedRouteId, routes]);
 
-    const resetForm = () => {
+    useEffect(() => {
+        const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
+        socket.on('connect', () => {
+            console.log('[Socket.IO] Routes page connected');
+            setConnected(true);
+        });
+        socket.on('disconnect', () => {
+            setConnected(false);
+        });
+        socket.on('db:update', () => {
+            console.log('[Socket.IO] Database update received, re-fetching routes...');
+            fetchRoutes();
+        });
+        return () => {
+            socket.disconnect();
+        };
+    }, [fetchRoutes]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCategory, searchQuery]);
+
+    const resetForm = useCallback(() => {
         setNewRouteName('');
         setSelectedStations([]);
         setCurrentRouteGeojson(null);
         setIsEditing(false);
         setStationSearch('');
-    };
+    }, []);
 
-    const handleSaveRoute = async (autoName?: string, autoStations?: any[]) => {
+    const handleSaveRoute = useCallback(async (autoName?: string, autoStations?: any[]) => {
         const nameToSave = autoName || newRouteName;
         const stationsToSave = autoStations || selectedStations;
 
@@ -200,9 +243,9 @@ export default function RoutesPage({ token }: { token: string }) {
             }
             else showToast(d.error || 'Gagal menyimpan', false);
         } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); }
-    };
+    }, [newRouteName, selectedStations, routes, token, fetchRoutes, resetForm, isEditing, showToast]);
 
-    const handleEditRoute = (route: any) => {
+    const handleEditRoute = useCallback((route: any) => {
         if (route.is_active) {
             showToast('Akses Ditolak: Rute sedang aktif!', false);
             return;
@@ -229,9 +272,9 @@ export default function RoutesPage({ token }: { token: string }) {
         setSelectedStations(stations);
         setIsEditing(true);
         setShowForm(true);
-    };
+    }, [showToast]);
 
-    const confirmDelete = async () => {
+    const confirmDelete = useCallback(async () => {
         if (!deleteTarget) return;
         if (routes[deleteTarget.id]?.is_active) {
             showToast('Gagal: Rute sedang aktif!', false);
@@ -240,9 +283,9 @@ export default function RoutesPage({ token }: { token: string }) {
         }
         setSaving(true);
         try {
-            const res = await fetch(`${API}/api/admin/routes/${encodeURIComponent(deleteTarget.id)}`, { 
-                method: 'DELETE', 
-                headers: { Authorization: `Bearer ${token}` } 
+            const res = await fetch(`${API}/api/admin/routes/${encodeURIComponent(deleteTarget.id)}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
             });
             const d = await res.json();
             if (d.success) {
@@ -251,9 +294,9 @@ export default function RoutesPage({ token }: { token: string }) {
             }
             else showToast(d.error || 'Gagal menghapus', false);
         } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
-    };
+    }, [deleteTarget, routes, token, fetchRoutes, showToast]);
 
-    const handleImportGeoJSON = () => {
+    const handleImportGeoJSON = useCallback(() => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.geojson,application/json';
@@ -298,9 +341,9 @@ export default function RoutesPage({ token }: { token: string }) {
             reader.readAsText(file);
         };
         input.click();
-    };
+    }, [dbStations, resetForm, handleSaveRoute, showToast]);
 
-    const addStationToRoute = (stationName: string) => {
+    const addStationToRoute = useCallback((stationName: string) => {
         if (selectedStations.find(s => s.name === stationName)) return;
         let foundTime = '';
         if (currentRouteGeojson?.features) {
@@ -313,80 +356,94 @@ export default function RoutesPage({ token }: { token: string }) {
         }
         setSelectedStations([...selectedStations, { name: stationName, time: foundTime, platform: '1', status: 'On Track' }]);
         setStationSearch('');
-    };
+    }, [selectedStations, currentRouteGeojson, masterStations]);
 
     const routeList = Object.values(routes)
         .filter(r => activeCategory === 'All Routes' || r.type === activeCategory)
         .filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.train_number?.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
+    const totalPages = Math.ceil(routeList.length / itemsPerPage);
+    const paginatedRoutes = routeList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     const selectedRoute = selectedRouteId ? routes[selectedRouteId] : null;
 
-    const filteredSuggestions = stationSearch.length > 2 
-        ? dbStations.filter(s => s.name.toLowerCase().includes(stationSearch.toLowerCase()))
-        : [];
-
-    return (
-        <div className="flex flex-col h-full gap-6">
-            <ConfirmModal 
-                isOpen={!!deleteTarget} title={`Hapus Rute`} 
-                message={`Hapus rute ${deleteTarget?.id}? Aksi ini bersifat permanen.`} 
-                onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} 
-            />
-
-            {/* Top Toolbar - Compact with Search replacing Export */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 px-2">
-                <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                    {['All Routes', 'Intercity', 'Commuter', 'Lokal'].map(cat => (
-                        <button key={cat} onClick={() => setActiveCategory(cat)}
-                            className={`px-5 py-2 rounded-lg font-black text-xs transition-all ${activeCategory === cat ? 'bg-[#1d2d6a] text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
-                            {cat}
-                        </button>
-                    ))}
+    useEffect(() => {
+        setHeader(
+            <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 border-r border-slate-100 pr-6">
+                    {loading && (
+                        <div className="flex items-center gap-2 text-[#ee6f1f] animate-pulse">
+                            <RefreshCw size={12} className="animate-spin" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Syncing...</span>
+                        </div>
+                    )}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 border-l border-slate-100 pl-6">
                     <div className="relative group">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f] transition-colors" size={14} />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Cari rute atau nomor KA..." 
-                            className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-black text-[#1d2d6a] outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-64 shadow-sm" 
+                            placeholder="Cari rute atau nomor KA..."
+                            className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-black text-[#1d2d6a] outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-96 shadow-sm"
                         />
                     </div>
-                    <button onClick={handleImportGeoJSON} className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-[#1d2d6a] rounded-xl transition-all font-black text-xs border border-slate-200">
-                        <FileJson size={14} /> Import GeoJSON
-                    </button>
-                    <button onClick={() => { if (isEditing) setShowForm(false); else setShowForm(!showForm); if (!showForm) resetForm(); }} 
+                    <button onClick={() => { if (isEditing) setShowForm(false); else setShowForm(true); if (!showForm) resetForm(); }}
                         className="flex items-center gap-2 px-6 py-2.5 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-xl font-black text-xs transition-all shadow-md active:scale-95">
                         <Plus size={14} strokeWidth={3} />Tambah Rute
                     </button>
                 </div>
             </div>
+        );
+        return () => setHeader(null);
+    }, [searchQuery, isEditing, showForm, setHeader, routeList.length, resetForm]);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCategory, searchQuery]);
 
-            <div className="flex-1 flex gap-4 overflow-hidden px-2">
+    const filteredSuggestions = stationSearch.length > 2
+        ? dbStations.filter(s => s.name.toLowerCase().includes(stationSearch.toLowerCase()))
+        : [];
+
+    return (
+        <div className="flex flex-col h-full">
+            <ConfirmModal
+                isOpen={!!deleteTarget} title={`Hapus Rute`}
+                message={`Hapus rute ${deleteTarget?.id}? Aksi ini bersifat permanen.`}
+                onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving}
+            />
+
+
+            <div className="flex-1 flex overflow-hidden">
                 {/* Left Column: Route List */}
-                <div className="w-[45%] flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar pb-10">
+                <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pr-6 custom-scrollbar pb-20">
+                    <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-2 shrink-0 w-fit">
+                        {['All Routes', 'Intercity', 'Commuter', 'Lokal'].map(cat => (
+                            <button key={cat} onClick={() => setActiveCategory(cat)}
+                                className={`px-5 py-2 rounded-lg font-black text-xs transition-all ${activeCategory === cat ? 'bg-[#1d2d6a] text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
                     <AnimatePresence>
                         {loading ? <div className="p-20 text-center text-slate-400 font-black animate-pulse">Memuat rute...</div> : (
                             routeList.map((route, i) => (
-                                <motion.div 
+                                <motion.div
                                     key={route.name}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.03 }}
                                     onClick={() => setSelectedRouteId(route.name)}
-                                    className={`relative p-5 rounded-2xl border-2 transition-all cursor-pointer group ${
-                                        selectedRouteId === route.name 
-                                        ? 'bg-white border-[#1d2d6a] shadow-lg' 
+                                    className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${selectedRouteId === route.name
+                                        ? 'bg-white border-[#1d2d6a] shadow-lg'
                                         : 'bg-white border-transparent hover:border-slate-200 shadow-sm'
-                                    }`}
+                                        }`}
                                 >
-                                    <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-start justify-between mb-2">
                                         <div className="flex items-center gap-2">
-                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
-                                                route.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                            }`}>
+                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${route.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                }`}>
                                                 {route.status}
                                             </span>
                                             {route.is_active && (
@@ -404,9 +461,9 @@ export default function RoutesPage({ token }: { token: string }) {
                                             <div className="text-slate-400 text-[9px] font-bold mt-0.5">Delay: {route.delay}</div>
                                         </div>
                                     </div>
-                                    
-                                    <div className="mb-6">
-                                        <h3 className="text-xl font-black text-[#1d2d6a] tracking-tight truncate">{route.name}</h3>
+
+                                    <div className="mb-3">
+                                        <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight truncate">{route.name}</h3>
                                         <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[11px] mt-0.5 truncate">
                                             {route.stations?.[0]?.name || 'Origin'}
                                             <ChevronRight size={12} className="shrink-0" />
@@ -414,7 +471,7 @@ export default function RoutesPage({ token }: { token: string }) {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
+                                    <div className="grid grid-cols-3 gap-2 border-t border-slate-100 pt-3">
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
                                                 <Train size={14} />
@@ -458,10 +515,46 @@ export default function RoutesPage({ token }: { token: string }) {
                             ))
                         )}
                     </AnimatePresence>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#1d2d6a] disabled:opacity-30 transition-all shadow-sm"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPage(i + 1)}
+                                        className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${currentPage === i + 1
+                                            ? 'bg-[#1d2d6a] text-white shadow-md'
+                                            : 'bg-white text-slate-400 hover:bg-slate-50 border border-slate-100'
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#1d2d6a] disabled:opacity-30 transition-all shadow-sm"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Column: Detail Panel */}
-                <div className="w-[55%] flex flex-col bg-white border border-slate-200 shadow-sm overflow-hidden h-full">
+                <div className="w-[65%] flex flex-col bg-white border-l border-slate-200 overflow-hidden h-full">
                     {selectedRoute ? (
                         <>
                             <div className="relative h-44 border-b border-slate-100 shrink-0 overflow-hidden">
@@ -492,9 +585,9 @@ export default function RoutesPage({ token }: { token: string }) {
                                     </div>
                                 </div>
 
-                                {/* Timeline Container - Internal Scroll after 4 items */}
+                                {/* Timeline Container - Internal Scroll after 3 items */}
                                 <div className="flex-1 overflow-hidden relative">
-                                    <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar max-h-[420px] relative">
+                                    <div className="flex-1 overflow-y-auto pr-4 thin-scrollbar max-h-[340px] relative">
                                         {/* Timeline Line */}
                                         <div className="absolute left-[3.25rem] top-6 bottom-6 w-0.5 bg-slate-100 z-0" />
 
@@ -515,9 +608,8 @@ export default function RoutesPage({ token }: { token: string }) {
                                                         {isActive ? (
                                                             <div className="w-4 h-4 rounded-full bg-white border-[3px] border-[#ee6f1f] shadow-[0_0_8px_rgba(238,111,31,0.4)] z-10" />
                                                         ) : (
-                                                            <div className={`w-3 h-3 rounded-full border-2 z-10 ${
-                                                                idx < 1 ? 'bg-[#1d2d6a] border-[#1d2d6a]' : 'bg-white border-slate-200'
-                                                            }`} />
+                                                            <div className={`w-3 h-3 rounded-full border-2 z-10 ${idx < 1 ? 'bg-[#1d2d6a] border-[#1d2d6a]' : 'bg-white border-slate-200'
+                                                                }`} />
                                                         )}
                                                     </div>
                                                     <div className={`flex-1 min-w-0 ${isActive ? 'bg-orange-50/50 border border-orange-100 p-4 rounded-xl -mt-2' : ''}`}>
@@ -553,9 +645,9 @@ export default function RoutesPage({ token }: { token: string }) {
             {/* Form Modal */}
             <AnimatePresence>
                 {showForm && (
-                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 md:p-12">
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 md:p-12">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowForm(false)} className="absolute inset-0 bg-[#0a122a]/90 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} 
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
                             className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
                             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
                                 <div>
@@ -564,7 +656,7 @@ export default function RoutesPage({ token }: { token: string }) {
                                 </div>
                                 <button onClick={() => setShowForm(false)} className="p-2.5 bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95"><X size={20} /></button>
                             </div>
-                            
+
                             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/30">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-6">
@@ -579,7 +671,7 @@ export default function RoutesPage({ token }: { token: string }) {
                                                 <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Type station name..." className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm text-[#1d2d6a] font-bold focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
                                                 <AnimatePresence>
                                                     {filteredSuggestions.length > 0 && (
-                                                        <motion.div initial={{ opacity:0, y: 10 }} animate={{ opacity:1, y: 0 }} className="absolute z-[70] w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 max-h-[240px] overflow-y-auto custom-scrollbar">
+                                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute z-[70] w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 max-h-[240px] overflow-y-auto custom-scrollbar">
                                                             {filteredSuggestions.map((s, idx) => (
                                                                 <button key={idx} onClick={() => addStationToRoute(s.name)} className="w-full px-5 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-between group">
                                                                     <div><div className="text-[#1d2d6a] font-black text-xs">{s.name}</div><div className="text-slate-400 text-[9px] font-bold uppercase">{s.city}</div></div>
@@ -631,7 +723,7 @@ export default function RoutesPage({ token }: { token: string }) {
                                 </button>
                             </div>
                         </motion.div>
-                     </div>
+                    </div>
                 )}
             </AnimatePresence>
 

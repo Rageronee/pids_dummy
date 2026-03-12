@@ -37,6 +37,7 @@ export default function App() {
     const [authToken, setAuthToken] = useState('');
     const [activePage, setActivePage] = useState('dashboard');
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [headerActions, setHeaderActions] = useState<React.ReactNode>(null);
 
     // Restore session
     useEffect(() => {
@@ -69,15 +70,17 @@ export default function App() {
 
     if (!authUser) return <Suspense fallback={<PageLoader />}><LoginPage onLogin={handleLogin} /></Suspense>;
 
-    const pages: Record<string, React.ReactNode> = {
-        dashboard: <DashboardPage token={authToken} />,
-        trains: <TrainsPage token={authToken} />,
-        stations: <StationsPage token={authToken} />,
-        routes: <RoutesPage token={authToken} />,
-        schedules: <SchedulesPage token={authToken} />,
-        users: <UsersPage token={authToken} />,
-        logs: <LogsPage token={authToken} />,
+    const pageComponents: Record<string, any> = {
+        dashboard: DashboardPage,
+        trains: TrainsPage,
+        stations: StationsPage,
+        routes: RoutesPage,
+        schedules: SchedulesPage,
+        users: UsersPage,
+        logs: LogsPage,
     };
+
+    const ActivePageComponent = pageComponents[activePage];
 
     return (
         <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
@@ -123,16 +126,23 @@ export default function App() {
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
+                        {headerActions && (
+                            <div className="flex items-center gap-4 border-r border-slate-200 pr-6 mr-2">
+                                {headerActions}
+                            </div>
+                        )}
                         <div className="flex items-center gap-3 text-[#1d2d6a]">
                             <div className="bg-slate-50 p-2.5 rounded-xl text-slate-400"><Clock size={20} /></div>
                             <span className="text-3xl font-black font-mono tracking-tighter opacity-90">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</span>
                         </div>
                     </div>
                 </header>
-                <div className="flex-1 p-10 overflow-auto">
+                <div className={`flex-1 overflow-auto ${activePage === 'routes' ? 'p-0' : 'p-10'}`}>
                     <AnimatePresence mode="wait">
-                        <motion.div key={activePage} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                            <Suspense fallback={<PageLoader />}>{pages[activePage]}</Suspense>
+                        <motion.div key={activePage} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="h-full">
+                            <Suspense fallback={<PageLoader />}>
+                                <ActivePageComponent token={authToken} setHeader={setHeaderActions} />
+                            </Suspense>
                         </motion.div>
                     </AnimatePresence>
                 </div>

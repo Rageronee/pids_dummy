@@ -5,6 +5,7 @@ import {
     RefreshCw, CheckCircle2, LayoutGrid, List, ChevronRight,
     ArrowRight, Monitor, Clock, AlertCircle
 } from 'lucide-react';
+import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { API } from '../config';
 import maplibregl from 'maplibre-gl';
@@ -39,10 +40,11 @@ interface Toast {
     type: 'success' | 'error';
 }
 
-export default function StationsPage({ token }: { token: string }) {
+export default function StationsPage({ token, setHeader }: { token: string, setHeader: (node: React.ReactNode) => void }) {
     const [stations, setStations] = useState<Station[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [connected, setConnected] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Stations');
@@ -93,7 +95,42 @@ export default function StationsPage({ token }: { token: string }) {
 
     useEffect(() => {
         fetchStations();
+        const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
+        socket.on('connect', () => {
+            console.log('[Socket.IO] Stations page connected');
+            setConnected(true);
+        });
+        socket.on('disconnect', () => {
+            setConnected(false);
+        });
+        socket.on('db:update', () => {
+            console.log('[Socket.IO] Database update received, re-fetching stations...');
+            fetchStations();
+        });
+        return () => {
+            socket.disconnect();
+        };
     }, [fetchStations]);
+
+    useEffect(() => {
+        setHeader(
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${connected ? 'text-green-600' : 'text-red-600'}`}>
+                        {connected ? 'Connected' : 'Disconnected'}
+                    </span>
+                </div>
+                {loading && (
+                    <div className="flex items-center gap-2 text-[#ee6f1f] animate-pulse">
+                        <RefreshCw size={12} className="animate-spin" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Syncing...</span>
+                    </div>
+                )}
+            </div>
+        );
+        return () => setHeader(null);
+    }, [connected, loading, setHeader]);
 
     const showToast = (message: string, success = true) => {
         setToast({ message, type: success ? 'success' : 'error' });
