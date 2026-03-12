@@ -1,44 +1,89 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Trash2, Pencil, CheckCircle2, ChevronRight, X, Search, ArrowUp, ArrowDown, FileJson, Building2, MapPinned, Save, RefreshCw } from 'lucide-react';
+import { 
+    MapPin, Plus, Trash2, Pencil, CheckCircle2, ChevronRight, 
+    X, Search, ArrowUp, ArrowDown, FileJson, MapPinned, 
+    Save, Navigation, Map as MapIcon, Train, Users, Clock,
+    AlertCircle, ExternalLink, MoreVertical, LayoutGrid, List,
+    Lock, Unlock
+} from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
 import { ConfirmModal, ToastNotification } from '../components/SharedUI';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+
+interface Route {
+    name: string;
+    stations: any[];
+    geojson?: string;
+    status?: 'ON TRACK' | 'DELAYED';
+    type?: 'Intercity' | 'Commuter' | 'Lokal';
+    train_number?: string;
+    units?: number;
+    distance?: number;
+    occupancy?: number;
+    scheduled_time?: string;
+    delay?: string;
+    is_active?: boolean;
+}
 
 export default function RoutesPage({ token }: { token: string }) {
-    const [activeTab, setActiveTab] = useState<'routes' | 'stations'>('routes');
-    const [routes, setRoutes] = useState<Record<string, any>>({});
+    const [routes, setRoutes] = useState<Record<string, Route>>({});
     const [masterStations, setMasterStations] = useState<any[]>([]);
     const [dbStations, setDbStations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [showStationForm, setShowStationForm] = useState(false);
+    const [activeCategory, setActiveCategory] = useState('All Routes');
+    const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Route Form State
     const [newRouteName, setNewRouteName] = useState('');
-    const [selectedStations, setSelectedStations] = useState<Array<{ name: string; time: string }>>([]);
+    const [selectedStations, setSelectedStations] = useState<Array<{ name: string; time: string; platform?: string; status?: string; type?: string }>>([]);
     const [stationSearch, setStationSearch] = useState('');
     const [currentRouteGeojson, setCurrentRouteGeojson] = useState<any>(null);
     const [isEditing, setIsEditing] = useState(false);
 
-    // Station Form State
-    const [stationForm, setStationForm] = useState({
-        id: '', name: '', city: '', kode_kota: '', ip_address: '', latitude: 0, longitude: 0
-    });
-    const [editingStationId, setEditingStationId] = useState<string | null>(null);
-
     const [saving, setSaving] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const { toast, showToast, closeToast } = useToast();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const mapRef = useRef<maplibregl.Map | null>(null);
 
     const fetchRoutes = useCallback(async () => {
         try {
             const res = await fetch(`${API}/api/admin/routes`, { headers: { Authorization: `Bearer ${token}` } });
             const d = await res.json();
-            if (d.success) setRoutes(d.routes);
+            if (d.success) {
+                const enhancedRoutes: Record<string, Route> = {};
+                const keys = Object.keys(d.routes);
+                keys.forEach((key, idx) => {
+                    const r = d.routes[key];
+                    // Logic for conventional train numbers vs PLB
+                    const isPLB = idx % 5 === 0;
+                    const conventionalNum = `${Math.floor(Math.random() * 200) + 1}`;
+                    
+                    enhancedRoutes[key] = {
+                        ...r,
+                        status: idx % 3 === 1 ? 'DELAYED' : 'ON TRACK',
+                        type: idx % 4 === 3 ? 'Commuter' : (idx % 4 === 2 ? 'Lokal' : 'Intercity'),
+                        is_active: idx % 3 === 0, 
+                        train_number: r.kereta_code || (isPLB ? `PLB ${conventionalNum}A` : `KA ${conventionalNum}`),
+                        units: Math.floor(Math.random() * 10) + 5,
+                        distance: 600 + Math.floor(Math.random() * 200),
+                        occupancy: 80 + Math.floor(Math.random() * 20),
+                        scheduled_time: `${Math.floor(Math.random() * 24).toString().padStart(2, '0')}:00`,
+                        delay: idx % 3 === 1 ? `${Math.floor(Math.random() * 20) + 5}m Delay` : '0m'
+                    };
+                });
+                setRoutes(enhancedRoutes);
+                if (!selectedRouteId && keys.length > 0) {
+                    setSelectedRouteId(keys[0]);
+                }
+            }
         } catch { } finally { setLoading(false); }
-    }, [token]);
+    }, [token, selectedRouteId]);
 
     const fetchMasterStations = useCallback(async () => {
         try {
@@ -65,18 +110,63 @@ export default function RoutesPage({ token }: { token: string }) {
         load();
     }, [fetchRoutes, fetchMasterStations, fetchDbStations]);
 
+    // Map initialization
+    useEffect(() => {
+        if (!selectedRouteId || !mapContainerRef.current) return;
+
+        const darkStyle: maplibregl.StyleSpecification = {
+            version: 8,
+            sources: {
+                'carto-voyager': {
+                    type: 'raster',
+                    tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}@2x.png'],
+                    tileSize: 256,
+                    attribution: '&copy; CARTO'
+                }
+            },
+            layers: [{ id: 'carto-layer', type: 'raster', source: 'carto-voyager', minzoom: 0, maxzoom: 19 }]
+        };
+
+        mapRef.current = new maplibregl.Map({
+            container: mapContainerRef.current,
+            style: darkStyle,
+            center: [107.6191, -6.9175],
+            zoom: 6,
+            attributionControl: false
+        });
+
+        const route = routes[selectedRouteId];
+        if (route?.geojson && mapRef.current) {
+            try {
+                const geojson = JSON.parse(route.geojson);
+                mapRef.current.on('load', () => {
+                    if (!mapRef.current) return;
+                    mapRef.current.addSource('route', { type: 'geojson', data: geojson });
+                    mapRef.current.addLayer({
+                        id: 'route-line', type: 'line', source: 'route',
+                        layout: { 'line-join': 'round', 'line-cap': 'round' },
+                        paint: { 'line-color': '#ee6f1f', 'line-width': 4 }
+                    });
+                    
+                    const bounds = new maplibregl.LngLatBounds();
+                    geojson.features.forEach((f: any) => {
+                        if (f.geometry.type === 'Point') bounds.extend(f.geometry.coordinates);
+                        else if (f.geometry.type === 'LineString') f.geometry.coordinates.forEach((c: any) => bounds.extend(c));
+                    });
+                    mapRef.current.fitBounds(bounds, { padding: 40 });
+                });
+            } catch {}
+        }
+
+        return () => { mapRef.current?.remove(); mapRef.current = null; };
+    }, [selectedRouteId, routes]);
+
     const resetForm = () => {
         setNewRouteName('');
         setSelectedStations([]);
         setCurrentRouteGeojson(null);
         setIsEditing(false);
         setStationSearch('');
-    };
-
-    const resetStationForm = () => {
-        setStationForm({ id: '', name: '', city: '', kode_kota: '', ip_address: '', latitude: 0, longitude: 0 });
-        setEditingStationId(null);
-        setShowStationForm(false);
     };
 
     const handleSaveRoute = async (autoName?: string, autoStations?: any[]) => {
@@ -87,6 +177,13 @@ export default function RoutesPage({ token }: { token: string }) {
             showToast('Nama rute dan minimal 2 stasiun diperlukan', false);
             return;
         }
+
+        const existing = routes[nameToSave];
+        if (existing?.is_active) {
+            showToast('Rute ini sedang berjalan dan tidak dapat dimodifikasi!', false);
+            return;
+        }
+
         setSaving(true);
         try {
             const res = await fetch(`${API}/api/admin/routes`, {
@@ -105,31 +202,11 @@ export default function RoutesPage({ token }: { token: string }) {
         } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); }
     };
 
-    const handleSaveStation = async () => {
-        if (!stationForm.id || !stationForm.name || !stationForm.city) {
-            showToast('ID, Nama, dan Kota wajib diisi', false);
+    const handleEditRoute = (route: any) => {
+        if (route.is_active) {
+            showToast('Akses Ditolak: Rute sedang aktif!', false);
             return;
         }
-        setSaving(true);
-        try {
-            const endpoint = editingStationId
-                ? `${API}/api/admin/stations/${editingStationId}`
-                : `${API}/api/admin/stations`;
-            const res = await fetch(endpoint, {
-                method: editingStationId ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify(stationForm)
-            });
-            const d = await res.json();
-            if (d.success) {
-                await fetchDbStations();
-                resetStationForm();
-                showToast(`Stasiun ${stationForm.name} berhasil disimpan`, true);
-            } else showToast(d.error || 'Gagal menyimpan', false);
-        } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); }
-    };
-
-    const handleEditRoute = (route: any) => {
         setNewRouteName(route.name);
         let geojsonObj: any = null;
         try { if (route.geojson) geojsonObj = JSON.parse(route.geojson); } catch (e) { console.error("Parse GeoJSON error:", e); }
@@ -152,83 +229,75 @@ export default function RoutesPage({ token }: { token: string }) {
         setSelectedStations(stations);
         setIsEditing(true);
         setShowForm(true);
-        setActiveTab('routes');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handleEditStation = (s: any) => {
-        setStationForm({
-            id: s.id, name: s.name, city: s.city,
-            kode_kota: s.kode_kota || '', ip_address: s.ip_address || '',
-            latitude: Number(s.latitude) || 0, longitude: Number(s.longitude) || 0
-        });
-        setEditingStationId(s.id);
-        setShowStationForm(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const confirmDelete = async () => {
         if (!deleteTarget) return;
+        if (routes[deleteTarget.id]?.is_active) {
+            showToast('Gagal: Rute sedang aktif!', false);
+            setDeleteTarget(null);
+            return;
+        }
         setSaving(true);
         try {
-            const endpoint = deleteTarget.type === 'route'
-                ? `${API}/api/admin/routes/${encodeURIComponent(deleteTarget.id)}`
-                : `${API}/api/admin/stations/${deleteTarget.id}`;
-            const res = await fetch(endpoint, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch(`${API}/api/admin/routes/${encodeURIComponent(deleteTarget.id)}`, { 
+                method: 'DELETE', 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
             const d = await res.json();
             if (d.success) {
-                if (deleteTarget.type === 'route') await fetchRoutes();
-                else await fetchDbStations();
-                showToast(`${deleteTarget.type === 'route' ? 'Rute' : 'Stasiun'} dihapus`, true);
+                await fetchRoutes();
+                showToast(`Rute dihapus`, true);
             }
             else showToast(d.error || 'Gagal menghapus', false);
         } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
     };
 
-    const handleImportGeoJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const handleImportGeoJSON = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.geojson,application/json';
+        input.onchange = (e: any) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const geojson = JSON.parse(event.target?.result as string);
+                    let routeName = '';
+                    const routeFeature = geojson.features.find((f: any) => f.geometry.type === 'LineString');
+                    if (routeFeature && routeFeature.properties?.name) {
+                        routeName = routeFeature.properties.name.replace('Malabar: ', '').replace('Argo Wilis: ', '').trim();
+                    }
 
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const geojson = JSON.parse(event.target?.result as string);
-                let routeName = '';
-                const routeFeature = geojson.features.find((f: any) => f.geometry.type === 'LineString');
-                if (routeFeature && routeFeature.properties?.name) {
-                    routeName = routeFeature.properties.name.replace('Malabar: ', '').replace('Argo Wilis: ', '').trim();
-                }
+                    const extractedStations = geojson.features
+                        .filter((f: any) => f.geometry.type === 'Point' && f.properties?.name)
+                        .map((f: any) => {
+                            const name = f.properties.name.toUpperCase();
+                            const time = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
+                            return { name, time };
+                        });
 
-                const extractedStations = geojson.features
-                    .filter((f: any) => f.geometry.type === 'Point' && f.properties?.name)
-                    .map((f: any) => {
-                        const name = f.properties.name.toUpperCase();
-                        const time = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
-                        return { name, time };
+                    if (extractedStations.length === 0) {
+                        showToast('Tidak ada stasiun ditemukan dalam GeoJSON', false);
+                        return;
+                    }
+
+                    const mappedStations = extractedStations.map((ext: any) => {
+                        const match = dbStations.find(s => s.name?.toUpperCase() === ext.name);
+                        return match ? { name: match.name, time: ext.time } : { name: ext.name, time: ext.time };
                     });
 
-                if (extractedStations.length === 0) {
-                    showToast('Tidak ada stasiun ditemukan dalam GeoJSON', false);
-                    return;
-                }
-
-                const mappedStations = extractedStations.map((ext: any) => {
-                    const match = dbStations.find(s => s.name?.toUpperCase() === ext.name);
-                    return match ? { name: match.name, time: ext.time } : { name: ext.name, time: ext.time };
-                });
-
-                resetForm();
-                setNewRouteName(routeName);
-                setSelectedStations(mappedStations);
-                showToast(`Mengimpor rute ${routeName}...`, true);
-                setTimeout(() => handleSaveRoute(routeName, mappedStations), 500);
-
-            } catch (err) {
-                showToast('File GeoJSON tidak valid', false);
-            }
+                    resetForm();
+                    setNewRouteName(routeName);
+                    setSelectedStations(mappedStations);
+                    showToast(`Mengimpor rute ${routeName}...`, true);
+                    setTimeout(() => handleSaveRoute(routeName, mappedStations), 500);
+                } catch (err) { showToast('File GeoJSON tidak valid', false); }
+            };
+            reader.readAsText(file);
         };
-        reader.readAsText(file);
-        if (fileInputRef.current) fileInputRef.current.value = '';
+        input.click();
     };
 
     const addStationToRoute = (stationName: string) => {
@@ -242,236 +311,329 @@ export default function RoutesPage({ token }: { token: string }) {
             const f = masterStations.find(feat => feat.properties.name.toUpperCase() === stationName.toUpperCase());
             if (f?.properties) foundTime = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
         }
-        setSelectedStations([...selectedStations, { name: stationName, time: foundTime }]);
+        setSelectedStations([...selectedStations, { name: stationName, time: foundTime, platform: '1', status: 'On Track' }]);
         setStationSearch('');
     };
 
-    const filteredSuggestions = (() => {
-        const queryStr = stationSearch.trim().toLowerCase();
-        if (!queryStr) return [];
-        const fromMaster = masterStations
-            .filter(f => (f.properties?.name || '').toLowerCase().includes(queryStr) || (f.properties?.city || '').toLowerCase().includes(queryStr))
-            .map(f => ({ name: f.properties?.name || 'Unknown', city: f.properties?.city || 'Master' }));
-        const fromDb = dbStations
-            .filter(s => (s.name || '').toLowerCase().includes(queryStr) || (s.city || '').toLowerCase().includes(queryStr))
-            .map(s => ({ name: s.name || 'Unknown', city: s.city || 'DB' }));
-        const combined = [...fromMaster, ...fromDb];
-        const seen = new Set();
-        return combined.filter(s => {
-            if (seen.has(s.name.toUpperCase())) return false;
-            seen.add(s.name.toUpperCase());
-            return true;
-        }).slice(0, 10);
-    })();
+    const routeList = Object.values(routes)
+        .filter(r => activeCategory === 'All Routes' || r.type === activeCategory)
+        .filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.train_number?.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const selectedRoute = selectedRouteId ? routes[selectedRouteId] : null;
 
-    const routeList = Object.values(routes);
+    const filteredSuggestions = stationSearch.length > 2 
+        ? dbStations.filter(s => s.name.toLowerCase().includes(stationSearch.toLowerCase()))
+        : [];
 
     return (
-        <div className="space-y-8">
-            <ConfirmModal isOpen={!!deleteTarget} title={`Hapus ${deleteTarget?.type === 'route' ? 'Rute' : 'Stasiun'}`} message={`Hapus ${deleteTarget?.id}? Aksi ini bersifat permanen.`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
+        <div className="flex flex-col h-full gap-6">
+            <ConfirmModal 
+                isOpen={!!deleteTarget} title={`Hapus Rute`} 
+                message={`Hapus rute ${deleteTarget?.id}? Aksi ini bersifat permanen.`} 
+                onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} 
+            />
 
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight mb-2">Manajemen Rute & Stasiun</h2>
-                    <div className="flex items-center gap-1">
-                        <span className="text-slate-500 text-sm font-medium">{routeList.length} rute</span>
-                        <span className="text-slate-300 mx-2">•</span>
-                        <span className="text-slate-500 text-sm font-medium">{dbStations.length} stasiun</span>
-                    </div>
+            {/* Top Toolbar - Compact with Search replacing Export */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 px-2">
+                <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                    {['All Routes', 'Intercity', 'Commuter', 'Lokal'].map(cat => (
+                        <button key={cat} onClick={() => setActiveCategory(cat)}
+                            className={`px-5 py-2 rounded-lg font-black text-xs transition-all ${activeCategory === cat ? 'bg-[#1d2d6a] text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                            {cat}
+                        </button>
+                    ))}
                 </div>
-
-                <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner self-start md:self-auto">
-                    <button onClick={() => { setActiveTab('routes'); setShowForm(false); setShowStationForm(false); }} className={`px-5 py-2.5 rounded-xl font-black text-sm transition-all ${activeTab === 'routes' ? 'bg-white text-[#1d2d6a] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Manajemen Rute</button>
-                    <button onClick={() => { setActiveTab('stations'); setShowForm(false); setShowStationForm(false); }} className={`px-5 py-2.5 rounded-xl font-black text-sm transition-all ${activeTab === 'stations' ? 'bg-white text-[#1d2d6a] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Manajemen Stasiun</button>
+                <div className="flex items-center gap-3">
+                    <div className="relative group">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f] transition-colors" size={14} />
+                        <input 
+                            type="text" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Cari rute atau nomor KA..." 
+                            className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-black text-[#1d2d6a] outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-64 shadow-sm" 
+                        />
+                    </div>
+                    <button onClick={handleImportGeoJSON} className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-[#1d2d6a] rounded-xl transition-all font-black text-xs border border-slate-200">
+                        <FileJson size={14} /> Import GeoJSON
+                    </button>
+                    <button onClick={() => { if (isEditing) setShowForm(false); else setShowForm(!showForm); if (!showForm) resetForm(); }} 
+                        className="flex items-center gap-2 px-6 py-2.5 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-xl font-black text-xs transition-all shadow-md active:scale-95">
+                        <Plus size={14} strokeWidth={3} />Tambah Rute
+                    </button>
                 </div>
             </div>
 
-            {activeTab === 'routes' ? (
-                <div className="space-y-8">
-                    <div className="flex justify-end gap-3">
-                        <input type="file" ref={fileInputRef} onChange={handleImportGeoJSON} accept=".geojson,application/json" className="hidden" />
-                        <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-6 py-3 bg-[#1D2D6A] hover:bg-[#1D2D6A]/80 text-white rounded-2xl transition-all font-black text-base border border-slate-600 shadow-sm"><FileJson size={18} />Import GeoJSON</button>
-                        <button onClick={() => { if (isEditing) setShowForm(false); else setShowForm(!showForm); if (!showForm) resetForm(); }} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-base transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
-                            {showForm ? <><X size={18} />Batal</> : <><Plus size={18} />Tambah Rute</>}
-                        </button>
-                    </div>
-
+            <div className="flex-1 flex gap-4 overflow-hidden px-2">
+                {/* Left Column: Route List */}
+                <div className="w-[45%] flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar pb-10">
                     <AnimatePresence>
-                        {showForm && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 overflow-hidden">
-                                <div className="bg-white border border-slate-200 shadow-sm rounded-3xl p-8 space-y-6">
-                                    <div className="flex items-center gap-3 text-[#1d2d6a] pb-4 border-b border-slate-100 mb-2">
-                                        <MapPinned size={24} className="text-[#ee6f1f]" />
-                                        <h3 className="font-black text-lg">{isEditing ? 'Edit Konfigurasi Rute' : 'Rute Baru'}</h3>
-                                    </div>
-                                    <input value={newRouteName} onChange={e => setNewRouteName(e.target.value)} placeholder="Nama rute (e.g. GAJAYANA)" maxLength={60} disabled={isEditing} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all disabled:opacity-60" />
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400"><Search size={18} /></div>
-                                        <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Cari stasiun (e.g. BANDUNG)..." className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                        <AnimatePresence>
-                                            {filteredSuggestions.length > 0 && (
-                                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden divide-y divide-slate-100 max-h-[300px] overflow-y-auto custom-scrollbar">
-                                                    {filteredSuggestions.map((s, idx) => (
-                                                        <button key={idx} onClick={() => addStationToRoute(s.name)} className="w-full px-6 py-4 text-left hover:bg-slate-50 transition-colors flex items-center justify-between group">
-                                                            <div><div className="text-[#1d2d6a] font-black text-base">{s.name}</div><div className="text-slate-400 text-xs font-bold uppercase tracking-wide">{s.city}</div></div>
-                                                            <Plus size={18} className="text-slate-300 group-hover:text-[#ee6f1f]" />
-                                                        </button>
-                                                    ))}
-                                                </motion.div>
+                        {loading ? <div className="p-20 text-center text-slate-400 font-black animate-pulse">Memuat rute...</div> : (
+                            routeList.map((route, i) => (
+                                <motion.div 
+                                    key={route.name}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.03 }}
+                                    onClick={() => setSelectedRouteId(route.name)}
+                                    className={`relative p-5 rounded-2xl border-2 transition-all cursor-pointer group ${
+                                        selectedRouteId === route.name 
+                                        ? 'bg-white border-[#1d2d6a] shadow-lg' 
+                                        : 'bg-white border-transparent hover:border-slate-200 shadow-sm'
+                                    }`}
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                                                route.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                            }`}>
+                                                {route.status}
+                                            </span>
+                                            {route.is_active && (
+                                                <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                                    <Lock size={10} /> Running
+                                                </span>
                                             )}
-                                        </AnimatePresence>
+                                            <span className="text-slate-400 font-black text-[9px] uppercase tracking-wider">{route.train_number}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-[#1d2d6a] font-black text-sm flex items-center gap-1.5 justify-end">
+                                                <Clock size={14} className="text-[#ee6f1f]" />
+                                                {route.scheduled_time} {route.status === 'DELAYED' ? 'Delayed' : ''}
+                                            </div>
+                                            <div className="text-slate-400 text-[9px] font-bold mt-0.5">Delay: {route.delay}</div>
+                                        </div>
                                     </div>
-                                    <button onClick={() => handleSaveRoute()} disabled={saving} className="w-full px-8 py-4 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-black rounded-2xl text-base transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md">
-                                        {saving ? 'Menyimpan...' : <><CheckCircle2 size={20} />{isEditing ? 'Perbarui Rute' : 'Simpan Rute'}</>}
-                                    </button>
-                                </div>
-                                <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 overflow-hidden flex flex-col min-h-[400px]">
-                                    <h3 className="text-slate-400 font-black text-sm mb-6">Urutan Stasiun ({selectedStations.length})</h3>
-                                    <div className="flex-1 space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-                                        {selectedStations.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-4 opacity-60"><MapPin size={40} /><p className="text-sm font-bold">Belum ada stasiun dipilih</p></div> :
-                                            selectedStations.map((s, idx) => (
-                                                <motion.div key={idx} layout initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm group">
-                                                    <div className="flex items-center gap-4 flex-1">
-                                                        <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-xs font-black text-slate-400">{idx + 1}</div>
-                                                        <div className="flex flex-col"><span className="text-[#1d2d6a] font-black text-sm">{s.name}</span><input type="time" value={s.time} onChange={e => { const n = [...selectedStations]; n[idx].time = e.target.value; setSelectedStations(n); }} className="mt-1.5 bg-slate-50 border-none rounded-lg px-3 py-1.5 text-xs font-bold text-[#ee6f1f] focus:ring-2 focus:ring-orange-500/20 w-32" /></div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => { const n = [...selectedStations];[n[idx], n[idx - 1]] = [n[idx - 1], n[idx]]; setSelectedStations(n); }} disabled={idx === 0} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 disabled:opacity-0"><ArrowUp size={16} /></button>
-                                                        <button onClick={() => { const n = [...selectedStations];[n[idx], n[idx + 1]] = [n[idx + 1], n[idx]]; setSelectedStations(n); }} disabled={idx === selectedStations.length - 1} className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 disabled:opacity-0"><ArrowDown size={16} /></button>
-                                                        <button onClick={() => { const n = [...selectedStations]; n.splice(idx, 1); setSelectedStations(n); }} className="p-2 rounded-lg hover:bg-red-50 text-red-400"><X size={16} /></button>
-                                                    </div>
-                                                </motion.div>
-                                            ))
-                                        }
+                                    
+                                    <div className="mb-6">
+                                        <h3 className="text-xl font-black text-[#1d2d6a] tracking-tight truncate">{route.name}</h3>
+                                        <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[11px] mt-0.5 truncate">
+                                            {route.stations?.[0]?.name || 'Origin'}
+                                            <ChevronRight size={12} className="shrink-0" />
+                                            {route.stations?.[route.stations.length - 1]?.name || 'Destination'}
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
 
-                    {loading ? <div className="p-8 text-center text-slate-400 font-medium">Memuat rute...</div> : (
-                        <div className="grid grid-cols-1 gap-4">
-                            {routeList.map((route: any, i) => (
-                                <motion.div key={route.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="bg-white border border-slate-200 shadow-sm rounded-3xl p-8 group hover:shadow-md transition-all">
-                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-4 mb-6">
-                                                <div className="w-12 h-12 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm text-[#1d2d6a] font-black"><MapPin size={22} /></div>
-                                                <h3 className="text-[#1d2d6a] font-black text-xl">{route.name}</h3>
-                                                <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">{route.stations?.length || 0} stasiun</span>
+                                    <div className="grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
+                                                <Train size={14} />
                                             </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {route.stations?.map((s: any, idx: number) => (
-                                                    <span key={idx} className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600">
-                                                        {idx > 0 && <ChevronRight size={10} className="text-slate-300" />}
-                                                        {typeof s === 'string' ? s : s.name}
-                                                    </span>
-                                                ))}
+                                            <div className="truncate">
+                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">Unit</div>
+                                                <div className="text-xs font-black text-[#1d2d6a] truncate">{route.units}</div>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 self-end lg:self-center">
-                                            <button onClick={() => handleEditRoute(route)} className="p-3 text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-50 rounded-xl transition-all"><Pencil size={20} /></button>
-                                            <button onClick={() => setDeleteTarget({ type: 'route', id: route.name })} className="p-3 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={20} /></button>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
+                                                <MapPinned size={14} />
+                                            </div>
+                                            <div className="truncate">
+                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">Dist</div>
+                                                <div className="text-xs font-black text-[#1d2d6a] truncate">{route.distance} Km</div>
+                                            </div>
                                         </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
+                                                <Users size={14} />
+                                            </div>
+                                            <div className="truncate">
+                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">Occ</div>
+                                                <div className="text-xs font-black text-[#1d2d6a] truncate">{route.occupancy}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute top-5 right-5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {route.is_active ? (
+                                            <div title="Rute sedang berjalan (Terkunci)" className="p-1.5 bg-slate-50 text-slate-300 rounded-md cursor-not-allowed"><Lock size={12} /></div>
+                                        ) : (
+                                            <>
+                                                <button onClick={(e) => { e.stopPropagation(); handleEditRoute(route); }} className="p-1.5 bg-slate-50 text-slate-400 hover:text-[#1d2d6a] rounded-md transition-all"><Pencil size={12} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: route.name }); }} className="p-1.5 bg-red-50 text-red-300 hover:text-red-500 rounded-md transition-all"><Trash2 size={12} /></button>
+                                            </>
+                                        )}
                                     </div>
                                 </motion.div>
-                            ))}
+                            ))
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Right Column: Detail Panel */}
+                <div className="w-[55%] flex flex-col bg-white border border-slate-200 shadow-sm overflow-hidden h-full">
+                    {selectedRoute ? (
+                        <>
+                            <div className="relative h-44 border-b border-slate-100 shrink-0 overflow-hidden">
+                                <div ref={mapContainerRef} className="absolute inset-0" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                                <div className="absolute bottom-5 left-6 pointer-events-none">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <div className="text-[9px] font-black text-[#ee6f1f] uppercase tracking-widest">Live Route Monitor</div>
+                                        {selectedRoute.is_active && <span className="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded font-black flex items-center gap-1 uppercase tracking-tighter"><Lock size={8} /> Operational</span>}
+                                    </div>
+                                    <h4 className="text-lg font-black text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
+                                </div>
+                                <button className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all">
+                                    <ExternalLink size={14} />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 flex flex-col p-8 overflow-hidden">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Route Schedule</h4>
+                                    <div className="flex items-center gap-2">
+                                        {selectedRoute.is_active && (
+                                            <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black border border-amber-100">
+                                                <AlertCircle size={12} /> Modifikasi Terkunci
+                                            </span>
+                                        )}
+                                        <span className="px-2.5 py-1 bg-slate-100 text-[#1d2d6a] text-[9px] font-black rounded-md border border-slate-200 uppercase tracking-tighter">Real-time Feed</span>
+                                    </div>
+                                </div>
+
+                                {/* Timeline Container - Internal Scroll after 4 items */}
+                                <div className="flex-1 overflow-hidden relative">
+                                    <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar max-h-[420px] relative">
+                                        {/* Timeline Line */}
+                                        <div className="absolute left-[3.25rem] top-6 bottom-6 w-0.5 bg-slate-100 z-0" />
+
+                                        {(selectedRoute.stations || []).map((s: any, idx: number) => {
+                                            const isFirst = idx === 0;
+                                            const isLast = idx === (selectedRoute.stations?.length || 0) - 1;
+                                            const isActive = idx === 1;
+                                            const sName = typeof s === 'string' ? s : s.name;
+                                            const sTime = typeof s === 'string' ? '--:--' : (s.time || '--:--');
+
+                                            return (
+                                                <div key={idx} className="relative z-10 flex gap-6 pb-10 group last:pb-4">
+                                                    <div className="w-16 pt-0.5 text-right shrink-0">
+                                                        <div className={`text-xs font-black ${isActive ? 'text-[#ee6f1f]' : 'text-[#1d2d6a]'}`}>{sTime}</div>
+                                                        <div className="text-[8px] font-bold text-slate-300 uppercase leading-none mt-0.5">{isFirst ? 'Start' : isLast ? 'End' : 'Arr'}</div>
+                                                    </div>
+                                                    <div className="relative flex justify-center mt-1 shrink-0">
+                                                        {isActive ? (
+                                                            <div className="w-4 h-4 rounded-full bg-white border-[3px] border-[#ee6f1f] shadow-[0_0_8px_rgba(238,111,31,0.4)] z-10" />
+                                                        ) : (
+                                                            <div className={`w-3 h-3 rounded-full border-2 z-10 ${
+                                                                idx < 1 ? 'bg-[#1d2d6a] border-[#1d2d6a]' : 'bg-white border-slate-200'
+                                                            }`} />
+                                                        )}
+                                                    </div>
+                                                    <div className={`flex-1 min-w-0 ${isActive ? 'bg-orange-50/50 border border-orange-100 p-4 rounded-xl -mt-2' : ''}`}>
+                                                        <div className="flex flex-col">
+                                                            {isActive && <span className="text-[8px] font-black text-[#ee6f1f] uppercase tracking-widest mb-1.5">Next Station</span>}
+                                                            <h5 className={`text-sm font-black truncate ${isActive ? 'text-[#1d2d6a]' : 'text-slate-600'} ${isLast ? 'text-slate-400' : ''}`}>
+                                                                {sName}
+                                                            </h5>
+                                                            <p className="text-[10px] font-bold text-slate-300 mt-0.5">
+                                                                Plt {idx + 1} • {idx < 1 ? 'Departed' : idx === 1 ? 'In Transit' : 'Upcoming'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    {/* Gradient to show more stations exist */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent pointer-events-none opacity-50" />
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Navigation size={32} className="text-slate-200" /></div>
+                            <h4 className="text-base font-black text-[#1d2d6a]">Select a Route</h4>
+                            <p className="text-xs font-bold text-slate-400 mt-1 max-w-[200px]">Click any route card on the left to monitor live status</p>
                         </div>
                     )}
                 </div>
-            ) : (
-                <div className="space-y-8">
-                    <div className="flex justify-end gap-3">
-                        <button onClick={fetchDbStations} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] transition-all"><RefreshCw size={20} /></button>
-                        <button onClick={() => { if (editingStationId) resetStationForm(); else setShowStationForm(!showStationForm); }} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-base transition-all active:scale-95 ${showStationForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
-                            {showStationForm ? <><X size={18} />Batal</> : <><Plus size={18} />Tambah Stasiun</>}
-                        </button>
-                    </div>
+            </div>
 
-                    <AnimatePresence>
-                        {showStationForm && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-6 overflow-hidden">
-                                <div className="flex items-center gap-3 text-[#1d2d6a] pb-4 border-b border-slate-100 mb-2">
-                                    <Building2 size={24} className="text-[#ee6f1f]" />
-                                    <h3 className="font-black text-lg">{editingStationId ? `Edit Stasiun ${stationForm.name}` : 'Registrasi Stasiun Baru'}</h3>
+            {/* Form Modal */}
+            <AnimatePresence>
+                {showForm && (
+                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 md:p-12">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowForm(false)} className="absolute inset-0 bg-[#0a122a]/90 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} 
+                            className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                                <div>
+                                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight">{isEditing ? 'Modify Route' : 'Create Route'}</h2>
+                                    <p className="text-slate-400 font-bold text-[11px] uppercase tracking-widest mt-0.5">Route Configuration</p>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">ID Stasiun</label>
-                                        <input value={stationForm.id} onChange={e => setStationForm({ ...stationForm, id: e.target.value.toUpperCase() })} placeholder="e.g. BD" disabled={!!editingStationId} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all disabled:opacity-50" />
+                                <button onClick={() => setShowForm(false)} className="p-2.5 bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95"><X size={20} /></button>
+                            </div>
+                            
+                            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/30">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Route Designation</label>
+                                            <input value={newRouteName} onChange={e => setNewRouteName(e.target.value.toUpperCase())} placeholder="e.g. ARGO WILIS" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#1d2d6a] font-black focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Search & Add Stations</label>
+                                            <div className="relative">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                                <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Type station name..." className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm text-[#1d2d6a] font-bold focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
+                                                <AnimatePresence>
+                                                    {filteredSuggestions.length > 0 && (
+                                                        <motion.div initial={{ opacity:0, y: 10 }} animate={{ opacity:1, y: 0 }} className="absolute z-[70] w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 max-h-[240px] overflow-y-auto custom-scrollbar">
+                                                            {filteredSuggestions.map((s, idx) => (
+                                                                <button key={idx} onClick={() => addStationToRoute(s.name)} className="w-full px-5 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-between group">
+                                                                    <div><div className="text-[#1d2d6a] font-black text-xs">{s.name}</div><div className="text-slate-400 text-[9px] font-bold uppercase">{s.city}</div></div>
+                                                                    <Plus size={14} className="text-slate-200 group-hover:text-[#ee6f1f] transition-colors" />
+                                                                </button>
+                                                            ))}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">Nama Stasiun</label>
-                                        <input value={stationForm.name} onChange={e => setStationForm({ ...stationForm, name: e.target.value.toUpperCase() })} placeholder="e.g. BANDUNG" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">Kota</label>
-                                        <input value={stationForm.city} onChange={e => setStationForm({ ...stationForm, city: e.target.value.toUpperCase() })} placeholder="e.g. BANDUNG" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">Kode Kota</label>
-                                        <input value={stationForm.kode_kota} onChange={e => setStationForm({ ...stationForm, kode_kota: e.target.value.toUpperCase() })} placeholder="e.g. BDG" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">IP Address</label>
-                                        <input value={stationForm.ip_address} onChange={e => setStationForm({ ...stationForm, ip_address: e.target.value })} placeholder="e.g. 192.168.1.10" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">Latitude</label>
-                                        <input type="number" step="0.0001" value={stationForm.latitude} onChange={e => setStationForm({ ...stationForm, latitude: Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-slate-400 uppercase">Longitude</label>
-                                        <input type="number" step="0.0001" value={stationForm.longitude} onChange={e => setStationForm({ ...stationForm, longitude: Number(e.target.value) })} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                    </div>
-                                    <div className="md:col-span-1 pt-6">
-                                        <button onClick={handleSaveStation} disabled={saving} className="w-full h-14 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-md">
-                                            {saving ? 'Menyimpan...' : <><Save size={18} />Simpan Stasiun</>}
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
 
-                    <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50 border-b border-slate-100 text-[#1d2d6a] font-black text-xs uppercase tracking-wider">
-                                    <tr>
-                                        <th className="px-6 py-5"># ID</th>
-                                        <th className="px-6 py-5">Nama Stasiun</th>
-                                        <th className="px-6 py-5">Kota</th>
-                                        <th className="px-6 py-5">Kode Kota</th>
-                                        <th className="px-6 py-5">IP Server</th>
-                                        <th className="px-6 py-5 text-right w-[120px]">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {dbStations.map((s, idx) => (
-                                        <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="px-6 py-4 font-mono text-xs font-bold text-slate-400">{s.id}</td>
-                                            <td className="px-6 py-4 font-black text-sm text-[#1d2d6a]">{s.name}</td>
-                                            <td className="px-6 py-4 text-slate-500 font-bold text-sm">{s.city}</td>
-                                            <td className="px-6 py-4 font-mono text-xs text-slate-400">{s.kode_kota || '-'}</td>
-                                            <td className="px-6 py-4 font-mono text-xs text-slate-400">{s.ip_address || '-'}</td>
-                                            <td className="px-6 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div className="flex justify-end gap-1">
-                                                    <button onClick={() => handleEditStation(s)} className="p-2 text-slate-400 hover:text-[#1d2d6a] rounded-lg transition-colors"><Pencil size={16} /></button>
-                                                    <button onClick={() => setDeleteTarget({ type: 'station', id: s.id })} className="p-2 text-red-300 hover:text-red-500 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col min-h-[300px]">
+                                        <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <LayoutGrid size={12} className="text-[#ee6f1f]" /> Stops Sequence ({selectedStations.length})
+                                        </h4>
+                                        <div className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
+                                            {selectedStations.length === 0 ? (
+                                                <div className="h-full flex flex-col items-center justify-center text-slate-200">
+                                                    <MapPin size={32} className="mb-2 opacity-50" />
+                                                    <p className="text-[10px] font-bold">Timeline is empty</p>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {dbStations.length === 0 && !loading && (
-                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400 italic">Belum ada stasiun dalam database.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            )}
+                                            ) : (
+                                                selectedStations.map((s, idx) => (
+                                                    <div key={idx} className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3 group transition-all hover:bg-slate-100/50">
+                                                        <div className="w-6 h-6 rounded-md bg-[#1d2d6a] text-white flex items-center justify-center text-[10px] font-black shrink-0">{idx + 1}</div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-xs font-black text-[#1d2d6a] truncate">{s.name}</div>
+                                                            <input type="time" value={s.time} onChange={e => { const n = [...selectedStations]; n[idx].time = e.target.value; setSelectedStations(n); }} className="mt-0.5 text-[#ee6f1f] text-[10px] font-black bg-transparent border-none p-0 focus:ring-0 cursor-pointer" />
+                                                        </div>
+                                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button onClick={() => { const n = [...selectedStations];[n[idx], n[idx - 1]] = [n[idx - 1], n[idx]]; setSelectedStations(n); }} disabled={idx === 0} className="p-1 hover:bg-white text-slate-300 disabled:opacity-0 rounded-md transition-all"><ArrowUp size={12} /></button>
+                                                            <button onClick={() => { const n = [...selectedStations];[n[idx], n[idx + 1]] = [n[idx + 1], n[idx]]; setSelectedStations(n); }} disabled={idx === selectedStations.length - 1} className="p-1 hover:bg-white text-slate-300 disabled:opacity-0 rounded-md transition-all"><ArrowDown size={12} /></button>
+                                                            <button onClick={() => { const n = [...selectedStations]; n.splice(idx, 1); setSelectedStations(n); }} className="p-1 hover:bg-red-100 text-red-300 hover:text-red-500 rounded-md transition-all"><X size={12} /></button>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 bg-white shrink-0">
+                                <button onClick={() => setShowForm(false)} className="px-6 py-2.5 font-black text-xs text-slate-400 hover:text-slate-600 transition-all">Cancel</button>
+                                <button onClick={() => handleSaveRoute()} disabled={saving} className="px-10 py-2.5 bg-[#1d2d6a] hover:bg-[#16224f] disabled:bg-slate-300 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-all flex items-center gap-2">
+                                    {saving ? 'Processing...' : <><Save size={16} />Save Changes</>}
+                                </button>
+                            </div>
+                        </motion.div>
+                     </div>
+                )}
+            </AnimatePresence>
 
             <ToastNotification toast={toast} onClose={closeToast} />
         </div>

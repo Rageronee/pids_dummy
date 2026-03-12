@@ -9,6 +9,7 @@ import { API } from './config';
 // Lazy-loaded pages for code splitting (faster initial load on server)
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const TrainsPage = lazy(() => import('./pages/TrainsPage'));
+const StationsPage = lazy(() => import('./pages/StationsPage'));
 const RoutesPage = lazy(() => import('./pages/RoutesPage'));
 const SchedulesPage = lazy(() => import('./pages/SchedulesPage'));
 const UsersPage = lazy(() => import('./pages/UsersPage'));
@@ -20,6 +21,7 @@ interface AuthUser { id: string; username: string; role: string; nama: string; }
 const NAV = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'trains', label: 'Manajemen Kereta', icon: Train },
+    { id: 'stations', label: 'Manajemen Stasiun', icon: Building2 },
     { id: 'routes', label: 'Manajemen Rute', icon: MapPin },
     { id: 'schedules', label: 'Jadwal Kereta', icon: Calendar },
     { id: 'users', label: 'Akun Operator', icon: Users },
@@ -70,6 +72,7 @@ export default function App() {
     const pages: Record<string, React.ReactNode> = {
         dashboard: <DashboardPage token={authToken} />,
         trains: <TrainsPage token={authToken} />,
+        stations: <StationsPage token={authToken} />,
         routes: <RoutesPage token={authToken} />,
         schedules: <SchedulesPage token={authToken} />,
         users: <UsersPage token={authToken} />,

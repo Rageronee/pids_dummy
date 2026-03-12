@@ -310,6 +310,44 @@ export async function startApiServer() {
         res.json({ success: true, trains: result.trains });
     });
 
+    // GERBONG (Coaches)
+    apiApp.get('/api/admin/trains/:name/gerbongs', requireAdmin, async (req, res) => {
+        const trains = await getTrains();
+        const train = trains.find(t => t.name === req.params.name);
+        if (!train) return res.status(404).json({ success: false, error: 'Train not found' });
+        res.json({ success: true, gerbongs: await getGerbong(train.id) });
+    });
+
+    apiApp.post('/api/admin/trains/:name/gerbongs', requireAdmin, async (req, res) => {
+        const { name } = req.params;
+        const { gerbongs } = req.body;
+        if (!gerbongs) return res.status(400).json({ success: false, error: 'Gerbongs data required' });
+
+        const trains = await getTrains();
+        const train = trains.find(t => t.name === name);
+        if (!train) return res.status(404).json({ success: false, error: 'Train not found' });
+
+        try {
+            // Simple approach: delete existing and add new
+            // In a real app we might want to sync, but for this dummy app it's fine
+            const existing = await getGerbong(train.id);
+            for (const g of existing) {
+                await deleteGerbong(g.id);
+            }
+
+            for (const g of gerbongs) {
+                await addGerbong({
+                    ...g,
+                    id_kereta: train.id,
+                    id: g.id || crypto.randomUUID()
+                });
+            }
+            res.json({ success: true });
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    });
+
     // ROUTES (Stations mapping)
     apiApp.get('/api/admin/routes', requireAdmin, async (req, res) => {
         res.json({ success: true, routes: await getRoutes() });

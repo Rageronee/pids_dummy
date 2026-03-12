@@ -27,6 +27,8 @@ export interface Station {
     kode_pos?: string;
     poi?: string;
     media?: string;
+    lintang?: string; // New: Display-oriented
+    bujur?: string;   // New: Display-oriented
 }
 
 export type DisplayMode = 'pids' | 'tv';
@@ -117,6 +119,9 @@ export interface TrainService {
     nama_pic?: string;
     kontak_pic?: string;
     media?: string;
+    stasiun_awal?: string; // New
+    stasiun_akhir?: string; // New
+    keterangan?: string; // New
 }
 
 export interface Schedule {
@@ -151,6 +156,8 @@ export interface ScheduleStop {
     station_name?: string;
     station_code?: string;
     sequence_order?: number;
+    lintang?: number; // New
+    bujur?: number;   // New
 }
 
 export interface Unit {
@@ -178,6 +185,9 @@ export interface Gerbong {
     no_urut_gerbong: number;
     id_kereta: number;
     kereta_name?: string;
+    media?: string; // New
+    log_maintenance?: string; // New
+    log_operasional?: string; // New
 }
 
 export interface Sensor {

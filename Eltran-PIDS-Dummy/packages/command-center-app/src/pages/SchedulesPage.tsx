@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Train, Trash2, RefreshCcw, ChevronRight, MapPinned, Plus, X, CheckCircle2, Clock, MapPin, Info, Paperclip } from 'lucide-react';
+import { Train, Trash2, RefreshCcw, ChevronRight, MapPinned, Plus, X, CheckCircle2, Clock, MapPin, Info, Paperclip, Activity } from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
 import { ConfirmModal, ToastNotification } from '../components/SharedUI';
@@ -20,6 +20,8 @@ export default function SchedulesPage({ token }: { token: string }) {
     const { toast, showToast, closeToast } = useToast();
     const [expanded, setExpanded] = useState<number | null>(null);
 
+    const [trainOptions, setTrainOptions] = useState<any[]>([]);
+    const [stationOptions, setStationOptions] = useState<any[]>([]);
     const [form, setForm] = useState({
         train_name: '', ka_number: '',
         dep_station: '', dep_city_code: '',
@@ -32,7 +34,23 @@ export default function SchedulesPage({ token }: { token: string }) {
     const fetchSchedules = useCallback(async () => {
         try { const res = await fetch(`${API}/api/schedules`); const d = await res.json(); if (d.success) setSchedules(d.schedules); } catch { } finally { setLoading(false); }
     }, []);
-    useEffect(() => { fetchSchedules(); }, [fetchSchedules]);
+
+    const fetchData = useCallback(async () => {
+        try {
+            const [tr, st] = await Promise.all([
+                fetch(`${API}/api/admin/trains`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`${API}/api/admin/stations`, { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+            const [trD, stD] = await Promise.all([tr.json(), st.json()]);
+            if (trD.success) setTrainOptions(trD.trains || []);
+            if (stD.success) setStationOptions(stD.stations || []);
+        } catch { }
+    }, [token]);
+
+    useEffect(() => { 
+        fetchSchedules(); 
+        fetchData();
+    }, [fetchSchedules, fetchData]);
 
     const handleSave = async () => {
         if (!form.train_name || !form.dep_station || !form.arr_station) {
@@ -41,10 +59,31 @@ export default function SchedulesPage({ token }: { token: string }) {
         }
         setSaving(true);
         try {
+            const payload = {
+                train_name: form.train_name,
+                ka_number: form.ka_number,
+                stasiun_keberangkatan: form.dep_station,
+                kode_kota_keberangkatan: form.dep_city_code,
+                stasiun_tujuan: form.arr_station,
+                kode_kota_tujuan: form.arr_city_code,
+                waktu_keberangkatan_penjadwalan: form.dep_sched,
+                waktu_keberangkatan_realisasi: form.dep_real,
+                selisih_waktu_keberangkatan: form.dep_diff,
+                status_keberangkatan: form.dep_status,
+                waktu_kedatangan_penjadwalan: form.arr_sched,
+                waktu_kedatangan_realisasi: form.arr_real,
+                selisih_waktu_kedatangan: form.arr_diff,
+                status_kedatangan: form.arr_status,
+                catatan: form.notes,
+                media: form.media,
+                route_id: null, // Point to point direct entry
+                stops: []
+            };
+
             const res = await fetch(`${API}/api/admin/schedules`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify(form)
+                body: JSON.stringify(payload)
             });
             const d = await res.json();
             if (d.success) {
@@ -83,55 +122,77 @@ export default function SchedulesPage({ token }: { token: string }) {
                 {showForm && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden">
                         <div className="space-y-6">
-                            <div className="flex items-center gap-3 text-[#1d2d6a] pb-2 border-b border-slate-100">
-                                <Train size={24} className="text-[#ee6f1f]" />
-                                <h3 className="font-black text-lg">Informasi Kereta</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-400 uppercase">Nama Kereta</label>
-                                    <input value={form.train_name} onChange={e => setForm({ ...form, train_name: e.target.value })} placeholder="e.g. ARGO WILIS" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <h4 className="font-black text-[#1d2d6a] text-xs flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Pilih Armada</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Nama Kereta</label>
+                                            <select value={form.train_name} onChange={e => {
+                                                const t = trainOptions.find(tx => tx.name === e.target.value);
+                                                setForm({ ...form, train_name: e.target.value, ka_number: t?.ka_number || '' });
+                                            }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
+                                                <option value="">Pilih Kereta</option>
+                                                {trainOptions.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Kode KA</label>
+                                            <input value={form.ka_number} onChange={e => setForm({ ...form, ka_number: e.target.value.toUpperCase() })} placeholder="OTOMATIS" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-400 uppercase">Kode Kereta</label>
-                                    <input value={form.ka_number} onChange={e => setForm({ ...form, ka_number: e.target.value })} placeholder="e.g. KA-001" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold text-base focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all" />
+
+                                <div className="space-y-4">
+                                    <h4 className="font-black text-[#1d2d6a] text-xs flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Waktu & Media</h4>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Media / Lampiran (URL)</label>
+                                        <div className="relative">
+                                            <Paperclip className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+                                            <input value={form.media} onChange={e => setForm({ ...form, media: e.target.value })} placeholder="URL Gambar/Dokumen" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                                 <div className="space-y-6">
-                                    <div className="flex items-center gap-3 text-[#1d2d6a] pb-2 border-b border-slate-100">
-                                        <MapPin size={20} className="text-[#ee6f1f]" />
-                                        <h3 className="font-black text-base">Stasiun Keberangkatan</h3>
+                                    <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
+                                        <h4 className="font-black text-[#1d2d6a] text-xs uppercase tracking-wider">Keberangkatan</h4>
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded">Departure</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase">Stasiun</label>
-                                            <input value={form.dep_station} onChange={e => setForm({ ...form, dep_station: e.target.value })} placeholder="GAMBIR" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Stasiun</label>
+                                            <select value={form.dep_station} onChange={e => {
+                                                const s = stationOptions.find(sx => sx.id === e.target.value);
+                                                setForm({ ...form, dep_station: s?.name || e.target.value, dep_city_code: s?.kode_kota || '' });
+                                            }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
+                                                <option value="">Pilih Stasiun</option>
+                                                {stationOptions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            </select>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase">Kode Kota</label>
-                                            <input value={form.dep_city_code} onChange={e => setForm({ ...form, dep_city_code: e.target.value })} placeholder="JKT" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase italic">Penjadwalan</label>
-                                            <input type="time" value={form.dep_sched} onChange={e => setForm({ ...form, dep_sched: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-[#ee6f1f]" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase italic">Realisasi</label>
-                                            <input type="time" value={form.dep_real} onChange={e => setForm({ ...form, dep_real: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Kode Kota</label>
+                                            <input value={form.dep_city_code} readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm opacity-70 cursor-not-allowed" />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase italic">Selisih (Menit)</label>
-                                            <input type="number" value={form.dep_diff} onChange={e => setForm({ ...form, dep_diff: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                    <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] p-4 rounded-2xl border border-slate-100">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1"><Clock size={10} /> Penjadwalan</label>
+                                            <input type="time" value={form.dep_sched} onChange={e => setForm({ ...form, dep_sched: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-black text-sm shadow-sm focus:border-[#ee6f1f] outline-none" />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase">Status</label>
-                                            <select value={form.dep_status} onChange={e => setForm({ ...form, dep_status: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1"><Activity size={10} /> Realisasi</label>
+                                            <input type="time" value={form.dep_real} onChange={e => setForm({ ...form, dep_real: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-black text-sm shadow-sm focus:border-[#ee6f1f] outline-none" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Selisih Waktu (Mnt)</label>
+                                            <input type="number" value={form.dep_diff} onChange={e => setForm({ ...form, dep_diff: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Status</label>
+                                            <select value={form.dep_status} onChange={e => setForm({ ...form, dep_status: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm">
                                                 <option>Tepat Waktu</option>
                                                 <option>Terlambat</option>
                                                 <option>Dibatalkan</option>
@@ -141,38 +202,42 @@ export default function SchedulesPage({ token }: { token: string }) {
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="flex items-center gap-3 text-[#1d2d6a] pb-2 border-b border-slate-100">
-                                        <MapPinned size={20} className="text-[#ee6f1f]" />
-                                        <h3 className="font-black text-base">Stasiun Tujuan</h3>
+                                    <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
+                                        <h4 className="font-black text-[#1d2d6a] text-xs uppercase tracking-wider">Kedatangan</h4>
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded">Arrival</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase">Stasiun</label>
-                                            <input value={form.arr_station} onChange={e => setForm({ ...form, arr_station: e.target.value })} placeholder="BANDUNG" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Stasiun</label>
+                                            <select value={form.arr_station} onChange={e => {
+                                                const s = stationOptions.find(sx => sx.id === e.target.value);
+                                                setForm({ ...form, arr_station: s?.name || e.target.value, arr_city_code: s?.kode_kota || '' });
+                                            }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
+                                                <option value="">Pilih Stasiun</option>
+                                                {stationOptions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            </select>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase">Kode Kota</label>
-                                            <input value={form.arr_city_code} onChange={e => setForm({ ...form, arr_city_code: e.target.value })} placeholder="BDG" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase italic">Penjadwalan</label>
-                                            <input type="time" value={form.arr_sched} onChange={e => setForm({ ...form, arr_sched: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-[#ee6f1f]" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase italic">Realisasi</label>
-                                            <input type="time" value={form.arr_real} onChange={e => setForm({ ...form, arr_real: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Kode Kota</label>
+                                            <input value={form.arr_city_code} readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm opacity-70 cursor-not-allowed" />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase italic">Selisih (Menit)</label>
-                                            <input type="number" value={form.arr_diff} onChange={e => setForm({ ...form, arr_diff: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold" />
+                                    <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] p-4 rounded-2xl border border-slate-100">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1"><Clock size={10} /> Penjadwalan</label>
+                                            <input type="time" value={form.arr_sched} onChange={e => setForm({ ...form, arr_sched: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-black text-sm shadow-sm focus:border-[#ee6f1f] outline-none" />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-black text-slate-400 uppercase">Status</label>
-                                            <select value={form.arr_status} onChange={e => setForm({ ...form, arr_status: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1"><Activity size={10} /> Realisasi</label>
+                                            <input type="time" value={form.arr_real} onChange={e => setForm({ ...form, arr_real: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-black text-sm shadow-sm focus:border-[#ee6f1f] outline-none" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Selisih Waktu (Mnt)</label>
+                                            <input type="number" value={form.arr_diff} onChange={e => setForm({ ...form, arr_diff: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Status</label>
+                                            <select value={form.arr_status} onChange={e => setForm({ ...form, arr_status: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-sm">
                                                 <option>Tepat Waktu</option>
                                                 <option>Terlambat</option>
                                                 <option>Dibatalkan</option>
@@ -182,18 +247,9 @@ export default function SchedulesPage({ token }: { token: string }) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 mb-1"><Info size={14} className="text-slate-400" /><label className="text-xs font-black text-slate-400 uppercase">Catatan Tambahan</label></div>
-                                    <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Keterangan operasional..." rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-medium text-base focus:outline-none focus:border-[#ee6f1f] transition-all" />
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 mb-1"><Paperclip size={14} className="text-slate-400" /><label className="text-xs font-black text-slate-400 uppercase">Media / Lampiran</label></div>
-                                    <div className="w-full h-[104px] border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                                        <Plus className="text-slate-300" size={24} />
-                                        <span className="text-xs font-bold text-slate-400 mt-1">Upload File / Gambar</span>
-                                    </div>
-                                </div>
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <h4 className="font-black text-[#1d2d6a] text-xs flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Catatan</h4>
+                                <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Masukkan catatan tambahan..." rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                             </div>
                         </div>
                         <button onClick={handleSave} disabled={saving} className="px-10 py-5 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-black rounded-3xl text-lg transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]">
@@ -210,7 +266,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                             <div className="flex items-center gap-4 px-6 py-5 cursor-pointer" onClick={() => setExpanded(expanded === sched.id ? null : sched.id)}>
                                 <div className="w-12 h-12 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm"><Train size={20} className="text-[#1d2d6a]" /></div>
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-1"><h3 className="text-[#1d2d6a] font-black text-base">{sched.train_name}</h3><span className="text-slate-400 text-[10px] font-bold">{sched.ka_number || '-'}</span></div>
+                                    <div className="flex items-center gap-3 mb-1"><h3 className="text-[#1d2d6a] font-black text-base">{sched.display_train_name || sched.train_name}</h3><span className="text-slate-400 text-[10px] font-bold">{sched.display_ka_number || sched.ka_number || '-'}</span></div>
                                     <div className="flex items-center gap-3 text-xs">
                                         <span className="text-slate-500 font-medium">{sched.schedule_date}</span>
                                         <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-black border ${STATUS_COLOR[sched.status] || 'text-slate-400 bg-slate-50 border-slate-200'}`}>{sched.status?.replace('_', ' ')}</span>
@@ -223,7 +279,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                             <AnimatePresence>
                                 {expanded === sched.id && (
                                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-t border-slate-100 overflow-hidden">
-                                        {sched.stops ? (
+                                        {sched.stops && sched.stops.length > 0 ? (
                                             <>
                                                 <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-black"><span>#</span><span>Stasiun</span><span>Datang</span><span>Berangkat</span><span>Peron</span><span>Status</span></div>
                                                 {sched.stops.map((stop: any, j: number) => (
@@ -238,7 +294,80 @@ export default function SchedulesPage({ token }: { token: string }) {
                                                 ))}
                                             </>
                                         ) : (
-                                            <div className="p-6 text-center text-slate-400 text-xs italic">Detail pemberhentian tidak tersedia.</div>
+                                            <div className="p-8 space-y-6">
+                                                <div className="grid grid-cols-2 gap-8">
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2 text-[#ee6f1f] text-[10px] font-black uppercase tracking-widest"><Clock size={12}/> Keberangkatan</div>
+                                                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center justify-between">
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] text-slate-400 font-bold">STASIUN</p>
+                                                                <p className="text-[#1d2d6a] font-black text-sm">{sched.stasiun_keberangkatan || '-'} ({sched.kode_kota_keberangkatan || '-'})</p>
+                                                            </div>
+                                                            <div className="text-right space-y-1">
+                                                                <p className="text-[10px] text-slate-400 font-bold">PENJADWALAN</p>
+                                                                <p className="text-[#ee6f1f] font-black text-lg">{sched.waktu_keberangkatan_penjadwalan || '--:--'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                                                <p className="text-[9px] text-slate-400 font-bold pb-1">REALISASI</p>
+                                                                <p className="text-[#1d2d6a] font-bold text-sm">{sched.waktu_keberangkatan_realisasi || '-'}</p>
+                                                            </div>
+                                                            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                                                <p className="text-[9px] text-slate-400 font-bold pb-1">SELISIH / STATUS</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[#1d2d6a] font-bold text-xs">{sched.selisih_waktu_keberangkatan}m</span>
+                                                                    <span className="text-green-500 font-black text-[9px] px-1.5 py-0.5 bg-green-50 rounded border border-green-100">{sched.status_keberangkatan}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2 text-[#ee6f1f] text-[10px] font-black uppercase tracking-widest"><MapPinned size={12}/> Kedatangan</div>
+                                                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center justify-between">
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] text-slate-400 font-bold">STASIUN</p>
+                                                                <p className="text-[#1d2d6a] font-black text-sm">{sched.stasiun_tujuan || '-'} ({sched.kode_kota_tujuan || '-'})</p>
+                                                            </div>
+                                                            <div className="text-right space-y-1">
+                                                                <p className="text-[10px] text-slate-400 font-bold">PENJADWALAN</p>
+                                                                <p className="text-[#ee6f1f] font-black text-lg">{sched.waktu_kedatangan_penjadwalan || '--:--'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                                                <p className="text-[9px] text-slate-400 font-bold pb-1">REALISASI</p>
+                                                                <p className="text-[#1d2d6a] font-bold text-sm">{sched.waktu_kedatangan_realisasi || '-'}</p>
+                                                            </div>
+                                                            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                                                <p className="text-[9px] text-slate-400 font-bold pb-1">SELISIH / STATUS</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[#1d2d6a] font-bold text-xs">{sched.selisih_waktu_kedatangan}m</span>
+                                                                    <span className="text-green-500 font-black text-[9px] px-1.5 py-0.5 bg-green-50 rounded border border-green-100">{sched.status_kedatangan}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {(sched.catatan || sched.media) && (
+                                                    <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-8">
+                                                        {sched.catatan && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Catatan</p>
+                                                                <p className="text-slate-600 text-sm font-medium leading-relaxed italic">"{sched.catatan}"</p>
+                                                            </div>
+                                                        )}
+                                                        {sched.media && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Media / Lampiran</p>
+                                                                <a href={sched.media} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[#ee6f1f] text-xs font-black hover:underline"><Paperclip size={12}/> Lihat Lampiran</a>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </motion.div>
                                 )}
