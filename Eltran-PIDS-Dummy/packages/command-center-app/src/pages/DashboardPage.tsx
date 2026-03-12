@@ -1,281 +1,284 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Train, Users, ScrollText, Server, Wifi, Activity, Navigation, Map as MapIcon } from 'lucide-react';
-import { io } from 'socket.io-client';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import React, { useState, useEffect } from 'react';
+import {
+    Activity,
+    MapPin,
+    Server,
+    ShieldAlert,
+    Train,
+    Clock,
+    Zap,
+    Navigation2,
+    Cloud
+} from 'lucide-react';
+import MapComponent from '../components/MapComponent';
+
 import { API } from '../config';
 
-// ---- GPS Fleet Sub-Panel ----
-function GpsFleetPanel() {
-    const [fleet, setFleet] = useState<any[]>([]);
+const DashboardPage: React.FC = () => {
+    const [schedules, setSchedules] = useState<any[]>([]);
+    const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const mapContainer = useRef<HTMLDivElement>(null);
-    const map = useRef<maplibregl.Map | null>(null);
-    const markersRef = useRef<{ [key: string]: maplibregl.Marker }>({});
+    const fetchData = async () => {
+        try {
+            const [schedRes, logRes] = await Promise.all([
+                fetch(`${API}/api/schedules`),
+                fetch(`${API}/api/logs?limit=5`)
+            ]);
+            const [schedData, logData] = await Promise.all([
+                schedRes.json(),
+                logRes.json()
+            ]);
+
+            if (schedData.success) {
+                setSchedules(schedData.schedules.slice(0, 4)); // Limit to top 4 for layout
+            }
+            if (logData.success) {
+                setLogs(logData.logs || []);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchFleet = async () => {
-            try {
-                const res = await fetch(`${API}/api/gps/fleet`);
-                const d = await res.json();
-                if (d.success) setFleet(d.fleet);
-            } catch { } finally { setLoading(false); }
-        };
-        fetchFleet();
-        const interval = setInterval(fetchFleet, 10000);
+        fetchData();
+        const interval = setInterval(fetchData, 10000); // Fast refresh for Command Center
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        if (!mapContainer.current) return;
-
-        const darkStyle: maplibregl.StyleSpecification = {
-            version: 8,
-            sources: {
-                'carto-dark': {
-                    type: 'raster',
-                    tiles: [
-                        'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
-                    ],
-                    tileSize: 256,
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-                }
-            },
-            layers: [{
-                id: 'carto-dark-layer',
-                type: 'raster',
-                source: 'carto-dark',
-                minzoom: 0,
-                maxzoom: 19
-            }]
-        };
-
-        map.current = new maplibregl.Map({
-            container: mapContainer.current,
-            style: darkStyle,
-            center: [107.6036, -6.9125], // Default center
-            zoom: 8,
-            pitch: 45,
-            attributionControl: false
-        });
-
-        return () => {
-            map.current?.remove();
-            map.current = null;
-        };
-    }, []);
-
-    useEffect(() => {
-        if (!map.current) return;
-
-        const currentMarkerIds = new Set<string>();
-
-        fleet.forEach((train) => {
-            const id = train.kereta_id || train.ka_number || train.kereta_name;
-            const lng = train.longitude;
-            const lat = train.latitude;
-
-            if (lng && lat && id) {
-                currentMarkerIds.add(String(id));
-
-                if (markersRef.current[id]) {
-                    // Update existing marker
-                    markersRef.current[id].setLngLat([lng, lat]);
-                    
-                    // Optional: update popup content if changed
-                    const popup = markersRef.current[id].getPopup();
-                    if (popup) {
-                         popup.setHTML(`
-                            <div class="text-[#1d2d6a] font-black w-max">
-                                ${train.kereta_name} <br/>
-                                <span class="text-xs text-slate-500">${train.ka_number || ''}</span><br/>
-                                <span class="text-[#ee6f1f]">${train.kecepatan?.toFixed(1) || '0'} km/h</span>
-                            </div>
-                        `);
-                    }
-
-                } else {
-                    // Create new marker
-                    const el = document.createElement('div');
-                    el.className = 'w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-[0_0_10px_rgba(34,197,94,0.8)]';
-                    
-                    const popup = new maplibregl.Popup({ offset: 15, closeButton: false, closeOnClick: false }).setHTML(`
-                        <div class="text-[#1d2d6a] font-black w-max">
-                            ${train.kereta_name} <br/>
-                            <span class="text-xs text-slate-500">${train.ka_number || ''}</span><br/>
-                            <span class="text-[#ee6f1f]">${train.kecepatan?.toFixed(1) || '0'} km/h</span>
-                        </div>
-                    `);
-
-                    const marker = new maplibregl.Marker({ element: el })
-                        .setLngLat([lng, lat])
-                        .setPopup(popup)
-                        .addTo(map.current!);
-                    
-                    // Show popup on hover
-                    el.addEventListener('mouseenter', () => marker.togglePopup());
-                    el.addEventListener('mouseleave', () => marker.togglePopup());
-
-                    markersRef.current[id] = marker;
-                }
-            }
-        });
-
-        // Remove old markers
-        Object.keys(markersRef.current).forEach((id) => {
-            if (!currentMarkerIds.has(id)) {
-                markersRef.current[id].remove();
-                delete markersRef.current[id];
-            }
-        });
-
-        // Fit map bounds to show all active markers if there are any
-        if (fleet.length > 0) {
-            const bounds = new maplibregl.LngLatBounds();
-            let hasValidCoords = false;
-            fleet.forEach((train) => {
-                if (train.longitude && train.latitude) {
-                    bounds.extend([train.longitude, train.latitude]);
-                    hasValidCoords = true;
-                }
-            });
-            
-            if (hasValidCoords && map.current) {
-                map.current.fitBounds(bounds, { padding: 50, duration: 1000, maxZoom: 12 });
-            }
-        }
-
-    }, [fleet]);
-
     return (
-        <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
-            <h3 className="text-sm font-black text-slate-400 mb-5 flex items-center gap-2">
-                <Navigation size={16} className="text-[#ee6f1f]" /> GPS Fleet Monitoring
-                <span className="ml-auto text-[10px] font-bold text-slate-300 tracking-normal normal-case">Auto-refresh 10s</span>
-            </h3>
-            {loading ? <div className="text-slate-400 text-sm text-center py-6">Memuat data GPS...</div> : (
-                <div className="flex flex-col gap-6">
-                    {/* Fleet Map View Wide */}
-                    <div className="w-full h-[500px] bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden relative shadow-inner">
-                        <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
-                            <MapIcon size={14} className="text-[#1d2d6a]" />
-                            <span className="text-[10px] font-black text-[#1d2d6a] uppercase tracking-wider">Live Map</span>
-                        </div>
-                        <div ref={mapContainer} className="w-full h-full" />
-                    </div>
+        <div className="flex flex-col h-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
+            {/* Main Content Area */}
+            <main className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300">
 
-                    {/* Fleet List List Below */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {fleet.length === 0 ? (
-                             <div className="col-span-full text-slate-400 text-sm text-center py-6 border border-dashed rounded-2xl">Tidak ada armada aktif ditemukan</div>
-                        ) : fleet.map((train, i) => (
-                            <motion.div key={train.kereta_id || i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                                className="bg-slate-50 border border-slate-100 rounded-2xl p-4 hover:shadow-md transition-all">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                    <span className="text-[#1d2d6a] font-black text-sm flex-1">{train.kereta_name}</span>
-                                    <span className="text-slate-400 text-[10px] font-bold">{train.ka_number}</span>
-                                </div>
-                                <div className="space-y-1.5 text-xs">
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Lokasi</span><span className="text-slate-600 font-medium">{train.poi || 'N/A'}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{train.latitude?.toFixed(4)}, {train.longitude?.toFixed(4)}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Kecepatan</span><span className="text-[#ee6f1f] font-black">{train.kecepatan?.toFixed(1) || '0'} km/h</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Suhu</span><span className="text-slate-600 font-medium">{train.suhu?.toFixed(1) || '-'}°C</span></div>
-                                </div>
-                            </motion.div>
-                        ))}
+                {/* TOP SECTION: Geolocation Situational Awareness */}
+                <section className="relative w-full h-[380px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
+                    <div className="absolute top-4 left-4 z-20 flex gap-2">
+                        <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Map Link: ACTIVE</span>
+                        </div>
+                        <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+                            <Navigation2 size={12} className="text-blue-600" />
+                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Tracking: LIVE</span>
+                        </div>
                     </div>
+                    <MapComponent />
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50/50 to-transparent z-10 pointer-events-none" />
+                </section>
+
+                {/* MID SECTION: KPI Dashboard Grid */}
+                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <StatCard
+                        title="On-Time Performance"
+                        value="98.4%"
+                        status="success"
+                        icon={<Clock size={20} />}
+                        trend="+1.2%"
+                    />
+                    <StatCard
+                        title="System Throughput"
+                        value="420"
+                        status="info"
+                        icon={<Zap size={20} />}
+                        trend="Active PKT"
+                    />
+                    <StatCard
+                        title="Active Services"
+                        value={`${schedules.length + 2}/12`}
+                        status="success"
+                        icon={<Activity size={20} />}
+                        trend="100% Core"
+                    />
+                    <StatCard
+                        title="System Load"
+                        value="24.8%"
+                        status="warning"
+                        icon={<Server size={20} />}
+                        trend="Normal"
+                    />
+                </section>
+
+                {/* BOTTOM SECTION: Split view */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    {/* Detailed Status List */}
+                    <section className="lg:col-span-2 space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Fleet & Station Analytics</h2>
+                            <div className="flex gap-2">
+                                <button className="px-3 py-1 text-[10px] bg-white border border-slate-200 rounded-lg shadow-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">EXPORT</button>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {loading ? (
+                                Array(4).fill(0).map((_, i) => (
+                                    <div key={i} className="h-32 bg-slate-100 animate-pulse rounded-2xl border border-slate-200" />
+                                ))
+                            ) : (
+                                schedules.map((s, i) => (
+                                    <TransportLineCard
+                                        key={s.id || i}
+                                        type="Train"
+                                        id={s.display_ka_number || s.ka_number || 'KA'}
+                                        status={s.status_keberangkatan || 'Normal'}
+                                        load={Math.floor(Math.random() * 40) + 20} // Simulated occupancy
+                                        eta={s.waktu_keberangkatan_penjadwalan}
+                                        origin={s.stasiun_keberangkatan}
+                                        dest={s.stasiun_tujuan}
+                                    />
+                                ))
+                            )}
+                            {!loading && schedules.length === 0 && (
+                                <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                                    <p className="text-slate-400 font-bold text-sm">Tidak ada jadwal aktif terdeteksi.</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Activity Logs / Sidebar Widgets */}
+                    <section className="space-y-6">
+                        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                            <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                                <Activity size={16} className="text-blue-600" />
+                                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">System Logs</h2>
+                            </div>
+
+                            <div className="flex-grow space-y-5 overflow-y-auto pr-1">
+                                {logs.map((log, i) => (
+                                    <LogItem 
+                                        key={log.id || i} 
+                                        time={new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
+                                        tag={log.role.toUpperCase()} 
+                                        msg={log.action || log.details} 
+                                        type={log.role === 'Admin' ? 'info' : 'success'} 
+                                    />
+                                ))}
+                                {!loading && logs.length === 0 && (
+                                    <p className="text-[10px] text-slate-400 italic text-center py-8">Belum ada aktivitas baru.</p>
+                                )}
+                            </div>
+
+                            <button className="mt-6 w-full py-2.5 text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                                View All Logs
+                            </button>
+                        </div>
+                    </section>
+
                 </div>
-            )}
+            </main>
         </div>
     );
-}
+};
 
-// ---- Dashboard Page ----
-export default function DashboardPage({ token }: { token: string }) {
-    const [status, setStatus] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-
-    const fetch_ = useCallback(async () => {
-        try {
-            const res = await fetch(`${API}/api/admin/status`, { headers: { Authorization: `Bearer ${token}` } });
-            const d = await res.json();
-            if (d.success) setStatus(d.status);
-        } catch { } finally { setLoading(false); }
-    }, [token]);
-
-    useEffect(() => {
-        fetch_();
-        const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
-        socket.on('state:update', () => fetch_());
-        socket.on('connect', () => console.log('[Socket.IO] Command Center dashboard connected'));
-        return () => { socket.disconnect(); };
-    }, [fetch_]);
-
-    const ACTION_COLOR: Record<string, string> = {
-        LOGIN: 'text-green-400', LOGIN_FAILED: 'text-red-400', LOGOUT: 'text-slate-400',
-        STATE_UPDATE: 'text-blue-400', DISPLAY_MODE: 'text-purple-400',
-        LED_CONFIG: 'text-orange-400', ADMIN_CRUD: 'text-indigo-400', SYSTEM: 'text-slate-500',
+const StatCard: React.FC<{
+    title: string;
+    value: string;
+    status: 'success' | 'warning' | 'error' | 'info';
+    icon: React.ReactNode;
+    trend?: string;
+}> = ({ title, value, status, icon, trend }) => {
+    const statusColors = {
+        success: 'text-green-600 bg-green-50',
+        warning: 'text-amber-600 bg-amber-50',
+        error: 'text-rose-600 bg-rose-50',
+        info: 'text-blue-600 bg-blue-50'
     };
 
-    const cards = loading ? [] : [
-        { label: 'Active Route', value: status?.currentState?.serviceName || '-', sub: `No. ${status?.currentState?.trainNumber || '-'}`, icon: Train, color: 'bg-blue-500' },
-        { label: 'Active Sessions', value: status?.activeSessions ?? 0, sub: 'Login aktif', icon: Users, color: 'bg-green-500' },
-        { label: 'Total Log Entries', value: status?.totalLogs ?? 0, sub: 'Semua aktivitas', icon: ScrollText, color: 'bg-orange-500' },
-        { label: 'Server Uptime', value: status ? `${Math.floor(status.uptime / 60)}m` : '-', sub: 'Sejak start', icon: Server, color: 'bg-purple-500' },
-    ];
-
     return (
-        <div className="space-y-8">
-            <div>
-                <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Dashboard Overview</h2>
-                <p className="text-slate-500 text-sm font-medium">Status sistem PIDS secara real-time</p>
-            </div>
-            <div className="grid grid-cols-4 gap-6">
-                {loading ? [...Array(4)].map((_, i) => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse" />) : cards.map((c, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                        className="bg-white border border-slate-200 rounded-[2rem] p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className={`w-12 h-12 ${c.color} rounded-2xl flex items-center justify-center shadow-sm`}><c.icon size={24} className="text-white" /></div>
-                        <div>
-                            <div className="text-3xl font-black text-[#1d2d6a] tracking-tight">{String(c.value)}</div>
-                            <div className="text-slate-400 text-xs font-bold mt-1">{c.label}</div>
-                            <div className="text-slate-400/80 text-[10px] font-medium mt-0.5">{c.sub}</div>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-
-            {status?.lastLog && (
-                <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
-                    <h3 className="text-sm font-black text-slate-400 mb-4 flex items-center gap-2"><Activity size={16} className="text-[#ee6f1f]" /> Log Terakhir</h3>
-                    <div className="flex items-start gap-4">
-                        <div className={`text-sm font-black ${ACTION_COLOR[status.lastLog.action] || 'text-slate-400'}`}>{status.lastLog.action}</div>
-                        <div className="text-slate-600 text-sm font-medium flex-1">{status.lastLog.details}</div>
-                        <div className="text-slate-400 text-xs font-mono font-medium whitespace-nowrap">{new Date(status.lastLog.timestamp).toLocaleTimeString('id-ID')}</div>
-                    </div>
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md group relative overflow-hidden">
+            <div className="flex justify-between items-start mb-4">
+                <div className={`p-3 rounded-2xl transition-colors duration-300 ${statusColors[status]}`}>
+                    {icon}
                 </div>
-            )}
-
-            <div className="grid grid-cols-3 gap-6">
-                {[
-                    { name: 'Master API Server', port: '3001', ok: !!status },
-                    { name: 'Selector App', port: '5174', ok: true },
-                    { name: 'LED Display App', port: '5175', ok: true },
-                ].map((unit, i) => (
-                    <div key={i} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
-                        <div className={`w-3 h-3 rounded-full ${unit.ok ? 'bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)]'}`} />
-                        <div>
-                            <div className="text-[#1d2d6a] font-bold text-sm">{unit.name}</div>
-                            <div className="text-slate-400 text-xs font-mono font-medium mt-0.5">Port: {unit.port}</div>
-                        </div>
-                        <Wifi size={20} className={`ml-auto ${unit.ok ? 'text-green-500' : 'text-red-500'}`} />
-                    </div>
-                ))}
+                {trend && (
+                    <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${statusColors[status]}`}>
+                        {trend}
+                    </span>
+                )}
             </div>
-
-            <GpsFleetPanel />
+            <div>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{title}</p>
+                <p className="text-3xl font-black tracking-tight text-slate-900">{value}</p>
+            </div>
         </div>
     );
-}
+};
+
+const LogItem: React.FC<{ time: string, tag: string, msg: string, type: 'info' | 'success' | 'warning' }> = ({ time, tag, msg, type }) => {
+    const typeStyles = {
+        info: 'text-blue-600',
+        success: 'text-green-600',
+        warning: 'text-amber-600'
+    };
+
+    return (
+        <div className="text-[11px] leading-relaxed group hover:bg-slate-50 p-1 rounded-lg transition-colors">
+            <div className="flex gap-3 items-center">
+                <span className="text-slate-400 tabular-nums shrink-0 font-medium">{time}</span>
+                <span className={`text-[9px] font-black tracking-wider shrink-0 uppercase ${typeStyles[type]}`}>{tag}</span>
+                <span className="text-slate-600 font-medium truncate">{msg}</span>
+            </div>
+        </div>
+    );
+};
+
+const TransportLineCard: React.FC<{
+    type: 'Train' | 'Station';
+    id: string;
+    status: string;
+    load: number;
+    eta: string;
+    origin: string;
+    dest: string;
+}> = ({ type, id, status, load, eta, origin, dest }) => {
+    const isWarning = load > 80 || status !== 'Normal';
+
+    return (
+        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:border-blue-200 transition-all hover:shadow-md group">
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                    {type === 'Train' ? (
+                        <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600"><Train size={14} /></div>
+                    ) : (
+                        <div className="p-1.5 bg-slate-100 rounded-lg text-slate-600"><MapPin size={14} /></div>
+                    )}
+                    <span className="text-sm font-black text-slate-900">{id}</span>
+                </div>
+                <div className={`px-2 py-0.5 rounded-lg text-[9px] font-extrabold uppercase ${status === 'Normal' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                    {status}
+                </div>
+            </div>
+
+            <div className="mb-4">
+                <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[9px] text-slate-400 font-black uppercase">Capacity</span>
+                    <span className={`text-[10px] font-black ${isWarning ? 'text-amber-600' : 'text-slate-900'}`}>{load}%</span>
+                </div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                        className={`h-full transition-all duration-700 rounded-full ${isWarning ? 'bg-amber-500' : 'bg-blue-600'}`}
+                        style={{ width: `${load}%` }}
+                    />
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div className="flex flex-col">
+                    <p className="text-[8px] text-slate-400 font-bold uppercase">Route</p>
+                    <p className="text-[10px] font-bold text-slate-700">{origin} → {dest}</p>
+                </div>
+                <div className="text-right">
+                    <p className="text-[8px] text-slate-400 font-bold uppercase">In</p>
+                    <p className="text-sm font-black text-blue-600">{eta}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default DashboardPage;

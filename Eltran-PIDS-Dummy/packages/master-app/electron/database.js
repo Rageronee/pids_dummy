@@ -166,6 +166,25 @@ async function createTables() {
     `);
 
     await pool.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_train_services_name ON train_services(name)
+    `).catch(e => console.log('[PIDS-DB] Index migration note:', e.message));
+
+    await pool.query(`
+        ALTER TABLE schedules 
+        ALTER COLUMN route_id DROP NOT NULL,
+        ADD COLUMN IF NOT EXISTS train_name TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS ka_number TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS waktu_keberangkatan_penjadwalan TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS waktu_keberangkatan_realisasi TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS selisih_waktu_keberangkatan TEXT DEFAULT '0',
+        ADD COLUMN IF NOT EXISTS status_keberangkatan TEXT DEFAULT 'Tepat Waktu',
+        ADD COLUMN IF NOT EXISTS waktu_kedatangan_penjadwalan TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS waktu_kedatangan_realisasi TEXT DEFAULT '',
+        ADD COLUMN IF NOT EXISTS selisih_waktu_kedatangan TEXT DEFAULT '0',
+        ADD COLUMN IF NOT EXISTS status_kedatangan TEXT DEFAULT 'Tepat Waktu'
+    `).catch(e => console.log('[PIDS-DB] Column migration note:', e.message));
+
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS schedule_stops (
             id SERIAL PRIMARY KEY,
             schedule_id INTEGER NOT NULL,
@@ -347,6 +366,7 @@ async function createTables() {
 async function seedData() {
     console.log('[PIDS-DB] Seeding authentic KAI data to PostgreSQL...');
 
+    // 1. Core State & Admin
     await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, jumlah_kereta) 
                  VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10)
                  ON CONFLICT (id) DO NOTHING`);
@@ -354,6 +374,70 @@ async function seedData() {
     const hashedAdminPw = hashPassword('admin123');
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
         ['USR001', 'admin', hashedAdminPw, 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
+
+    // 2. Authentic Stations (Jawa Island Hubs)
+    const kaiStations = [
+        ['GMR', 'GAMBIR', 'JAKARTA', -6.1768, 106.8306, 'JKT'],
+        ['BD', 'BANDUNG', 'BANDUNG', -6.9147, 107.6025, 'BDG'],
+        ['CN', 'CIREBON', 'CIREBON', -6.7053, 108.5554, 'CN'],
+        ['SMT', 'SEMARANG TAWANG', 'SEMARANG', -6.9644, 110.4281, 'SMG'],
+        ['YK', 'YOGYAKARTA', 'YOGYAKARTA', -7.7892, 110.3635, 'YOG'],
+        ['SLO', 'SOLO BALAPAN', 'SURAKARTA', -7.5568, 110.8214, 'SLO'],
+        ['SGU', 'SURABAYA GUBENG', 'SURABAYA', -7.2655, 112.7519, 'SBY'],
+        ['SBI', 'SURABAYA PASARTURI', 'SURABAYA', -7.2458, 112.7331, 'SBY'],
+        ['ML', 'MALANG', 'MALANG', -7.9772, 112.6370, 'MLG']
+    ];
+
+    for (const [id, name, city, lat, lon, code] of kaiStations) {
+        await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota) 
+                     VALUES ($1, $2, $3, $4, $5, $6) 
+                     ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, city=EXCLUDED.city, latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude, kode_kota=EXCLUDED.kode_kota`,
+            [id, name, city, lat, lon, code]);
+    }
+
+    // 3. Train Services
+    const kaiTrains = [
+        ['ARGO BROMO ANGGREK', 'EKSEKUTIF', '1', 'GMR', 'SBI'],
+        ['ARGO WILIS', 'EKSEKUTIF', '5', 'BD', 'SGU'],
+        ['TURANGGA', 'EKSEKUTIF', '65', 'SGU', 'GMR'],
+        ['ARGO PARAHYANGAN', 'EKSEKUTIF', '34', 'GMR', 'BD'],
+        ['MALABAR', 'EKSEKUTIF/EKONOMI', '121', 'ML', 'BD']
+    ];
+
+    for (const [name, cls, num, start, end] of kaiTrains) {
+        await query(`INSERT INTO train_services (name, class, ka_number, stasiun_awal, stasiun_akhir) 
+                     VALUES ($1, $2, $3, $4, $5) 
+                     ON CONFLICT (name) DO UPDATE SET 
+                        class=EXCLUDED.class, 
+                        ka_number=EXCLUDED.ka_number, 
+                        stasiun_awal=EXCLUDED.stasiun_awal, 
+                        stasiun_akhir=EXCLUDED.stasiun_akhir`,
+            [name, cls, num, start, end]);
+    }
+
+    // 4. Initial Schedules (Point-to-Point for Dashboard)
+    const today = new Date().toISOString().split('T')[0];
+    const initialSchedules = [
+        { train: 'ARGO PARAHYANGAN', num: '34', dep: 'GAMBIR', depCode: 'JKT', arr: 'BANDUNG', arrCode: 'BDG', depTime: '08:00', arrTime: '10:45' },
+        { train: 'ARGO BROMO ANGGREK', num: '1', dep: 'GAMBIR', depCode: 'JKT', arr: 'SURABAYA PASARTURI', arrCode: 'SBY', depTime: '08:20', arrTime: '16:30' },
+        { train: 'ARGO WILIS', num: '5', dep: 'BANDUNG', depCode: 'BDG', arr: 'SURABAYA GUBENG', arrCode: 'SBY', depTime: '07:40', arrTime: '17:35' }
+    ];
+
+    for (const s of initialSchedules) {
+        // Query check to prevent duplicates on every restart without UNIQUE constraint on schedules
+        const existing = await getAll('SELECT id FROM schedules WHERE train_name = $1 AND schedule_date = $2 AND waktu_keberangkatan_penjadwalan = $3', 
+            [s.train, today, s.depTime]);
+        
+        if (!existing || existing.length === 0) {
+            await query(`INSERT INTO schedules (
+                train_name, ka_number, schedule_date, 
+                stasiun_keberangkatan, kode_kota_keberangkatan, waktu_keberangkatan_penjadwalan,
+                stasiun_tujuan, kode_kota_tujuan, waktu_kedatangan_penjadwalan,
+                status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ON_TIME')`, 
+            [s.train, s.num, today, s.dep, s.depCode, s.depTime, s.arr, s.arrCode, s.arrTime]);
+        }
+    }
 }
 
 // ============================================================
