@@ -98,10 +98,10 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
     const scrollToCurrentStation = useCallback(() => {
         const route = selectedRouteId ? routes[selectedRouteId] : null;
         if (!route || !stationsListRef.current) return;
-        
+
         const currentIdx = route.current_station_index || 0;
         const stationElement = stationsListRef.current.querySelector(`[data-station-index="${currentIdx}"]`);
-        
+
         if (stationElement) {
             stationElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -114,10 +114,10 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                 fetch(`${API}/api/admin/routes`, { headers: { Authorization: `Bearer ${token}` } }),
                 fetch(`${API}/api/state`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
-            
+
             const d = await rResp.json();
             const sData = await sResp.json();
-            
+
             if (d.success && d.routes) {
                 const keys = Object.keys(d.routes);
                 const enhancedRoutes: Record<string, Route> = {};
@@ -132,7 +132,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     const r = d.routes[key];
                     const stations = r.stations || [];
                     let foundIndex = r.current_station_index;
-                    
+
                     // Always try to recalculate index from live station name as a secondary safeguard
                     if (currentStationName) {
                         const mappedIndex = stations.findIndex((s: any) => isNameMatch(s, currentStationName));
@@ -147,7 +147,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     const conventionalNum = (idx + 1).toString().padStart(2, '0');
                     enhancedRoutes[key] = {
                         ...r,
-                        id: key, 
+                        id: key,
                         name: r.name || key,
                         stations: stations,
                         is_active: r.is_active === true, // Strict boolean from backend
@@ -244,7 +244,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                 console.log('[Map] Style loaded');
                 setMapIsReady(true);
                 // Force a resize just in case the container was initially hidden/0-size
-                setTimeout(() => map.resize(), 50); 
+                setTimeout(() => map.resize(), 50);
             });
 
             map.on('error', (e) => {
@@ -279,15 +279,15 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
 
         try {
             const geojson = JSON.parse(route.geojson);
-            
+
             // Sync Source & Layer
             if (map.getSource('route')) {
                 (map.getSource('route') as maplibregl.GeoJSONSource).setData(geojson);
             } else {
                 map.addSource('route', { type: 'geojson', data: geojson });
                 map.addLayer({
-                    id: 'route-line', 
-                    type: 'line', 
+                    id: 'route-line',
+                    type: 'line',
                     source: 'route',
                     layout: { 'line-join': 'round', 'line-cap': 'round' },
                     paint: { 'line-color': '#ee6f1f', 'line-width': 4 }
@@ -730,30 +730,26 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                             <div ref={mapWrapperRef} className={`relative shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${isMapFullscreen ? 'fixed inset-0 z-[1000]' : 'h-44 border-b border-slate-100'}`}>
                                 {/* The critical map container using callback ref */}
                                 <div ref={mapContainerRef} className="absolute inset-0 bg-slate-100" />
-                                
-                                {!isMapFullscreen && <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none z-10" />}
-                                
+
+                                {!isMapFullscreen && <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent pointer-events-none z-10" />}
+
                                 {/* Standard/Compact Overlay */}
                                 {!isMapFullscreen && (
-                                    <div className="absolute bottom-5 left-6 pointer-events-none">
-                                        <div className="flex items-center gap-2 mb-0.5">
-                                            <div className="text-[9px] font-semibold text-[#ee6f1f] uppercase tracking-widest">Live Route Monitor</div>
-                                            {selectedRoute.is_active && <span className="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 uppercase tracking-tighter"><Lock size={8} /> Operational</span>}
-                                        </div>
+                                    <div className="absolute bottom-5 left-6 pointer-events-none z-20">
                                         <h4 className="text-lg font-semibold text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
                                     </div>
                                 )}
 
                                 {/* Fullscreen Close Button */}
                                 {isMapFullscreen ? (
-                                    <button 
+                                    <button
                                         onClick={toggleMapFullscreen}
                                         className="absolute top-8 right-8 p-4 bg-white/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] hover:bg-white shadow-2xl transition-all z-[1100] active:scale-90"
                                     >
                                         <X size={24} strokeWidth={2.5} />
                                     </button>
                                 ) : (
-                                    <button 
+                                    <button
                                         onClick={toggleMapFullscreen}
                                         title="Fullscreen Map"
                                         className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all z-20 pointer-events-auto"
@@ -814,13 +810,15 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                                     </span>
                                                 </div>
                                                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                                    <motion.div 
+                                                    <motion.div
                                                         initial={{ width: 0 }}
-                                                        animate={{ width: `${(() => {
-                                                            const total = selectedRoute.stations?.length || 0;
-                                                            const curr = selectedRoute.current_station_index || 0;
-                                                            return total > 1 ? Math.round((curr / (total - 1)) * 100) : 0;
-                                                        })()}%` }}
+                                                        animate={{
+                                                            width: `${(() => {
+                                                                const total = selectedRoute.stations?.length || 0;
+                                                                const curr = selectedRoute.current_station_index || 0;
+                                                                return total > 1 ? Math.round((curr / (total - 1)) * 100) : 0;
+                                                            })()}%`
+                                                        }}
                                                         className="h-full bg-[#ee6f1f] rounded-full shadow-[0_0_10px_rgba(238,111,31,0.5)]"
                                                     />
                                                 </div>
@@ -854,7 +852,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                                 <AlertCircle size={12} /> Modifikasi Terkunci
                                             </span>
                                         )}
-                                        <button 
+                                        <button
                                             onClick={scrollToCurrentStation}
                                             className="px-2.5 py-1 bg-[#ee6f1f] text-white text-[9px] font-bold rounded-md shadow-sm hover:bg-[#d45d15] transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
                                         >
