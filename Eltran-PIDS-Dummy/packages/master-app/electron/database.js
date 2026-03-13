@@ -612,8 +612,23 @@ export async function deleteStation(id) {
     } catch (e) { return { error: e.message }; }
 }
 
+/**
+ * Fuzzy name matching to handle slight discrepancies (case, trim, parentheticals)
+ */
+function isNameMatch(a, b) {
+    if (!a || !b) return false;
+    const clean = (s) => s.toString()
+        .toUpperCase()
+        .replace(/\(.*\)/g, '') // Remove parentheticals like (BDG)
+        .replace(/[^A-Z0-9]/g, ' ') // Replace non-alphanum with space
+        .replace(/\s+/g, ' ') // Collapse spaces
+        .trim();
+    return clean(a) === clean(b) || clean(a).includes(clean(b)) || clean(b).includes(clean(a));
+}
+
 export async function getRoutes() {
     const services = await getAll('SELECT * FROM train_services ORDER BY id');
+    const liveState = await getState();
     const routes = {};
     for (const service of services) {
         const dbRoute = await getOne('SELECT * FROM routes WHERE train_service_id = $1', [service.id]);
@@ -629,17 +644,50 @@ export async function getRoutes() {
             stations = stationRows.map(r => r.name);
         }
 
+        const isLive = isNameMatch(service.name, liveState.serviceName);
+        const currentStationName = isLive ? liveState.currentStation : '';
+
         if (dbRoute) {
             const parsed = JSON.parse(dbRoute.geojson || '{}');
+            const routeStations = stations.length > 0 ? stations : (parsed.stations || []);
+            
+            // Dynamically find index if live, otherwise use cached
+            let currentIdx = parsed.current_station_index;
+            if (isLive && currentStationName) {
+                const found = routeStations.findIndex(s => isNameMatch(typeof s === 'string' ? s : s.name, currentStationName));
+                if (found !== -1) currentIdx = found;
+            }
+
             routes[service.name] = {
                 ...parsed,
                 name: service.name,
-                stations: stations.length > 0 ? stations : (parsed.stations || []),
+                stations: routeStations,
                 geojson: dbRoute.geojson,
-                geojson_filename: dbRoute.geojson_filename
+                geojson_filename: dbRoute.geojson_filename,
+                is_active: isLive,
+                current_station: currentStationName,
+                current_station_index: currentIdx,
+                status: isLive ? liveState.status : (parsed.status || 'ON TRACK'),
+                train_number: isLive ? liveState.trainNumber : (service.ka_number || parsed.train_number || '')
             };
         } else {
-            routes[service.name] = { name: service.name, stations: stations, path: '', nodes: [] };
+            // Find index even if no geojson exists if it's live
+            let currentIdx = 0;
+            if (isLive && currentStationName) {
+                const found = stations.findIndex(s => isNameMatch(typeof s === 'string' ? s : s.name, currentStationName));
+                if (found !== -1) currentIdx = found;
+            }
+
+            routes[service.name] = { 
+                name: service.name, 
+                stations: stations, 
+                path: '', 
+                nodes: [],
+                is_active: isLive,
+                current_station: currentStationName,
+                current_station_index: currentIdx,
+                status: isLive ? liveState.status : 'STANDBY'
+            };
         }
     }
     return routes;

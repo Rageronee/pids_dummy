@@ -27,6 +27,7 @@ interface Route {
     scheduled_time?: string;
     delay?: string;
     is_active?: boolean;
+    current_station_index?: number;
 }
 
 export default function RoutesPage({ token, setHeader }: { token: string, setHeader: (node: React.ReactNode) => void }) {
@@ -54,31 +55,94 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
     const { toast, showToast, closeToast } = useToast();
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
+    const stationsListRef = useRef<HTMLDivElement>(null);
+
+    const toggleMapFullscreen = useCallback(() => {
+        if (!mapContainerRef.current) return;
+        if (!document.fullscreenElement) {
+            mapContainerRef.current.requestFullscreen().catch(err => {
+                showToast(`Gagal fullscreen: ${err.message}`, false);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }, [showToast]);
+
+    // Helper for fuzzy matching station names
+    const isNameMatch = (a: string | any, b: string | null | undefined) => {
+        if (!a || !b) return false;
+        const sA = typeof a === 'string' ? a : (a.name || '');
+        const clean = (s: string) => s.toString()
+            .toUpperCase()
+            .replace(/\(.*\)/g, '')
+            .replace(/[^A-Z0-9]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const cA = clean(sA);
+        const cB = clean(b);
+        return cA === cB || cA.includes(cB) || cB.includes(cA);
+    };
+
+    const scrollToCurrentStation = useCallback(() => {
+        const route = selectedRouteId ? routes[selectedRouteId] : null;
+        if (!route || !stationsListRef.current) return;
+        
+        const currentIdx = route.current_station_index || 0;
+        const stationElement = stationsListRef.current.querySelector(`[data-station-index="${currentIdx}"]`);
+        
+        if (stationElement) {
+            stationElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [selectedRouteId, routes]);
 
     const fetchRoutes = useCallback(async () => {
         try {
-            const res = await fetch(`${API}/api/admin/routes`, { headers: { Authorization: `Bearer ${token}` } });
-            const d = await res.json();
-            if (d.success) {
-                const enhancedRoutes: Record<string, Route> = {};
+            // Fetch both routes and current state to be sure
+            const [rResp, sResp] = await Promise.all([
+                fetch(`${API}/api/admin/routes`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`${API}/api/state`, { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+            
+            const d = await rResp.json();
+            const sData = await sResp.json();
+            
+            if (d.success && d.routes) {
                 const keys = Object.keys(d.routes);
+                const enhancedRoutes: Record<string, Route> = {};
+                const currentStationName = sData.currentStation || '';
+                const serviceName = sData.serviceName || '';
+
+                if (currentStationName) {
+                    console.log(`[PIDS Sync] Received current station: "${currentStationName}"`);
+                }
+
                 keys.forEach((key, idx) => {
                     const r = d.routes[key];
-                    // Logic for conventional train numbers vs PLB
-                    const isPLB = idx % 5 === 0;
-                    const conventionalNum = `${Math.floor(Math.random() * 200) + 1}`;
+                    const stations = r.stations || [];
+                    let foundIndex = r.current_station_index;
+                    
+                    // Always try to recalculate index from live station name as a secondary safeguard
+                    if (currentStationName) {
+                        const mappedIndex = stations.findIndex((s: any) => isNameMatch(s, currentStationName));
+                        if (mappedIndex !== -1) {
+                            if (foundIndex !== mappedIndex) {
+                                console.log(`[PIDS Sync] Index mismatch fix for ${key}: DB index ${foundIndex} -> Calculated ${mappedIndex}`);
+                            }
+                            foundIndex = mappedIndex;
+                        }
+                    }
 
+                    const conventionalNum = (idx + 1).toString().padStart(2, '0');
                     enhancedRoutes[key] = {
                         ...r,
-                        status: idx % 3 === 1 ? 'DELAYED' : 'ON TRACK',
-                        type: idx % 4 === 3 ? 'Commuter' : (idx % 4 === 2 ? 'Lokal' : 'Intercity'),
-                        is_active: idx % 3 === 0,
-                        train_number: r.kereta_code || (isPLB ? `PLB ${conventionalNum}A` : `KA ${conventionalNum}`),
-                        units: Math.floor(Math.random() * 10) + 5,
-                        distance: 600 + Math.floor(Math.random() * 200),
-                        occupancy: 80 + Math.floor(Math.random() * 20),
-                        scheduled_time: `${Math.floor(Math.random() * 24).toString().padStart(2, '0')}:00`,
-                        delay: idx % 3 === 1 ? `${Math.floor(Math.random() * 20) + 5}m Delay` : '0m'
+                        id: key, 
+                        name: r.name || key,
+                        stations: stations,
+                        is_active: r.is_active === true, // Strict boolean from backend
+                        current_station_index: foundIndex !== undefined ? foundIndex : 0,
+                        current_station: currentStationName && r.is_active ? currentStationName : (r.current_station || ''),
+                        status: r.status || 'ON TRACK',
+                        train_number: r.train_number || (serviceName === r.name ? sData.trainNumber : '') || `KA ${conventionalNum}`
                     };
                 });
                 setRoutes(enhancedRoutes);
@@ -86,8 +150,27 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     setSelectedRouteId(keys[0]);
                 }
             }
-        } catch { } finally { setLoading(false); }
+        } catch (error) {
+            console.error('Error fetching routes:', error);
+        } finally {
+            setLoading(false);
+        }
     }, [token, selectedRouteId]);
+
+    // Refined Scroll Trigger
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (selectedRouteId && routes[selectedRouteId]) {
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+            scrollTimeoutRef.current = setTimeout(() => {
+                scrollToCurrentStation();
+            }, 300);
+        }
+        return () => {
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        };
+    }, [selectedRouteId, routes, scrollToCurrentStation]);
 
     const fetchMasterStations = useCallback(async () => {
         try {
@@ -123,7 +206,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
             sources: {
                 'carto-voyager': {
                     type: 'raster',
-                    tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}@2x.png'],
+                    tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'],
                     tileSize: 256,
                     attribution: '&copy; CARTO'
                 }
@@ -136,8 +219,16 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
             style: darkStyle,
             center: [107.6191, -6.9175],
             zoom: 6,
-            attributionControl: false
+            pitch: 45,
+            attributionControl: false,
+            trackResize: true
         });
+
+        // Use ResizeObserver for robust sizing regardless of initial layout state
+        const resizeObserver = new ResizeObserver(() => {
+            if (mapRef.current) mapRef.current.resize();
+        });
+        resizeObserver.observe(mapContainerRef.current);
 
         const route = routes[selectedRouteId];
         if (route?.geojson && mapRef.current) {
@@ -145,6 +236,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                 const geojson = JSON.parse(route.geojson);
                 const onMapLoad = () => {
                     if (!mapRef.current) return;
+                    mapRef.current.resize(); // Resize again on load for and extra safety
                     if (mapRef.current.getSource('route')) {
                         (mapRef.current.getSource('route') as maplibregl.GeoJSONSource).setData(geojson);
                     } else {
@@ -171,6 +263,23 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     });
                     if (hasPoints) {
                         mapRef.current.fitBounds(bounds, { padding: 40, duration: 1000 });
+
+                        // Add live location marker
+                        const currentIdx = route.current_station_index || 0;
+                        if (geojson.features) {
+                            const currentStationFeature = geojson.features.find((f: any) =>
+                                f.geometry.type === 'Point' &&
+                                f.properties?.name?.toUpperCase() === route.stations[currentIdx]?.name?.toUpperCase()
+                            );
+
+                            if (currentStationFeature) {
+                                const el = document.createElement('div');
+                                el.className = 'w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-[0_0_20px_rgba(59,130,246,0.8)] animate-pulse relative z-50';
+                                new maplibregl.Marker({ element: el })
+                                    .setLngLat(currentStationFeature.geometry.coordinates)
+                                    .addTo(mapRef.current!);
+                            }
+                        }
                     }
                 };
 
@@ -179,7 +288,11 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
             } catch (e) { console.error("Map GeoJSON error:", e); }
         }
 
-        return () => { mapRef.current?.remove(); mapRef.current = null; };
+        return () => { 
+            resizeObserver.disconnect();
+            mapRef.current?.remove(); 
+            mapRef.current = null; 
+        };
     }, [selectedRouteId, routes]);
 
     useEffect(() => {
@@ -193,6 +306,10 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
         });
         socket.on('db:update', () => {
             console.log('[Socket.IO] Database update received, re-fetching routes...');
+            fetchRoutes();
+        });
+        socket.on('state:update', () => {
+            console.log('[Socket.IO] State update received, re-fetching routes...');
             fetchRoutes();
         });
         return () => {
@@ -417,7 +534,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Column: Route List */}
-                <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pr-6 custom-scrollbar pb-20">
+                <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pr-6 custom-scrollbar pb-20 border-r border-slate-200">
                     <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-2 shrink-0 w-fit">
                         {['All Routes', 'Intercity', 'Commuter', 'Lokal'].map(cat => (
                             <button key={cat} onClick={() => setActiveCategory(cat)}
@@ -471,32 +588,45 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2 border-t border-slate-100 pt-3">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
-                                                <Train size={14} />
-                                            </div>
-                                            <div className="truncate">
-                                                <div className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest truncate">Unit</div>
-                                                <div className="text-xs font-semibold text-[#1d2d6a] truncate">{route.units}</div>
-                                            </div>
+                                    <div className="flex border-t border-slate-100 pt-4 mt-1 flex-col gap-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Trip Progress</span>
+                                            {(() => {
+                                                const totalStations = route.stations?.length || 0;
+                                                const currentIdx = route.current_station_index || 0;
+                                                const progress = totalStations > 1 ? Math.round((currentIdx / (totalStations - 1)) * 100) : 0;
+                                                return (
+                                                    <span className="text-[10px] font-bold text-[#1d2d6a]">{progress}%</span>
+                                                );
+                                            })()}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
-                                                <MapPinned size={14} />
-                                            </div>
-                                            <div className="truncate">
-                                                <div className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest truncate">Dist</div>
-                                                <div className="text-xs font-semibold text-[#1d2d6a] truncate">{route.distance} Km</div>
-                                            </div>
+                                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                            {(() => {
+                                                const totalStations = route.stations?.length || 0;
+                                                const currentIdx = route.current_station_index || 0;
+                                                const progress = totalStations > 1 ? Math.round((currentIdx / (totalStations - 1)) * 100) : 0;
+                                                return (
+                                                    <div
+                                                        className={`h-full transition-all duration-1000 rounded-full ${route.status === 'DELAYED' ? 'bg-amber-500' : 'bg-[#ee6f1f]'
+                                                            }`}
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                );
+                                            })()}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 shrink-0">
-                                                <Users size={14} />
+
+                                        <div className="grid grid-cols-3 gap-2 mt-1">
+                                            <div className="flex items-center gap-1.5 opacity-60">
+                                                <Train size={10} className="text-slate-400" />
+                                                <span className="text-[9px] font-semibold text-slate-500">{route.units}U</span>
                                             </div>
-                                            <div className="truncate">
-                                                <div className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest truncate">Occ</div>
-                                                <div className="text-xs font-semibold text-[#1d2d6a] truncate">{route.occupancy}%</div>
+                                            <div className="flex items-center gap-1.5 opacity-60">
+                                                <MapPinned size={10} className="text-slate-400" />
+                                                <span className="text-[9px] font-semibold text-slate-500">{route.distance}K</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 opacity-60">
+                                                <Users size={10} className="text-slate-400" />
+                                                <span className="text-[9px] font-semibold text-slate-500">{route.occupancy}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -554,7 +684,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                 </div>
 
                 {/* Right Column: Detail Panel */}
-                <div className="w-[65%] flex flex-col bg-white border-l border-slate-200 overflow-hidden h-full">
+                <div className="w-[65%] flex flex-col bg-white overflow-hidden h-full relative">
                     {selectedRoute ? (
                         <>
                             <div className="relative h-44 border-b border-slate-100 shrink-0 overflow-hidden">
@@ -567,13 +697,17 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                     </div>
                                     <h4 className="text-lg font-semibold text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
                                 </div>
-                                <button className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all">
+                                <button 
+                                    onClick={toggleMapFullscreen}
+                                    title="Fullscreen Map"
+                                    className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all z-20 pointer-events-auto"
+                                >
                                     <ExternalLink size={14} />
                                 </button>
                             </div>
 
-                            <div className="flex-1 flex flex-col p-8 overflow-hidden">
-                                <div className="flex items-center justify-between mb-6">
+                            <div className="flex-1 flex flex-col pt-8 pl-8 pr-0 pb-0 overflow-hidden">
+                                <div className="flex items-center justify-between mb-6 pr-8">
                                     <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Route Schedule</h4>
                                     <div className="flex items-center gap-2">
                                         {selectedRoute.is_active && (
@@ -581,112 +715,120 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                                 <AlertCircle size={12} /> Modifikasi Terkunci
                                             </span>
                                         )}
-                                        <span className="px-2.5 py-1 bg-slate-100 text-[#1d2d6a] text-[9px] font-semibold rounded-md border border-slate-200 uppercase tracking-tighter">Real-time Feed</span>
+                                        <button 
+                                            onClick={scrollToCurrentStation}
+                                            className="px-2.5 py-1 bg-[#ee6f1f] text-white text-[9px] font-bold rounded-md shadow-sm hover:bg-[#d45d15] transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                                        >
+                                            <Navigation size={10} /> Cek Posisi
+                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Timeline Container */}
-                                 <div className="flex-1 overflow-hidden relative flex flex-col">
-                                     <div className="flex-1 overflow-y-auto pr-2 thin-scrollbar relative">
-                                         {/* Timeline Line */}
-                                         <div className="absolute left-[4.25rem] top-10 bottom-10 w-1 bg-slate-100 z-0" />
+                                {/* Station List Container */}
+                                <div className="flex-1 overflow-hidden relative flex flex-col">
+                                    <div ref={stationsListRef} className="flex-1 overflow-y-auto pr-6 thin-scrollbar relative">
+                                        {(selectedRoute.stations || []).map((s: any, idx: number) => {
+                                            const stations = selectedRoute.stations || [];
+                                            const isFirst = idx === 0;
+                                            const isLast = idx === stations.length - 1;
 
-                                         {(selectedRoute.stations || []).map((s: any, idx: number) => {
-                                             const stations = selectedRoute.stations || [];
-                                             const isFirst = idx === 0;
-                                             const isLast = idx === stations.length - 1;
-                                             
-                                             // Mocking current position for demo: 2nd station is "Next", 1st is "Passed"
-                                             const currentIdx = 1; 
-                                             const isPassed = idx < currentIdx;
-                                             const isCurrent = idx === currentIdx;
-                                             
-                                             const sName = typeof s === 'string' ? s : s.name;
-                                             const sTime = typeof s === 'string' ? '--:--' : (s.time || '--:--');
-                                             const sPlatform = typeof s === 'string' ? '1' : (s.platform || '1');
+                                            const currentIdx = selectedRoute.current_station_index || 0;
+                                            const isPassed = idx < currentIdx;
+                                            const isCurrent = idx === currentIdx;
 
-                                             return (
-                                                 <div key={idx} className="relative z-10 flex gap-8 pb-12 last:pb-6 group">
-                                                     {/* Time and Label */}
-                                                     <div className="w-20 pt-2 text-right shrink-0">
-                                                         <div className={`text-sm font-bold tracking-tight ${isCurrent ? 'text-[#ee6f1f]' : isPassed ? 'text-slate-400' : 'text-[#1d2d6a]'}`}>
-                                                             {sTime}
-                                                         </div>
-                                                         <div className="text-[9px] font-bold text-slate-300 uppercase tracking-wider mt-1">
-                                                             {isFirst ? 'Origin' : isLast ? 'Terminus' : 'Station'}
-                                                         </div>
-                                                     </div>
+                                            const sName = typeof s === 'string' ? s : s.name;
+                                            const sTime = typeof s === 'string' ? '--:--' : (s.time || '--:--');
+                                            const sPlatform = typeof s === 'string' ? '1' : (s.platform || '1');
 
-                                                     {/* Status Indicator (Circle) */}
-                                                     <div className="relative flex justify-center mt-1.5 shrink-0">
-                                                         {isPassed ? (
-                                                             <div className="w-10 h-10 rounded-full bg-[#1d2d6a] flex items-center justify-center shadow-lg shadow-blue-900/10 border-4 border-slate-50 z-10">
-                                                                 <Check size={14} className="text-white" />
-                                                             </div>
-                                                         ) : isCurrent ? (
-                                                             <div className="w-10 h-10 rounded-full bg-[#ee6f1f] flex items-center justify-center shadow-lg shadow-orange-500/30 border-4 border-slate-50 z-10 relative">
-                                                                 <MapPin size={14} className="text-white" />
-                                                                 <div className="absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20" />
-                                                             </div>
-                                                         ) : (
-                                                             <div className="w-10 h-10 rounded-full bg-slate-50 border-4 border-slate-100 flex items-center justify-center z-10">
-                                                                 <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                                                             </div>
-                                                         )}
-                                                     </div>
+                                            return (
+                                                <div key={idx} data-station-index={idx} className="relative pb-5 last:pb-2">
+                                                    {/* Connection Line Bridging the Gaps */}
+                                                    {!isLast && (
+                                                        <div className={`absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 ${isPassed ? 'bg-slate-200' : 'bg-slate-100'
+                                                            }`} />
+                                                    )}
 
-                                                     {/* Station Details Card */}
-                                                     <div className={`flex-1 min-w-0 bg-white rounded-2xl p-5 border transition-all duration-300 ${isCurrent ? 'border-orange-200 shadow-md shadow-orange-500/5' : 'border-slate-100 shadow-sm'}`}>
-                                                         <div className="flex justify-between items-start">
-                                                             <div className="flex flex-col min-w-0">
-                                                                 <h5 className={`text-base font-bold truncate mb-1 ${isPassed ? 'text-slate-400' : 'text-[#1d2d6a]'}`}>
-                                                                     {sName}
-                                                                 </h5>
-                                                                 <div className="flex items-center gap-4">
-                                                                     <div className="flex items-center gap-1.5 text-slate-400">
-                                                                         <Clock size={12} />
-                                                                         <span className="text-[11px] font-semibold">{sTime}</span>
-                                                                     </div>
-                                                                     <div className="flex items-center gap-1.5 text-slate-400">
-                                                                         <Layers size={12} />
-                                                                         <span className="text-[11px] font-semibold">Platform {sPlatform}</span>
-                                                                     </div>
-                                                                 </div>
-                                                             </div>
-                                                             
-                                                             {isPassed && (
-                                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-1">DEPARTED</span>
-                                                             )}
-                                                             {isCurrent && (
-                                                                 <span className="text-[10px] font-bold text-[#ee6f1f] bg-orange-50 px-2 py-0.5 rounded-md uppercase tracking-widest">NEXT</span>
-                                                             )}
-                                                         </div>
-                                                     </div>
-                                                 </div>
-                                             );
-                                         })}
-                                     </div>
+                                                    <div className={`relative z-10 flex items-center p-5 bg-white rounded-[24px] border transition-all duration-300 shadow-sm ${isCurrent ? 'border-orange-200 shadow-orange-500/10 ring-1 ring-orange-200/50' : 'border-slate-100 hover:border-slate-200'
+                                                        }`}>
+                                                        {/* Integrated Circle Indicator */}
+                                                        <div className="mr-5 flex flex-col items-center justify-center shrink-0">
+                                                            <div className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-500 ${isCurrent ? 'bg-[#ee6f1f] border-[#ee6f1f] shadow-[0_0_12px_rgba(238,111,31,0.4)] scale-110' :
+                                                                isPassed ? 'bg-white border-slate-300' : 'bg-white border-slate-200'
+                                                                }`}>
+                                                                {isPassed && <div className="w-full h-full flex items-center justify-center"><div className="w-1 h-1 bg-slate-300 rounded-full" /></div>}
+                                                            </div>
+                                                        </div>
 
-                                     {/* Journey Progress Bar */}
-                                     {selectedRoute.stations && selectedRoute.stations.length > 0 && (
-                                         <div className="mt-8 pt-6 border-t border-slate-100 shrink-0">
-                                             <div className="flex justify-between items-center mb-3">
-                                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trip Progress</div>
-                                                 <div className="text-xs font-bold text-[#1d2d6a]">40% Completed</div>
-                                             </div>
-                                             <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
-                                                 <div 
-                                                     className="h-full bg-gradient-to-r from-[#1d2d6a] to-[#ee6f1f] rounded-full transition-all duration-1000"
-                                                     style={{ width: '40%' }}
-                                                 />
-                                             </div>
-                                         </div>
-                                 </div>
-                             </div>
-                         </>
-                     ) : (
-                         <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-                             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Navigation size={32} className="text-slate-200" /></div>
+                                                        <div className="flex-1 flex justify-between items-center min-w-0">
+                                                            <div className="flex flex-col min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className={`text-[9px] font-bold uppercase tracking-[0.15em] ${isCurrent ? 'text-[#ee6f1f]' : isPassed ? 'text-slate-300' : 'text-slate-400'
+                                                                        }`}>
+                                                                        {isFirst ? 'Origin' : isLast ? 'Terminus' : 'Station'}
+                                                                    </span>
+                                                                    {isCurrent && <div className="w-1 h-1 rounded-full bg-[#ee6f1f] animate-pulse" />}
+                                                                </div>
+                                                                <h5 className={`text-base font-bold leading-tight truncate ${isPassed ? 'text-slate-400' : 'text-[#1d2d6a]'}`}>
+                                                                    {sName}
+                                                                </h5>
+
+                                                                {/* Status Badge */}
+                                                                {(isPassed || isCurrent) && (
+                                                                    <div className="flex justify-start mt-2">
+                                                                        <span className={`text-[8px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded ${isPassed ? 'bg-slate-50 text-slate-300' : 'bg-orange-50 text-[#ee6f1f]'
+                                                                            }`}>
+                                                                            {isPassed ? 'Departed' : 'Arriving Next'}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex flex-col items-end shrink-0 ml-4">
+                                                                <div className={`text-sm font-bold tracking-tight ${isCurrent ? 'text-[#ee6f1f]' : isPassed ? 'text-slate-400' : 'text-[#1d2d6a]'}`}>
+                                                                    {sTime}
+                                                                </div>
+                                                                <div className="flex items-center gap-1.5 mt-1">
+                                                                    <Layers size={10} className="text-slate-300" />
+                                                                    <span className="text-[10px] font-bold text-slate-300 uppercase">PF {sPlatform}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Journey Progress Bar */}
+                                    {selectedRoute.stations && selectedRoute.stations.length > 0 && (
+                                        <div className="mt-6 pt-6 border-t border-slate-100 shrink-0 pr-8 pb-8">
+                                            {(() => {
+                                                const totalStations = selectedRoute.stations.length;
+                                                const currentIdx = selectedRoute.current_station_index || 0;
+                                                const progressPercent = totalStations > 1 ? Math.round((currentIdx / (totalStations - 1)) * 100) : 0;
+                                                return (
+                                                    <>
+                                                        <div className="flex justify-between items-center mb-3">
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trip Progress</div>
+                                                            <div className="text-xs font-bold text-[#1d2d6a]">{progressPercent}% Completed</div>
+                                                        </div>
+                                                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fcd34d] rounded-full transition-all duration-1000"
+                                                                style={{ width: `${progressPercent}%` }}
+                                                            />
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Navigation size={32} className="text-slate-200" /></div>
                             <h4 className="text-base font-semibold text-[#1d2d6a]">Select a Route</h4>
                             <p className="text-xs font-bold text-slate-400 mt-1 max-w-[200px]">Click any route card on the left to monitor live status</p>
                         </div>
