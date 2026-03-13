@@ -4,6 +4,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- Fix for MapLibre GL Blank Canvas Issue with Tailwind --- */
+/* Tailwind's preflight resets break MapLibre's canvas sizing */
+.maplibregl-map {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+}
+.maplibregl-canvas-container,
+.maplibregl-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    outline: none;
+}
+.maplibregl-control-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+/* ------------------------------------------------------------ */
+
 * {
     box-sizing: border-box;
 }

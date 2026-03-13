@@ -12,7 +12,6 @@ import { API } from '../config';
 import { useToast } from '../hooks/useToast';
 import { ConfirmModal, ToastNotification } from '../components/SharedUI';
 import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface Route {
     name: string;
@@ -53,14 +52,27 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
     const [connected, setConnected] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const { toast, showToast, closeToast } = useToast();
-    const mapContainerRef = useRef<HTMLDivElement>(null);
+    // Map refs and state
+    const mapWrapperRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
+    const markerRef = useRef<maplibregl.Marker | null>(null);
     const stationsListRef = useRef<HTMLDivElement>(null);
+    const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+    const [mapIsReady, setMapIsReady] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsMapFullscreen(!!document.fullscreenElement);
+            if (mapRef.current) mapRef.current.resize();
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
 
     const toggleMapFullscreen = useCallback(() => {
-        if (!mapContainerRef.current) return;
+        if (!mapWrapperRef.current) return;
         if (!document.fullscreenElement) {
-            mapContainerRef.current.requestFullscreen().catch(err => {
+            mapWrapperRef.current.requestFullscreen().catch(err => {
                 showToast(`Gagal fullscreen: ${err.message}`, false);
             });
         } else {
@@ -197,103 +209,131 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
         load();
     }, [fetchRoutes, fetchMasterStations, fetchDbStations]);
 
-    // Map initialization
-    useEffect(() => {
-        if (!selectedRouteId || !mapContainerRef.current) return;
-
-        const darkStyle: maplibregl.StyleSpecification = {
-            version: 8,
-            sources: {
-                'carto-voyager': {
-                    type: 'raster',
-                    tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'],
-                    tileSize: 256,
-                    attribution: '&copy; CARTO'
-                }
-            },
-            layers: [{ id: 'carto-layer', type: 'raster', source: 'carto-voyager', minzoom: 0, maxzoom: 19 }]
-        };
-
-        mapRef.current = new maplibregl.Map({
-            container: mapContainerRef.current,
-            style: darkStyle,
-            center: [107.6191, -6.9175],
-            zoom: 6,
-            pitch: 45,
-            attributionControl: false,
-            trackResize: true
-        });
-
-        // Use ResizeObserver for robust sizing regardless of initial layout state
-        const resizeObserver = new ResizeObserver(() => {
-            if (mapRef.current) mapRef.current.resize();
-        });
-        resizeObserver.observe(mapContainerRef.current);
-
-        const route = routes[selectedRouteId];
-        if (route?.geojson && mapRef.current) {
-            try {
-                const geojson = JSON.parse(route.geojson);
-                const onMapLoad = () => {
-                    if (!mapRef.current) return;
-                    mapRef.current.resize(); // Resize again on load for and extra safety
-                    if (mapRef.current.getSource('route')) {
-                        (mapRef.current.getSource('route') as maplibregl.GeoJSONSource).setData(geojson);
-                    } else {
-                        mapRef.current.addSource('route', { type: 'geojson', data: geojson });
-                        mapRef.current.addLayer({
-                            id: 'route-line', type: 'line', source: 'route',
-                            layout: { 'line-join': 'round', 'line-cap': 'round' },
-                            paint: { 'line-color': '#ee6f1f', 'line-width': 4 }
-                        });
-                    }
-
-                    const bounds = new maplibregl.LngLatBounds();
-                    let hasPoints = false;
-                    geojson.features.forEach((f: any) => {
-                        if (f.geometry.type === 'Point') {
-                            bounds.extend(f.geometry.coordinates);
-                            hasPoints = true;
-                        } else if (f.geometry.type === 'LineString') {
-                            f.geometry.coordinates.forEach((c: any) => {
-                                bounds.extend(c);
-                                hasPoints = true;
-                            });
-                        }
-                    });
-                    if (hasPoints) {
-                        mapRef.current.fitBounds(bounds, { padding: 40, duration: 1000 });
-
-                        // Add live location marker
-                        const currentIdx = route.current_station_index || 0;
-                        if (geojson.features) {
-                            const currentStationFeature = geojson.features.find((f: any) =>
-                                f.geometry.type === 'Point' &&
-                                f.properties?.name?.toUpperCase() === route.stations[currentIdx]?.name?.toUpperCase()
-                            );
-
-                            if (currentStationFeature) {
-                                const el = document.createElement('div');
-                                el.className = 'w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-[0_0_20px_rgba(59,130,246,0.8)] animate-pulse relative z-50';
-                                new maplibregl.Marker({ element: el })
-                                    .setLngLat(currentStationFeature.geometry.coordinates)
-                                    .addTo(mapRef.current!);
-                            }
-                        }
-                    }
-                };
-
-                if (mapRef.current.loaded()) onMapLoad();
-                else mapRef.current.on('load', onMapLoad);
-            } catch (e) { console.error("Map GeoJSON error:", e); }
+    // Use a Callback Ref to guarantee initialization EXACTLY when the div exists
+    const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
+        if (!node) {
+            // Unmount: cleanup map
+            if (mapRef.current) {
+                console.log('[Map] Container unmounted, removing map');
+                mapRef.current.remove();
+                mapRef.current = null;
+                setMapIsReady(false);
+            }
+            return;
         }
 
-        return () => { 
-            resizeObserver.disconnect();
-            mapRef.current?.remove(); 
-            mapRef.current = null; 
-        };
-    }, [selectedRouteId, routes]);
+        // Mount: initialize map if it hasn't been already
+        if (mapRef.current) return;
+
+        console.log('[Map] Container mounted, initializing...');
+        try {
+            const map = new maplibregl.Map({
+                container: node,
+                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                center: [106.8272, -6.1751],
+                zoom: 12,
+                pitch: 45,
+                attributionControl: false,
+                trackResize: true,
+                antialias: true
+            });
+
+            mapRef.current = map;
+
+            map.on('load', () => {
+                console.log('[Map] Style loaded');
+                setMapIsReady(true);
+                // Force a resize just in case the container was initially hidden/0-size
+                setTimeout(() => map.resize(), 50); 
+            });
+
+            map.on('error', (e) => {
+                console.error('[Map] Error:', e);
+            });
+
+            // Handle resizes natively
+            const ro = new ResizeObserver(() => {
+                if (mapRef.current) mapRef.current.resize();
+            });
+            ro.observe(node);
+
+            // Cleanup ResizeObserver when the map container is destroyed
+            const originalRemove = map.remove.bind(map);
+            map.remove = () => {
+                ro.disconnect();
+                originalRemove();
+            };
+
+        } catch (e) {
+            console.error('[Map] Init crash:', e);
+        }
+    }, [/* No dependencies, this function shouldn't recreate unless necessary */]);
+
+    // Map content updates (Sync with route data)
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !mapIsReady || !selectedRouteId) return;
+
+        const route = routes[selectedRouteId];
+        if (!route?.geojson) return;
+
+        try {
+            const geojson = JSON.parse(route.geojson);
+            
+            // Sync Source & Layer
+            if (map.getSource('route')) {
+                (map.getSource('route') as maplibregl.GeoJSONSource).setData(geojson);
+            } else {
+                map.addSource('route', { type: 'geojson', data: geojson });
+                map.addLayer({
+                    id: 'route-line', 
+                    type: 'line', 
+                    source: 'route',
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: { 'line-color': '#ee6f1f', 'line-width': 4 }
+                });
+            }
+
+            // Sync Marker
+            if (markerRef.current) {
+                markerRef.current.remove();
+            }
+
+            const currentIdx = route.current_station_index || 0;
+            const currentStationFeature = geojson.features.find((f: any) =>
+                f.geometry.type === 'Point' &&
+                f.properties?.name?.toUpperCase() === route.stations[currentIdx]?.name?.toUpperCase()
+            );
+
+            if (currentStationFeature) {
+                const el = document.createElement('div');
+                el.className = 'w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-[0_0_20px_rgba(59,130,246,0.8)] animate-pulse relative z-50';
+                markerRef.current = new maplibregl.Marker({ element: el })
+                    .setLngLat(currentStationFeature.geometry.coordinates)
+                    .addTo(map);
+            }
+
+            // Sync Bounds
+            const bounds = new maplibregl.LngLatBounds();
+            let hasAny = false;
+            geojson.features.forEach((f: any) => {
+                if (f.geometry.type === 'Point') {
+                    bounds.extend(f.geometry.coordinates);
+                    hasAny = true;
+                } else if (f.geometry.type === 'LineString') {
+                    f.geometry.coordinates.forEach((c: any) => {
+                        bounds.extend(c);
+                        hasAny = true;
+                    });
+                }
+            });
+            if (hasAny) {
+                map.fitBounds(bounds, { padding: 50, duration: 1500 });
+            }
+        } catch (e) {
+            console.error("[Map] Logic error:", e);
+        }
+    }, [selectedRouteId, routes, mapIsReady]);
 
     useEffect(() => {
         const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
@@ -687,23 +727,122 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                 <div className="w-[65%] flex flex-col bg-white overflow-hidden h-full relative">
                     {selectedRoute ? (
                         <>
-                            <div className="relative h-44 border-b border-slate-100 shrink-0 overflow-hidden">
-                                <div ref={mapContainerRef} className="absolute inset-0" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
-                                <div className="absolute bottom-5 left-6 pointer-events-none">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <div className="text-[9px] font-semibold text-[#ee6f1f] uppercase tracking-widest">Live Route Monitor</div>
-                                        {selectedRoute.is_active && <span className="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 uppercase tracking-tighter"><Lock size={8} /> Operational</span>}
+                            <div ref={mapWrapperRef} className={`relative shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${isMapFullscreen ? 'fixed inset-0 z-[1000]' : 'h-44 border-b border-slate-100'}`}>
+                                {/* The critical map container using callback ref */}
+                                <div ref={mapContainerRef} className="absolute inset-0 bg-slate-100" />
+                                
+                                {!isMapFullscreen && <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none z-10" />}
+                                
+                                {/* Standard/Compact Overlay */}
+                                {!isMapFullscreen && (
+                                    <div className="absolute bottom-5 left-6 pointer-events-none">
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <div className="text-[9px] font-semibold text-[#ee6f1f] uppercase tracking-widest">Live Route Monitor</div>
+                                            {selectedRoute.is_active && <span className="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 uppercase tracking-tighter"><Lock size={8} /> Operational</span>}
+                                        </div>
+                                        <h4 className="text-lg font-semibold text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
                                     </div>
-                                    <h4 className="text-lg font-semibold text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
-                                </div>
-                                <button 
-                                    onClick={toggleMapFullscreen}
-                                    title="Fullscreen Map"
-                                    className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all z-20 pointer-events-auto"
-                                >
-                                    <ExternalLink size={14} />
-                                </button>
+                                )}
+
+                                {/* Fullscreen Close Button */}
+                                {isMapFullscreen ? (
+                                    <button 
+                                        onClick={toggleMapFullscreen}
+                                        className="absolute top-8 right-8 p-4 bg-white/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] hover:bg-white shadow-2xl transition-all z-[1100] active:scale-90"
+                                    >
+                                        <X size={24} strokeWidth={2.5} />
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={toggleMapFullscreen}
+                                        title="Fullscreen Map"
+                                        className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all z-20 pointer-events-auto"
+                                    >
+                                        <ExternalLink size={14} />
+                                    </button>
+                                )}
+
+                                {/* Fullscreen Info Panel */}
+                                {isMapFullscreen && (
+                                    <div className="absolute bottom-10 left-10 p-8 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/20 max-w-md w-full z-[1100]">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-3 bg-orange-50 text-[#ee6f1f] rounded-2xl">
+                                                <Train size={24} />
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Operating Route</div>
+                                                <h3 className="text-2xl font-bold text-[#1d2d6a] tracking-tight">{selectedRoute.name}</h3>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                            <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Train Number</div>
+                                                <div className="text-sm font-bold text-[#1d2d6a]">{selectedRoute.train_number}</div>
+                                            </div>
+                                            <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</div>
+                                                <div className={`text-sm font-bold ${selectedRoute.status === 'ON TRACK' ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {selectedRoute.status}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-end">
+                                                <div className="space-y-1">
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Current Location</div>
+                                                    <div className="text-base font-bold text-[#1d2d6a]">
+                                                        {selectedRoute.stations[selectedRoute.current_station_index || 0]?.name || 'Unknown'}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Next Sync</div>
+                                                    <div className="text-sm font-bold text-[#ee6f1f]">LIVE</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
+                                                    <span>Trip Progress</span>
+                                                    <span>
+                                                        {(() => {
+                                                            const total = selectedRoute.stations?.length || 0;
+                                                            const curr = selectedRoute.current_station_index || 0;
+                                                            return total > 1 ? Math.round((curr / (total - 1)) * 100) : 0;
+                                                        })()}%
+                                                    </span>
+                                                </div>
+                                                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                    <motion.div 
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${(() => {
+                                                            const total = selectedRoute.stations?.length || 0;
+                                                            const curr = selectedRoute.current_station_index || 0;
+                                                            return total > 1 ? Math.round((curr / (total - 1)) * 100) : 0;
+                                                        })()}%` }}
+                                                        className="h-full bg-[#ee6f1f] rounded-full shadow-[0_0_10px_rgba(238,111,31,0.5)]"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-3 pt-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Distance</span>
+                                                    <span className="text-xs font-bold text-[#1d2d6a]">{selectedRoute.distance} KM</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Occupancy</span>
+                                                    <span className="text-xs font-bold text-[#1d2d6a]">{selectedRoute.occupancy}%</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Units</span>
+                                                    <span className="text-xs font-bold text-[#1d2d6a]">{selectedRoute.units} Unit</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex-1 flex flex-col pt-8 pl-8 pr-0 pb-0 overflow-hidden">
