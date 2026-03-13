@@ -311,11 +311,11 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                             <div className="space-y-8">
                                 <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                                     {/* Section 1: Basic Information */}
-                                    <div className="p-4 border-b bg-slate-50/50 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                                            <Info size={16} />
+                                    <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
+                                        <div className="text-[#ee6f1f]">
+                                            <Info size={24} />
                                         </div>
-                                        <h3 className="font-bold text-slate-700">Basic Information</h3>
+                                        <span className="font-bold text-slate-700">1. Basic Information</span>
                                     </div>
                                     <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                                         <div className="space-y-2">
@@ -338,10 +338,10 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
 
                                     {/* Section 2: Location & Mapping */}
                                     <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                                            <MapPin size={16} />
+                                        <div className="text-[#ee6f1f]">
+                                            <MapPin size={24} />
                                         </div>
-                                        <h3 className="font-bold text-slate-700">Location & Mapping</h3>
+                                        <h3 className="font-bold text-slate-700">2. Location & Mapping</h3>
                                     </div>
                                     <div className="p-8 space-y-8">
                                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -362,25 +362,19 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Latitude</label>
                                                     <div className="relative">
                                                         <input type="number" step="0.000001" value={form.latitude} onChange={e => setForm({ ...form, latitude: Number(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-4 py-3.5 text-sm font-mono focus:border-blue-500 outline-none transition-all" />
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
-                                                            <CheckCircle2 size={16} />
-                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Longitude</label>
                                                     <div className="relative">
                                                         <input type="number" step="0.000001" value={form.longitude} onChange={e => setForm({ ...form, longitude: Number(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-4 py-3.5 text-sm font-mono focus:border-blue-500 outline-none transition-all" />
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
-                                                            <CheckCircle2 size={16} />
-                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="p-5 bg-blue-50 rounded-xl flex gap-4 border border-blue-100">
                                                     <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white flex-shrink-0 mt-0.5">
                                                         <Info size={12} />
                                                     </div>
-                                                    <p className="text-[11px] text-blue-800 leading-relaxed font-semibold">
+                                                    <p className="text-[12px] text-blue-800 leading-relaxed font-semibold">
                                                         Coordinates are used for the PIDS real-time map synchronization across the network. Ensure markers are precise.
                                                     </p>
                                                 </div>
@@ -441,10 +435,10 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
 
                                     {/* Section 3: Media & Attachments */}
                                     <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                                            <Monitor size={16} />
+                                        <div className="text-[#ee6f1f]">
+                                            <Monitor size={24} />
                                         </div>
-                                        <h3 className="font-bold text-slate-700">Media & Attachments</h3>
+                                        <h3 className="font-bold text-slate-700">3.     Media & Attachments</h3>
                                     </div>
                                     <div className="p-8 space-y-8">
                                         <div className="border-2 border-dashed border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center space-y-4 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer bg-slate-50/30 group">
