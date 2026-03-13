@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     <div className="bg-red-50 p-8 rounded-full mb-8">
                         <AlertCircle size={80} className="text-red-500" />
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight text-[#1d2d6a] mb-4">
+                    <h1 className="text-4xl font-bold tracking-tight text-[#1d2d6a] mb-4">
                         Controller Interface Error
                     </h1>
                     <p className="text-xl font-medium text-slate-500 max-w-lg leading-relaxed mb-10">
@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
                     <button
                         onClick={this.handleReset}
-                        className="flex items-center gap-3 px-8 py-4 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-2xl font-black tracking-wider transition-all active:scale-95 shadow-xl shadow-orange-900/20"
+                        className="flex items-center gap-3 px-8 py-4 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-2xl font-bold tracking-wider transition-all active:scale-95 shadow-xl shadow-orange-900/20"
                     >
                         <RefreshCcw size={20} />
                         Reload Interface

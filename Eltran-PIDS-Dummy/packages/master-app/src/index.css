@@ -42,7 +42,7 @@
     }
 
     .kai-sidebar-item {
-        @apply flex items-center gap-4 px-6 py-4 text-slate-300 hover:text-white hover:bg-white/10 transition-colors text-lg font-bold;
+        @apply flex items-center gap-4 px-6 py-4 text-slate-300 hover:text-white hover:bg-white/10 transition-colors text-lg font-semibold;
     }
 
     .kai-sidebar-item.active {

@@ -70,7 +70,7 @@ const TVMonitor = React.memo(function TVMonitor({
                             <div className="flex-1 flex flex-col justify-center items-center px-12 relative z-20 -mt-8">
                                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center w-full max-w-5xl">
                                     <h3 className="text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md">{tvDisplayMode === 'current' ? 'Current Station' : 'NEXT STATION'}</h3>
-                                    <h3 className="text-[8vw] font-black text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] mb-6">{tvDisplayMode === 'current' ? currentStation : nextStation}</h3>
+                                    <h3 className="text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] mb-6">{tvDisplayMode === 'current' ? currentStation : nextStation}</h3>
                                     <div className="flex items-center justify-center font-sans">
                                         <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
                                             <span className="text-[13px] font-medium text-white/90 mb-1">Service</span>
@@ -104,7 +104,7 @@ const TVMonitor = React.memo(function TVMonitor({
                                     <div className="flex-1 flex items-center justify-center w-full h-full bg-black">
                                         <video key={videoUrl} src={videoUrl} autoPlay={data?.isPlaying ?? false} loop muted={data?.muteVideo ?? false} className="w-full h-full object-contain" ref={(el) => { if (el) { if (data?.isPlaying !== undefined) { if (data.isPlaying && el.paused) el.play().catch(() => { }); if (!data.isPlaying && !el.paused) el.pause(); } el.volume = (data?.volume ?? 50) / 100; } }} />
                                         <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
-                                            <div className={`w-2 h-2 rounded-full ${data?.isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} /><span className="text-[10px] font-black">{data?.isPlaying ? 'Now Playing' : 'Paused'}: {activeFile}</span>
+                                            <div className={`w-2 h-2 rounded-full ${data?.isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} /><span className="text-[10px] font-bold">{data?.isPlaying ? 'Now Playing' : 'Paused'}: {activeFile}</span>
                                         </div>
                                     </div>
                                 );

@@ -858,31 +858,31 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 <div className="p-8 xl:w-[38%] bg-slate-50 border-b xl:border-b-0 xl:border-r border-slate-200 flex flex-col">
                     <div className="flex items-center gap-3 mb-6 shrink-0">
                         <div className="text-[#ee6f1f]"><Train size={24} /></div>
-                        <h3 className="font-black text-[#1d2d6a] text-xs uppercase tracking-wider">Status Perjalanan</h3>
+                        <h3 className="font-bold text-[#1d2d6a] text-xs uppercase tracking-wider">Status Perjalanan</h3>
                     </div>
 
                     <div className="flex flex-col gap-4 flex-1 justify-center">
                         {/* Identitas */}
                         <div className="flex justify-between items-center bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">No KA / Nama</span>
-                                <span className="text-xl font-black text-[#1d2d6a]">KA {activeTrainName}</span>
+                                <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">No KA / Nama</span>
+                                <span className="text-xl font-bold text-[#1d2d6a]">KA {activeTrainName}</span>
                             </div>
                             <div className="flex flex-col text-right">
-                                <span className="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Relasi</span>
-                                <span className="text-xl font-black text-[#1d2d6a]">{relasiCode}</span>
+                                <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Relasi</span>
+                                <span className="text-xl font-bold text-[#1d2d6a]">{relasiCode}</span>
                             </div>
                         </div>
 
                         {/* Berangkat & Tiba */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="text-[10px] font-bold text-slate-400 block mb-1 uppercase tracking-wider">Berangkat</span>
-                                <span className="text-[15px] font-black text-[#1d2d6a]">{departureLabel}</span>
+                                <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Berangkat</span>
+                                <span className="text-[15px] font-bold text-[#1d2d6a]">{departureLabel}</span>
                             </div>
                             <div className="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="text-[10px] font-bold text-slate-400 block mb-1 uppercase tracking-wider">Tiba</span>
-                                <span className="text-[15px] font-black text-[#1d2d6a]">{arrivalLabel}</span>
+                                <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Tiba</span>
+                                <span className="text-[15px] font-bold text-[#1d2d6a]">{arrivalLabel}</span>
                             </div>
                         </div>
 
@@ -894,10 +894,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     <Train size={22} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-0.5">
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-0.5">
                                         Posisi Terkini
                                     </span>
-                                    <span className="text-base font-black text-[#1d2d6a] uppercase tracking-tight">
+                                    <span className="text-base font-bold text-[#1d2d6a] uppercase tracking-tight">
                                         {data?.currentStation || firstStation}
                                     </span>
                                 </div>
@@ -909,24 +909,24 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     {/* Abstract BG Decor */}
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
                                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12 group-hover:scale-125 transition-transform duration-1000" />
-                                    <span className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-2">
                                         TUJUAN BERIKUTNYA
                                     </span>
                                     <div className="relative z-10 flex flex-col gap-5">
-                                        <h4 className="text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                                        <h4 className="text-2xl font-bold text-white uppercase tracking-tight leading-tight">
                                             {nextStationName}
                                         </h4>
 
                                         <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4 mt-1">
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[9px] font-black text-white/50 uppercase tracking-[0.15em]">Jarak Target</span>
-                                                <div className="text-lg font-black text-white flex items-baseline gap-1">
+                                                <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.15em]">Jarak Target</span>
+                                                <div className="text-lg font-bold text-white flex items-baseline gap-1">
                                                     {distToNext}
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1 border-l border-white/10 pl-5">
-                                                <span className="text-[9px] font-black text-white/50 uppercase tracking-[0.15em]">Estimasi (ETA)</span>
-                                                <div className="text-lg font-black text-[#ee6f1f] drop-shadow-[0_0_10px_rgba(238,111,31,0.3)]">
+                                                <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.15em]">Estimasi (ETA)</span>
+                                                <div className="text-lg font-bold text-[#ee6f1f] drop-shadow-[0_0_10px_rgba(238,111,31,0.3)]">
                                                     {etaTime}
                                                 </div>
                                             </div>
@@ -942,32 +942,32 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     <div className="flex items-center justify-between mb-6 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="text-[#ee6f1f]"><Satellite size={24} /></div>
-                            <h3 className="font-black text-[#1d2d6a] text-xs uppercase tracking-wider">Telemetri Satelit (GPS)</h3>
+                            <h3 className="font-bold text-[#1d2d6a] text-xs uppercase tracking-wider">Telemetri Satelit (GPS)</h3>
                         </div>
-                        <span className="text-[12px] font-black bg-slate-100 text-slate-700 px-3.5 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2 uppercase tracking-widest">
+                        <span className="text-[12px] font-bold bg-slate-100 text-slate-700 px-3.5 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2 uppercase tracking-widest">
                             TANGGAL: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </span>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                         <div className="bg-gradient-to-r from-[#ee6f1f] to-[#d46832] p-5 sm:p-6 rounded-[1.5rem] border shadow-md col-span-2 lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="relative z-10 flex flex-col">
-                                <div className="text-lg text-white font-black mb-1 flex items-center gap-2">
+                                <div className="text-lg text-white font-bold mb-1 flex items-center gap-2">
                                     Kecepatan
                                 </div>
-                                <div className="text-xs text-white/90 font-bold uppercase tracking-widest">Realtime Speed (GPS)</div>
+                                <div className="text-xs text-white/90 font-semibold uppercase tracking-widest">Realtime Speed (GPS)</div>
                             </div>
-                            <div className="text-5xl font-mono font-black text-white leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
-                                {(data?.speed || 0).toFixed(1)}<span className="text-sm font-sans ml-3 text-white/90 font-black uppercase">km/h</span>
+                            <div className="text-5xl font-mono font-bold text-white leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
+                                {(data?.speed || 0).toFixed(1)}<span className="text-sm font-sans ml-3 text-white/90 font-bold uppercase">km/h</span>
                             </div>
                         </div>
 
                         {/* Longitude */}
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-bold mb-2 flex justify-between items-center uppercase tracking-wider">
+                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
                                 Longitude <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-black text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-black px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Bujur Timur
                                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -975,11 +975,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Latitude */}
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-bold mb-2 flex justify-between items-center uppercase tracking-wider">
+                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
                                 Latitude <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-black text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-black px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
                                 Garis Lintang Selatan
                                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -987,11 +987,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Haluan */}
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-bold mb-2 flex justify-between items-center uppercase tracking-wider">
+                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
                                 Haluan (Dir) <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-black text-[#1d2d6a]">{simGps.heading.toFixed(2)}&deg;</div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-black px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a]">{simGps.heading.toFixed(2)}&deg;</div>
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
                                 Arah Orientasi KA
                                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -999,11 +999,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Ketinggian */}
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-bold mb-2 flex justify-between items-center uppercase tracking-wider">
+                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
                                 Elevasi <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-black text-[#1d2d6a] flex items-baseline gap-1.5">{data?.altitude || 0} <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">MDPL</span></div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-black px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a] flex items-baseline gap-1.5">{data?.altitude || 0} <span className="text-xs text-slate-400 font-semibold uppercase tracking-widest">MDPL</span></div>
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
                                 Ketinggian Permukaan
                                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -1011,7 +1011,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Radius Luar */}
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-bold mb-2 flex justify-between items-center uppercase tracking-wider">
+                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
                                 Rad Luar <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
                             </div>
                             <div className="flex items-center gap-2">
@@ -1021,11 +1021,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     onChange={(e) => setOuterRadius(Number(e.target.value))}
                                     onBlur={sendGeofencingUpdate}
                                     onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
-                                    className="w-full max-w-[6rem] bg-white border border-slate-200 rounded-lg px-2 py-1 text-lg sm:text-xl font-mono font-black text-[#1d2d6a] transition-colors focus:outline-none focus:border-[#ee6f1f] focus:ring-1 focus:ring-[#ee6f1f] shadow-inner"
+                                    className="w-full max-w-[6rem] bg-white border border-slate-200 rounded-lg px-2 py-1 text-lg sm:text-xl font-mono font-bold text-[#1d2d6a] transition-colors focus:outline-none focus:border-[#ee6f1f] focus:ring-1 focus:ring-[#ee6f1f] shadow-inner"
                                 />
-                                <span className="text-[11px] sm:text-xs text-slate-500 font-bold uppercase tracking-widest">Meter</span>
+                                <span className="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-widest">Meter</span>
                             </div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-black px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
                                 Batas Toleransi Jarak
                                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -1033,7 +1033,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Radius Dalam */}
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-bold mb-2 flex justify-between items-center uppercase tracking-wider">
+                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
                                 Rad Dalam <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
                             </div>
                             <div className="flex items-center gap-2">
@@ -1043,11 +1043,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                     onChange={(e) => setInnerRadius(Number(e.target.value))}
                                     onBlur={sendGeofencingUpdate}
                                     onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
-                                    className="w-full max-w-[6rem] bg-white border border-slate-200 rounded-lg px-2 py-1 text-lg sm:text-xl font-mono font-black text-[#1d2d6a] transition-colors focus:outline-none focus:border-[#ee6f1f] focus:ring-1 focus:ring-[#ee6f1f] shadow-inner"
+                                    className="w-full max-w-[6rem] bg-white border border-slate-200 rounded-lg px-2 py-1 text-lg sm:text-xl font-mono font-bold text-[#1d2d6a] transition-colors focus:outline-none focus:border-[#ee6f1f] focus:ring-1 focus:ring-[#ee6f1f] shadow-inner"
                                 />
-                                <span className="text-[11px] sm:text-xs text-slate-500 font-bold uppercase tracking-widest">Meter</span>
+                                <span className="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-widest">Meter</span>
                             </div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-black px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
                                 Limit Presisi Jarak
                                 <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
                             </div>
@@ -1070,15 +1070,15 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         {/* Global IP & Settings */}
                         <div className="flex flex-wrap items-center gap-4 flex-1">
                             <div className="flex flex-col">
-                                <span className="text-[13px] font-black text-slate-500 mb-1">Network Global IP</span>
+                                <span className="text-[13px] font-bold text-slate-500 mb-1">Network Global IP</span>
                                 <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-2 py-1.5 shadow-sm">
-                                    <input type="text" defaultValue="192" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="192" className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <span className="text-slate-300">.</span>
-                                    <input type="text" defaultValue="168" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="168" className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <span className="text-slate-300">.</span>
-                                    <input type="text" defaultValue="1" className="w-[20px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="1" className="w-[20px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <span className="text-slate-300">.</span>
-                                    <input type="text" defaultValue="48" className="w-[24px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                    <input type="text" defaultValue="48" className="w-[24px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                     <div className="w-px h-4 bg-slate-200 mx-1" />
                                     <StateToggle value="auto" />
                                 </div>
@@ -1088,9 +1088,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                             {/* Toggles */}
                             <div className="flex flex-col">
-                                <span className="text-[13px] font-black text-slate-500 mb-1 text-center sm:text-left">Tampilkan</span>
+                                <span className="text-[13px] font-bold text-slate-500 mb-1 text-center sm:text-left">Tampilkan</span>
                                 <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
                                         <input
                                             type="checkbox"
                                             className="w-4 h-4 rounded accent-[#1d2d6a] border-slate-300"
@@ -1099,7 +1099,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         /> No. KA
                                     </label>
                                     <div className="w-px h-5 bg-slate-200" />
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
                                         <input
                                             type="checkbox"
                                             className="w-4 h-4 rounded accent-[#1d2d6a] border-slate-300"
@@ -1111,10 +1111,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[13px] font-black text-slate-500 mb-1">Jumlah Kereta</span>
+                            <span className="text-[13px] font-bold text-slate-500 mb-1">Jumlah Kereta</span>
                             <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
                                 <Train size={14} className="text-slate-400" />
-                                <select className="text-xs font-black text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[150px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
+                                <select className="text-xs font-bold text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[150px]" value={jumlahKereta} onChange={(e) => setJumlahKereta(Number(e.target.value))}>
                                     {[...Array(Math.min(gerbongCounts[activeTrainName] || 15, 15))].map((_, i) => (
                                         <option key={i + 1} value={i + 1}>{i + 1} Gerbong</option>
                                     ))}
@@ -1131,12 +1131,12 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div key={item} className="flex shrink-0 snap-start w-[220px]">
                                 <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all relative">
                                     <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] text-white border-b border-[#152355]">
-                                        <span className="text-[10px] font-black tracking-wider">GERBONG {item}</span>
+                                        <span className="text-[10px] font-bold tracking-wider">GERBONG {item}</span>
                                     </div>
                                     <div className="p-4 bg-white flex flex-col gap-4 flex-1">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-slate-400 mb-1">ID Kereta</span>
-                                            <input type="text" defaultValue={`K1016${i + 1}`} className="text-xs font-black text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
+                                            <span className="text-[9px] font-semibold text-slate-400 mb-1">ID Kereta</span>
+                                            <input type="text" defaultValue={`K1016${i + 1}`} className="text-xs font-bold text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm" />
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2 mb-1">
@@ -1145,13 +1145,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             </div>
                                             <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
                                                 <div className="flex items-center gap-0.5 w-full justify-center">
-                                                    <input type="text" defaultValue="192" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <input type="text" defaultValue="192" className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                                     <span className="text-slate-300 text-[13px]">.</span>
-                                                    <input type="text" defaultValue="168" className="w-[28px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <input type="text" defaultValue="168" className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                                     <span className="text-slate-300 text-[13px]">.</span>
-                                                    <input type="text" defaultValue="1" className="w-[18px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <input type="text" defaultValue="1" className="w-[18px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                                     <span className="text-slate-300 text-[13px]">.</span>
-                                                    <input type="text" defaultValue={51 + i} className="w-[24px] text-[13px] font-mono font-black text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
+                                                    <input type="text" defaultValue={51 + i} className="w-[24px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none" />
                                                 </div>
                                             </div>
                                         </div>
@@ -1186,13 +1186,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     {/* Audio Broadcast */}
                     <div className="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col">
                         <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-2">
-                            <h4 className="flex items-center gap-2 text-xs font-black text-slate-400">
+                            <h4 className="flex items-center gap-2 text-xs font-bold text-slate-400">
                                 <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
                             </h4>
                             <div className="flex flex-wrap items-center gap-2">
                                 <button
                                     onClick={() => setShowAudioSettings(!showAudioSettings)}
-                                    className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showAudioSettings ? 'bg-slate-200 border-slate-300 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                    className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showAudioSettings ? 'bg-slate-200 border-slate-300 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
                                 >
                                     <Settings size={14} /> Pengaturan
                                 </button>
@@ -1206,7 +1206,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 />
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                                    className="flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
                                 >
                                     <FolderOpen size={14} /> Load File Audio
                                 </button>
@@ -1216,11 +1216,11 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
-                                <label className="text-[10px] font-bold">Sumber Output</label>
+                                <label className="text-[10px] font-semibold">Sumber Output</label>
                                 <select
                                     value={mediaSource}
                                     onChange={(e) => setMediaSource(e.target.value)}
-                                    className="w-full text-sm font-bold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
+                                    className="w-full text-sm font-semibold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
                                 >
                                     <option value="Line In">Line In / Default Audio</option>
                                     <option value="Internal">Internal Storage</option>
@@ -1228,7 +1228,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
 
                             <div className="flex items-end pb-[1px]">
-                                <label className="flex items-center justify-center gap-3 text-sm font-black text-slate-600 cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
+                                <label className="flex items-center justify-center gap-3 text-sm font-bold text-slate-600 cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
                                     <input type="checkbox" className="w-4 h-4 rounded text-[#1d2d6a] focus:ring-[#1d2d6a]" /> Enable Broadcast
                                 </label>
                             </div>
@@ -1243,9 +1243,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         </div>
                         <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 rounded-xl overflow-hidden shadow-inner bg-slate-50">
                             <div className="flex justify-between items-center bg-slate-100 px-3 py-2 border-b border-slate-200">
-                                <span className="text-[10px] font-black text-slate-500 flex items-center gap-1.5"><ListVideo size={12} /> Audio Playlist ({audioList.length})</span>
+                                <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5"><ListVideo size={12} /> Audio Playlist ({audioList.length})</span>
                                 {audioList.length > 0 && (
-                                    <button onClick={() => { setAudioList([]); setSelectedAudio(''); handleStopAudio(); }} className="text-[9px] font-black text-red-500 hover:text-red-700 transition-colors px-2 py-0.5 bg-red-50 rounded border border-red-100">Bersihkan</button>
+                                    <button onClick={() => { setAudioList([]); setSelectedAudio(''); handleStopAudio(); }} className="text-[9px] font-bold text-red-500 hover:text-red-700 transition-colors px-2 py-0.5 bg-red-50 rounded border border-red-100">Bersihkan</button>
                                 )}
                             </div>
                             <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar max-h-[160px]">
@@ -1268,10 +1268,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
                         </div>
                         <div className="flex justify-end gap-3 pt-2">
-                            <button onClick={handleStopAudio} className="text-xs font-black text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
+                            <button onClick={handleStopAudio} className="text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm">
                                 Stop
                             </button>
-                            <button onClick={handlePlayAudio} className="text-xs font-black text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
+                            <button onClick={handlePlayAudio} className="text-xs font-bold text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
                                 <Volume2 size={14} /> Mainkan
                             </button>
                         </div>
@@ -1281,19 +1281,19 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     <div className="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col relative group">
 
                         <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-3">
-                            <h4 className="flex items-center gap-2 text-xs font-black text-[#1d2d6a]">
+                            <h4 className="flex items-center gap-2 text-xs font-bold text-[#1d2d6a]">
                                 <Video size={16} className="text-[#1d2d6a]" /> Manajemen TV / Video
                             </h4>
                             <div className="flex flex-wrap items-center gap-2 lg:gap-3">
                                 <button
                                     onClick={() => setShowVideoSettings(!showVideoSettings)}
-                                    className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showVideoSettings ? 'bg-slate-200 border-slate-300 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                    className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showVideoSettings ? 'bg-slate-200 border-slate-300 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
                                 >
                                     <Settings size={14} /> Pengaturan
                                 </button>
                                 <button
                                     onClick={handleSelectDirectory}
-                                    className="flex items-center gap-2 text-[10px] font-black px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                                    className="flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
                                 >
                                     <FolderOpen size={14} /> Pilih Direktori
                                 </button>
@@ -1347,7 +1347,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                             <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
                                                 <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
                                                     <div className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                                                    <span className="text-[9px] font-black truncate">{activeFile}</span>
+                                                    <span className="text-[9px] font-bold truncate">{activeFile}</span>
                                                 </div>
                                                 <button
                                                     onClick={() => {
@@ -1374,7 +1374,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                 <Video size={48} strokeWidth={1} className="relative opacity-20" />
                                             </div>
                                             <div className="flex flex-col items-center gap-1">
-                                                <span className="text-[10px] font-black opacity-40">Tidak ada Video Aktif</span>
+                                                <span className="text-[10px] font-bold opacity-40">Tidak ada Video Aktif</span>
                                                 <span className="text-[9px] font-bold text-slate-400/60 italic">Silakan pilih folder atau playlist</span>
                                             </div>
                                         </motion.div>
@@ -1385,7 +1385,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
                         {/* Playback Progress Slider */}
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-mono font-black text-[#1d2d6a] w-8 text-right">
+                            <span className="text-[10px] font-mono font-bold text-[#1d2d6a] w-8 text-right">
                                 {Math.floor((data?.playbackProgress || 0) / 20)}:{(Math.floor((data?.playbackProgress || 0)) % 20).toString().padStart(2, '0')}
                             </span>
                             <input
@@ -1408,7 +1408,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 <button onClick={toggleRepeat} title="Repeat" className={`p-2 rounded-lg transition-all ${playbackMode.includes('repeat') ? 'text-[#1d2d6a] bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-200'}`}>
                                     <div className="relative">
                                         <Repeat size={16} />
-                                        {playbackMode === 'repeat-one' && <span className="absolute -top-1.5 -right-1.5 bg-[#1d2d6a] text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-black">1</span>}
+                                        {playbackMode === 'repeat-one' && <span className="absolute -top-1.5 -right-1.5 bg-[#1d2d6a] text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-bold">1</span>}
                                     </div>
                                 </button>
                                 <button onClick={toggleShuffle} title="Shuffle" className={`p-2 rounded-lg transition-all ${playbackMode === 'shuffle' ? 'text-[#1d2d6a] bg-blue-100 shadow-sm' : 'text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-200'}`}>
@@ -1446,13 +1446,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => setVideoViewMode('playlist')}
-                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'playlist' ? 'bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 >
                                     <ListVideo size={14} /> Playlist ({playlist.length})
                                 </button>
                                 <button
                                     onClick={() => setVideoViewMode('files')}
-                                    className={`flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-t-lg transition-all ${videoViewMode === 'files' ? 'bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 >
                                     <Video size={14} /> Tersedia ({videoList.length})
                                 </button>
@@ -1460,7 +1460,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             {videoViewMode === 'playlist' && playlist.length > 0 && (
                                 <button
                                     onClick={() => setShowClearPlaylistConfirm(true)}
-                                    className="text-[9px] font-black text-red-500 hover:text-red-700 transition-colors"
+                                    className="text-[9px] font-bold text-red-500 hover:text-red-700 transition-colors"
                                 >
                                     Bersihkan
                                 </button>
@@ -1472,7 +1472,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             {videoViewMode === 'playlist' ? (
                                 <>
                                     {playlist.length === 0 ? (
-                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold">Playlist Kosong</div>
+                                        <div className="py-8 text-center text-slate-400 text-[10px] font-semibold">Playlist Kosong</div>
                                     ) : (
                                         playlist.map((file: string, i: number) => {
                                             const isActive = i === activeIndex;
@@ -1489,10 +1489,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                         <div className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? 'bg-[#1d2d6a] text-white border-[#152355]' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
                                                             {isActive && isPlaying ? <div className="bg-white w-1 h-2.5 animate-pulse rounded-full mx-auto" /> : <Play size={10} className="ml-[1px]" fill={isActive ? "currentColor" : "none"} />}
                                                         </div>
-                                                        <span className={`truncate w-full block ${isActive ? 'font-black' : 'font-bold'}`}>{file}</span>
+                                                        <span className={`truncate w-full block ${isActive ? 'font-bold' : 'font-semibold'}`}>{file}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[9px] font-black shrink-0 ${isActive ? 'text-[#1d2d6a]' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
+                                                        <span className={`text-[9px] font-bold shrink-0 ${isActive ? 'text-[#1d2d6a]' : 'text-slate-400 hidden group-hover/plitem:block'}`}>
                                                             {isActive ? 'Active' : ''}
                                                         </span>
                                                         <button
@@ -1511,10 +1511,10 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             ) : (
                                 <div className="space-y-1">
                                     <div className="px-3 py-1.5 mb-2 bg-slate-100 border border-slate-200 rounded-lg flex justify-between items-center">
-                                        <span className="text-[9px] font-black text-slate-500 truncate max-w-[200px]" title="/public/videos">Dir: /public/videos</span>
+                                        <span className="text-[9px] font-bold text-slate-500 truncate max-w-[200px]" title="/public/videos">Dir: /public/videos</span>
                                     </div>
                                     {videoList.length === 0 ? (
-                                        <div className="py-8 text-center text-slate-400 text-[10px] font-bold">Video tidak ditemukan</div>
+                                        <div className="py-8 text-center text-slate-400 text-[10px] font-semibold">Video tidak ditemukan</div>
                                     ) : (
                                         videoList.map((file, i) => (
                                             <div key={i} className="text-[11px] font-bold text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem bg-slate-50/50">
@@ -1529,7 +1529,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                                     className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-[#1d2d6a] bg-blue-50 hover:bg-[#1d2d6a] hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
                                                     title="Tambahkan ke Playlist"
                                                 >
-                                                    <Plus size={12} /><span className="text-[9px] font-black hidden sm:inline">Add</span>
+                                                    <Plus size={12} /><span className="text-[9px] font-bold hidden sm:inline">Add</span>
                                                 </button>
                                             </div>
                                         ))

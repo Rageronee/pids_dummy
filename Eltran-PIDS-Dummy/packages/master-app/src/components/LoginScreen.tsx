@@ -76,7 +76,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                                 className="relative h-16 drop-shadow-xl"
                             />
                         </div>
-                        <h1 className="text-3xl leading-tight font-black tracking-tight text-[#1d2d6a] drop-shadow-sm">
+                        <h1 className="text-3xl leading-tight font-bold tracking-tight text-[#1d2d6a] drop-shadow-sm">
                             PIDS Master Controller
                         </h1>
                         <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] opacity-90">

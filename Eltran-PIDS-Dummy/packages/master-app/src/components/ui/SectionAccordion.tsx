@@ -21,7 +21,7 @@ export function SectionAccordion({
                         <Icon size={24} strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm lg:text-base font-black text-[#1d2d6a]">{title}</span>
+                        <span className="text-sm lg:text-base font-bold text-[#1d2d6a]">{title}</span>
                         {!isOpen && summary && (
                             <div className="text-xs font-bold text-slate-400 mt-1 hidden sm:block">{summary}</div>
                         )}

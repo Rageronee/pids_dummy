@@ -18,7 +18,7 @@ body {
 }
 
 .kai-btn-orange {
-    @apply bg-[#ee6f1f] text-white py-6 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all shadow-[0_4px_0_#c2410c] hover:brightness-110;
+    @apply bg-[#ee6f1f] text-white py-6 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all shadow-[0_4px_0_#c2410c] hover:brightness-110;
 }
 
 .controller-card {

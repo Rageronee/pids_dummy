@@ -62,7 +62,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
                         <div className="flex items-center gap-4">
                             <div className="p-3 rounded-2xl"><Train className="text-[#ee6f1f]" size={28} /></div>
                             <div>
-                                <h2 className="text-2xl font-black uppercase tracking-tight">Service Configuration</h2>
+                                <h2 className="text-2xl font-bold uppercase tracking-tight">Service Configuration</h2>
                                 <p className="text-[10px] font-bold text-white/60 tracking-widest uppercase">Select Train Route and Unit Size</p>
                             </div>
                         </div>
@@ -72,7 +72,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
                     <div className="p-8 flex flex-col gap-8 bg-[#f8fafc]">
                         {/* Service Selection */}
                         <div className="flex flex-col gap-3">
-                            <label className="text-xs font-black text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Route / Train Name</label>
+                            <label className="text-xs font-bold text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Route / Train Name</label>
                             <div className="relative flex-1" ref={serviceDropdownRef}>
                                 <div className={`w-full bg-white border-2 rounded-xl px-5 py-4 shadow-sm transition-all cursor-pointer flex items-center ${serviceDropdownOpen ? 'border-[#ee6f1f] ring-4 ring-orange-500/10' : 'border-slate-200 hover:border-slate-300'}`} onClick={() => setServiceDropdownOpen(!serviceDropdownOpen)}>
                                     <input type="text" placeholder={trainNameIndex >= 0 && trainNames[trainNameIndex] ? trainNames[trainNameIndex] : '--- Pilih Service ---'} value={trainSearchQuery} onChange={(e) => { setTrainSearchQuery(e.target.value); if (!serviceDropdownOpen) setServiceDropdownOpen(true); }} onFocus={() => setServiceDropdownOpen(true)} className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-base font-bold text-[#1d2d6a] placeholder-slate-400 p-0" />
@@ -92,7 +92,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
 
                         {/* Unit Selection */}
                         <div className="flex flex-col gap-3">
-                            <label className="text-xs font-black text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Carriage Number</label>
+                            <label className="text-xs font-bold text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Carriage Number</label>
                             <div className="relative flex-1">
                                 <select value={selectedGerbong} onChange={(e) => setSelectedGerbong(parseInt(e.target.value))} className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-4 text-base font-bold text-[#1d2d6a] shadow-sm hover:border-slate-300 focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12">
                                     {[...Array(maxWagons)].map((_, i) => (<option key={i + 1} value={i + 1}>Gerbong {i + 1}</option>))}
@@ -104,7 +104,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
 
                     {/* Apply Button Container */}
                     <div className="p-8 pt-0 bg-[#f8fafc] rounded-b-[2rem]">
-                        <button onClick={handleApply} className="w-full py-5 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-2xl font-black text-xl shadow-[0_8px_20px_rgba(238,111,31,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+                        <button onClick={handleApply} className="w-full py-5 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-2xl font-bold text-xl shadow-[0_8px_20px_rgba(238,111,31,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-3">
                             Apply Configuration
                         </button>
                     </div>

@@ -8,7 +8,7 @@ export function TextToggle({ value, label1 = "auto", label2 = "custom" }: { valu
         <button
             type="button"
             onClick={() => setInternalValue(isFirst ? label2.toLowerCase() : label1.toLowerCase())}
-            className={`text-[9px] font-black transition-colors ${isFirst ? 'text-[#1d2d6a] hover:text-[#152355]' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
+            className={`text-[9px] font-bold transition-colors ${isFirst ? 'text-[#1d2d6a] hover:text-[#152355]' : 'text-[#ee6f1f] hover:text-[#d8631c]'}`}
         >
             {internalValue.charAt(0).toUpperCase() + internalValue.slice(1).toLowerCase()}
         </button>

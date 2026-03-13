@@ -44,16 +44,16 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                         <div className="flex items-center gap-6">
                             <div className="p-4 rounded-[22px]"><SettingsIcon className="text-[#ee6f1f]" size={40} /></div>
                             <div>
-                                <h2 className="text-4xl font-black tracking-tighter uppercase">Selector Settings</h2>
+                                <h2 className="text-4xl font-bold tracking-tighter uppercase">Selector Settings</h2>
                                 <p className="text-xs font-bold text-white/40 tracking-widest uppercase mt-0.5">Configuration & Control Center</p>
                             </div>
                         </div>
 
                         <div className="flex gap-4 items-center">
-                            <button onClick={handleToggleTV} className={`flex items-center gap-2 px-6 py-4 rounded-[20px] transition-colors font-black tracking-wider uppercase text-xs ${showTVPreview ? 'bg-white text-[#1d2d6a]' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                            <button onClick={handleToggleTV} className={`flex items-center gap-2 px-6 py-4 rounded-[20px] transition-colors font-bold tracking-wider uppercase text-xs ${showTVPreview ? 'bg-white text-[#1d2d6a]' : 'bg-white/10 text-white hover:bg-white/20'}`}>
                                 <Video size={20} strokeWidth={2.5} /> {showTVPreview ? 'DISPLAYING' : 'TV Monitor'}
                             </button>
-                            <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-4 rounded-[20px] bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors font-black tracking-wider uppercase text-xs">
+                            <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-4 rounded-[20px] bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors font-bold tracking-wider uppercase text-xs">
                                 <LogOut size={20} strokeWidth={2.5} /> Logout
                             </button>
                             <div className="w-px h-8 bg-white/20 mx-2" />
@@ -65,7 +65,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                         <div className="w-full min-h-full flex flex-col gap-10 bg-white p-12 shadow-sm border-t border-slate-100">
                             <div className="flex items-end justify-between gap-6">
                                 <div className="flex flex-col gap-2">
-                                    <h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-4">
+                                    <h2 className="text-3xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-4">
                                         <Zap className="text-[#ee6f1f]" size={36} /> Display Controls
                                     </h2>
                                     <p className="text-base font-bold text-slate-400">Manage LED brightness, speed, and format configuration</p>
@@ -90,7 +90,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                                             padding={0}
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" /><span className="text-xs font-black text-slate-500 uppercase tracking-widest">LED System Standby</span></div>
+                                        <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" /><span className="text-xs font-bold text-slate-500 uppercase tracking-widest">LED System Standby</span></div>
                                     )}
                                 </div>
                             </div>
@@ -100,15 +100,15 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                                 {/* LED Type */}
                                 <div className="flex flex-col gap-6">
                                     <div>
-                                        <h4 className="text-2xl font-black text-[#1d2d6a] tracking-tight">Display Type</h4>
+                                        <h4 className="text-2xl font-bold text-[#1d2d6a] tracking-tight">Display Type</h4>
                                         <p className="text-sm font-bold text-slate-400 mt-1">Select the physical LED panel configuration</p>
                                     </div>
                                     <div className="flex flex-col gap-4">
-                                        <button onClick={() => onSetLedType('indoor')} className={`w-full py-8 px-6 rounded-3xl font-black text-2xl transition-all border-2 flex items-center justify-between ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/5 text-[#ee6f1f] shadow-md' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
+                                        <button onClick={() => onSetLedType('indoor')} className={`w-full py-8 px-6 rounded-3xl font-bold text-2xl transition-all border-2 flex items-center justify-between ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-[#ee6f1f]/5 text-[#ee6f1f] shadow-md' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
                                             P2.5 Indoor Cabinet
                                             <div className={`w-6 h-6 rounded-full border-4 ${ledType === 'indoor' ? 'border-[#ee6f1f] bg-white' : 'border-slate-200'}`} />
                                         </button>
-                                        <button onClick={() => onSetLedType('p10_32_16')} className={`w-full py-8 px-6 rounded-3xl font-black text-2xl transition-all border-2 flex items-center justify-between ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/5 text-[#ee6f1f] shadow-md' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
+                                        <button onClick={() => onSetLedType('p10_32_16')} className={`w-full py-8 px-6 rounded-3xl font-bold text-2xl transition-all border-2 flex items-center justify-between ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-[#ee6f1f]/5 text-[#ee6f1f] shadow-md' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}>
                                             P10 Outdoor Module
                                             <div className={`w-6 h-6 rounded-full border-4 ${ledType === 'p10_32_16' ? 'border-[#ee6f1f] bg-white' : 'border-slate-200'}`} />
                                         </button>
@@ -119,16 +119,16 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                                 <div className="flex flex-col gap-6">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h4 className="text-2xl font-black text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
+                                            <h4 className="text-2xl font-bold text-[#1d2d6a] tracking-tight">Scrolling Velocity</h4>
                                             <p className="text-sm font-bold text-slate-400 mt-1">Adjust text movement speed on display</p>
                                         </div>
-                                        <div className="text-3xl font-black text-[#ee6f1f] bg-orange-50 px-6 py-3 rounded-2xl border border-orange-100 font-mono shadow-sm">{masterSyncedLedSpeed}<span className="text-sm ml-1 opacity-60">MS</span></div>
+                                        <div className="text-3xl font-bold text-[#ee6f1f] bg-orange-50 px-6 py-3 rounded-2xl border border-orange-100 font-mono shadow-sm">{masterSyncedLedSpeed}<span className="text-sm ml-1 opacity-60">MS</span></div>
                                     </div>
 
                                     <div className="flex-1 flex flex-col justify-center bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
                                         <div className="relative py-4">
                                             <input type="range" min="10" max="200" step="5" value={masterSyncedLedSpeed} onChange={(e) => onSetLedSpeed(parseInt(e.target.value))} className="w-full h-6 bg-slate-200 rounded-3xl appearance-none cursor-pointer accent-[#ee6f1f]" />
-                                            <div className="flex justify-between text-xs font-black text-slate-400 mt-6 tracking-widest uppercase">
+                                            <div className="flex justify-between text-xs font-bold text-slate-400 mt-6 tracking-widest uppercase">
                                                 <span className="flex flex-col items-start"><span>Fast</span><span className="h-2 w-px bg-slate-200 mt-2 ml-2" /></span>
                                                 <span className="flex flex-col items-center"><span>Standard</span><span className="h-2 w-px bg-slate-200 mt-2" /></span>
                                                 <span className="flex flex-col items-end"><span>Slow</span><span className="h-2 w-px bg-slate-200 mt-2 mr-2" /></span>

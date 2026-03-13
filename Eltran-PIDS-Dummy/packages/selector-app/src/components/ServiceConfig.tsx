@@ -52,7 +52,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
     return (
         <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm flex flex-col gap-10 h-full">
             <div className="flex flex-col gap-3">
-                <h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-4">
+                <h2 className="text-3xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-4">
                     <Settings className="text-[#ee6f1f] animate-[spin_10s_linear_infinite]" size={36} /> Service Configuration
                 </h2>
                 <p className="text-sm font-bold text-slate-400">Configure train service route and carriage number for the master display</p>
@@ -61,7 +61,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
             <div className="flex flex-col gap-10 flex-1">
                 {/* Service Selection */}
                 <div className="flex flex-col gap-5">
-                    <label className="text-sm font-black text-[#1d2d6a]/60 pl-1 uppercase tracking-[0.2em]">Select Route / Train Name</label>
+                    <label className="text-sm font-bold text-[#1d2d6a]/60 pl-1 uppercase tracking-[0.2em]">Select Route / Train Name</label>
                     <div className="flex gap-6">
                         <div className="relative flex-1" ref={serviceDropdownRef}>
                             <div
@@ -79,7 +79,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
                                     value={trainSearchQuery}
                                     onChange={(e) => { setTrainSearchQuery(e.target.value); if (!serviceDropdownOpen) setServiceDropdownOpen(true); }}
                                     onFocus={() => setServiceDropdownOpen(true)}
-                                    className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-2xl font-black text-[#1d2d6a] placeholder-[#1d2d6a]/30 p-0 uppercase"
+                                    className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-2xl font-bold text-[#1d2d6a] placeholder-[#1d2d6a]/30 p-0 uppercase"
                                 />
                                 <div className={`p-3 rounded-2xl transition-all ${serviceDropdownOpen ? 'bg-[#ee6f1f] text-white rotate-180' : 'bg-slate-100 text-[#1d2d6a] group-hover:bg-[#1d2d6a] group-hover:text-white'}`}>
                                     <ChevronDown size={28} strokeWidth={3} />
@@ -94,7 +94,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
                                         <div
                                             key={t.name}
                                             onClick={() => { setTrainNameIndex(t.idx); setTrainSearchQuery(''); setServiceDropdownOpen(false); }}
-                                            className={`px-8 py-6 text-xl font-black cursor-pointer transition-all flex items-center justify-between border-b border-slate-50 last:border-none ${trainNameIndex === t.idx ? 'bg-[#ee6f1f] text-white' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
+                                            className={`px-8 py-6 text-xl font-bold cursor-pointer transition-all flex items-center justify-between border-b border-slate-50 last:border-none ${trainNameIndex === t.idx ? 'bg-[#ee6f1f] text-white' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
                                         >
                                             {t.name}
                                             {trainNameIndex === t.idx && <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_10px_white]" />}
@@ -103,19 +103,19 @@ const ServiceConfig = React.memo(function ServiceConfig({
                                 </div>
                             )}
                         </div>
-                        <button onClick={handleSetName} className="h-auto px-10 bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[2rem] font-black text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-blue-900">Apply Route</button>
+                        <button onClick={handleSetName} className="h-auto px-10 bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[2rem] font-bold text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-blue-900">Apply Route</button>
                     </div>
                 </div>
 
                 {/* Unit Selection */}
                 <div className="flex flex-col gap-5 mt-auto">
-                    <label className="text-sm font-black text-[#1d2d6a]/60 pl-1 uppercase tracking-[0.2em]">Select Carriage Number</label>
+                    <label className="text-sm font-bold text-[#1d2d6a]/60 pl-1 uppercase tracking-[0.2em]">Select Carriage Number</label>
                     <div className="flex gap-6">
                         <div className="relative flex-1 group">
                             <select
                                 value={selectedGerbong}
                                 onChange={(e) => setSelectedGerbong(parseInt(e.target.value))}
-                                className="w-full appearance-none bg-slate-50 border-4 border-slate-100 rounded-[2rem] px-8 py-6 text-2xl font-black text-[#1d2d6a] shadow-sm hover:border-[#1d2d6a]/20 focus:border-[#ee6f1f] focus:ring-8 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-20 uppercase"
+                                className="w-full appearance-none bg-slate-50 border-4 border-slate-100 rounded-[2rem] px-8 py-6 text-2xl font-bold text-[#1d2d6a] shadow-sm hover:border-[#1d2d6a]/20 focus:border-[#ee6f1f] focus:ring-8 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-20 uppercase"
                             >
                                 {[...Array(maxWagons)].map((_, i) => (<option key={i + 1} value={i + 1}>Gerbong {i + 1}</option>))}
                             </select>
@@ -125,7 +125,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
                                 </div>
                             </div>
                         </div>
-                        <button onClick={handleSetNumber} className="h-auto px-10 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-[2rem] font-black text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-orange-700">Set Unit</button>
+                        <button onClick={handleSetNumber} className="h-auto px-10 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-[2rem] font-bold text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-orange-700">Set Unit</button>
                     </div>
                 </div>
             </div>

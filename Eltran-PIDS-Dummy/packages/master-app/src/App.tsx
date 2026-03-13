@@ -80,12 +80,12 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
             <motion.div animate={{ y: ["0%", "100%", "0%"] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 bg-white/10 h-px z-10 pointer-events-none shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
             <div className="absolute top-8 left-8 right-8 flex justify-start items-start z-20">
                 <div className="px-4 py-2 flex flex-col items-start drop-shadow-2xl">
-                    <div className="text-3xl font-black text-white font-mono tracking-tighter tabular-nums leading-none mb-1 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
-                    <div className="text-[10px] font-bold text-white/90 [text-shadow:0_1px_5px_rgba(0,0,0,0.8)]">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    <div className="text-3xl font-bold text-white font-mono tracking-tighter tabular-nums leading-none mb-1 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
+                    <div className="text-[10px] font-semibold text-white/90 [text-shadow:0_1px_5px_rgba(0,0,0,0.8)]">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 </div>
             </div>
             {/* Main Center Overlay Text */}
-            <div className="absolute top-1/2 left-8 -translate-y-1/2 z-20"><div className="text-white/20 font-mono text-[80px] font-black leading-none select-none">{cameras[currentCamIndex].id}</div></div>
+            <div className="absolute top-1/2 left-8 -translate-y-1/2 z-20"><div className="text-white/20 font-mono text-[80px] font-bold leading-none select-none">{cameras[currentCamIndex].id}</div></div>
 
 
 
@@ -112,7 +112,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                                 transition={{ duration: 0.2, ease: "easeOut" }}
                                 className="absolute bottom-full right-0 mb-4 w-[400px] bg-black/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
                             >
-                                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
+                                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
                                     Pilih Lokasi Kamera
                                 </div>
                                 <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -133,7 +133,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                                             <div className={`p-1.5 rounded-lg ${currentCamIndex === idx ? 'bg-white/20' : 'bg-white/5'}`}>
                                                 <Cctv size={14} />
                                             </div>
-                                            <span className="text-sm font-bold truncate">{cam.location}</span>
+                                            <span className="text-sm font-semibold truncate">{cam.location}</span>
                                         </motion.button>
                                     ))}
                                 </div>
@@ -154,7 +154,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                         </div>
                         
                         <div className="flex items-center gap-6 min-w-[300px]">
-                            <span className="text-xl font-bold text-white truncate px-2">
+                            <span className="text-xl font-semibold text-white truncate px-2">
                                 {cameras[currentCamIndex].location}
                             </span>
                             <motion.div
@@ -563,13 +563,13 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             {/* Map Area */}
             <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[400px] relative flex flex-col">
                 <div className="flex items-center justify-between mb-4 shrink-0 px-4">
-                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <MapPin className="text-[#ee6f1f]" /> Peta Lokasi Armada
                     </h2>
                     <select
                         value={selectedKereta || ''}
                         onChange={e => setSelectedKereta(parseInt(e.target.value))}
-                        className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-2.5 text-sm font-bold text-[#1d2d6a] focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all"
+                        className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-2.5 text-sm font-semibold text-[#1d2d6a] focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all"
                     >
                         {trains.map(t => <option key={t.kereta_id} value={t.kereta_id}>{t.kereta_name} ({t.ka_number})</option>)}
                     </select>
@@ -581,8 +581,8 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                     {!route?.geojson && (
                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
                             <MapPin size={48} className="text-white/30 mb-4" />
-                            <span className="text-white font-bold text-xl mb-1 drop-shadow-md">Peta Belum Dikonfigurasi</span>
-                            <span className="text-white/70 text-sm font-medium drop-shadow-md">Sistem PIDS belum memiliki data GeoJSON.</span>
+                            <span className="text-white font-semibold text-xl mb-1 drop-shadow-md">Peta Belum Dikonfigurasi</span>
+                            <span className="text-white/70 text-sm font-normal drop-shadow-md">Sistem PIDS belum memiliki data GeoJSON.</span>
                         </div>
                     )}
                 </div>
@@ -591,12 +591,12 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             {/* Per-Gerbong GPS Tracking Panel */}
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 shrink-0">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <MapPin className="text-[#ee6f1f]" />Detail State per Gerbong
                     </h2>
                 </div>
                 {gerbongData.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 font-medium">Tidak ada data gerbong</div>
+                    <div className="text-center py-8 text-slate-400 font-normal">Tidak ada data gerbong</div>
                 ) : (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         {gerbongData.map((g, i) => (
@@ -604,17 +604,17 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                                 className="bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all">
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className={`w-2.5 h-2.5 rounded-full ${g.sensor_status === 'Aktif' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`} />
-                                    <span className="text-[#1d2d6a] font-black text-sm flex-1">{g.nama_gerbong}</span>
-                                    <span className="text-slate-400 text-[10px] font-bold">#{String(g.no_urut_gerbong).padStart(2, '0')}</span>
+                                    <span className="text-[#1d2d6a] font-bold text-sm flex-1">{g.nama_gerbong}</span>
+                                    <span className="text-slate-400 text-[10px] font-semibold">#{String(g.no_urut_gerbong).padStart(2, '0')}</span>
                                 </div>
                                 <div className="space-y-1.5 text-xs">
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{g.latitude?.toFixed(4) || '-'}, {g.longitude?.toFixed(4) || '-'}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Altitude</span><span className="text-slate-600 font-mono">{g.altitude?.toFixed(1) || '-'} m</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Kecepatan</span><span className="text-[#ee6f1f] font-black">{g.kecepatan?.toFixed(1) || '0'} km/h</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Suhu</span><span className="text-slate-600 font-medium">{g.suhu?.toFixed(1) || '-'}°C</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">POI</span><span className="text-slate-500 font-medium truncate max-w-[120px]">{g.poi || 'N/A'}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-bold">Sensor</span>
-                                        <span className={`text-[10px] font-black ${g.sensor_status === 'Aktif' ? 'text-green-500' : 'text-red-400'}`}>{g.sensor_status}</span>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{g.latitude?.toFixed(4) || '-'}, {g.longitude?.toFixed(4) || '-'}</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Altitude</span><span className="text-slate-600 font-mono">{g.altitude?.toFixed(1) || '-'} m</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Kecepatan</span><span className="text-[#ee6f1f] font-bold">{g.kecepatan?.toFixed(1) || '0'} km/h</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Suhu</span><span className="text-slate-600 font-medium">{g.suhu?.toFixed(1) || '-'}°C</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">POI</span><span className="text-slate-500 font-medium truncate max-w-[120px]">{g.poi || 'N/A'}</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Sensor</span>
+                                        <span className={`text-[10px] font-bold ${g.sensor_status === 'Aktif' ? 'text-green-500' : 'text-red-400'}`}>{g.sensor_status}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -664,26 +664,26 @@ const LogViewer = ({ token }: { token: string }) => {
         <div className="max-w-6xl mx-auto space-y-6">
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <ScrollText className="text-[#ee6f1f]" />Log Aktivitas Sistem
                     </h2>
                     <div className="flex gap-2 flex-wrap">
                         {filterOptions.map(opt => (
                             <button key={opt} onClick={() => setFilter(opt)}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all ${filter === opt ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'}`}>
+                                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'}`}>
                                 {opt === 'ALL' ? 'Semua' : ACTION_LABELS[opt]?.label || opt}
                             </button>
                         ))}
                     </div>
                 </div>
                 {loading ? (
-                    <div className="text-center py-16 text-slate-400 font-medium">Memuat log...</div>
+                    <div className="text-center py-16 text-slate-400 font-normal">Memuat log...</div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-16 text-slate-400 font-medium">Belum ada log yang tercatat.</div>
+                    <div className="text-center py-16 text-slate-400 font-normal">Belum ada log yang tercatat.</div>
                 ) : (
                     <div className="overflow-hidden rounded-2xl border border-slate-200">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 text-[#1d2d6a] font-black text-[11px]">
+                            <thead className="bg-slate-50 text-[#1d2d6a] font-semibold text-[11px]">
                                 <tr>
                                     <th className="p-4 border-b border-slate-200">Waktu</th>
                                     <th className="p-4 border-b border-slate-200">Aksi</th>
@@ -700,20 +700,20 @@ const LogViewer = ({ token }: { token: string }) => {
                                         <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="p-4 font-mono text-slate-500 text-[11px] whitespace-nowrap">
                                                 <div>{dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                                                <div className="font-bold text-slate-700">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
+                                                <div className="font-semibold text-slate-700">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black border ${meta.color}`}>{meta.label}</span>
+                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-semibold border ${meta.color}`}>{meta.label}</span>
                                             </td>
-                                            <td className="p-4 font-bold text-[#1d2d6a]">{log.user}</td>
-                                            <td className="p-4 text-slate-500 text-xs font-medium">{log.role}</td>
+                                            <td className="p-4 font-semibold text-[#1d2d6a]">{log.user}</td>
+                                            <td className="p-4 text-slate-500 text-xs font-normal">{log.role}</td>
                                             <td className="p-4 text-slate-600 text-xs">{log.details}</td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
-                        {filtered.length > 100 && <div className="p-4 text-center text-slate-400 text-xs font-medium border-t border-slate-100">Menampilkan 100 dari {filtered.length} entri log. Gunakan Command Center untuk melihat semua.</div>}
+                        {filtered.length > 100 && <div className="p-4 text-center text-slate-400 text-xs font-normal border-t border-slate-100">Menampilkan 100 dari {filtered.length} entri log. Gunakan Command Center untuk melihat semua.</div>}
                     </div>
                 )}
             </div>
@@ -808,7 +808,7 @@ function App() {
                         alt="KAI Logo"
                         className="h-12 w-auto mb-6 brightness-0 invert"
                     />
-                    <h1 className="text-3xl font-black text-white tracking-tight leading-tight">PIDS Master</h1>
+                    <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">PIDS Master</h1>
                     <p className="text-[15px] font-bold text-blue-200/40 mt-1">Kereta Makan</p>
                 </div>
 
@@ -828,7 +828,7 @@ function App() {
 
                 <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-black/5">
                     <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-[10px] border border-white/5 active:scale-95 group">
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 active:scale-95 group">
                         <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
                         <span>Logout dari Sistem</span>
                     </button>
@@ -846,7 +846,7 @@ function App() {
                             })()}
                         </div>
                         <div>
-                            <span className="text-xl font-black text-[#1d2d6a] uppercase tracking-normal">
+                            <span className="text-xl font-bold text-[#1d2d6a] uppercase tracking-normal">
                                 {NAV_ITEMS.find(n => n.id === activeTab)?.label}
                             </span>
                         </div>
@@ -856,8 +856,8 @@ function App() {
                         {/* Active Unit Badge Style */}
                         <div className="flex items-center gap-4 border-r border-slate-100 pr-10">
                             <div className="text-right">
-                                <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">Active Unit</div>
-                                <div className="text-base font-black text-[#1d2d6a] tracking-tight">
+                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Active Unit</div>
+                                <div className="text-base font-bold text-[#1d2d6a] tracking-tight">
                                     {activeTrainName} <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-xs border border-orange-100">K1-90-{activeTrainNumber}</span>
                                 </div>
                             </div>
@@ -868,7 +868,7 @@ function App() {
                             <div className="bg-slate-50 p-2 rounded-xl text-slate-400 border border-slate-100">
                                 <Clock size={18} />
                             </div>
-                            <span className="text-3xl font-black font-mono tracking-tighter opacity-90">
+                            <span className="text-3xl font-bold font-mono tracking-tighter opacity-90">
                                 {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
                             </span>
                         </div>
@@ -884,12 +884,12 @@ function App() {
                         ) : activeTab === 'stampformasi' ? (
                             <motion.div key="stampformasi" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto space-y-10">
                                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                                    <h2 className="text-xl font-black text-[#1d2d6a] mb-8 tracking-tight flex items-center gap-3">
+                                    <h2 className="text-xl font-bold text-[#1d2d6a] mb-8 tracking-tight flex items-center gap-3">
                                         <Database className="text-[#ee6f1f]" />Stampformasi
                                     </h2>
                                     <div className="overflow-hidden rounded-2xl border border-slate-200">
                                         <table className="w-full text-left text-sm">
-                                            <thead className="bg-slate-50 text-[#1d2d6a] font-black">
+                                            <thead className="bg-slate-50 text-[#1d2d6a] font-bold">
                                                 <tr>
                                                     <th className="p-4 border-b border-slate-200">No Rangkaian</th>
                                                     <th className="p-4 border-b border-slate-200">No Aset</th>
@@ -908,7 +908,7 @@ function App() {
                                                         <td className="p-4 font-mono text-slate-500">192.168.1.{100 + idx}</td>
                                                         <td className="p-4 font-mono text-slate-500">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</td>
                                                         <td className="p-4 text-center">
-                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black border border-green-100">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                                                 Active
                                                             </span>
@@ -937,10 +937,10 @@ function App() {
                                 <div className="bg-white p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 max-w-md w-full">
                                     <div className="bg-orange-50 p-6 rounded-3xl text-[#ee6f1f]"><AlertCircle size={48} /></div>
                                     <div className="text-center">
-                                        <h2 className="text-xl font-black text-[#1d2d6a] mb-2 tracking-tight">Access Restricted</h2>
+                                        <h2 className="text-xl font-bold text-[#1d2d6a] mb-2 tracking-tight">Access Restricted</h2>
                                         <p className="text-sm font-medium text-slate-400 leading-relaxed">Module <span className="text-[#1d2d6a]">{activeTab}</span> sedang dalam pemeliharaan.</p>
                                     </div>
-                                    <button onClick={() => setActiveTab('pids')} className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-black text-white text-sm font-black rounded-2xl shadow-lg transition-all active:scale-95">Return to Dashboard</button>
+                                    <button onClick={() => setActiveTab('pids')} className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow-lg transition-all active:scale-95">Return to Dashboard</button>
                                 </div>
                             </motion.div>
                         )}

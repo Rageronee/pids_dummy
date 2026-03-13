@@ -147,10 +147,10 @@ function App() {
                         </div>
                         <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-blue-200/80 tracking-[0.25em] uppercase">Service Config</span>
+                                <span className="text-[10px] font-bold text-blue-200/80 tracking-[0.25em] uppercase">Service Config</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <h1 className="text-2xl font-black uppercase tracking-tight group-hover:text-blue-100 transition-colors truncate">{masterSyncedServiceName || 'NOT SET'}</h1>
+                                <h1 className="text-2xl font-bold uppercase tracking-tight group-hover:text-blue-100 transition-colors truncate">{masterSyncedServiceName || 'NOT SET'}</h1>
                                 <ChevronRight className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" size={24} />
                             </div>
                         </div>
@@ -161,13 +161,13 @@ function App() {
                         <div className="flex bg-white/10 p-1 rounded-xl items-center border border-white/10">
                             <button
                                 onClick={() => setActiveKa('ka68')}
-                                className={`px-4 py-1.5 rounded-lg text-[15px] font-black transition-all ${activeKa === 'ka68' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
+                                className={`px-4 py-1.5 rounded-lg text-[15px] font-bold transition-all ${activeKa === 'ka68' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
                             >
                                 KA 68 (BD-ML)
                             </button>
                             <button
                                 onClick={() => setActiveKa('ka67')}
-                                className={`px-4 py-1.5 rounded-lg text-[15px] font-black transition-all ${activeKa === 'ka67' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
+                                className={`px-4 py-1.5 rounded-lg text-[15px] font-bold transition-all ${activeKa === 'ka67' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
                             >
                                 KA 67 (ML-BD)
                             </button>
@@ -177,21 +177,21 @@ function App() {
 
                 <div className="flex items-center gap-6">
                     <div className="hidden lg:flex flex-col items-end text-right">
-                        <span className="text-[10px] font-black text-white/40 tracking-[0.2em] uppercase mb-0.5">Category</span>
-                        <span className="text-2xl font-black tracking-tight uppercase leading-none">{masterSyncedServiceName ? 'REGULAR' : '---'}</span>
+                        <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase mb-0.5">Category</span>
+                        <span className="text-2xl font-bold tracking-tight uppercase leading-none">{masterSyncedServiceName ? 'REGULAR' : '---'}</span>
                     </div>
 
                     <div className="w-px h-10 bg-white/20 mx-2" />
 
                     <div className="flex flex-col items-end text-right">
-                        <span className="text-[10px] font-black text-white/40 tracking-[0.2em] uppercase mb-0.5">Unit</span>
-                        <span className="text-2xl font-black tracking-widest uppercase leading-none">{masterSyncedNumber || '---'}</span>
+                        <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase mb-0.5">Unit</span>
+                        <span className="text-2xl font-bold tracking-widest uppercase leading-none">{masterSyncedNumber || '---'}</span>
                     </div>
 
                     {/* Destination Section - Flex Optimized */}
                     <div className="flex items-center gap-4 bg-[#ee6f1f] py-2 px-6 rounded-2xl shadow-lg border border-white/20 max-w-[350px] flex-1">
                         <div className="flex flex-col items-end min-w-0 flex-1">
-                            <span className="text-2xl font-black text-white tracking-tight uppercase truncate w-full text-right">
+                            <span className="text-2xl font-bold text-white tracking-tight uppercase truncate w-full text-right">
                                 {stations.length > 0 ? stations[stations.length - 1] : '---'}
                             </span>
                         </div>
@@ -209,15 +209,15 @@ function App() {
                 <div className="flex-[0.65] flex flex-col gap-6">
                     {/* CURRENT STATION */}
                     <div className="bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-[24px] shadow-sm p-6 border border-slate-200 flex flex-col">
-                        <div className="flex items-center gap-3 text-[#ffffff] font-extrabold text-xl tracking-widest uppercase mb-3">
+                        <div className="flex items-center gap-3 text-[#ffffff] font-bold text-xl tracking-widest uppercase mb-3">
                             <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT POSITION
                         </div>
-                        <h2 className="text-5xl font-black text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
+                        <h2 className="text-5xl font-bold text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
                     </div>
 
                     {/* ITINERARY */}
                     <div className="bg-white rounded-[24px] shadow-sm py-5 px-6 border border-slate-200 flex-1 flex flex-col min-h-0 overflow-hidden">
-                        <div className="flex items-center gap-3 text-slate-400 font-extrabold text-sm tracking-widest uppercase mb-3 shrink-0">
+                        <div className="flex items-center gap-3 text-slate-400 font-bold text-sm tracking-widest uppercase mb-3 shrink-0">
                             <Route size={18} /> DETAILED ROUTES
                         </div>
 
@@ -232,12 +232,12 @@ function App() {
                                 </div>
                                 <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-[#1d2d6a] shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                                     <div className="flex flex-col relative z-10 text-slate-400">
-                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Next Station</span>
-                                        <span className="text-3xl text-slate-700 font-black tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
+                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Next Station</span>
+                                        <span className="text-3xl text-slate-700 font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
                                     </div>
                                     <div className="text-right flex flex-col items-end relative z-10 shrink-0">
-                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
-                                        <span className="text-3xl font-black text-slate-600">
+                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
+                                        <span className="text-3xl font-bold text-slate-600">
                                             {getScheduledTime(nextStation) || (stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--')}
                                         </span>
                                     </div>
@@ -256,14 +256,13 @@ function App() {
                                                 <div className="w-[68px] flex justify-center relative z-10">
                                                     <div className="w-[20px] h-[20px] bg-slate-300 rounded-full border-[5px] border-white shadow-sm mt-3" />
                                                 </div>
-                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
-                                                        <span className="text-lg font-bold text-slate-700 uppercase tracking-tight">{upcomingStation}</span>
+                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">                                                     <div className="flex flex-col">
+                                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
+                                                        <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStation}</span>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] block mb-1">ETA</span>
-                                                        <span className="text-xl font-bold text-slate-600">
+                                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
+                                                        <span className="text-xl font-semibold text-slate-600">
                                                             {getScheduledTime(upcomingStation) || new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
                                                         </span>
                                                     </div>
@@ -287,12 +286,12 @@ function App() {
                                 <Clock size={24} strokeWidth={2.5} />
                             </div>
                             <div className="flex flex-col flex-1 border-r border-slate-100 mr-4 pr-4">
-                                <span className="text-[#1d2d6a] font-black text-3xl tracking-tighter leading-none">
+                                <span className="text-[#1d2d6a] font-bold text-3xl tracking-tighter leading-none">
                                     {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
                                 </span>
                             </div>
                             <div className="flex flex-col flex-1 pl-2">
-                                <span className="text-slate-700 font-bold text-3xl tracking-tighter leading-none pt-1">
+                                <span className="text-slate-700 font-semibold text-3xl tracking-tighter leading-none pt-1">
                                     {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
                                 </span>
                             </div>
@@ -305,16 +304,16 @@ function App() {
                 <div className="flex-[0.35] flex flex-col gap-6">
                     <button onClick={handlePrev} className="flex-1 bg-[#ee6f1f] hover:bg-[#ee6f1f] text-white rounded-[32px] shadow-sm flex flex-col items-center justify-center gap-4 transition-all active:scale-95 group overflow-hidden">
                         <ChevronsUp size={72} className="transition-transform group-hover:-translate-y-2 stroke-[3]" />
-                        <span className="text-3xl font-black uppercase tracking-tight text-white">Previous Station</span>
+                        <span className="text-3xl font-bold uppercase tracking-tight text-white">Previous Station</span>
                     </button>
 
                     <button onClick={handleNext} className="flex-1 bg-[#ee6f1f] hover:bg-[#ee6f1f] text-white rounded-[32px] shadow-sm flex flex-col items-center justify-center gap-4 transition-all active:scale-95 group overflow-hidden">
-                        <span className="text-3xl font-black uppercase tracking-tight">Next Station</span>
+                        <span className="text-3xl font-bold uppercase tracking-tight">Next Station</span>
                         <ChevronsDown size={72} className="transition-transform group-hover:translate-y-2 stroke-[3]" />
                     </button>
 
                     <div className="flex gap-4 mt-2 h-[80px]">
-                        <button onClick={handleSelectStation} className="flex-[0.8] bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[24px] font-black tracking-wide shadow-md flex items-center justify-center gap-4 transition-transform active:scale-95 text-2xl border border-blue-900 overflow-hidden relative group">
+                        <button onClick={handleSelectStation} className="flex-[0.8] bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[24px] font-bold tracking-wide shadow-md flex items-center justify-center gap-4 transition-transform active:scale-95 text-2xl border border-blue-900 overflow-hidden relative group">
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
                             <RefreshCcw size={32} className="group-hover:rotate-180 transition-transform duration-500" /> SYNC
                         </button>

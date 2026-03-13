@@ -82,12 +82,12 @@ export function MasterModals({
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
                             <div className="bg-blue-50 p-6 flex flex-col items-center justify-center border-b border-blue-100">
                                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-500 shadow-inner"><Video size={32} /></div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Tampilkan Video?</h3>
+                                <h3 className="text-xl font-bold text-[#1d2d6a] text-center">Tampilkan Video?</h3>
                             </div>
                             <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">Apakah Anda yakin ingin menampilkan video di Layar TV? Hal ini akan menonaktifkan mode Standby PIDS.</div>
                             <div className="p-6 pt-0 flex gap-3">
-                                <button onClick={() => setShowStandbyConfirm(false)} className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm">Batal</button>
-                                <button onClick={() => { handleVideoAction({ tvStandby: false }); setShowStandbyConfirm(false); }} className="flex-1 py-3 px-4 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(29,45,106,0.3)]">Ya, Tampilkan</button>
+                                <button onClick={() => setShowStandbyConfirm(false)} className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all shadow-sm">Batal</button>
+                                <button onClick={() => { handleVideoAction({ tvStandby: false }); setShowStandbyConfirm(false); }} className="flex-1 py-3 px-4 bg-[#1d2d6a] hover:bg-[#152355] text-white font-bold text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(29,45,106,0.3)]">Ya, Tampilkan</button>
                             </div>
                         </motion.div>
                     </div>
@@ -101,12 +101,12 @@ export function MasterModals({
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
                             <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
                                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner"><Trash2 size={32} /></div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Hapus GeoJSON?</h3>
+                                <h3 className="text-xl font-bold text-[#1d2d6a] text-center">Hapus GeoJSON?</h3>
                             </div>
-                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">Anda yakin ingin menghapus data rute <span className="text-[#1d2d6a] font-black">{routeName}</span>? Tindakan ini tidak dapat dibatalkan.</div>
+                            <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">Anda yakin ingin menghapus data rute <span className="text-[#1d2d6a] font-bold">{routeName}</span>? Tindakan ini tidak dapat dibatalkan.</div>
                             <div className="p-6 pt-0 flex gap-3">
-                                <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm">Batal</button>
-                                <button onClick={confirmDeleteGeoJSON} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.3)]">Ya, Hapus</button>
+                                <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all shadow-sm">Batal</button>
+                                <button onClick={confirmDeleteGeoJSON} className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(239,68,68,0.3)]">Ya, Hapus</button>
                             </div>
                         </motion.div>
                     </div>
@@ -120,12 +120,12 @@ export function MasterModals({
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
                             <div className="bg-red-50 p-6 flex flex-col items-center justify-center border-b border-red-100">
                                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500 shadow-inner"><Trash2 size={32} /></div>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Bersihkan Playlist?</h3>
+                                <h3 className="text-xl font-bold text-[#1d2d6a] text-center">Bersihkan Playlist?</h3>
                             </div>
                             <div className="p-6 text-center text-slate-500 text-sm font-bold leading-relaxed">Apakah Anda yakin ingin menghapus semua video dari playlist? Anda dapat menambahkan video kembali setelah dibersihkan.</div>
                             <div className="p-6 pt-0 flex gap-3">
-                                <button onClick={() => setShowClearPlaylistConfirm(false)} className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs rounded-xl transition-all shadow-sm">Batal</button>
-                                <button onClick={() => { handleVideoAction({ videoPlaylist: [], activeVideoIndex: 0, isPlaying: false, playbackProgress: 0 }); setShowClearPlaylistConfirm(false); showToast('Playlist berhasil dikosongkan', true); }} className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(220,38,38,0.3)]">Ya, Bersihkan</button>
+                                <button onClick={() => setShowClearPlaylistConfirm(false)} className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all shadow-sm">Batal</button>
+                                <button onClick={() => { handleVideoAction({ videoPlaylist: [], activeVideoIndex: 0, isPlaying: false, playbackProgress: 0 }); setShowClearPlaylistConfirm(false); showToast('Playlist berhasil dikosongkan', true); }} className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition-all shadow-[0_4px_12px_rgba(220,38,38,0.3)]">Ya, Bersihkan</button>
                             </div>
                         </motion.div>
                     </div>
@@ -139,7 +139,7 @@ export function MasterModals({
                         <div className="bg-white/10 p-8 rounded-3xl mb-6 shadow-2xl border border-white/20 flex items-center justify-center">
                             <Loader2 size={64} className="text-[#ee6f1f] animate-spin" />
                         </div>
-                        <h3 className="text-white font-black text-2xl mb-2 drop-shadow-lg">Memproses Data Peta</h3>
+                        <h3 className="text-white font-bold text-2xl mb-2 drop-shadow-lg">Memproses Data Peta</h3>
                         <p className="text-slate-300 text-center max-w-sm px-6 text-sm font-bold tracking-tight leading-relaxed">Mohon tunggu sebentar. Sistem sedang mensinkronisasi rute dan waypoint navigasi.</p>
                     </motion.div>
                 )}
@@ -152,7 +152,7 @@ export function MasterModals({
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
                             <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-b border-slate-200 relative">
                                 <button onClick={() => setShowAudioSettings(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-transparent border-none p-1 rounded-full"><X size={18} strokeWidth={2.5} /></button>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Pengaturan Audio</h3>
+                                <h3 className="text-xl font-bold text-[#1d2d6a] text-center">Pengaturan Audio</h3>
                             </div>
                             <div className="p-6 space-y-4">
                                 <label className="flex items-center gap-3 text-sm font-bold text-slate-600 cursor-pointer hover:text-[#1d2d6a] transition-colors bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -173,7 +173,7 @@ export function MasterModals({
                                 </div>
                             </div>
                             <div className="p-6 pt-0 border-t border-slate-100 mt-4 flex justify-end">
-                                <button onClick={() => setShowAudioSettings(false)} className="py-2.5 px-6 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-sm">Tutup</button>
+                                <button onClick={() => setShowAudioSettings(false)} className="py-2.5 px-6 bg-[#1d2d6a] hover:bg-[#152355] text-white font-bold text-xs rounded-xl transition-all shadow-sm">Tutup</button>
                             </div>
                         </motion.div>
                     </div>
@@ -187,7 +187,7 @@ export function MasterModals({
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
                             <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-b border-slate-200 relative">
                                 <button onClick={() => setShowVideoSettings(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-transparent border-none p-1 rounded-full"><X size={18} strokeWidth={2.5} /></button>
-                                <h3 className="text-xl font-black text-[#1d2d6a] text-center">Pengaturan Video</h3>
+                                <h3 className="text-xl font-bold text-[#1d2d6a] text-center">Pengaturan Video</h3>
                             </div>
                             <div className="p-6 space-y-4">
                                 <label className="flex items-center gap-3 text-sm font-bold text-slate-600 cursor-pointer hover:text-[#1d2d6a] transition-colors bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -196,7 +196,7 @@ export function MasterModals({
                                 </label>
                             </div>
                             <div className="p-6 pt-0 border-t border-slate-100 mt-4 flex justify-end">
-                                <button onClick={() => setShowVideoSettings(false)} className="py-2.5 px-6 bg-[#1d2d6a] hover:bg-[#152355] text-white font-black text-xs rounded-xl transition-all shadow-sm">Tutup</button>
+                                <button onClick={() => setShowVideoSettings(false)} className="py-2.5 px-6 bg-[#1d2d6a] hover:bg-[#152355] text-white font-bold text-xs rounded-xl transition-all shadow-sm">Tutup</button>
                             </div>
                         </motion.div>
                     </div>
