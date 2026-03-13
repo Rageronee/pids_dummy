@@ -16,15 +16,15 @@ export function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, load
                         <div className="mx-auto w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-6 border border-red-100 shadow-sm">
                             <Trash2 size={32} />
                         </div>
-                        <h3 className="text-xl font-black text-[#1d2d6a] mb-2">{title}</h3>
+                        <h3 className="text-xl font-bold text-[#1d2d6a] mb-2">{title}</h3>
                         <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">{message}</p>
                         <div className="flex flex-col gap-3">
                             <button onClick={onConfirm} disabled={loading}
-                                className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-2xl text-sm transition-all active:scale-95 shadow-[0_8px_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2">
+                                className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-2xl text-sm transition-all active:scale-95 shadow-[0_8px_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2">
                                 {loading ? 'Menghapus...' : 'Ya, Hapus'}
                             </button>
                             <button onClick={onCancel} disabled={loading}
-                                className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 font-black rounded-2xl text-sm transition-all">
+                                className="w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-500 font-semibold rounded-2xl text-sm transition-all">
                                 Batal
                             </button>
                         </div>

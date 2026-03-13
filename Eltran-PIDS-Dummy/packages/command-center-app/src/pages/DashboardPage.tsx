@@ -59,11 +59,11 @@ const DashboardPage: React.FC = () => {
                     <div className="absolute top-4 left-4 z-20 flex gap-2">
                         <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Live Map</span>
+                            <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">Live Map</span>
                         </div>
                         <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
                             <Navigation2 size={12} className="text-blue-600" />
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Live Tracking</span>
+                            <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">Live Tracking</span>
                         </div>
                     </div>
                     <MapComponent />
@@ -76,7 +76,7 @@ const DashboardPage: React.FC = () => {
                     {/* Detailed Status List */}
                     <section className="lg:col-span-2 space-y-4">
                         <div className="flex items-center justify-between mb-2">
-                            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Fleet & Station Analytics</h2>
+                            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Fleet & Station Analytics</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {loading ? (
@@ -99,7 +99,7 @@ const DashboardPage: React.FC = () => {
                             )}
                             {!loading && schedules.length === 0 && (
                                 <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                                    <p className="text-slate-400 font-bold text-sm">Tidak ada jadwal aktif terdeteksi.</p>
+                                    <p className="text-slate-400 font-medium text-sm">Tidak ada jadwal aktif terdeteksi.</p>
                                 </div>
                             )}
                         </div>
@@ -110,7 +110,7 @@ const DashboardPage: React.FC = () => {
                         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
                             <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
                                 <Activity size={16} className="text-blue-600" />
-                                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">System Logs</h2>
+                                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">System Logs</h2>
                             </div>
 
                             <div className="flex-grow space-y-5 overflow-y-auto pr-1">
@@ -128,7 +128,7 @@ const DashboardPage: React.FC = () => {
                                 )}
                             </div>
 
-                            <button className="mt-6 w-full py-2.5 text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                            <button className="mt-6 w-full h-10 text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
                                 View All Logs
                             </button>
                         </div>
@@ -161,14 +161,14 @@ const StatCard: React.FC<{
                     {icon}
                 </div>
                 {trend && (
-                    <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${statusColors[status]}`}>
+                    <span className={`text-[9px] font-semibold px-2 py-1 rounded-lg ${statusColors[status]}`}>
                         {trend}
                     </span>
                 )}
             </div>
             <div>
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{title}</p>
-                <p className="text-3xl font-black tracking-tight text-slate-900">{value}</p>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">{title}</p>
+                <p className="text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
             </div>
         </div>
     );
@@ -185,7 +185,7 @@ const LogItem: React.FC<{ time: string, tag: string, msg: string, type: 'info' |
         <div className="text-[11px] leading-relaxed group hover:bg-slate-50 p-1 rounded-lg transition-colors">
             <div className="flex gap-3 items-center">
                 <span className="text-slate-400 tabular-nums shrink-0 font-medium">{time}</span>
-                <span className={`text-[9px] font-black tracking-wider shrink-0 uppercase ${typeStyles[type]}`}>{tag}</span>
+                <span className={`text-[10px] font-semibold tracking-wider shrink-0 uppercase ${typeStyles[type]}`}>{tag}</span>
                 <span className="text-slate-600 font-medium truncate">{msg}</span>
             </div>
         </div>
@@ -212,17 +212,17 @@ const TransportLineCard: React.FC<{
                     ) : (
                         <div className="p-1.5 bg-slate-100 rounded-lg text-slate-600"><MapPin size={14} /></div>
                     )}
-                    <span className="text-sm font-black text-slate-900">{id}</span>
+                    <span className="text-sm font-semibold text-slate-900">{id}</span>
                 </div>
-                <div className={`px-2 py-0.5 rounded-lg text-[9px] font-extrabold uppercase ${status === 'Normal' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                <div className={`px-2.5 py-0.5 rounded-lg text-[10px] font-semibold uppercase ${status === 'Normal' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
                     {status}
                 </div>
             </div>
 
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[9px] text-slate-400 font-black uppercase">Capacity</span>
-                    <span className={`text-[10px] font-black ${isWarning ? 'text-amber-600' : 'text-slate-900'}`}>{load}%</span>
+                    <span className="text-[9px] text-slate-400 font-semibold uppercase">Capacity</span>
+                    <span className={`text-[10px] font-semibold ${isWarning ? 'text-amber-600' : 'text-slate-900'}`}>{load}%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div
@@ -234,12 +234,12 @@ const TransportLineCard: React.FC<{
 
             <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                 <div className="flex flex-col">
-                    <p className="text-[8px] text-slate-400 font-bold uppercase">Route</p>
-                    <p className="text-[10px] font-bold text-slate-700">{origin} → {dest}</p>
+                    <p className="text-[8px] text-slate-400 font-semibold uppercase">Route</p>
+                    <p className="text-[10px] font-semibold text-slate-700">{origin} → {dest}</p>
                 </div>
                 <div className="text-right">
-                    <p className="text-[8px] text-slate-400 font-bold uppercase">In</p>
-                    <p className="text-sm font-black text-blue-600">{eta}</p>
+                    <p className="text-[8px] text-slate-400 font-semibold uppercase">In</p>
+                    <p className="text-sm font-semibold text-blue-600">{eta}</p>
                 </div>
             </div>
         </div>

@@ -40,8 +40,8 @@ export default function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token
                             <div className="absolute inset-0 bg-white/40 blur-2xl rounded-full scale-150" />
                             <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg" alt="KAI Logo" className="relative h-16 drop-shadow-xl" />
                         </div>
-                        <h1 className="text-3xl leading-tight font-black tracking-tight text-[#1d2d6a] drop-shadow-sm">PIDS Command Center</h1>
-                        <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] opacity-90">Passenger Information Display System</p>
+                        <h1 className="text-3xl leading-tight font-bold tracking-tight text-[#1d2d6a] drop-shadow-sm">PIDS Command Center</h1>
+                        <p className="mt-2 text-[16px] font-semibold text-[#1d2d6a] opacity-90">Passenger Information Display System</p>
                     </div>
                     <form onSubmit={submit} className="flex w-full flex-col space-y-7">
                         <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors" disabled={loading} autoComplete="username" />
@@ -52,12 +52,12 @@ export default function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token
                             </button>
                         </div>
                         <AnimatePresence>{error && (<motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex w-full items-center gap-2 text-red-500 text-xs font-semibold pt-1"><AlertCircle size={14} className="shrink-0" /><span>{error}</span></motion.div>)}</AnimatePresence>
-                        <button type="submit" disabled={loading} className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center">{loading ? 'Memproses...' : 'Masuk Ke Sistem'}</button>
-                        <p className="text-center w-full text-[15px] text-slate-400 font-medium mt-6">Demo: admin / admin123</p>
+                        <button type="submit" disabled={loading} className="mt-8 w-full h-12 rounded-full bg-[#ee6f1f] text-sm font-semibold text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center">{loading ? 'Memproses...' : 'Masuk Ke Sistem'}</button>
+                        <p className="text-center w-full text-sm text-slate-400 font-medium mt-6">Demo: admin / admin123</p>
                     </form>
                 </motion.div>
             </div>
-            <div className="absolute bottom-6 w-full text-center z-10"><p className="text-[10px] font-bold text-slate-500/70">© 2025 PT ELTRAN INDONESIA - PIDS V1.2.0</p></div>
+            <div className="absolute bottom-6 w-full text-center z-10"><p className="text-[10px] font-semibold text-slate-500/70">© 2025 PT ELTRAN INDONESIA - PIDS V1.2.0</p></div>
         </div>
     );
 }

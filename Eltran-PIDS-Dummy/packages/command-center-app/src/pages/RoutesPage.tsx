@@ -6,7 +6,7 @@ import {
     X, Search, ArrowUp, ArrowDown, FileJson, MapPinned,
     Save, Navigation, Map as MapIcon, Train, Users, Clock,
     AlertCircle, ExternalLink, MoreVertical, LayoutGrid, List,
-    Lock, Unlock, RefreshCw
+    Lock, Unlock, RefreshCw, Check, Layers
 } from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
@@ -374,7 +374,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     {loading && (
                         <div className="flex items-center gap-2 text-[#ee6f1f] animate-pulse">
                             <RefreshCw size={12} className="animate-spin" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Syncing...</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-widest">Syncing...</span>
                         </div>
                     )}
                 </div>
@@ -386,11 +386,11 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Cari rute atau nomor KA..."
-                            className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-black text-[#1d2d6a] outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-96 shadow-sm"
+                            className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#1d2d6a] outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-96 shadow-sm"
                         />
                     </div>
                     <button onClick={() => { if (isEditing) setShowForm(false); else setShowForm(true); if (!showForm) resetForm(); }}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-xl font-black text-xs transition-all shadow-md active:scale-95">
+                        className="flex items-center gap-2 h-10 px-6 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-xl font-semibold text-xs transition-all shadow-md active:scale-95">
                         <Plus size={14} strokeWidth={3} />Tambah Rute
                     </button>
                 </div>
@@ -421,13 +421,13 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-2 shrink-0 w-fit">
                         {['All Routes', 'Intercity', 'Commuter', 'Lokal'].map(cat => (
                             <button key={cat} onClick={() => setActiveCategory(cat)}
-                                className={`px-5 py-2 rounded-lg font-black text-xs transition-all ${activeCategory === cat ? 'bg-[#1d2d6a] text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                                className={`h-10 px-6 rounded-lg font-semibold text-xs transition-all ${activeCategory === cat ? 'bg-[#1d2d6a] text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                                 {cat}
                             </button>
                         ))}
                     </div>
                     <AnimatePresence>
-                        {loading ? <div className="p-20 text-center text-slate-400 font-black animate-pulse">Memuat rute...</div> : (
+                        {loading ? <div className="p-20 text-center text-slate-400 font-semibold animate-pulse">Memuat rute...</div> : (
                             routeList.map((route, i) => (
                                 <motion.div
                                     key={route.name}
@@ -442,19 +442,19 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                 >
                                     <div className="flex items-start justify-between mb-2">
                                         <div className="flex items-center gap-2">
-                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${route.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-semibold uppercase tracking-wider ${route.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                                                 }`}>
                                                 {route.status}
                                             </span>
                                             {route.is_active && (
-                                                <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                                <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md text-[9px] font-semibold uppercase tracking-wider">
                                                     <Lock size={10} /> Running
                                                 </span>
                                             )}
-                                            <span className="text-slate-400 font-black text-[9px] uppercase tracking-wider">{route.train_number}</span>
+                                            <span className="text-slate-400 font-semibold text-[9px] uppercase tracking-wider">{route.train_number}</span>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-[#1d2d6a] font-black text-sm flex items-center gap-1.5 justify-end">
+                                            <div className="text-[#1d2d6a] font-semibold text-sm flex items-center gap-1.5 justify-end">
                                                 <Clock size={14} className="text-[#ee6f1f]" />
                                                 {route.scheduled_time} {route.status === 'DELAYED' ? 'Delayed' : ''}
                                             </div>
@@ -463,7 +463,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                     </div>
 
                                     <div className="mb-3">
-                                        <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight truncate">{route.name}</h3>
+                                        <h3 className="text-lg font-semibold text-[#1d2d6a] tracking-tight truncate">{route.name}</h3>
                                         <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[11px] mt-0.5 truncate">
                                             {route.stations?.[0]?.name || 'Origin'}
                                             <ChevronRight size={12} className="shrink-0" />
@@ -477,8 +477,8 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                                 <Train size={14} />
                                             </div>
                                             <div className="truncate">
-                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">Unit</div>
-                                                <div className="text-xs font-black text-[#1d2d6a] truncate">{route.units}</div>
+                                                <div className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest truncate">Unit</div>
+                                                <div className="text-xs font-semibold text-[#1d2d6a] truncate">{route.units}</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -486,8 +486,8 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                                 <MapPinned size={14} />
                                             </div>
                                             <div className="truncate">
-                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">Dist</div>
-                                                <div className="text-xs font-black text-[#1d2d6a] truncate">{route.distance} Km</div>
+                                                <div className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest truncate">Dist</div>
+                                                <div className="text-xs font-semibold text-[#1d2d6a] truncate">{route.distance} Km</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -495,8 +495,8 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                                 <Users size={14} />
                                             </div>
                                             <div className="truncate">
-                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">Occ</div>
-                                                <div className="text-xs font-black text-[#1d2d6a] truncate">{route.occupancy}%</div>
+                                                <div className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest truncate">Occ</div>
+                                                <div className="text-xs font-semibold text-[#1d2d6a] truncate">{route.occupancy}%</div>
                                             </div>
                                         </div>
                                     </div>
@@ -532,7 +532,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                     <button
                                         key={i}
                                         onClick={() => setCurrentPage(i + 1)}
-                                        className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${currentPage === i + 1
+                                        className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${currentPage === i + 1
                                             ? 'bg-[#1d2d6a] text-white shadow-md'
                                             : 'bg-white text-slate-400 hover:bg-slate-50 border border-slate-100'
                                             }`}
@@ -562,10 +562,10 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                                 <div className="absolute bottom-5 left-6 pointer-events-none">
                                     <div className="flex items-center gap-2 mb-0.5">
-                                        <div className="text-[9px] font-black text-[#ee6f1f] uppercase tracking-widest">Live Route Monitor</div>
-                                        {selectedRoute.is_active && <span className="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded font-black flex items-center gap-1 uppercase tracking-tighter"><Lock size={8} /> Operational</span>}
+                                        <div className="text-[9px] font-semibold text-[#ee6f1f] uppercase tracking-widest">Live Route Monitor</div>
+                                        {selectedRoute.is_active && <span className="text-[8px] bg-blue-500 text-white px-1.5 py-0.5 rounded font-semibold flex items-center gap-1 uppercase tracking-tighter"><Lock size={8} /> Operational</span>}
                                     </div>
-                                    <h4 className="text-lg font-black text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
+                                    <h4 className="text-lg font-semibold text-white">{selectedRoute.name} <span className="opacity-50 text-sm ml-1">({selectedRoute.train_number})</span></h4>
                                 </div>
                                 <button className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all">
                                     <ExternalLink size={14} />
@@ -574,68 +574,120 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
 
                             <div className="flex-1 flex flex-col p-8 overflow-hidden">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Route Schedule</h4>
+                                    <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Route Schedule</h4>
                                     <div className="flex items-center gap-2">
                                         {selectedRoute.is_active && (
-                                            <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black border border-amber-100">
+                                            <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-semibold border border-amber-100">
                                                 <AlertCircle size={12} /> Modifikasi Terkunci
                                             </span>
                                         )}
-                                        <span className="px-2.5 py-1 bg-slate-100 text-[#1d2d6a] text-[9px] font-black rounded-md border border-slate-200 uppercase tracking-tighter">Real-time Feed</span>
+                                        <span className="px-2.5 py-1 bg-slate-100 text-[#1d2d6a] text-[9px] font-semibold rounded-md border border-slate-200 uppercase tracking-tighter">Real-time Feed</span>
                                     </div>
                                 </div>
 
-                                {/* Timeline Container - Internal Scroll after 3 items */}
-                                <div className="flex-1 overflow-hidden relative">
-                                    <div className="flex-1 overflow-y-auto pr-4 thin-scrollbar max-h-[340px] relative">
-                                        {/* Timeline Line */}
-                                        <div className="absolute left-[3.25rem] top-6 bottom-6 w-0.5 bg-slate-100 z-0" />
+                                {/* Timeline Container */}
+                                 <div className="flex-1 overflow-hidden relative flex flex-col">
+                                     <div className="flex-1 overflow-y-auto pr-2 thin-scrollbar relative">
+                                         {/* Timeline Line */}
+                                         <div className="absolute left-[4.25rem] top-10 bottom-10 w-1 bg-slate-100 z-0" />
 
-                                        {(selectedRoute.stations || []).map((s: any, idx: number) => {
-                                            const isFirst = idx === 0;
-                                            const isLast = idx === (selectedRoute.stations?.length || 0) - 1;
-                                            const isActive = idx === 1;
-                                            const sName = typeof s === 'string' ? s : s.name;
-                                            const sTime = typeof s === 'string' ? '--:--' : (s.time || '--:--');
+                                         {(selectedRoute.stations || []).map((s: any, idx: number) => {
+                                             const stations = selectedRoute.stations || [];
+                                             const isFirst = idx === 0;
+                                             const isLast = idx === stations.length - 1;
+                                             
+                                             // Mocking current position for demo: 2nd station is "Next", 1st is "Passed"
+                                             const currentIdx = 1; 
+                                             const isPassed = idx < currentIdx;
+                                             const isCurrent = idx === currentIdx;
+                                             
+                                             const sName = typeof s === 'string' ? s : s.name;
+                                             const sTime = typeof s === 'string' ? '--:--' : (s.time || '--:--');
+                                             const sPlatform = typeof s === 'string' ? '1' : (s.platform || '1');
 
-                                            return (
-                                                <div key={idx} className="relative z-10 flex gap-6 pb-10 group last:pb-4">
-                                                    <div className="w-16 pt-0.5 text-right shrink-0">
-                                                        <div className={`text-xs font-black ${isActive ? 'text-[#ee6f1f]' : 'text-[#1d2d6a]'}`}>{sTime}</div>
-                                                        <div className="text-[8px] font-bold text-slate-300 uppercase leading-none mt-0.5">{isFirst ? 'Start' : isLast ? 'End' : 'Arr'}</div>
-                                                    </div>
-                                                    <div className="relative flex justify-center mt-1 shrink-0">
-                                                        {isActive ? (
-                                                            <div className="w-4 h-4 rounded-full bg-white border-[3px] border-[#ee6f1f] shadow-[0_0_8px_rgba(238,111,31,0.4)] z-10" />
-                                                        ) : (
-                                                            <div className={`w-3 h-3 rounded-full border-2 z-10 ${idx < 1 ? 'bg-[#1d2d6a] border-[#1d2d6a]' : 'bg-white border-slate-200'
-                                                                }`} />
-                                                        )}
-                                                    </div>
-                                                    <div className={`flex-1 min-w-0 ${isActive ? 'bg-orange-50/50 border border-orange-100 p-4 rounded-xl -mt-2' : ''}`}>
-                                                        <div className="flex flex-col">
-                                                            {isActive && <span className="text-[8px] font-black text-[#ee6f1f] uppercase tracking-widest mb-1.5">Next Station</span>}
-                                                            <h5 className={`text-sm font-black truncate ${isActive ? 'text-[#1d2d6a]' : 'text-slate-600'} ${isLast ? 'text-slate-400' : ''}`}>
-                                                                {sName}
-                                                            </h5>
-                                                            <p className="text-[10px] font-bold text-slate-300 mt-0.5">
-                                                                Plt {idx + 1} • {idx < 1 ? 'Departed' : idx === 1 ? 'In Transit' : 'Upcoming'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    {/* Gradient to show more stations exist */}
-                                    <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent pointer-events-none opacity-50" />
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Navigation size={32} className="text-slate-200" /></div>
-                            <h4 className="text-base font-black text-[#1d2d6a]">Select a Route</h4>
+                                             return (
+                                                 <div key={idx} className="relative z-10 flex gap-8 pb-12 last:pb-6 group">
+                                                     {/* Time and Label */}
+                                                     <div className="w-20 pt-2 text-right shrink-0">
+                                                         <div className={`text-sm font-bold tracking-tight ${isCurrent ? 'text-[#ee6f1f]' : isPassed ? 'text-slate-400' : 'text-[#1d2d6a]'}`}>
+                                                             {sTime}
+                                                         </div>
+                                                         <div className="text-[9px] font-bold text-slate-300 uppercase tracking-wider mt-1">
+                                                             {isFirst ? 'Origin' : isLast ? 'Terminus' : 'Station'}
+                                                         </div>
+                                                     </div>
+
+                                                     {/* Status Indicator (Circle) */}
+                                                     <div className="relative flex justify-center mt-1.5 shrink-0">
+                                                         {isPassed ? (
+                                                             <div className="w-10 h-10 rounded-full bg-[#1d2d6a] flex items-center justify-center shadow-lg shadow-blue-900/10 border-4 border-slate-50 z-10">
+                                                                 <Check size={14} className="text-white" />
+                                                             </div>
+                                                         ) : isCurrent ? (
+                                                             <div className="w-10 h-10 rounded-full bg-[#ee6f1f] flex items-center justify-center shadow-lg shadow-orange-500/30 border-4 border-slate-50 z-10 relative">
+                                                                 <MapPin size={14} className="text-white" />
+                                                                 <div className="absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20" />
+                                                             </div>
+                                                         ) : (
+                                                             <div className="w-10 h-10 rounded-full bg-slate-50 border-4 border-slate-100 flex items-center justify-center z-10">
+                                                                 <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                                                             </div>
+                                                         )}
+                                                     </div>
+
+                                                     {/* Station Details Card */}
+                                                     <div className={`flex-1 min-w-0 bg-white rounded-2xl p-5 border transition-all duration-300 ${isCurrent ? 'border-orange-200 shadow-md shadow-orange-500/5' : 'border-slate-100 shadow-sm'}`}>
+                                                         <div className="flex justify-between items-start">
+                                                             <div className="flex flex-col min-w-0">
+                                                                 <h5 className={`text-base font-bold truncate mb-1 ${isPassed ? 'text-slate-400' : 'text-[#1d2d6a]'}`}>
+                                                                     {sName}
+                                                                 </h5>
+                                                                 <div className="flex items-center gap-4">
+                                                                     <div className="flex items-center gap-1.5 text-slate-400">
+                                                                         <Clock size={12} />
+                                                                         <span className="text-[11px] font-semibold">{sTime}</span>
+                                                                     </div>
+                                                                     <div className="flex items-center gap-1.5 text-slate-400">
+                                                                         <Layers size={12} />
+                                                                         <span className="text-[11px] font-semibold">Platform {sPlatform}</span>
+                                                                     </div>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             {isPassed && (
+                                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-1">DEPARTED</span>
+                                                             )}
+                                                             {isCurrent && (
+                                                                 <span className="text-[10px] font-bold text-[#ee6f1f] bg-orange-50 px-2 py-0.5 rounded-md uppercase tracking-widest">NEXT</span>
+                                                             )}
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             );
+                                         })}
+                                     </div>
+
+                                     {/* Journey Progress Bar */}
+                                     {selectedRoute.stations && selectedRoute.stations.length > 0 && (
+                                         <div className="mt-8 pt-6 border-t border-slate-100 shrink-0">
+                                             <div className="flex justify-between items-center mb-3">
+                                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trip Progress</div>
+                                                 <div className="text-xs font-bold text-[#1d2d6a]">40% Completed</div>
+                                             </div>
+                                             <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
+                                                 <div 
+                                                     className="h-full bg-gradient-to-r from-[#1d2d6a] to-[#ee6f1f] rounded-full transition-all duration-1000"
+                                                     style={{ width: '40%' }}
+                                                 />
+                                             </div>
+                                         </div>
+                                 </div>
+                             </div>
+                         </>
+                     ) : (
+                         <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+                             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><Navigation size={32} className="text-slate-200" /></div>
+                            <h4 className="text-base font-semibold text-[#1d2d6a]">Select a Route</h4>
                             <p className="text-xs font-bold text-slate-400 mt-1 max-w-[200px]">Click any route card on the left to monitor live status</p>
                         </div>
                     )}
@@ -651,8 +703,8 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                             className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
                             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-black text-[#1d2d6a] tracking-tight">{isEditing ? 'Modify Route' : 'Create Route'}</h2>
-                                    <p className="text-slate-400 font-bold text-[11px] uppercase tracking-widest mt-0.5">Route Configuration</p>
+                                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight">{isEditing ? 'Modify Route' : 'Create Route'}</h2>
+                                    <p className="text-slate-400 font-medium text-[11px] uppercase tracking-widest mt-0.5">Route Configuration</p>
                                 </div>
                                 <button onClick={() => setShowForm(false)} className="p-2.5 bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-all active:scale-95"><X size={20} /></button>
                             </div>
@@ -661,20 +713,20 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Route Designation</label>
-                                            <input value={newRouteName} onChange={e => setNewRouteName(e.target.value.toUpperCase())} placeholder="e.g. ARGO WILIS" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#1d2d6a] font-black focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
+                                            <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider ml-1">Route Designation</label>
+                                            <input value={newRouteName} onChange={e => setNewRouteName(e.target.value.toUpperCase())} placeholder="e.g. ARGO WILIS" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#1d2d6a] font-semibold focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
                                         </div>
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Search & Add Stations</label>
+                                            <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider ml-1">Search & Add Stations</label>
                                             <div className="relative">
                                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                                                <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Type station name..." className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm text-[#1d2d6a] font-bold focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
+                                                <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Type station name..." className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm text-[#1d2d6a] font-medium focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm" />
                                                 <AnimatePresence>
                                                     {filteredSuggestions.length > 0 && (
                                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute z-[70] w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 max-h-[240px] overflow-y-auto custom-scrollbar">
                                                             {filteredSuggestions.map((s, idx) => (
                                                                 <button key={idx} onClick={() => addStationToRoute(s.name)} className="w-full px-5 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-between group">
-                                                                    <div><div className="text-[#1d2d6a] font-black text-xs">{s.name}</div><div className="text-slate-400 text-[9px] font-bold uppercase">{s.city}</div></div>
+                                                                    <div><div className="text-[#1d2d6a] font-semibold text-xs">{s.name}</div><div className="text-slate-400 text-[9px] font-medium uppercase">{s.city}</div></div>
                                                                     <Plus size={14} className="text-slate-200 group-hover:text-[#ee6f1f] transition-colors" />
                                                                 </button>
                                                             ))}
@@ -686,7 +738,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                     </div>
 
                                     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col min-h-[300px]">
-                                        <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <h4 className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                             <LayoutGrid size={12} className="text-[#ee6f1f]" /> Stops Sequence ({selectedStations.length})
                                         </h4>
                                         <div className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
@@ -698,10 +750,10 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                             ) : (
                                                 selectedStations.map((s, idx) => (
                                                     <div key={idx} className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center gap-3 group transition-all hover:bg-slate-100/50">
-                                                        <div className="w-6 h-6 rounded-md bg-[#1d2d6a] text-white flex items-center justify-center text-[10px] font-black shrink-0">{idx + 1}</div>
+                                                        <div className="w-6 h-6 rounded-md bg-[#1d2d6a] text-white flex items-center justify-center text-[10px] font-semibold shrink-0">{idx + 1}</div>
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="text-xs font-black text-[#1d2d6a] truncate">{s.name}</div>
-                                                            <input type="time" value={s.time} onChange={e => { const n = [...selectedStations]; n[idx].time = e.target.value; setSelectedStations(n); }} className="mt-0.5 text-[#ee6f1f] text-[10px] font-black bg-transparent border-none p-0 focus:ring-0 cursor-pointer" />
+                                                            <div className="text-xs font-semibold text-[#1d2d6a] truncate">{s.name}</div>
+                                                            <input type="time" value={s.time} onChange={e => { const n = [...selectedStations]; n[idx].time = e.target.value; setSelectedStations(n); }} className="mt-0.5 text-[#ee6f1f] text-[10px] font-semibold bg-transparent border-none p-0 focus:ring-0 cursor-pointer" />
                                                         </div>
                                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <button onClick={() => { const n = [...selectedStations];[n[idx], n[idx - 1]] = [n[idx - 1], n[idx]]; setSelectedStations(n); }} disabled={idx === 0} className="p-1 hover:bg-white text-slate-300 disabled:opacity-0 rounded-md transition-all"><ArrowUp size={12} /></button>
@@ -716,9 +768,9 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                 </div>
                             </div>
 
-                            <div className="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 bg-white shrink-0">
-                                <button onClick={() => setShowForm(false)} className="px-6 py-2.5 font-black text-xs text-slate-400 hover:text-slate-600 transition-all">Cancel</button>
-                                <button onClick={() => handleSaveRoute()} disabled={saving} className="px-10 py-2.5 bg-[#1d2d6a] hover:bg-[#16224f] disabled:bg-slate-300 text-white rounded-xl font-black text-xs shadow-md active:scale-95 transition-all flex items-center gap-2">
+                            <div className="px-8 py-5 border-t border-slate-100 flex justify-end items-center gap-3 bg-white shrink-0">
+                                <button onClick={() => setShowForm(false)} className="h-11 px-6 font-semibold text-sm text-slate-400 hover:text-slate-600 transition-all">Cancel</button>
+                                <button onClick={() => handleSaveRoute()} disabled={saving} className="h-11 px-10 bg-[#1d2d6a] hover:bg-[#16224f] disabled:bg-slate-300 text-white rounded-xl font-semibold text-sm shadow-md active:scale-95 transition-all flex items-center gap-2">
                                     {saving ? 'Processing...' : <><Save size={16} />Save Changes</>}
                                 </button>
                             </div>

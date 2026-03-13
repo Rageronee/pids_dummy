@@ -117,14 +117,14 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${connected ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-[10px] font-semibold uppercase tracking-widest ${connected ? 'text-green-600' : 'text-red-600'}`}>
                         {connected ? 'Connected' : 'Disconnected'}
                     </span>
                 </div>
                 {loading && (
                     <div className="flex items-center gap-2 text-[#ee6f1f] animate-pulse">
                         <RefreshCw size={12} className="animate-spin" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Syncing...</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-widest">Syncing...</span>
                     </div>
                 )}
             </div>
@@ -237,8 +237,8 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-[#1d2d6a] tracking-tight mb-2">Station Overview</h1>
-                    <p className="text-slate-500 font-bold text-lg">Manage {stations.length} integrated stations across all divisions</p>
+                    <h1 className="text-3xl font-bold text-[#1d2d6a] tracking-tight mb-1">Station Overview</h1>
+                    <p className="text-slate-500 text-sm font-medium">Manage {stations.length} integrated stations across all divisions</p>
                 </div>
             </div>
 
@@ -248,7 +248,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                     <button
                         key={opt}
                         onClick={() => setActiveFilter(opt)}
-                        className={`px-6 py-3 rounded-full font-black text-sm transition-all border-2 shrink-0 ${activeFilter === opt
+                        className={`px-6 py-3 rounded-full font-semibold text-sm transition-all border-2 shrink-0 ${activeFilter === opt
                             ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]'
                             : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
                             }`}
@@ -288,12 +288,12 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
 
                 <button
                     onClick={() => { setShowForm(!showForm); setEditingId(null); }}
-                    className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-lg transition-all active:scale-95 shrink-0 ${showForm
-                        ? 'bg-slate-100 text-slate-500 border-2 border-slate-200'
-                        : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-[0_10px_30px_rgba(238,111,31,0.3)]'
+                    className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 shrink-0 ${showForm
+                        ? 'bg-slate-100 text-slate-500 border border-slate-200'
+                        : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'
                         }`}
                 >
-                    {showForm ? <><X size={24} strokeWidth={3} /> Cancel</> : <><Plus size={24} strokeWidth={3} /> Tambah Stasiun</>}
+                    {showForm ? <><X size={18} /> Cancel</> : <><Plus size={18} /> Tambah Stasiun</>}
                 </button>
             </div>
 
@@ -311,27 +311,27 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                             <div className="space-y-8">
                                 <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                                     {/* Section 1: Basic Information */}
-                                    <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
+                                    <div className="p-4 border-b bg-slate-50/50 flex items-center gap-3">
                                         <div className="text-[#ee6f1f]">
-                                            <Info size={24} />
+                                            <Info size={20} />
                                         </div>
-                                        <span className="font-bold text-slate-700">1. Basic Information</span>
+                                        <h3 className="text-lg font-semibold text-[#1d2d6a] tracking-tight">1. Basic Information</h3>
                                     </div>
                                     <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">Station Name</label>
+                                            <label className="text-sm font-semibold text-slate-700 ml-0.5">Station Name</label>
                                             <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Gambir Station" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">City Code</label>
+                                            <label className="text-sm font-semibold text-slate-700 ml-0.5">City Code</label>
                                             <input value={form.kode_kota} onChange={e => setForm({ ...form, kode_kota: e.target.value.toUpperCase() })} placeholder="E.G. GMR" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">PIC Name</label>
+                                            <label className="text-sm font-semibold text-slate-700 ml-0.5">PIC Name</label>
                                             <input value={form.nama_pic} onChange={e => setForm({ ...form, nama_pic: e.target.value })} placeholder="Full name of person in charge" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">PIC Contact Number</label>
+                                            <label className="text-sm font-semibold text-slate-700 ml-0.5">PIC Contact Number</label>
                                             <input value={form.kontak_pic} onChange={e => setForm({ ...form, kontak_pic: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
                                         </div>
                                     </div>
@@ -339,9 +339,9 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                     {/* Section 2: Location & Mapping */}
                                     <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
                                         <div className="text-[#ee6f1f]">
-                                            <MapPin size={24} />
+                                            <MapPin size={20} />
                                         </div>
-                                        <h3 className="font-bold text-slate-700">2. Location & Mapping</h3>
+                                        <h3 className="text-lg font-semibold text-[#1d2d6a] tracking-tight">2. Location & Mapping</h3>
                                     </div>
                                     <div className="p-8 space-y-8">
                                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -349,7 +349,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pinpoint Location</label>
                                                 <div className="relative h-[340px] rounded-xl overflow-hidden border border-slate-200 shadow-inner group">
                                                     <div ref={mapContainerRef} className="absolute inset-0" />
-                                                    <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-[10px] font-black text-slate-700 shadow-lg group-hover:bg-white transition-colors">
+                                                    <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-[10px] font-semibold text-slate-700 shadow-lg group-hover:bg-white transition-colors">
                                                         <div className="flex items-center gap-2">
                                                             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                                                             CLICK MAP TO SET COORDINATES
@@ -357,15 +357,15 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="lg:col-span-4 flex flex-col justify-center gap-6">
+                                             <div className="lg:col-span-4 flex flex-col justify-center gap-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Latitude</label>
+                                                    <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Latitude</label>
                                                     <div className="relative">
                                                         <input type="number" step="0.000001" value={form.latitude} onChange={e => setForm({ ...form, latitude: Number(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-4 py-3.5 text-sm font-mono focus:border-blue-500 outline-none transition-all" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Longitude</label>
+                                                    <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Longitude</label>
                                                     <div className="relative">
                                                         <input type="number" step="0.000001" value={form.longitude} onChange={e => setForm({ ...form, longitude: Number(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-4 py-3.5 text-sm font-mono focus:border-blue-500 outline-none transition-all" />
                                                     </div>
@@ -382,13 +382,13 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                         </div>
 
                                         <div className="space-y-2 pt-4 border-t border-slate-100">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Full Address</label>
+                                            <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Full Address</label>
                                             <textarea value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Street name, building number, district, etc." rows={2} className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none transition-all resize-none" />
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Province</label>
+                                                <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Province</label>
                                                 <div className="relative">
                                                     <select value={form.provinsi} onChange={e => setForm({ ...form, provinsi: e.target.value })} className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none appearance-none bg-slate-50/50 cursor-pointer">
                                                         <option value="">Select Province</option>
@@ -403,7 +403,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">City / Regency</label>
+                                                <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">City / Regency</label>
                                                 <div className="relative">
                                                     <select value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none appearance-none bg-slate-50/50 cursor-pointer">
                                                         <option value="">Select City</option>
@@ -416,18 +416,18 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">District</label>
+                                                <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">District</label>
                                                 <input value={form.kecamatan} onChange={e => setForm({ ...form, kecamatan: e.target.value })} placeholder="Kecamatan" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-slate-50/50" />
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Village</label>
+                                                <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Village</label>
                                                 <input value={form.kelurahan_desa} onChange={e => setForm({ ...form, kelurahan_desa: e.target.value })} placeholder="Kelurahan / Desa" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-slate-50/50" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Postal Code</label>
+                                                <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Postal Code</label>
                                                 <input value={form.kode_pos} onChange={e => setForm({ ...form, kode_pos: e.target.value })} placeholder="e.g. 10110" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-slate-50/50" />
                                             </div>
                                         </div>
@@ -436,9 +436,9 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                     {/* Section 3: Media & Attachments */}
                                     <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
                                         <div className="text-[#ee6f1f]">
-                                            <Monitor size={24} />
+                                            <Monitor size={20} />
                                         </div>
-                                        <h3 className="font-bold text-slate-700">3.     Media & Attachments</h3>
+                                        <h3 className="text-lg font-semibold text-[#1d2d6a] tracking-tight">3. Media & Attachments</h3>
                                     </div>
                                     <div className="p-8 space-y-8">
                                         <div className="border-2 border-dashed border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center space-y-4 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer bg-slate-50/30 group">
@@ -466,14 +466,14 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                 </div>
 
                                 {/* Form Actions Footer */}
-                                <div className="pt-8 flex items-center justify-end gap-6 border-t border-slate-100">
-                                    <button onClick={() => setShowForm(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-4 py-2">
+                                 <div className="pt-8 flex items-center justify-end gap-4 border-t border-slate-100">
+                                    <button onClick={() => setShowForm(false)} className="h-12 px-8 rounded-2xl font-semibold text-sm bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all active:scale-95">
                                         Cancel & Discard
                                     </button>
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="bg-[#1d2d6a] hover:bg-blue-900 text-white px-12 py-4 rounded-xl font-bold text-sm shadow-xl shadow-blue-900/20 transition-all active:scale-95 flex items-center gap-3 disabled:bg-slate-300"
+                                        className="h-12 px-10 rounded-2xl font-semibold text-sm bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-slate-300"
                                     >
                                         {saving ? (
                                             <RefreshCw size={18} className="animate-spin" />
@@ -499,7 +499,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                 ) : filteredStations.length === 0 ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
                         <Building2 size={64} className="mx-auto text-slate-200 mb-4" />
-                        <h3 className="text-xl font-black text-[#1d2d6a]">No stations found</h3>
+                        <h3 className="text-xl font-semibold text-[#1d2d6a]">No stations found</h3>
                         <p className="text-slate-400 font-medium">Try adjusting your filters or search query.</p>
                     </motion.div>
                 ) : viewMode === 'grid' ? (
@@ -526,7 +526,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                     />
                                     <div className="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/20">
                                         <div className={`w-2 h-2 rounded-full ${station.status === 'ONLINE' ? 'bg-green-400 shadow-[0_0_8px_rgba(72,187,120,0.8)]' : 'bg-orange-400 shadow-[0_0_8px_rgba(237,137,54,0.8)]'}`} />
-                                        <span className="text-[10px] font-black text-white uppercase tracking-wider">{station.status}</span>
+                                        <span className="text-[10px] font-semibold text-white uppercase tracking-wider">{station.status}</span>
                                     </div>
                                     <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                         <button
@@ -548,7 +548,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                 <div className="p-8 space-y-6">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="text-2xl font-black text-[#1d2d6a] tracking-tight">{station.name}</h3>
+                                            <h3 className="text-2xl font-semibold text-[#1d2d6a] tracking-tight">{station.name}</h3>
                                             <p className="text-slate-400 font-bold text-sm">{station.city}, {station.provinsi || 'DAOP 1'}</p>
                                         </div>
                                     </div>
@@ -557,16 +557,16 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Displays</span>
-                                            <span className="text-xl font-black text-[#1d2d6a]">{station.displays_active} Active</span>
+                                            <span className="text-xl font-semibold text-[#1d2d6a]">{station.displays_active} Active</span>
                                         </div>
                                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Next Sync</span>
-                                            <span className="text-xl font-black text-[#1d2d6a]">{station.next_sync}</span>
+                                            <span className="text-xl font-semibold text-[#1d2d6a]">{station.next_sync}</span>
                                         </div>
                                     </div>
 
                                     <button
-                                        className="w-full py-4 px-6 bg-white border-2 border-slate-100 rounded-2xl text-[#1d2d6a] font-black hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2 group/btn"
+                                        className="w-full py-4 px-6 bg-white border-2 border-slate-100 rounded-2xl text-[#1d2d6a] font-semibold hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2 group/btn"
                                     >
                                         Manage Displays
                                         <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
@@ -585,11 +585,11 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                         <table className="w-full text-left">
                             <thead className="bg-[#1d2d6a] text-white">
                                 <tr>
-                                    <th className="px-8 py-6 font-black text-sm uppercase tracking-wider">Station Name</th>
-                                    <th className="px-8 py-6 font-black text-sm uppercase tracking-wider">ID / Code</th>
-                                    <th className="px-8 py-6 font-black text-sm uppercase tracking-wider">Status</th>
-                                    <th className="px-8 py-6 font-black text-sm uppercase tracking-wider">Displays</th>
-                                    <th className="px-8 py-6 font-black text-sm uppercase tracking-wider text-right">Actions</th>
+                                    <th className="px-8 py-6 font-semibold text-[10px] uppercase tracking-wider">Station Name</th>
+                                    <th className="px-8 py-6 font-semibold text-[10px] uppercase tracking-wider">ID / Code</th>
+                                    <th className="px-8 py-6 font-semibold text-[10px] uppercase tracking-wider">Status</th>
+                                    <th className="px-8 py-6 font-semibold text-[10px] uppercase tracking-wider">Displays</th>
+                                    <th className="px-8 py-6 font-semibold text-[10px] uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -601,7 +601,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                                     <img src={station.media || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" alt="" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-[#1d2d6a]">{station.name}</div>
+                                                    <div className="font-semibold text-[#1d2d6a]">{station.name}</div>
                                                     <div className="text-slate-400 text-xs font-bold">{station.city}</div>
                                                 </div>
                                             </div>
@@ -614,7 +614,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-2 h-2 rounded-full ${station.status === 'ONLINE' ? 'bg-green-500' : 'bg-orange-500'}`} />
-                                                <span className={`text-xs font-black ${station.status === 'ONLINE' ? 'text-green-600' : 'text-orange-600'}`}>
+                                                <span className={`text-xs font-semibold ${station.status === 'ONLINE' ? 'text-green-600' : 'text-orange-600'}`}>
                                                     {station.status}
                                                 </span>
                                             </div>
@@ -650,11 +650,11 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                             <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mx-auto mb-6">
                                 <Trash2 size={40} />
                             </div>
-                            <h3 className="text-2xl font-black text-[#1d2d6a] mb-2">Delete Station?</h3>
+                            <h3 className="text-2xl font-semibold text-[#1d2d6a] mb-2">Delete Station?</h3>
                             <p className="text-slate-500 font-bold mb-8">Are you sure you want to delete <span className="text-[#ee6f1f]">{deleteTarget.name}</span>? This action cannot be undone.</p>
                             <div className="grid grid-cols-2 gap-4">
-                                <button onClick={() => setDeleteTarget(null)} className="px-6 py-4 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all">Cancel</button>
-                                <button onClick={handleDelete} className="px-6 py-4 bg-red-500 text-white font-black rounded-2xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all">Delete Now</button>
+                                <button onClick={() => setDeleteTarget(null)} className="px-6 py-4 bg-slate-100 text-slate-500 font-semibold rounded-2xl hover:bg-slate-200 transition-all">Cancel</button>
+                                <button onClick={handleDelete} className="px-6 py-4 bg-red-500 text-white font-semibold rounded-2xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all">Delete Now</button>
                             </div>
                         </motion.div>
                     </div>
@@ -668,7 +668,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 50 }}
-                        className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 text-white font-black overflow-hidden ${toast.type === 'success' ? 'bg-[#1d2d6a] border-b-4 border-green-400' : 'bg-red-500 border-b-4 border-white/20'}`}
+                        className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 text-white font-semibold overflow-hidden ${toast.type === 'success' ? 'bg-[#1d2d6a] border-b-4 border-green-400' : 'bg-red-500 border-b-4 border-white/20'}`}
                     >
                         {toast.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
                         {toast.message}

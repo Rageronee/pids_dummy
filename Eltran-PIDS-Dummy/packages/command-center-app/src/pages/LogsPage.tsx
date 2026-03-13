@@ -45,7 +45,7 @@ export default function LogsPage({ token }: { token: string }) {
         <div className="space-y-8">
             <div className="flex items-end justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-[#1d2d6a] tracking-tight mb-1">Log Sistem</h2>
+                    <h2 className="text-2xl font-bold text-[#1d2d6a] tracking-tight mb-1">Log Sistem</h2>
                     <p className="text-slate-500 text-sm font-medium">{logs.length} entri total</p>
                 </div>
                 <button onClick={fetchLogs} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={16} /></button>
@@ -53,7 +53,7 @@ export default function LogsPage({ token }: { token: string }) {
             <div className="flex gap-2 flex-wrap">
                 {filterOptions.map(opt => (
                     <button key={opt} onClick={() => setFilter(opt)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${filter === opt ? 'bg-[#ee6f1f] text-white border-[#ee6f1f]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>
+                        className={`h-9 px-4 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? 'bg-[#ee6f1f] text-white border-[#ee6f1f]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>
                         {opt === 'ALL' ? 'Semua' : ACTION_META[opt]?.label || opt}
                     </button>
                 ))}
@@ -62,7 +62,7 @@ export default function LogsPage({ token }: { token: string }) {
                 <div className="p-8 text-center text-slate-500 bg-white rounded-3xl border border-slate-200">Tidak ada log.</div>
             ) : (
                 <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-                    <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-3.5 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-black">
+                    <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-4 bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-semibold uppercase tracking-wider">
                         <span>Waktu</span><span>Aksi</span><span>Pengguna</span><span>Role</span><span>Keterangan</span>
                     </div>
                     <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
@@ -76,9 +76,9 @@ export default function LogsPage({ token }: { token: string }) {
                                         <div className="text-slate-500">{dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</div>
                                         <div className="text-slate-400">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
                                     </div>
-                                    <div><span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black border mt-0.5 ${meta.color}`}>{meta.label}</span></div>
-                                    <span className="text-[#1d2d6a] text-sm font-black self-center">{log.user}</span>
-                                    <span className="text-slate-400 text-xs font-bold self-center">{log.role}</span>
+                                    <div><span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-semibold border mt-0.5 ${meta.color}`}>{meta.label}</span></div>
+                                    <span className="text-[#1d2d6a] text-sm font-semibold self-center">{log.user}</span>
+                                    <span className="text-slate-400 text-xs font-medium self-center">{log.role}</span>
                                     <span className="text-slate-600 text-sm font-medium self-center pr-6">{log.details}</span>
                                 </motion.div>
                             );
