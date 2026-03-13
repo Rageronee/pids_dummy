@@ -59,47 +59,15 @@ const DashboardPage: React.FC = () => {
                     <div className="absolute top-4 left-4 z-20 flex gap-2">
                         <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Map Link: ACTIVE</span>
+                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Live Map</span>
                         </div>
                         <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
                             <Navigation2 size={12} className="text-blue-600" />
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Tracking: LIVE</span>
+                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Live Tracking</span>
                         </div>
                     </div>
                     <MapComponent />
                     <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50/50 to-transparent z-10 pointer-events-none" />
-                </section>
-
-                {/* MID SECTION: KPI Dashboard Grid */}
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <StatCard
-                        title="On-Time Performance"
-                        value="98.4%"
-                        status="success"
-                        icon={<Clock size={20} />}
-                        trend="+1.2%"
-                    />
-                    <StatCard
-                        title="System Throughput"
-                        value="420"
-                        status="info"
-                        icon={<Zap size={20} />}
-                        trend="Active PKT"
-                    />
-                    <StatCard
-                        title="Active Services"
-                        value={`${schedules.length + 2}/12`}
-                        status="success"
-                        icon={<Activity size={20} />}
-                        trend="100% Core"
-                    />
-                    <StatCard
-                        title="System Load"
-                        value="24.8%"
-                        status="warning"
-                        icon={<Server size={20} />}
-                        trend="Normal"
-                    />
                 </section>
 
                 {/* BOTTOM SECTION: Split view */}
@@ -109,9 +77,6 @@ const DashboardPage: React.FC = () => {
                     <section className="lg:col-span-2 space-y-4">
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Fleet & Station Analytics</h2>
-                            <div className="flex gap-2">
-                                <button className="px-3 py-1 text-[10px] bg-white border border-slate-200 rounded-lg shadow-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">EXPORT</button>
-                            </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {loading ? (
@@ -150,12 +115,12 @@ const DashboardPage: React.FC = () => {
 
                             <div className="flex-grow space-y-5 overflow-y-auto pr-1">
                                 {logs.map((log, i) => (
-                                    <LogItem 
-                                        key={log.id || i} 
-                                        time={new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
-                                        tag={log.role.toUpperCase()} 
-                                        msg={log.action || log.details} 
-                                        type={log.role === 'Admin' ? 'info' : 'success'} 
+                                    <LogItem
+                                        key={log.id || i}
+                                        time={new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                        tag={log.role.toUpperCase()}
+                                        msg={log.action || log.details}
+                                        type={log.role === 'Admin' ? 'info' : 'success'}
                                     />
                                 ))}
                                 {!loading && logs.length === 0 && (

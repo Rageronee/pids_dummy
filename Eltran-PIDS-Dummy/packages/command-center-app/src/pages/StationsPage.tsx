@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-    Plus, Search, MapPin, Building2, User, Phone, Globe, 
-    Info, Save, Pencil, Trash2, X, MapPinned, FileJson, 
+import {
+    Plus, Search, MapPin, Building2, User, Phone, Globe,
+    Info, Save, Pencil, Trash2, X, MapPinned, FileJson,
     RefreshCw, CheckCircle2, LayoutGrid, List, ChevronRight,
-    ArrowRight, Monitor, Clock, AlertCircle
+    ArrowRight, Monitor, Clock, AlertCircle, Settings, Wifi
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,12 +48,12 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Stations');
-    
+
     // Form State
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<Partial<Station>>({
-        id: '', name: '', city: '', 
+        id: '', name: '', city: '',
         latitude: -6.9147, longitude: 107.6098,
         nama_pic: '', kontak_pic: '', ip_address: '',
         alamat: '', provinsi: '', kabupaten_kota: '',
@@ -222,16 +222,15 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
     };
 
     const filteredStations = stations.filter(s => {
-        const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             s.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                             s.id.toLowerCase().includes(searchQuery.toLowerCase());
-        
+        const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.id.toLowerCase().includes(searchQuery.toLowerCase());
+
         if (activeFilter === 'All Stations') return matchesSearch;
-        if (activeFilter === 'Maintenance Required') return matchesSearch && s.status === 'UPDATING';
         return matchesSearch && s.division === activeFilter;
     });
 
-    const filterOptions = ['All Stations', 'Java Division', 'Sumatra Division', 'Maintenance Required'];
+    const filterOptions = ['All Stations', 'Java Division', 'Sumatra Division'];
 
     return (
         <div className="space-y-8 pb-20">
@@ -249,11 +248,10 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                     <button
                         key={opt}
                         onClick={() => setActiveFilter(opt)}
-                        className={`px-6 py-3 rounded-full font-black text-sm transition-all border-2 shrink-0 ${
-                            activeFilter === opt 
-                            ? 'bg-[#1d2d6a] text-white border-[#1d2d6a] shadow-lg' 
+                        className={`px-6 py-3 rounded-full font-black text-sm transition-all border-2 shrink-0 ${activeFilter === opt
+                            ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]'
                             : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
-                        }`}
+                            }`}
                     >
                         {opt}
                     </button>
@@ -265,7 +263,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                 <div className="flex items-center gap-4 w-full lg:w-auto flex-1">
                     <div className="relative flex-1 max-w-md">
                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                        <input 
+                        <input
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Search stations..."
@@ -273,13 +271,13 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                         />
                     </div>
                     <div className="flex bg-white p-1 rounded-2xl border-2 border-slate-100 shadow-sm shrink-0">
-                        <button 
+                        <button
                             onClick={() => setViewMode('grid')}
                             className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-slate-100 text-[#1d2d6a]' : 'text-slate-300 hover:text-slate-500'}`}
                         >
                             <LayoutGrid size={22} />
                         </button>
-                        <button 
+                        <button
                             onClick={() => setViewMode('list')}
                             className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-100 text-[#1d2d6a]' : 'text-slate-300 hover:text-slate-500'}`}
                         >
@@ -288,14 +286,214 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                     </div>
                 </div>
 
-                <button 
-                    onClick={() => { setShowForm(true); setEditingId(null); }}
-                    className="flex items-center gap-3 px-10 py-4 bg-[#ee6f1f] hover:bg-[#d45d15] text-white rounded-2xl font-black text-lg shadow-[0_10px_30px_rgba(238,111,31,0.3)] transition-all active:scale-95 shrink-0"
+                <button
+                    onClick={() => { setShowForm(!showForm); setEditingId(null); }}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-lg transition-all active:scale-95 shrink-0 ${showForm
+                        ? 'bg-slate-100 text-slate-500 border-2 border-slate-200'
+                        : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-[0_10px_30px_rgba(238,111,31,0.3)]'
+                        }`}
                 >
-                    <Plus size={24} strokeWidth={3} />
-                    Add Station
+                    {showForm ? <><X size={24} strokeWidth={3} /> Cancel</> : <><Plus size={24} strokeWidth={3} /> Tambah Stasiun</>}
                 </button>
             </div>
+
+            {/* Add/Edit Station Form Section - Inline Implementation */}
+            <AnimatePresence>
+                {showForm && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="bg-slate-50/50 border-y border-slate-100 py-8 md:py-12">
+                            <div className="space-y-8">
+                                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                                    {/* Section 1: Basic Information */}
+                                    <div className="p-4 border-b bg-slate-50/50 flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                                            <Info size={16} />
+                                        </div>
+                                        <h3 className="font-bold text-slate-700">Basic Information</h3>
+                                    </div>
+                                    <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">Station Name</label>
+                                            <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Gambir Station" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">City Code</label>
+                                            <input value={form.kode_kota} onChange={e => setForm({ ...form, kode_kota: e.target.value.toUpperCase() })} placeholder="E.G. GMR" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">PIC Name</label>
+                                            <input value={form.nama_pic} onChange={e => setForm({ ...form, nama_pic: e.target.value })} placeholder="Full name of person in charge" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-0.5">PIC Contact Number</label>
+                                            <input value={form.kontak_pic} onChange={e => setForm({ ...form, kontak_pic: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
+                                        </div>
+                                    </div>
+
+                                    {/* Section 2: Location & Mapping */}
+                                    <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                                            <MapPin size={16} />
+                                        </div>
+                                        <h3 className="font-bold text-slate-700">Location & Mapping</h3>
+                                    </div>
+                                    <div className="p-8 space-y-8">
+                                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                            <div className="lg:col-span-8 space-y-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pinpoint Location</label>
+                                                <div className="relative h-[340px] rounded-xl overflow-hidden border border-slate-200 shadow-inner group">
+                                                    <div ref={mapContainerRef} className="absolute inset-0" />
+                                                    <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 text-[10px] font-black text-slate-700 shadow-lg group-hover:bg-white transition-colors">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                                            CLICK MAP TO SET COORDINATES
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="lg:col-span-4 flex flex-col justify-center gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Latitude</label>
+                                                    <div className="relative">
+                                                        <input type="number" step="0.000001" value={form.latitude} onChange={e => setForm({ ...form, latitude: Number(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-4 py-3.5 text-sm font-mono focus:border-blue-500 outline-none transition-all" />
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
+                                                            <CheckCircle2 size={16} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Longitude</label>
+                                                    <div className="relative">
+                                                        <input type="number" step="0.000001" value={form.longitude} onChange={e => setForm({ ...form, longitude: Number(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-4 py-3.5 text-sm font-mono focus:border-blue-500 outline-none transition-all" />
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
+                                                            <CheckCircle2 size={16} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="p-5 bg-blue-50 rounded-xl flex gap-4 border border-blue-100">
+                                                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white flex-shrink-0 mt-0.5">
+                                                        <Info size={12} />
+                                                    </div>
+                                                    <p className="text-[11px] text-blue-800 leading-relaxed font-semibold">
+                                                        Coordinates are used for the PIDS real-time map synchronization across the network. Ensure markers are precise.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 pt-4 border-t border-slate-100">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Full Address</label>
+                                            <textarea value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Street name, building number, district, etc." rows={2} className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none transition-all resize-none" />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Province</label>
+                                                <div className="relative">
+                                                    <select value={form.provinsi} onChange={e => setForm({ ...form, provinsi: e.target.value })} className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none appearance-none bg-slate-50/50 cursor-pointer">
+                                                        <option value="">Select Province</option>
+                                                        <option value="DKI Jakarta">DKI Jakarta</option>
+                                                        <option value="Jawa Barat">Jawa Barat</option>
+                                                        <option value="Jawa Tengah">Jawa Tengah</option>
+                                                        <option value="Jawa Timur">Jawa Timur</option>
+                                                    </select>
+                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                        <ChevronRight size={16} className="rotate-90" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">City / Regency</label>
+                                                <div className="relative">
+                                                    <select value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none appearance-none bg-slate-50/50 cursor-pointer">
+                                                        <option value="">Select City</option>
+                                                        <option value="Jakarta Pusat">Jakarta Pusat</option>
+                                                        <option value="Bandung">Bandung</option>
+                                                    </select>
+                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                        <ChevronRight size={16} className="rotate-90" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">District</label>
+                                                <input value={form.kecamatan} onChange={e => setForm({ ...form, kecamatan: e.target.value })} placeholder="Kecamatan" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-slate-50/50" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Village</label>
+                                                <input value={form.kelurahan_desa} onChange={e => setForm({ ...form, kelurahan_desa: e.target.value })} placeholder="Kelurahan / Desa" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-slate-50/50" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Postal Code</label>
+                                                <input value={form.kode_pos} onChange={e => setForm({ ...form, kode_pos: e.target.value })} placeholder="e.g. 10110" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-slate-50/50" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Section 3: Media & Attachments */}
+                                    <div className="p-4 border-y bg-slate-50/50 flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                                            <Monitor size={16} />
+                                        </div>
+                                        <h3 className="font-bold text-slate-700">Media & Attachments</h3>
+                                    </div>
+                                    <div className="p-8 space-y-8">
+                                        <div className="border-2 border-dashed border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center space-y-4 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer bg-slate-50/30 group">
+                                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-slate-400 shadow-sm group-hover:text-blue-500 transition-colors">
+                                                <Plus size={32} />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-700 text-lg">Upload Station Media</p>
+                                                <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Drag and drop station photos, blueprints, or legal documents. Max 10MB per file.</p>
+                                            </div>
+                                            <button className="bg-[#1d2d6a] px-8 py-2.5 rounded-lg text-xs font-bold text-white hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/10">Browse Files</button>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-6">
+                                            {form.media && (
+                                                <div className="relative group w-52 h-52">
+                                                    <img src={form.media} className="w-full h-full object-cover rounded-xl border border-slate-200 shadow-md group-hover:shadow-lg transition-shadow" alt="Preview" />
+                                                    <button onClick={() => setForm({ ...form, media: '' })} className="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 shadow-xl transition-all hover:scale-110 active:scale-90">
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Form Actions Footer */}
+                                <div className="pt-8 flex items-center justify-end gap-6 border-t border-slate-100">
+                                    <button onClick={() => setShowForm(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-4 py-2">
+                                        Cancel & Discard
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="bg-[#1d2d6a] hover:bg-blue-900 text-white px-12 py-4 rounded-xl font-bold text-sm shadow-xl shadow-blue-900/20 transition-all active:scale-95 flex items-center gap-3 disabled:bg-slate-300"
+                                    >
+                                        {saving ? (
+                                            <RefreshCw size={18} className="animate-spin" />
+                                        ) : (
+                                            <CheckCircle2 size={18} />
+                                        )}
+                                        {editingId ? 'Update Station Profile' : 'Register New Station'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Content Area */}
             <AnimatePresence mode="wait">
@@ -311,13 +509,13 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                         <p className="text-slate-400 font-medium">Try adjusting your filters or search query.</p>
                     </motion.div>
                 ) : viewMode === 'grid' ? (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }} 
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                     >
                         {filteredStations.map((station, idx) => (
-                            <motion.div 
+                            <motion.div
                                 key={station.id}
                                 layout
                                 initial={{ opacity: 0 }}
@@ -327,8 +525,8 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                             >
                                 {/* Station Image & Status Badge */}
                                 <div className="relative h-64 overflow-hidden">
-                                    <img 
-                                        src={station.media || `https://images.unsplash.com/photo-1474487056235-9d690a61429d?q=80&w=1000&auto=format&fit=crop`} 
+                                    <img
+                                        src={station.media || `https://images.unsplash.com/photo-1474487056235-9d690a61429d?q=80&w=1000&auto=format&fit=crop`}
                                         alt={station.name}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                     />
@@ -337,13 +535,13 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                         <span className="text-[10px] font-black text-white uppercase tracking-wider">{station.status}</span>
                                     </div>
                                     <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); setEditingId(station.id); setForm(station); setShowForm(true); }}
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setEditingId(station.id); setForm(station); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                             className="p-2.5 bg-white/90 backdrop-blur-sm rounded-xl text-[#1d2d6a] hover:bg-white shadow-lg transition-all"
                                         >
                                             <Pencil size={18} />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setDeleteTarget(station); }}
                                             className="p-2.5 bg-red-500/90 backdrop-blur-sm rounded-xl text-white hover:bg-red-500 shadow-lg transition-all"
                                         >
@@ -373,7 +571,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                         </div>
                                     </div>
 
-                                    <button 
+                                    <button
                                         className="w-full py-4 px-6 bg-white border-2 border-slate-100 rounded-2xl text-[#1d2d6a] font-black hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2 group/btn"
                                     >
                                         Manage Displays
@@ -385,8 +583,8 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                     </motion.div>
                 ) : (
                     /* Table View Mode */
-                    <motion.div 
-                        initial={{ opacity: 0, x: -20 }} 
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden"
                     >
@@ -435,7 +633,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => { setEditingId(station.id); setForm(station); setShowForm(true); }} className="p-2 text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-100 rounded-xl transition-all"><Pencil size={18} /></button>
+                                                <button onClick={() => { setEditingId(station.id); setForm(station); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="p-2 text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-100 rounded-xl transition-all"><Pencil size={18} /></button>
                                                 <button onClick={() => setDeleteTarget(station)} className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
                                             </div>
                                         </td>
@@ -447,158 +645,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                 )}
             </AnimatePresence>
 
-            {/* Station Form Modal (same rich UI as previously refined) */}
-            <AnimatePresence>
-                {showForm && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-10 pointer-events-none">
-                        <motion.div 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
-                            exit={{ opacity: 0 }} 
-                            onClick={() => setShowForm(false)}
-                            className="absolute inset-0 bg-[#0a122a]/80 backdrop-blur-xl pointer-events-auto"
-                        />
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                            className="relative w-full max-w-6xl max-h-full bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
-                        >
-                            {/* Modal Header */}
-                            <div className="p-10 border-b border-slate-100 flex items-center justify-between shrink-0">
-                                <div>
-                                    <h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight">{editingId ? 'Edit Station Details' : 'Register New Station'}</h2>
-                                    <p className="text-slate-400 font-bold mt-1">Configure comprehensive data and location markers</p>
-                                </div>
-                                <button onClick={() => setShowForm(false)} className="p-4 bg-slate-50 rounded-[1.5rem] text-slate-400 hover:text-slate-600 transition-all active:scale-95">
-                                    <X size={28} />
-                                </button>
-                            </div>
 
-                            {/* Modal Content - Scrollable */}
-                            <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                                    {/* Left Column: Details */}
-                                    <div className="space-y-12">
-                                        <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                <Building2 size={14} className="text-[#ee6f1f]" /> Basic Identity
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-6">
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">Station ID</label>
-                                                    <input value={form.id} disabled={!!editingId} onChange={e => setForm({...form, id: e.target.value.toUpperCase()})} placeholder="e.g. BD" className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">City Code</label>
-                                                    <input value={form.kode_kota} onChange={e => setForm({...form, kode_kota: e.target.value.toUpperCase()})} placeholder="e.g. BDG" className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                                <div className="col-span-2 space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">Station Name</label>
-                                                    <input value={form.name} onChange={e => setForm({...form, name: e.target.value.toUpperCase()})} placeholder="e.g. BANDUNG" className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-black text-lg focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                <User size={14} className="text-[#ee6f1f]" /> Responsibility (PIC)
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">PIC Name</label>
-                                                    <input value={form.nama_pic} onChange={e => setForm({...form, nama_pic: e.target.value})} placeholder="Full name" className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">PIC Contact</label>
-                                                    <input value={form.kontak_pic} onChange={e => setForm({...form, kontak_pic: e.target.value})} placeholder="Phone number" className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                <MapPin size={14} className="text-[#ee6f1f]" /> Local Address
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-6">
-                                                <div className="col-span-2 space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">Address Line</label>
-                                                    <textarea value={form.alamat} onChange={e => setForm({...form, alamat: e.target.value})} placeholder="St. Address..." rows={2} className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all resize-none" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">Province</label>
-                                                    <input value={form.provinsi} onChange={e => setForm({...form, provinsi: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">City / Regency</label>
-                                                    <input value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column: Map & Media */}
-                                    <div className="space-y-12">
-                                        <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                <MapPinned size={14} className="text-[#ee6f1f]" /> Geo Location
-                                            </h4>
-                                            <div className="relative rounded-[2rem] overflow-hidden border-2 border-slate-100 shadow-inner min-h-[400px]">
-                                                <div ref={mapContainerRef} className="absolute inset-0" />
-                                                <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-slate-200 shadow-xl pointer-events-none">
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Coordinates</span>
-                                                    <span className="font-mono text-sm font-black text-[#1d2d6a]">
-                                                        {form.latitude?.toFixed(6)}, {form.longitude?.toFixed(6)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase">Latitude</label>
-                                                    <input type="number" step="0.000001" value={form.latitude} onChange={e => setForm({...form, latitude: Number(e.target.value)})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-xs" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase">Longitude</label>
-                                                    <input type="number" step="0.000001" value={form.longitude} onChange={e => setForm({...form, longitude: Number(e.target.value)})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-[#1d2d6a] font-bold text-xs" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                <Globe size={14} className="text-[#ee6f1f]" /> Digital & Media
-                                            </h4>
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">IP Server Address</label>
-                                                    <input value={form.ip_address} onChange={e => setForm({...form, ip_address: e.target.value})} placeholder="e.g. 192.168.1.10" className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-black text-[#1d2d6a] ml-1">Station Image URL</label>
-                                                    <input value={form.media} onChange={e => setForm({...form, media: e.target.value})} placeholder="https://..." className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl px-6 py-4 text-[#1d2d6a] font-bold focus:bg-white focus:border-[#ee6f1f] transition-all" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Modal Footer */}
-                            <div className="p-10 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-4 shrink-0">
-                                <button onClick={() => setShowForm(false)} className="px-8 py-4 font-black text-[#1d2d6a] hover:bg-white rounded-2xl transition-all">Cancel</button>
-                                <button 
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="px-12 py-4 bg-[#1d2d6a] hover:bg-[#14204d] disabled:bg-slate-300 text-white rounded-2xl font-black shadow-xl shadow-blue-900/10 flex items-center gap-3 transition-all active:scale-95"
-                                >
-                                    {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={20} />}
-                                    {editingId ? 'Update Station' : 'Complete Registration'}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
 
             {/* Confirm Delete Modal */}
             <AnimatePresence>
@@ -623,7 +670,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
             {/* Toast Notifications */}
             <AnimatePresence>
                 {toast && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 50 }}

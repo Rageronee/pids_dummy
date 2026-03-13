@@ -435,7 +435,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.03 }}
                                     onClick={() => setSelectedRouteId(route.name)}
-                                    className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${selectedRouteId === route.name
+                                    className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${selectedRouteId === route.name
                                         ? 'bg-white border-[#1d2d6a] shadow-lg'
                                         : 'bg-white border-transparent hover:border-slate-200 shadow-sm'
                                         }`}
