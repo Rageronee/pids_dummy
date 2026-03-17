@@ -53,8 +53,32 @@ const TVMonitor = React.memo(function TVMonitor({
                 <AnimatePresence mode="wait">
                     {data?.tvStandby !== false ? (
                         <motion.div key="standby-pids" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} className="absolute inset-0 flex flex-col overflow-hidden">
-                            <motion.div initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }} className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/9/96/Tugu_Malang.jpg')" }} />
-                            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+                            {(() => {
+                                const activeStationName = tvDisplayMode === 'current' ? currentStation : nextStation;
+                                const stationObj = data?.activeRoute?.stations?.find((s: any) => {
+                                    const sName = typeof s === 'string' ? s : s.name;
+                                    return sName?.toUpperCase() === activeStationName?.toUpperCase();
+                                });
+                                const mediaFile = (stationObj as any)?.media || null;
+                                const bgUrl = mediaFile 
+                                    ? `${API_URL}/media/station/${encodeURIComponent(mediaFile)}` 
+                                    : `${API_URL}/media/station/station_fallback.png`;
+
+                                return (
+                                    <motion.div 
+                                        key={bgUrl}
+                                        initial={{ scale: 1.1, opacity: 0 }} 
+                                        animate={{ scale: 1, opacity: 1 }} 
+                                        transition={{ duration: 1.2 }} 
+                                        className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+                                        style={{ backgroundImage: `url('${bgUrl}')` }}
+                                    >
+                                        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+                                    </motion.div>
+                                );
+                            })()}
+                            
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none" />
 
                             <div className="relative z-20 flex justify-between items-start pt-10 px-14">
                                 <div className="flex flex-col text-white drop-shadow-md">
@@ -69,25 +93,58 @@ const TVMonitor = React.memo(function TVMonitor({
 
                             <div className="flex-1 flex flex-col justify-center items-center px-12 relative z-20 -mt-8">
                                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center w-full max-w-5xl">
-                                    <h3 className="text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md">{tvDisplayMode === 'current' ? 'Current Station' : 'NEXT STATION'}</h3>
-                                    <h3 className="text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] mb-6">{tvDisplayMode === 'current' ? currentStation : nextStation}</h3>
+                                    <h3 className="text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md uppercase tracking-[0.3em]">{tvDisplayMode === 'current' ? 'Stasiun Saat Ini' : 'STASIUN BERIKUTNYA'}</h3>
+                                    <h3 className="text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] mb-8 uppercase">{tvDisplayMode === 'current' ? currentStation : nextStation}</h3>
                                     <div className="flex items-center justify-center font-sans">
-                                        <div className="bg-[#0a1536] px-12 py-3.5 flex flex-col items-center justify-center rounded-l-md w-80 h-[140px] shadow-lg border-r border-white/20">
-                                            <span className="text-[13px] font-medium text-white/90 mb-1">Service</span>
-                                            <span className="text-[32px] font-bold text-white drop-shadow-sm leading-tight text-center">{masterSyncedServiceName}</span>
+                                        <div className="bg-[#0a1536]/80 backdrop-blur-xl px-12 py-3.5 flex flex-col items-center justify-center rounded-l-3xl w-80 h-[140px] shadow-2xl border border-white/10 border-r-0">
+                                            <span className="text-[13px] font-bold text-white/60 uppercase tracking-widest mb-1.5">Layanan</span>
+                                            <span className="text-[32px] font-black text-white drop-shadow-sm leading-tight text-center uppercase">{masterSyncedServiceName}</span>
                                         </div>
-                                        <div className="bg-[#cc500c] px-12 py-3.5 flex flex-col items-center justify-center rounded-r-md w-80 h-[140px] shadow-lg border-l border-[#d95d19]">
-                                            <span className="text-[13px] font-medium text-white/90 mb-1">Train No</span>
-                                            <span className="text-[32px] font-bold text-white drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
+                                        <div className="bg-[#ee6f1f]/90 backdrop-blur-xl px-12 py-3.5 flex flex-col items-center justify-center rounded-r-3xl w-80 h-[140px] shadow-2xl border border-white/20 border-l-0">
+                                            <span className="text-[13px] font-bold text-white/80 uppercase tracking-widest mb-1.5">Nomor KA</span>
+                                            <span className="text-[32px] font-black text-white drop-shadow-sm leading-tight text-center">KA-{masterSyncedNumber}</span>
                                         </div>
                                     </div>
                                 </motion.div>
                             </div>
 
-                            <div className="h-[160px] bg-gradient-to-b from-transparent via-[#0d1c47]/80 to-[#0a1536] relative z-20 flex items-end justify-between px-24 pb-10">
-                                <div className="flex items-center gap-6 w-1/3 justify-start"><Gauge size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={2} /><div className="flex flex-col"><span className="text-[35px] font-medium text-white/90 mb-0.5">Speed</span><div className="flex items-baseline gap-2"><span className="text-[44px] leading-none font-bold text-white tracking-tight">{speed}</span><span className="text-2xl font-bold text-white/90">km/h</span></div></div></div>
-                                <div className="flex items-center gap-6 w-1/3 justify-center"><Mountain size={60} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} /><div className="flex flex-col"><span className="text-[35px] font-medium text-white/90 mb-0.5">Altitude</span><div className="flex items-baseline gap-2"><span className="text-[44px] leading-none font-bold text-white tracking-tight">{altitude}</span><span className="text-2xl font-bold text-white/90">m</span></div></div></div>
-                                <div className="flex items-center gap-6 w-1/3 justify-end"><Thermometer size={56} className="text-[#ee6f1f] drop-shadow-sm" strokeWidth={1.5} /><div className="flex flex-col"><span className="text-[35px] font-medium text-white/90 mb-0.5">Temp</span><div className="flex items-baseline gap-2"><span className="text-[44px] leading-none font-bold text-white tracking-tight">{temp}</span><span className="text-2xl font-bold text-white/90">°C</span></div></div></div>
+                            <div className="h-[200px] bg-gradient-to-b from-transparent via-black/60 to-black relative z-20 flex items-end justify-between px-24 pb-12">
+                                <div className="flex items-center gap-6 w-1/3 justify-start">
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                                        <Gauge size={48} className="text-[#ee6f1f]" strokeWidth={2.5} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">Kecepatan</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-5xl font-black text-white tracking-tighter">{speed}</span>
+                                            <span className="text-xl font-bold text-white/60 uppercase">km/h</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-6 w-1/3 justify-center">
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                                        <Mountain size={48} className="text-[#ee6f1f]" strokeWidth={2.5} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">Ketinggian</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-5xl font-black text-white tracking-tighter">{altitude}</span>
+                                            <span className="text-xl font-bold text-white/60 uppercase">mdpl</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-6 w-1/3 justify-end">
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                                        <Thermometer size={48} className="text-[#ee6f1f]" strokeWidth={2.5} />
+                                    </div>
+                                    <div className="flex flex-col text-right">
+                                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">Suhu Kabin</span>
+                                        <div className="flex items-baseline gap-2 justify-end">
+                                            <span className="text-5xl font-black text-white tracking-tighter">{temp}</span>
+                                            <span className="text-xl font-bold text-white/60 uppercase">°C</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     ) : (

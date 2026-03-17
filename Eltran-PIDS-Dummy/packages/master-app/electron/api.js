@@ -5,6 +5,8 @@
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import {
@@ -27,6 +29,10 @@ import {
     updateRouteGeoJSON,
     importStationsFromGeoJSON
 } from './database.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 
 export async function startApiServer() {
     await initDatabase();
@@ -75,13 +81,8 @@ export async function startApiServer() {
         }
     }, 5 * 60 * 1000);
 
-    let currentVideoDir = '';
-    let currentAudioDir = '';
-    try {
-        const path = await import('path');
-        currentVideoDir = path.join(process.cwd(), 'public', 'videos');
-        currentAudioDir = path.join(process.cwd(), 'public', 'audio');
-    } catch (e) { }
+    let currentVideoDir = path.join(PUBLIC_DIR, 'media', 'videos');
+    let currentAudioDir = path.join(PUBLIC_DIR, 'media', 'audio');
 
     const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 hours
     const sessions = new Map(); // token -> { user, expiresAt }
@@ -217,14 +218,16 @@ export async function startApiServer() {
 
     apiApp.get('/api/stations-master', async (req, res) => {
         try {
-            const fs = await import('fs/promises');
-            const path = await import('path');
-            const masterPath = path.join(process.cwd(), 'public', 'geojson', 'stations_master.geojson');
+            const masterPath = path.join(PUBLIC_DIR, 'geojson', 'stations_master.geojson');
             const data = await fs.readFile(masterPath, 'utf8');
             res.json({ success: true, data: JSON.parse(data) });
         } catch (e) {
             res.status(500).json({ success: false, error: 'Master stasiun tidak ditemukan atau korup' });
         }
+    });
+
+    apiApp.get('/api/admin/stations', requireAdmin, async (req, res) => {
+        res.json({ success: true, stations: await getStations() });
     });
 
     apiApp.post('/api/admin/stations', requireAdmin, async (req, res) => {
@@ -249,10 +252,14 @@ export async function startApiServer() {
     });
 
     apiApp.post('/api/admin/seed-stations', requireAdmin, async (req, res) => {
-        const result = await seedStationsFromGeoJSON();
-        if (result.error) return res.status(500).json({ success: false, error: result.error });
-        await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `Seeding stasiun: ${result.count} data` });
-        res.json(result);
+        try {
+            // Force re-seed
+            const { seedData } = await import('./database.js');
+            await seedData();
+            res.json({ success: true, message: 'Seeding completed' });
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
     });
 
     apiApp.post('/api/admin/stations/import', requireAdmin, async (req, res) => {
@@ -503,6 +510,40 @@ export async function startApiServer() {
         if (!directory) return res.status(400).json({ success: false, error: 'Directory required' });
         currentAudioDir = directory;
         res.json({ success: true, directory: currentAudioDir });
+    });
+
+    let currentStationDir = path.join(PUBLIC_DIR, 'media', 'stations');
+
+    // Station Photo streaming endpoint
+    apiApp.get('/media/station/:filename', async (req, res) => {
+        try {
+            const path = await import('path');
+            const fs = await import('fs');
+            // Ensure dir exists
+            if (!fs.existsSync(currentStationDir)) {
+                fs.mkdirSync(currentStationDir, { recursive: true });
+            }
+
+            const filePath = path.join(currentStationDir, req.params.filename);
+
+            // Security: prevent path traversal
+            if (!filePath.startsWith(currentStationDir)) {
+                return res.status(403).json({ success: false, error: 'Forbidden' });
+            }
+
+            if (!fs.existsSync(filePath)) {
+                return res.status(404).json({ success: false, error: 'Station photo not found' });
+            }
+
+            const ext = path.extname(filePath).toLowerCase();
+            const mimeTypes = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
+            const contentType = mimeTypes[ext] || 'image/jpeg';
+
+            res.setHeader('Content-Type', contentType);
+            fs.createReadStream(filePath).pipe(res);
+        } catch (e) {
+            res.status(500).json({ success: false, error: e.message });
+        }
     });
 
     // Audio streaming endpoint

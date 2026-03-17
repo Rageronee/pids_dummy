@@ -363,7 +363,7 @@ async function createTables() {
     try { await pool.query("ALTER TABLE gerbong ADD COLUMN IF NOT EXISTS log_operasional TEXT DEFAULT '';"); } catch (e) { }
 }
 
-async function seedData() {
+export async function seedData() {
     console.log('[PIDS-DB] Seeding authentic KAI data to PostgreSQL...');
 
     // 1. Core State & Admin
@@ -375,24 +375,50 @@ async function seedData() {
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
         ['USR001', 'admin', hashedAdminPw, 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
 
-    // 2. Authentic Stations (Jawa Island Hubs)
-    const kaiStations = [
-        ['GMR', 'GAMBIR', 'JAKARTA', -6.1768, 106.8306, 'JKT'],
-        ['BD', 'BANDUNG', 'BANDUNG', -6.9147, 107.6025, 'BDG'],
-        ['CN', 'CIREBON', 'CIREBON', -6.7053, 108.5554, 'CN'],
-        ['SMT', 'SEMARANG TAWANG', 'SEMARANG', -6.9644, 110.4281, 'SMG'],
-        ['YK', 'YOGYAKARTA', 'YOGYAKARTA', -7.7892, 110.3635, 'YOG'],
-        ['SLO', 'SOLO BALAPAN', 'SURAKARTA', -7.5568, 110.8214, 'SLO'],
-        ['SGU', 'SURABAYA GUBENG', 'SURABAYA', -7.2655, 112.7519, 'SBY'],
-        ['SBI', 'SURABAYA PASARTURI', 'SURABAYA', -7.2458, 112.7331, 'SBY'],
-        ['ML', 'MALANG', 'MALANG', -7.9772, 112.6370, 'MLG']
+    // 2. Authentic Stations (Malabar Route: Malang → Bandung)
+    const malabarStations = [
+        ['ML', 'MALANG', 'MALANG', -7.9790275, 112.6373464, 'MLG', 'malang.jpg'],
+        ['MLK', 'MALANG KOTALAMA', 'MALANG', -7.9954465, 112.6319415, 'MLG', 'malang.jpg'],
+        ['KPN', 'KEPANJEN', 'MALANG', -8.132748, 112.5728812, 'MLG', 'kepanjen.jpg'],
+        ['SBP', 'SUMBERPUCUNG', 'MALANG', -8.1583792, 112.4780531, 'MLG', 'sumberpucung.jpg'],
+        ['WG', 'WLINGI', 'BLITAR', -8.0879868, 112.3194641, 'BL', 'wlingi.jpg'],
+        ['BL', 'BLITAR', 'BLITAR', -8.101126, 112.1613948, 'BL', 'blitar.jpg'],
+        ['TA', 'TULUNGAGUNG', 'TULUNGAGUNG', -8.0625633, 111.9046015, 'TA', 'tulungagung.jpg'],
+        ['KD', 'KEDIRI', 'KEDIRI', -7.8162448, 112.0157311, 'KD', 'kediri.jpg'],
+        ['KTS', 'KERTOSONO', 'NGANJUK', -7.5918335, 112.0999248, 'NGJ', 'kertosono.jpg'],
+        ['NJ', 'NGANJUK', 'NGANJUK', -7.6002457, 111.9017, 'NGJ', 'nganjuk.jpg'],
+        ['MN', 'MADIUN', 'MADIUN', -7.6185833, 111.5238865, 'MN', 'madiun.jpg'],
+        ['NGW', 'NGAWI', 'NGAWI', -7.4419921, 111.3860743, 'NGW', 'ngawi.jpg'],
+        ['SR', 'SRAGEN', 'SRAGEN', -7.42861, 111.02056, 'SR', 'sragen.jpg'],
+        ['SLO', 'SOLO BALAPAN', 'SURAKARTA', -7.557157, 110.8199548, 'SLO', 'solo_balapan.png'],
+        ['KT', 'KLATEN', 'KLATEN', -7.7127524, 110.6023249, 'KT', 'klaten.jpg'],
+        ['YK', 'YOGYAKARTA', 'YOGYAKARTA', -7.7889579, 110.3622182, 'YOG', 'yogyakarta.jpg'],
+        ['KTA', 'KUTOARJO', 'PURWOREJO', -7.7259759, 109.9062994, 'KTA', 'kutoarjo.jpg'],
+        ['KM', 'KEBUMEN', 'KEBUMEN', -7.681689, 109.6617364, 'KBM', 'kebumen.jpg'],
+        ['GB', 'GOMBONG', 'KEBUMEN', -7.6110809, 109.504688, 'KBM', 'gombong.jpg'],
+        ['KYA', 'KROYA', 'CILACAP', -7.6301526, 109.2529649, 'KYA', 'kroya.jpg'],
+        ['MA', 'MAOS', 'CILACAP', -7.6189981, 109.1388631, 'MA', 'maos.jpg'],
+        ['SDR', 'SIDAREJA', 'CILACAP', -7.4860693, 108.8068569, 'SDR', 'sidareja.jpg'],
+        ['BJR', 'BANJAR', 'BANJAR', -7.3762944, 108.5419504, 'BJR', 'banjar.jpg'],
+        ['CI', 'CIAMIS', 'CIAMIS', -7.3293001, 108.3554701, 'CI', 'ciamis.jpg'],
+        ['TSM', 'TASIKMALAYA', 'TASIKMALAYA', -7.3213073, 108.2231253, 'TSM', 'tasikmalaya.jpg'],
+        ['CPD', 'CIPEUNDEUY', 'GARUT', -7.0931934, 108.0998045, 'CPD', 'cipeundeuy.jpg'],
+        ['C26', 'LELES', 'GARUT', -7.0838873, 107.8997164, 'LLS', 'leles.jpg'],
+        ['KAC', 'KIARACONDONG', 'BANDUNG', -6.9244847, 107.6457751, 'BDG', 'kiaracondong.jpg'],
+        ['BD', 'BANDUNG', 'BANDUNG', -6.9143744, 107.6013675, 'BDG', 'bandung.jpg']
     ];
 
-    for (const [id, name, city, lat, lon, code] of kaiStations) {
-        await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota) 
-                     VALUES ($1, $2, $3, $4, $5, $6) 
-                     ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, city=EXCLUDED.city, latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude, kode_kota=EXCLUDED.kode_kota`,
-            [id, name, city, lat, lon, code]);
+    for (const [id, name, city, lat, lon, code, med] of malabarStations) {
+        await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota, media) 
+                     VALUES ($1, $2, $3, $4, $5, $6, $7) 
+                     ON CONFLICT (id) DO UPDATE SET 
+                        name=EXCLUDED.name, 
+                        city=EXCLUDED.city, 
+                        latitude=EXCLUDED.latitude, 
+                        longitude=EXCLUDED.longitude, 
+                        kode_kota=EXCLUDED.kode_kota,
+                        media=EXCLUDED.media`,
+            [id, name, city, lat, lon, code, med]);
     }
 
     // 3. Train Services
@@ -635,13 +661,13 @@ export async function getRoutes() {
         let stations = [];
         if (dbRoute) {
             const stationRows = await getAll(`
-                SELECT s.name 
+                SELECT s.name, s.media
                 FROM route_stations rs
                 JOIN stations s ON rs.station_id = s.id
                 WHERE rs.route_id = $1
                 ORDER BY rs.sequence_order
             `, [dbRoute.id]);
-            stations = stationRows.map(r => r.name);
+            stations = stationRows.map(r => ({ name: r.name, media: r.media }));
         }
 
         const isLive = isNameMatch(service.name, liveState.serviceName);

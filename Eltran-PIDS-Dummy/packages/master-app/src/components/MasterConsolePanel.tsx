@@ -470,7 +470,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             if (pts.length > 0) {
                 navData = pts.map((f: any, idx: number) => {
                     const sName = (f.properties?.name || '').toUpperCase();
-                    // Optional: Try to find schedule from DB by name
+                    // Try to find the station in stationsData list to get its media (photo)
+                    const stnObj = stationsData.find(s => (s.name || '').toUpperCase() === sName);
                     const stopSched = activeSchedule?.stops?.find((s: any) => (s.station_name || '').toUpperCase() === sName);
 
                     const isBerhenti = sName === (data?.currentStation || '').trim().toUpperCase();
@@ -484,6 +485,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         lat: lat,
                         eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
                         status: isBerhenti ? "BERHENTI" : "",
+                        media: stnObj?.media || "",
                         next: pts[idx + 1]?.properties?.name || "-"
                     };
                 });
@@ -495,17 +497,19 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
     // Fallback logic if GeoJSON not available or has no point features
     if (navData.length === 0) {
-        navData = activeRouteStations.map((stationName: string, idx: number) => {
-            const station = stationsData.find(s => s.name === stationName) || {};
-            const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === stationName);
+        navData = activeRouteStations.map((s: any, idx: number) => {
+            const sName = typeof s === 'string' ? s : (s.name || '');
+            const station = stationsData.find(st => st.name === sName) || {};
+            const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === sName);
             return {
-                name: stationName,
+                name: sName,
                 type: idx === 0 ? 'ASAL' : idx === activeRouteStations.length - 1 ? 'TUJUAN' : 'ANTARA',
                 lng: station.longitude?.toFixed(6) || "-",
                 lat: station.latitude?.toFixed(6) || "-",
                 eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
-                status: stationName === data?.currentStation ? "BERHENTI" : "",
-                next: activeRouteStations[idx + 1] || "-"
+                status: sName === data?.currentStation ? "BERHENTI" : "",
+                media: s.media || station.media || "",
+                next: (typeof activeRouteStations[idx + 1] === 'string' ? activeRouteStations[idx + 1] : activeRouteStations[idx + 1]?.name) || "-"
             };
         });
     }
