@@ -513,84 +513,89 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col gap-6"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                     >
                         {filteredStations.map((station, idx) => (
                             <motion.div
                                 key={station.id}
                                 layout
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.03 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50 group flex flex-col cursor-pointer hover:border-[#ee6f1f]/30 transition-all hover:-translate-y-1"
                                 onClick={() => setSelectedStation(station)}
-                                className="bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-lg shadow-slate-200/40 group flex flex-col md:flex-row cursor-pointer hover:border-[#ee6f1f]/30 transition-all active:scale-[0.99]"
                             >
-                                {/* Station Image - Wide Horizontal for Card */}
-                                <div className="relative w-full md:w-[320px] lg:w-[400px] h-48 md:h-auto overflow-hidden shrink-0">
+                                {/* Station Photo - Top Position */}
+                                <div className="relative h-60 overflow-hidden shrink-0">
                                     <img
                                         src={station.media ? `${API}/media/station/${station.media}` : `${API}/media/station/station_fallback.png`}
                                         alt={station.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                                         onError={(e: any) => { e.target.src = `${API}/media/station/station_fallback.png` }}
                                     />
-                                    <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/20">
-                                        <div className={`w-2 h-2 rounded-full ${station.status === 'ONLINE' ? 'bg-green-400' : 'bg-orange-400'}`} />
-                                        <span className="text-[10px] font-semibold text-white uppercase tracking-wider">{station.status}</span>
+                                    
+                                    {/* Status Badge Overlay */}
+                                    <div className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-xl rounded-full border border-white/20">
+                                        <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${station.status === 'ONLINE' ? 'bg-green-400' : 'bg-orange-400'}`} />
+                                        <span className="text-[11px] font-black text-white uppercase tracking-[0.1em]">{station.status}</span>
+                                    </div>
+
+                                    {/* ID Badge Overlay */}
+                                    <div className="absolute top-6 right-6 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm">
+                                        <span className="font-mono text-[10px] font-black text-[#1d2d6a] tracking-tighter uppercase">{station.id}</span>
                                     </div>
                                 </div>
 
-                                {/* Card Content - Horizontal Alignment */}
-                                <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
-                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="text-2xl font-bold text-[#1d2d6a] tracking-tight">{station.name}</h3>
-                                                <span className="px-3 py-1 bg-slate-100 rounded-lg font-mono text-xs font-bold text-slate-500 uppercase tracking-tighter">
-                                                    {station.id}
-                                                </span>
+                                {/* Card Body */}
+                                <div className="p-8 flex-1 flex flex-col">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h3 className="text-2xl font-black text-[#1d2d6a] leading-tight group-hover:text-[#ee6f1f] transition-colors">
+                                            {station.name}
+                                        </h3>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setEditingId(station.id); setForm(station); setShowForm(true); }}
+                                                className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(station); }}
+                                                className="p-2 hover:bg-red-50 rounded-lg text-red-400 transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 mb-8">
+                                        <div className="flex items-center gap-3 text-slate-500">
+                                            <div className="p-2 bg-slate-50 rounded-lg">
+                                                <MapPin size={16} className="text-[#ee6f1f]" />
                                             </div>
-                                            <div className="flex items-center gap-2 text-slate-400">
-                                                <MapPin size={14} className="text-[#ee6f1f]" />
-                                                <p className="font-bold text-sm">{station.city}, {station.provinsi || 'Jawa'}</p>
+                                            <div>
+                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Location</p>
+                                                <p className="text-sm font-bold text-slate-600">{station.city}, {station.provinsi || 'Jawa'}</p>
                                             </div>
                                         </div>
-                                        
-                                        <div className="flex items-center gap-4">
-                                             <div className="bg-slate-50 rounded-2xl px-5 py-3 border border-slate-100 hidden lg:block">
-                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Last Sync</span>
-                                                <span className="text-sm font-bold text-[#1d2d6a]">{station.next_sync}</span>
+
+                                        <div className="flex items-center gap-3 text-slate-500">
+                                            <div className="p-2 bg-slate-50 rounded-lg">
+                                                <Wifi size={16} className="text-[#1d2d6a]" />
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setEditingId(station.id); setForm(station); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                                    className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a]/20 shadow-sm transition-all"
-                                                >
-                                                    <Pencil size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(station); }}
-                                                    className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-500 hover:bg-red-500 hover:text-white shadow-sm transition-all"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
+                                            <div>
+                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Network IP</p>
+                                                <p className="text-sm font-bold font-mono text-slate-600">{station.ip_address || '192.168.1.1'}</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 flex flex-col md:flex-row items-center justify-between border-t border-slate-50 pt-4">
-                                        <div className="flex gap-8">
-                                            <div className="flex items-center gap-2 text-slate-500">
-                                                <Wifi size={14} className="text-green-500" />
-                                                <span className="text-xs font-bold font-mono tracking-tighter">{station.ip_address || '192.168.1.1'}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-slate-500">
-                                                <User size={14} className="text-[#1d2d6a]" />
-                                                <span className="text-xs font-bold">{station.nama_pic || 'ADMIN'}</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-[#ee6f1f] group-hover:translate-x-1 transition-transform">
-                                            <ChevronRight size={24} />
-                                        </div>
+                                    {/* View Details Button - Footer */}
+                                    <div className="mt-auto pt-6 border-t border-slate-50">
+                                        <button className="w-full py-4 bg-[#1d2d6a] hover:bg-[#ee6f1f] text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-[#1d2d6a]/20 hover:shadow-[#ee6f1f]/30 flex items-center justify-center gap-3">
+                                            View Station Details
+                                            <ChevronRight size={18} />
+                                        </button>
                                     </div>
                                 </div>
                             </motion.div>
