@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
@@ -33,6 +33,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     const [isAutoPlay, setIsAutoPlay] = useState(true);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!isAutoPlay) return;
@@ -70,22 +71,44 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
         setIsAutoPlay(false);
     };
 
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
     return (
-        <div className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black group">
+        <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black group">
             <AnimatePresence mode="wait">
                 <motion.div key={currentCamIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${cameras[currentCamIndex].url})` }}>
                     <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
                 </motion.div>
             </AnimatePresence>
             <motion.div animate={{ y: ["0%", "100%", "0%"] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 bg-white/10 h-px z-10 pointer-events-none shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-            <div className="absolute top-8 left-8 right-8 flex justify-start items-start z-20">
+            <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
                 <div className="px-4 py-2 flex flex-col items-start drop-shadow-2xl">
                     <div className="text-3xl font-bold text-white font-mono tracking-tighter tabular-nums leading-none mb-1 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
                     <div className="text-[10px] font-semibold text-white/90 [text-shadow:0_1px_5px_rgba(0,0,0,0.8)]">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 </div>
+
+                {/* Top Right Fullscreen Button */}
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button onClick={toggleFullscreen} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg" title="Fullscreen">
+                        <Maximize size={24} />
+                    </button>
+                </div>
             </div>
-            {/* Main Center Overlay Text */}
-            <div className="absolute top-1/2 left-8 -translate-y-1/2 z-20"><div className="text-white/20 font-mono text-[80px] font-bold leading-none select-none">{cameras[currentCamIndex].id}</div></div>
+            {/* Main Bottom Left Overlay Text (Extreme Corner) */}
+            <div className="absolute bottom-8 left-10 z-20 pointer-events-none">
+                <div className="text-white/40 font-mono text-[40px] font-bold leading-none select-none drop-shadow-2xl">
+                    {cameras[currentCamIndex].id}
+                </div>
+            </div>
 
 
 
@@ -119,7 +142,6 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                                     {cameras.map((cam, idx) => (
                                         <motion.button
                                             key={cam.id}
-                                            whileHover={{ x: 5 }}
                                             onClick={() => {
                                                 handleSelectGerbong(idx);
                                                 setIsDropdownOpen(false);
