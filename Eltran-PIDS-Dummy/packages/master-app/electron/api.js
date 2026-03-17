@@ -213,7 +213,8 @@ export async function startApiServer() {
 
     // STATIONS
     apiApp.get('/api/stations', async (req, res) => {
-        res.json({ success: true, stations: await getStations() });
+        const result = await getStations(req.query);
+        res.json({ success: true, ...result });
     });
 
     apiApp.get('/api/stations-master', async (req, res) => {
@@ -227,7 +228,8 @@ export async function startApiServer() {
     });
 
     apiApp.get('/api/admin/stations', requireAdmin, async (req, res) => {
-        res.json({ success: true, stations: await getStations() });
+        const result = await getStations(req.query);
+        res.json({ success: true, ...result });
     });
 
     apiApp.post('/api/admin/stations', requireAdmin, async (req, res) => {
@@ -280,7 +282,8 @@ export async function startApiServer() {
 
     // SCHEDULES
     apiApp.get('/api/schedules', async (req, res) => {
-        res.json({ success: true, schedules: await getSchedules() });
+        const result = await getSchedules(req.query);
+        res.json({ success: true, ...result });
     });
 
     apiApp.post('/api/admin/schedules', requireAdmin, async (req, res) => {
@@ -599,8 +602,8 @@ export async function startApiServer() {
     // To be safe, I've refactored the most critical ones.
 
     apiApp.get('/api/logs', async (req, res) => {
-        const logs = await getLogs(req.query);
-        res.json({ success: true, logs, total: logs.length });
+        const result = await getLogs(req.query);
+        res.json({ success: true, ...result });
     });
 
     const port = 3001;

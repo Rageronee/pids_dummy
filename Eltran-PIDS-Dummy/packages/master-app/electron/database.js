@@ -610,8 +610,48 @@ export async function deleteTrain(name) {
     } catch (e) { return { error: e.message }; }
 }
 
-export async function getStations() { return await getAll('SELECT * FROM stations ORDER BY name'); }
+export async function getStations(filter = {}) {
+    let sql = 'SELECT * FROM stations';
+    const params = [];
 
+    if (filter.search) {
+        const search = `%${filter.search}%`;
+        sql += ` WHERE name ILIKE $1 OR city ILIKE $1`;
+        params.push(search);
+    }
+
+    sql += ' ORDER BY name';
+
+    let stations = await getAll(sql, params);
+
+    // Filter by division in JS
+    if (filter.division && filter.division !== 'All Stations') {
+        const javaCities = ['malang', 'bandung', 'surakarta', 'solo', 'yogya', 'semarang', 'cirebon', 'jakarta', 'blitar', 'kediri', 'nganjuk', 'madiun', 'ngawi', 'sragen', 'klaten', 'purworejo', 'kebumen', 'cilacap', 'banjar', 'ciamis', 'tasikmalaya', 'garut'];
+
+        stations = stations.filter(s => {
+            const isJava = javaCities.some(city => (s.city || '').toLowerCase().includes(city) || (s.name || '').toLowerCase().includes(city)) || 
+                           (s.provinsi || '').toLowerCase().includes('jawa') || 
+                           (s.provinsi || '').toLowerCase().includes('dki') ||
+                           (s.id || '').startsWith('JR');
+
+            const div = isJava ? 'Java Division' : 'Sumatra Division';
+            return div === filter.division;
+        });
+    }
+
+    const total = stations.length;
+    const limit = filter.limit ? parseInt(filter.limit) : total;
+    const offset = filter.offset ? parseInt(filter.offset) : 0;
+
+    const paginatedStations = stations.slice(offset, offset + limit);
+
+    return {
+        stations: paginatedStations,
+        total,
+        limit,
+        offset
+    };
+}
 export async function addStation(data) {
     try {
         const { id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos, poi, media } = data;
@@ -757,19 +797,53 @@ export async function deleteRoute(name) {
     } catch (e) { return { error: e.message }; }
 }
 
-export async function getSchedules() {
+export async function getSchedules(filter = {}) {
     try {
-        const schedules = await getAll(`
+        let sql = `
             SELECT s.*, r.direction, 
                    COALESCE(t.name, s.train_name) as display_train_name,
                    COALESCE(t.ka_number, s.ka_number) as display_ka_number
             FROM schedules s
             LEFT JOIN routes r ON s.route_id = r.id
             LEFT JOIN train_services t ON r.train_service_id = t.id
-            ORDER BY s.schedule_date DESC
-        `);
-        return schedules || [];
-    } catch (e) { return []; }
+        `;
+        let countSql = 'SELECT COUNT(*) as total FROM schedules s';
+        const params = [];
+        let paramIdx = 1;
+
+        if (filter.search) {
+            const search = `%${filter.search}%`;
+            const where = ` WHERE s.train_name ILIKE $${paramIdx} OR s.ka_number ILIKE $${paramIdx} OR s.stasiun_keberangkatan ILIKE $${paramIdx} OR s.stasiun_tujuan ILIKE $${paramIdx}`;
+            sql += where;
+            countSql += where;
+            params.push(search);
+            paramIdx++;
+        }
+
+        sql += ' ORDER BY s.schedule_date DESC';
+
+        if (filter.limit !== undefined) {
+            const limit = parseInt(filter.limit) || 50;
+            const offset = parseInt(filter.offset) || 0;
+            sql += ` LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
+            params.push(limit, offset);
+        }
+
+        const [schedules, countRes] = await Promise.all([
+            getAll(sql, params),
+            getOne(countSql, params.slice(0, filter.search ? 1 : 0))
+        ]);
+
+        return {
+            schedules: schedules || [],
+            total: parseInt(countRes?.total || 0),
+            limit: filter.limit ? parseInt(filter.limit) : (schedules?.length || 0),
+            offset: filter.offset ? parseInt(filter.offset) : 0
+        };
+    } catch (e) { 
+        console.error("getSchedules error:", e);
+        return { schedules: [], total: 0 }; 
+    }
 }
 
 export async function addSchedule(schedule) {
@@ -909,14 +983,38 @@ export async function deleteGerbong(id) {
 
 export async function getLogs(filter = {}) {
     let sql = 'SELECT * FROM system_logs';
+    let countSql = 'SELECT COUNT(*) as total FROM system_logs';
     const params = [];
+    const countParams = [];
     let paramIdx = 1;
-    if (filter.action) { sql += ` WHERE action = $${paramIdx++}`; params.push(filter.action); }
+    
+    if (filter.action && filter.action !== 'ALL') { 
+        sql += ` WHERE action = $${paramIdx}`; 
+        countSql += ` WHERE action = $${paramIdx}`;
+        params.push(filter.action);
+        countParams.push(filter.action);
+        paramIdx++;
+    }
+    
     sql += ' ORDER BY timestamp DESC';
-    const limit = Math.min(Math.max(parseInt(filter.limit) || 1000, 1), 5000);
-    sql += ` LIMIT $${paramIdx++}`;
-    params.push(limit);
-    return await getAll(sql, params);
+    
+    const limit = parseInt(filter.limit) || 50;
+    const offset = parseInt(filter.offset) || 0;
+    
+    sql += ` LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
+    params.push(limit, offset);
+    
+    const [logs, countRes] = await Promise.all([
+        getAll(sql, params),
+        getOne(countSql, countParams)
+    ]);
+    
+    return {
+        logs,
+        total: parseInt(countRes?.total || 0),
+        limit,
+        offset
+    };
 }
 
 export async function writeLog(entry) {

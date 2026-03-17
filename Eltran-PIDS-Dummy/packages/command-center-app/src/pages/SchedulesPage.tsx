@@ -31,9 +31,36 @@ export default function SchedulesPage({ token }: { token: string }) {
         notes: '', media: ''
     });
 
-    const fetchSchedules = useCallback(async () => {
-        try { const res = await fetch(`${API}/api/schedules`); const d = await res.json(); if (d.success) setSchedules(d.schedules); } catch { } finally { setLoading(false); }
-    }, []);
+    // Pagination & Search States
+    const [total, setTotal] = useState(0);
+    const [offset, setOffset] = useState(0);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const LIMIT = 10;
+
+    const fetchSchedules = useCallback(async (isLoadMore = false, overrideSearch?: string) => {
+        if (isLoadMore) setLoadingMore(true);
+        else setLoading(true);
+
+        try {
+            const currentOffset = isLoadMore ? offset + LIMIT : 0;
+            const search = overrideSearch !== undefined ? overrideSearch : searchQuery;
+            const query = new URLSearchParams({
+                limit: LIMIT.toString(),
+                offset: currentOffset.toString(),
+                search: search
+            });
+
+            const res = await fetch(`${API}/api/schedules?${query}`);
+            const d = await res.json();
+            if (d.success) {
+                if (isLoadMore) setSchedules(prev => [...prev, ...d.schedules]);
+                else setSchedules(d.schedules);
+                setTotal(d.total);
+                setOffset(currentOffset);
+            }
+        } catch { } finally { setLoading(false); setLoadingMore(false); }
+    }, [offset, searchQuery]);
 
     const fetchData = useCallback(async () => {
         try {
@@ -48,9 +75,17 @@ export default function SchedulesPage({ token }: { token: string }) {
     }, [token]);
 
     useEffect(() => { 
-        fetchSchedules(); 
+        fetchSchedules(false); 
         fetchData();
-    }, [fetchSchedules, fetchData]);
+    }, []); // fetchSchedules and fetchData don't need to be in deps to avoid loops with offset
+
+    // Search Debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchSchedules(false, searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     const handleSave = async () => {
         if (!form.train_name || !form.dep_station || !form.arr_station) {
@@ -88,7 +123,7 @@ export default function SchedulesPage({ token }: { token: string }) {
             const d = await res.json();
             if (d.success) {
                 showToast('Jadwal berhasil disimpan', true);
-                fetchSchedules();
+                fetchSchedules(false);
                 setShowForm(false);
                 setForm({
                     train_name: '', ka_number: '', dep_station: '', dep_city_code: '', arr_station: '', arr_city_code: '',
@@ -102,18 +137,38 @@ export default function SchedulesPage({ token }: { token: string }) {
 
     const confirmDelete = async () => {
         if (!deleteTarget) return; setSaving(true);
-        try { const res = await fetch(`${API}/api/admin/schedules/${deleteTarget.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); const d = await res.json(); if (d.success) { showToast(`Jadwal ${deleteTarget.train_name} dihapus`, true); fetchSchedules(); } else showToast(d.error || 'Gagal', false); } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
+        try { const res = await fetch(`${API}/api/admin/schedules/${deleteTarget.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); const d = await res.json(); if (d.success) { showToast(`Jadwal ${deleteTarget.train_name} dihapus`, true); fetchSchedules(false); } else showToast(d.error || 'Gagal', false); } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
     };
 
     return (
         <div className="space-y-8">
             <ConfirmModal isOpen={!!deleteTarget} title="Hapus Jadwal" message={`Hapus jadwal ${deleteTarget?.train_name}?`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
-            <div className="flex items-end justify-between">
-                <div><h2 className="text-3xl font-bold text-[#1d2d6a] tracking-tight mb-2">Jadwal Kereta</h2><p className="text-slate-500 text-base font-medium">{schedules.length} jadwal aktif</p></div>
-                <div className="flex gap-3">
-                    <button onClick={fetchSchedules} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all active:scale-95"><RefreshCcw size={20} /></button>
-                    <button onClick={() => setShowForm(!showForm)} className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 ${showForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="flex-1">
+                    <h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight mb-2">Penjadwalan Kereta</h2>
+                    <p className="text-slate-500 text-sm font-medium">Monitoring & Manajemen {total} Jadwal Aktif</p>
+                </div>
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-80">
+                        <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input 
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            placeholder="Cari KA / Rute..." 
+                            className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-6 py-3 text-sm font-semibold focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
+                        />
+                    </div>
+                    <button 
+                        onClick={() => setShowForm(!showForm)} 
+                        className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 shrink-0 ${showForm ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'}`}
+                    >
                         {showForm ? <><X size={18} />Batal</> : <><Plus size={18} />Tambah Jadwal</>}
+                    </button>
+                    <button 
+                        onClick={() => fetchSchedules(false)} 
+                        className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all"
+                    >
+                        <RefreshCcw size={18} />
                     </button>
                 </div>
             </div>
@@ -374,6 +429,24 @@ export default function SchedulesPage({ token }: { token: string }) {
                             </AnimatePresence>
                         </motion.div>
                     ))}
+                </div>
+            )}
+
+            {/* Load More Button */}
+            {schedules.length < total && (
+                <div className="flex justify-center pt-8">
+                    <button
+                        onClick={() => fetchSchedules(true)}
+                        disabled={loadingMore}
+                        className="px-12 py-4 bg-white border-2 border-slate-100 text-[#1d2d6a] font-bold rounded-2xl hover:border-[#ee6f1f] hover:text-[#ee6f1f] transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+                    >
+                        {loadingMore ? (
+                            <RefreshCcw size={20} className="animate-spin" />
+                        ) : (
+                            <ChevronRight size={20} className="rotate-90" />
+                        )}
+                        {loadingMore ? 'Memuat Lebih Banyak...' : 'Muat Jadwal Lainnya'}
+                    </button>
                 </div>
             )}
             <ToastNotification toast={toast} onClose={closeToast} />

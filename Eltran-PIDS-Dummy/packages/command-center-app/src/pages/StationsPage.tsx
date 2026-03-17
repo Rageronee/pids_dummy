@@ -68,12 +68,67 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
     const mapRef = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
 
-    const fetchStations = useCallback(async () => {
-        setLoading(true);
+    const [total, setTotal] = useState(0);
+    const [offset, setOffset] = useState(0);
+    const LIMIT = 9;
+
+const StationSkeleton = () => (
+    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm overflow-hidden h-full">
+        <div className="flex flex-col gap-6 h-full">
+            <div className="w-full aspect-[16/10] bg-slate-100 rounded-[1.5rem] relative overflow-hidden">
+                <motion.div 
+                    animate={{ x: ['-100%', '100%'] }} 
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                />
+            </div>
+            <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-20 h-6 bg-slate-100 rounded-lg overflow-hidden relative">
+                        <motion.div 
+                            animate={{ x: ['-100%', '100%'] }} 
+                            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                        />
+                    </div>
+                    <div className="w-12 h-6 bg-slate-50 rounded-lg" />
+                </div>
+                <div className="w-3/4 h-8 bg-slate-100 rounded-xl relative overflow-hidden">
+                    <motion.div 
+                        animate={{ x: ['-100%', '100%'] }} 
+                        transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <div className="w-full h-4 bg-slate-50 rounded-lg" />
+                    <div className="w-2/3 h-4 bg-slate-50 rounded-lg" />
+                </div>
+            </div>
+        </div>
+    </div>
+);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const fetchStationsRef = useRef<any>(null);
+
+    const fetchStations = useCallback(async (isLoadMore = false, overrideSearch?: string) => {
+        if (isLoadMore) setLoadingMore(true);
+        else setLoading(true);
+
         try {
-            // Use public endpoint for better reliability in overview
-            const res = await fetch(`${API}/api/stations`);
+            const currentOffset = isLoadMore ? offset + LIMIT : 0;
+            const search = overrideSearch !== undefined ? overrideSearch : searchQuery;
+            
+            const query = new URLSearchParams({
+                limit: LIMIT.toString(),
+                offset: currentOffset.toString(),
+                search: search,
+                division: activeFilter
+            });
+
+            const res = await fetch(`${API}/api/stations?${query}`);
             const data = await res.json();
+
             if (data.success) {
                 const javaCities = ['malang', 'bandung', 'surakarta', 'solo', 'yogya', 'semarang', 'cirebon', 'jakarta', 'blitar', 'kediri', 'nganjuk', 'madiun', 'ngawi', 'sragen', 'klaten', 'purworejo', 'kebumen', 'cilacap', 'banjar', 'ciamis', 'tasikmalaya', 'garut'];
                 
@@ -81,7 +136,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                     const isJava = javaCities.some(city => s.city?.toLowerCase().includes(city) || s.name?.toLowerCase().includes(city)) || 
                                    s.provinsi?.toLowerCase().includes('jawa') || 
                                    s.provinsi?.toLowerCase().includes('dki') ||
-                                   s.id?.startsWith('JR'); // Common Java prefix if any
+                                   s.id?.startsWith('JR');
                     
                     return {
                         ...s,
@@ -91,17 +146,29 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                         division: isJava ? 'Java Division' : 'Sumatra Division'
                     };
                 });
-                setStations(enhancedStations);
+
+                if (isLoadMore) {
+                    setStations(prev => [...prev, ...enhancedStations]);
+                } else {
+                    setStations(enhancedStations);
+                }
+                setTotal(data.total);
+                setOffset(currentOffset);
             }
         } catch (err) {
             console.error("Fetch stations error:", err);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
-    }, []);
+    }, [offset, searchQuery, activeFilter]);
 
     useEffect(() => {
-        fetchStations();
+        fetchStationsRef.current = fetchStations;
+    }, [fetchStations]);
+
+    useEffect(() => {
+        fetchStations(false);
         const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
         socket.on('connect', () => {
             console.log('[Socket.IO] Stations page connected');
@@ -112,12 +179,12 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
         });
         socket.on('db:update', () => {
             console.log('[Socket.IO] Database update received, re-fetching stations...');
-            fetchStations();
+            if (fetchStationsRef.current) fetchStationsRef.current(false);
         });
         return () => {
             socket.disconnect();
         };
-    }, [fetchStations]);
+    }, []); // Removed fetchStations from deps to avoid infinite loops with offset
 
     useEffect(() => {
         setHeader(
@@ -228,14 +295,29 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
         } catch { showToast('Koneksi gagal', false); } finally { setSaving(false); setDeleteTarget(null); }
     };
 
-    const filteredStations = stations.filter(s => {
-        const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.id.toLowerCase().includes(searchQuery.toLowerCase());
+    // For Division filtering, we still do it locally on the loaded set for now
+    // but the main Search is now server-side.
+    const filteredStations = stations;
 
-        if (activeFilter === 'All Stations') return matchesSearch;
-        return matchesSearch && s.division === activeFilter;
-    });
+    const handleSearchChange = (val: string) => {
+        setSearchQuery(val);
+        setOffset(0);
+    };
+
+    // Use effect for search debouncing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setOffset(0);
+            fetchStations(false, searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Use effect for filter changes
+    useEffect(() => {
+        setOffset(0);
+        fetchStations(false);
+    }, [activeFilter]);
 
     const filterOptions = ['All Stations', 'Java Division', 'Sumatra Division'];
 
@@ -245,7 +327,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-bold text-[#1d2d6a] tracking-tight mb-1">Station Overview</h1>
-                    <p className="text-slate-500 text-sm font-medium">Manage {stations.length} integrated stations across all divisions</p>
+                    <p className="text-slate-500 text-sm font-medium">Manage {total} integrated stations across all divisions</p>
                 </div>
             </div>
 
@@ -498,11 +580,19 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
 
             {/* Content Area */}
             <AnimatePresence mode="wait">
-                {loading ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center">
-                        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#ee6f1f] rounded-full animate-spin mx-auto mb-4" />
-                        <p className="text-slate-400 font-bold">Loading stations data...</p>
-                    </motion.div>
+                {loading && stations.length === 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[...Array(LIMIT)].map((_, i) => (
+                            <motion.div
+                                key={`skeleton-${i}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.05 }}
+                            >
+                                <StationSkeleton />
+                            </motion.div>
+                        ))}
+                    </div>
                 ) : filteredStations.length === 0 ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
                         <Building2 size={64} className="mx-auto text-slate-200 mb-4" />
@@ -531,6 +621,7 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                                         src={station.media ? `${API}/media/station/${station.media}` : `${API}/media/station/station_fallback.png`}
                                         alt={station.name}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                                        loading="lazy"
                                         onError={(e: any) => { e.target.src = `${API}/media/station/station_fallback.png` }}
                                     />
                                     
@@ -665,122 +756,196 @@ export default function StationsPage({ token, setHeader }: { token: string, setH
                 )}
             </AnimatePresence>
 
+            {/* Load More Button */}
+            {stations.length < total && (
+                <div className="flex justify-center pt-8">
+                    <button
+                        onClick={() => fetchStations(true)}
+                        disabled={loadingMore}
+                        className="px-12 py-4 bg-white border-2 border-slate-100 text-[#1d2d6a] font-bold rounded-2xl hover:border-[#ee6f1f] hover:text-[#ee6f1f] transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+                    >
+                        {loadingMore ? (
+                            <RefreshCw size={20} className="animate-spin" />
+                        ) : (
+                            <ArrowRight size={20} />
+                        )}
+                        {loadingMore ? 'Loading More Stations...' : 'Load More Stations'}
+                    </button>
+                </div>
+            )}
 
 
-            {/* Station Detail Modal */}
+
+            {/* Station Detail Modal - Premium Immersive View */}
             <AnimatePresence>
                 {selectedStation && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center lg:p-12 overflow-hidden">
                         <motion.div 
                             initial={{ opacity: 0 }} 
                             animate={{ opacity: 1 }} 
                             exit={{ opacity: 0 }} 
                             onClick={() => setSelectedStation(null)} 
-                            className="absolute inset-0 bg-[#0a122a]/95 backdrop-blur-md" 
+                            className="absolute inset-0 bg-[#0a122a]/95 backdrop-blur-[20px]" 
                         />
+                        
                         <motion.div 
-                            initial={{ opacity: 0, scale: 0.9, y: 30 }} 
+                            initial={{ opacity: 0, scale: 0.95, y: 40 }} 
                             animate={{ opacity: 1, scale: 1, y: 0 }} 
-                            exit={{ opacity: 0, scale: 0.9, y: 30 }} 
-                            className="relative bg-white rounded-[2.5rem] w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col lg:flex-row h-[90vh] lg:h-auto lg:max-h-[85vh]"
+                            exit={{ opacity: 0, scale: 0.95, y: 40 }} 
+                            className="relative bg-white lg:rounded-[4rem] w-full max-w-7xl h-full lg:h-[90vh] flex flex-col lg:flex-row overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)]"
                         >
-                            {/* Left: Image Section */}
-                            <div className="relative w-full lg:w-3/5 h-[300px] lg:h-auto overflow-hidden shrink-0">
-                                <img
+                            {/* Left: Immersive Image Section */}
+                            <div className="w-full lg:w-3/5 relative group h-[400px] lg:h-full shrink-0">
+                                <img 
                                     src={selectedStation.media ? `${API}/media/station/${selectedStation.media}` : `${API}/media/station/station_fallback.png`}
-                                    className="w-full h-full object-cover lg:scale-105"
                                     alt={selectedStation.name}
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                     onError={(e: any) => { e.target.src = `${API}/media/station/station_fallback.png` }}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                                <div className="absolute bottom-8 left-8 right-8">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className={`w-3 h-3 rounded-full ${selectedStation.status === 'ONLINE' ? 'bg-green-400 shadow-[0_0_12px_rgba(72,187,120,0.8)]' : 'bg-orange-400'}`} />
-                                        <span className="text-sm font-black text-white uppercase tracking-[0.2em]">{selectedStation.status}</span>
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a122a]/90 via-[#0a122a]/20 to-black/20" />
+                                
+                                <div className="absolute top-8 left-8 right-8 flex justify-between items-start">
+                                    <button 
+                                        onClick={() => setSelectedStation(null)}
+                                        className="p-5 bg-white/10 hover:bg-white/30 backdrop-blur-2xl rounded-full text-white transition-all active:scale-90 border border-white/20"
+                                    >
+                                        <X size={26} />
+                                    </button>
+                                    <div className="px-8 py-3 bg-white/10 backdrop-blur-2xl rounded-full border border-white/20 flex items-center gap-3">
+                                        <div className={`w-2.5 h-2.5 rounded-full ${selectedStation.status === 'ONLINE' ? 'bg-green-400 shadow-[0_0_12px_rgba(74,222,128,0.8)]' : 'bg-orange-400'}`} />
+                                        <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">{selectedStation.status}</span>
                                     </div>
-                                    <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tight">{selectedStation.name}</h2>
                                 </div>
-                                <button 
-                                    onClick={() => setSelectedStation(null)}
-                                    className="absolute top-6 left-6 p-4 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white transition-all active:scale-90"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
 
-                            {/* Right: Details Section */}
-                            <div className="flex-1 p-8 lg:p-12 overflow-y-auto custom-scrollbar bg-white">
-                                <div className="space-y-10">
-                                    {/* Header Info */}
-                                    <div className="flex justify-between items-center">
-                                        <div className="px-4 py-2 bg-[#ee6f1f]/10 rounded-xl text-[#ee6f1f] text-xs font-black tracking-widest uppercase">
-                                            {selectedStation.division}
+                                <div className="absolute bottom-16 left-16 right-16">
+                                    <motion.div 
+                                        initial={{ opacity: 0, x: -30 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.2 }}
+                                        className="space-y-6"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-[2px] w-16 bg-[#ee6f1f]" />
+                                            <span className="text-blue-300 text-sm font-black tracking-[0.4em] uppercase">{selectedStation.division}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-slate-400 font-mono text-sm">
-                                            <span className="font-bold">ID:</span>
-                                            <span className="text-[#1d2d6a] font-black">{selectedStation.id}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Core Stats */}
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">City Code</p>
-                                            <p className="text-2xl font-black text-[#1d2d6a]">{selectedStation.kode_kota || selectedStation.id || 'N/A'}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Base City</p>
-                                            <p className="text-2xl font-black text-[#1d2d6a]">{selectedStation.city}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Technical Details */}
-                                    <div className="space-y-6 pt-6 border-t border-slate-100">
-                                        <h4 className="text-sm font-black text-[#1d2d6a] uppercase tracking-widest">Network & Geo</h4>
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                                <div className="flex items-center gap-3">
-                                                    <Globe size={18} className="text-[#ee6f1f]" />
-                                                    <span className="text-sm font-bold text-slate-600">IP Address</span>
+                                        <h2 className="text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] drop-shadow-2xl">
+                                            {selectedStation.name}
+                                        </h2>
+                                        <div className="flex flex-wrap items-center gap-8 mt-6">
+                                            <div className="flex items-center gap-3 text-white/90">
+                                                <div className="p-2.5 bg-[#ee6f1f] rounded-xl">
+                                                    <MapPin size={20} className="text-white" />
                                                 </div>
-                                                <span className="font-mono font-bold text-[#1d2d6a]">{selectedStation.ip_address || '192.168.1.1'}</span>
+                                                <span className="text-2xl font-black">{selectedStation.city}</span>
                                             </div>
-                                            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                                <div className="flex items-center gap-3">
-                                                    <MapPinned size={18} className="text-[#ee6f1f]" />
-                                                    <span className="text-sm font-bold text-slate-600">Coordinates</span>
-                                                </div>
-                                                <span className="font-mono font-bold text-xs text-[#1d2d6a]">
-                                                    {selectedStation.latitude?.toFixed(5)}, {selectedStation.longitude?.toFixed(5)}
+                                            <div className="px-5 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                                                <span className="text-blue-200 font-mono text-xl font-black tracking-widest uppercase">
+                                                    {selectedStation.kode_kota || selectedStation.id}
                                                 </span>
                                             </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
+                                </div>
+                            </div>
 
-                                    {/* Management Info */}
-                                    <div className="space-y-6 pt-6">
-                                        <h4 className="text-sm font-black text-[#1d2d6a] uppercase tracking-widest">Point of Contact</h4>
-                                        <div className="flex items-center gap-5 bg-[#1d2d6a] p-6 rounded-[2rem] text-white shadow-xl shadow-[#1d2d6a]/20">
-                                            <div className="w-14 h-14 bg-[#ee6f1f] rounded-2xl flex items-center justify-center shrink-0">
-                                                <User size={28} />
+                            {/* Right: Premium Premium Details Section */}
+                            <div className="flex-1 p-8 lg:p-20 overflow-y-auto custom-scrollbar bg-slate-50/20">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="h-full flex flex-col"
+                                >
+                                    <div className="space-y-16 flex-1">
+                                        {/* Core Identification */}
+                                        <div className="grid grid-cols-2 gap-10">
+                                            <div className="space-y-2">
+                                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Administrative City</p>
+                                                <p className="text-3xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.city}</p>
                                             </div>
-                                            <div>
-                                                <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-1">PIC Stasiun</p>
-                                                <p className="text-xl font-bold">{selectedStation.nama_pic || 'SYSTEM ADMIN'}</p>
-                                                <p className="text-sm text-blue-200 mt-0.5">{selectedStation.kontak_pic || '+62 800-0000-0000'}</p>
+                                            <div className="space-y-2 text-right lg:text-left">
+                                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Division Code</p>
+                                                <p className="text-3xl font-black text-[#ee6f1f] tracking-tight">{selectedStation.division || 'DIVRE'}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Technical Stack */}
+                                        <div className="space-y-8">
+                                            <div className="flex items-center gap-4">
+                                                <h4 className="text-[11px] font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Technical Specs</h4>
+                                                <div className="flex-1 h-px bg-slate-100" />
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-1 gap-5">
+                                                <div className="flex items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className="w-14 h-14 bg-blue-50 text-[#1d2d6a] rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110">
+                                                            <Globe size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Network Access</p>
+                                                            <p className="text-xl font-black text-[#1d2d6a]">{selectedStation.ip_address || 'Not Configured'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className="w-14 h-14 bg-orange-50 text-[#ee6f1f] rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110">
+                                                            <MapPinned size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Geographic Data</p>
+                                                            <p className="text-xl font-black text-[#1d2d6a]">
+                                                                {selectedStation.latitude?.toFixed(6) || '0.00'}, {selectedStation.longitude?.toFixed(6) || '0.00'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Management - Officer Profile */}
+                                        <div className="space-y-8">
+                                            <div className="flex items-center gap-4">
+                                                <h4 className="text-[11px] font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Accountability</h4>
+                                                <div className="flex-1 h-px bg-slate-100" />
+                                            </div>
+                                            <div className="relative bg-[#0a122a] p-10 rounded-[3rem] text-white shadow-2xl overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-48 h-48 bg-[#ee6f1f] blur-[100px] opacity-10 group-hover:opacity-20 transition-opacity" />
+                                                <div className="relative flex items-center gap-8">
+                                                    <div className="w-24 h-24 bg-[#ee6f1f] rounded-[2rem] flex items-center justify-center shadow-2xl shadow-[#ee6f1f]/30">
+                                                        <User size={44} className="text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="px-3 py-1 bg-blue-500/20 rounded-full border border-blue-500/30 inline-block mb-3">
+                                                            <span className="text-blue-300 text-[10px] font-black uppercase tracking-widest">Master Admin</span>
+                                                        </div>
+                                                        <h5 className="text-3xl font-black tracking-tight mb-2 leading-none">{selectedStation.nama_pic || 'Kurniawan P.'}</h5>
+                                                        <p className="text-blue-200/50 font-semibold text-lg">{selectedStation.kontak_pic || '+62 821-4492-0051'}</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="pt-8">
+                                    <div className="pt-16">
                                         <button 
-                                            onClick={() => { setEditingId(selectedStation.id); setForm(selectedStation); setShowForm(true); setSelectedStation(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                            className="w-full py-5 bg-[#ee6f1f] text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-[#d45d15] shadow-lg shadow-[#ee6f1f]/20 transition-all active:scale-95"
+                                            onClick={() => { 
+                                                setEditingId(selectedStation.id); 
+                                                setForm(selectedStation); 
+                                                setShowForm(true); 
+                                                setSelectedStation(null); 
+                                                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                                            }}
+                                            className="w-full py-7 bg-gradient-to-r from-[#ee6f1f] to-[#ff9248] text-white rounded-[2.5rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl shadow-[#ee6f1f]/40 hover:shadow-[#ee6f1f]/60 hover:-translate-y-1.5 transition-all active:scale-95 group"
                                         >
-                                            Edit Station Profile
+                                            <span className="flex items-center justify-center gap-3">
+                                                Station Configuration <ChevronRight className="group-hover:translate-x-1 transition-transform" />
+                                            </span>
                                         </button>
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
                         </motion.div>
                     </div>
