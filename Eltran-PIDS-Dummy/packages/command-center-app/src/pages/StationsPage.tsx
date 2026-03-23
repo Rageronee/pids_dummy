@@ -9,7 +9,10 @@ import {
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { API } from '../config';
+import { useToast } from '../hooks/useToast';
+import { ConfirmModal, ToastNotification } from '../components/SharedUI';
 import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface Station {
     id: string;
@@ -53,9 +56,17 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [connected, setConnected] = useState(false);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Stations');
+
+    // Map refs and state
+    const mapRef = useRef<maplibregl.Map | null>(null);
+    const markerRef = useRef<maplibregl.Marker | null>(null);
+    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const [mapIsReady, setMapIsReady] = useState(false);
+
+    const { toast, showToast, closeToast } = useToast();
 
     // Form State
     const [showForm, setShowForm] = useState(false);
@@ -69,13 +80,8 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
         poi: '', media: ''
     });
 
-    const [toast, setToast] = useState<Toast | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Station | null>(null);
     const [selectedStation, setSelectedStation] = useState<Station | null>(null);
-
-    const mapContainerRef = useRef<HTMLDivElement>(null);
-    const mapRef = useRef<maplibregl.Map | null>(null);
-    const markerRef = useRef<maplibregl.Marker | null>(null);
 
     const [total, setTotal] = useState(0);
     const [offset, setOffset] = useState(0);
@@ -119,6 +125,90 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
     );
     const [loadingMore, setLoadingMore] = useState(false);
     const fetchStationsRef = useRef<any>(null);
+
+    // Map Container Callback Ref (for Station Details)
+    const mapDetailContainerRef = useCallback((node: HTMLDivElement | null) => {
+        if (!node) {
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+                setMapIsReady(false);
+            }
+            return;
+        }
+
+        if (mapRef.current) return;
+
+        try {
+            const lat = Number(selectedStation?.latitude) || -6.1751;
+            const lon = Number(selectedStation?.longitude) || 106.8272;
+
+            const map = new maplibregl.Map({
+                container: node,
+                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                center: [lon, lat],
+                zoom: 15,
+                pitch: 45,
+                attributionControl: false,
+                trackResize: true,
+                antialias: true
+            });
+
+            mapRef.current = map;
+
+            map.on('load', () => {
+                setMapIsReady(true);
+                setTimeout(() => map.resize(), 50);
+            });
+
+            const ro = new ResizeObserver(() => {
+                if (mapRef.current) mapRef.current.resize();
+            });
+            ro.observe(node);
+
+            const originalRemove = map.remove.bind(map);
+            map.remove = () => {
+                ro.disconnect();
+                originalRemove();
+            };
+
+        } catch (e) {
+            console.error('[Map] Init error:', e);
+        }
+    }, []);
+
+    // Sync Map with Selected Station
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !mapIsReady || !selectedStation) return;
+
+        const lat = Number(selectedStation.latitude) || -6.176770;
+        const lon = Number(selectedStation.longitude) || 106.830616;
+
+        try {
+            // Update Marker
+            if (markerRef.current) {
+                markerRef.current.remove();
+            }
+
+            const el = document.createElement('div');
+            el.className = 'w-6 h-6 bg-[#ee6f1f] rounded-full border-4 border-white shadow-[0_0_20px_rgba(238,111,31,0.6)] animate-pulse relative z-50';
+            
+            markerRef.current = new maplibregl.Marker({ element: el })
+                .setLngLat([lon, lat])
+                .addTo(map);
+
+            // Center Map
+            map.flyTo({
+                center: [lon, lat],
+                zoom: 15,
+                duration: 2000,
+                essential: true
+            });
+        } catch (e) {
+            console.error('[Map] Sync error:', e);
+        }
+    }, [selectedStation, mapIsReady]);
 
     const fetchStations = useCallback(async (isLoadMore = false, overrideSearch?: string) => {
         if (isLoadMore) setLoadingMore(true);
@@ -218,23 +308,20 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                             onClick={() => setSelectedStation(null)}
                             className="text-slate-400 hover:text-[#1d2d6a] transition-colors"
                         >
-                            Manajemen Stasiun
+                            MANAJEMEN STASIUN
                         </button>
                         <ChevronRight size={22} strokeWidth={3} className="text-slate-300 mt-0.5" />
                         <span className="text-[#1d2d6a]">{selectedStation.name}</span>
                     </div>
                 ) : (
-                    <span className="text-[#1d2d6a] tracking-normal">Manajemen Stasiun</span>
+                    <span className="text-[#1d2d6a] tracking-normal uppercase">Manajemen Stasiun</span>
                 )}
             </div>
         );
         return () => setHeaderTitle(null);
     }, [selectedStation, setHeaderTitle]);
 
-    const showToast = (message: string, success = true) => {
-        setToast({ message, type: success ? 'success' : 'error' });
-        setTimeout(() => setToast(null), 3000);
-    };
+
 
     const initMap = useCallback(() => {
         if (!mapContainerRef.current) return;
@@ -522,26 +609,10 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                     <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Geographic</h3>
                                 </div>
                                 <div className="bg-white rounded-[2.5rem] p-1 border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden h-full flex flex-col">
-                                    {/* Map Preview */}
+                                    {/* Interactive Map Preview */}
                                     <div className="relative h-64 rounded-[2.25rem] m-2 overflow-hidden group">
-                                        <div className="absolute inset-0 bg-[#1d2d6a]/5 flex items-center justify-center">
-                                            {(() => {
-                                                const lat = Number(selectedStation.latitude) || -6.176770;
-                                                const lon = Number(selectedStation.longitude) || 106.830616;
-                                                const zoom = 14;
-                                                const size = '600x400';
-                                                const token = 'pk.eyJ1IjoiYWZuYW5tcSIsImEiOiJjbHN2M3BvMHAwMGRnMmpwOHZ4cHV4amJzIn0.Y_x0g0Fz_7f1V9y2c9f_1Q';
-                                                const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-l+ee6f1f(${lon},${lat})/${lon},${lat},${zoom}/${size}?access_token=${token}`;
-                                                
-                                                return (
-                                                    <div
-                                                        className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-1000"
-                                                        style={{ backgroundImage: `url('${mapUrl}')` }}
-                                                    />
-                                                );
-                                            })()}
-                                        </div>
-                                        <div className="absolute inset-0 bg-black/10" />
+                                        <div ref={mapDetailContainerRef} className="absolute inset-0 bg-slate-100" />
+                                        <div className="absolute inset-0 bg-black/5 pointer-events-none" />
                                     </div>
 
                                     <div className="p-8 space-y-8 flex-1">
@@ -653,8 +724,8 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                         <LayoutGrid size={22} />
                                     </button>
                                     <button
-                                        onClick={() => setViewMode('list')}
-                                        className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-100 text-[#1d2d6a]' : 'text-slate-300 hover:text-slate-500'}`}
+                                        onClick={() => setViewMode('table')}
+                                        className={`p-3 rounded-xl transition-all ${viewMode === 'table' ? 'bg-slate-100 text-[#1d2d6a]' : 'text-slate-300 hover:text-slate-500'}`}
                                     >
                                         <List size={22} />
                                     </button>
@@ -1092,10 +1163,10 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 50 }}
-                        className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 text-white font-semibold overflow-hidden ${toast.type === 'success' ? 'bg-[#1d2d6a] border-b-4 border-green-400' : 'bg-red-500 border-b-4 border-white/20'}`}
+                        className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 text-white font-semibold overflow-hidden ${toast.ok ? 'bg-[#1d2d6a] border-b-4 border-green-400' : 'bg-red-500 border-b-4 border-white/20'}`}
                     >
-                        {toast.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
-                        {toast.message}
+                        {toast.ok ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                        {toast.msg}
                     </motion.div>
                 )}
             </AnimatePresence>
