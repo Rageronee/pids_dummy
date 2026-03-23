@@ -211,10 +211,10 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
 
     useEffect(() => {
         setHeaderTitle(
-            <div className="flex items-center gap-3 text-xl font-black">
+            <div className="flex items-center gap-3 text-xl font-black uppercase">
                 {selectedStation ? (
-                    <div className="flex items-center gap-2 uppercase tracking-normal">
-                        <button
+                    <div className="flex items-center gap-2 tracking-normal">
+                        <button 
                             onClick={() => setSelectedStation(null)}
                             className="text-slate-400 hover:text-[#1d2d6a] transition-colors"
                         >
@@ -224,7 +224,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                         <span className="text-[#1d2d6a]">{selectedStation.name}</span>
                     </div>
                 ) : (
-                    <span className="text-[#1d2d6a] uppercase tracking-normal">Manajemen Stasiun</span>
+                    <span className="text-[#1d2d6a] tracking-normal">Manajemen Stasiun</span>
                 )}
             </div>
         );
@@ -360,6 +360,16 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                     >
                         {/* Hero Section - Full Width & Top of Content */}
                         <div className="relative h-[480px] rounded-[1.5rem] overflow-hidden group shadow-2xl shadow-slate-200/50">
+                            {/* Hero Actions */}
+                            <div className="absolute top-8 left-8 z-20">
+                                <button
+                                    onClick={() => setSelectedStation(null)}
+                                    className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-2xl hover:bg-white/30 transition-all shadow-xl font-black text-xs uppercase tracking-widest"
+                                >
+                                    <ChevronRight size={18} className="rotate-180" />
+                                    Kembali
+                                </button>
+                            </div>
                             <div className="absolute top-8 right-8 z-20 flex gap-3">
                                 <button
                                     onClick={() => { setEditingId(selectedStation.id); setForm(selectedStation); setShowForm(true); }}
@@ -379,17 +389,14 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
 
                             <div className="absolute inset-x-10 bottom-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
                                 <div className="space-y-4">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#ee6f1f] rounded-full shadow-lg">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Active Station</span>
-                                    </div>
-                                    <h2 className="text-6xl font-black text-white tracking-tighter leading-none">
-                                        {selectedStation.name}
-                                    </h2>
                                     <div className="flex items-center gap-2 text-blue-100/90 bg-black/20 backdrop-blur-md px-4 py-2 rounded-xl w-fit">
                                         <MapPin size={18} className="text-[#ee6f1f]" />
                                         <span className="text-lg font-bold">{selectedStation.city}, {selectedStation.provinsi || 'Jawa'}</span>
                                     </div>
+                                    <h2 className="text-6xl font-black text-white tracking-tighter leading-none">
+                                        STASIUN {selectedStation.name}
+                                    </h2>
+
                                 </div>
                             </div>
                         </div>
@@ -519,14 +526,12 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                     {/* Map Preview */}
                                     <div className="relative h-64 rounded-[2.25rem] m-2 overflow-hidden group">
                                         <div className="absolute inset-0 bg-[#1d2d6a]/5 flex items-center justify-center">
-                                            <div className="w-full h-full bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-l+ee6f1f(106.830616,-6.176770)/106.830616,-6.176770,14/600x400?access_token=pk.eyJ1IjoiYWZuYW5tcSIsImEiOiJjbHN2M3BvMHAwMGRnMmpwOHZ4cHV4amJzIn0.Y_x0g0Fz_7f1V9y2c9f_1Q')] bg-cover bg-center group-hover:scale-110 transition-transform duration-1000" />
+                                            <div 
+                                                className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-1000"
+                                                style={{ backgroundImage: `url('https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-l+ee6f1f(${selectedStation.longitude},${selectedStation.latitude})/${selectedStation.longitude},${selectedStation.latitude},14/600x400?access_token=pk.eyJ1IjoiYWZuYW5tcSIsImEiOiJjbHN2M3BvMHAwMGRnMmpwOHZ4cHV4amJzIn0.Y_x0g0Fz_7f1V9y2c9f_1Q')` }}
+                                            />
                                         </div>
                                         <div className="absolute inset-0 bg-black/10" />
-                                        <div className="absolute bottom-6 right-6">
-                                            <button className="w-12 h-12 bg-white rounded-xl shadow-xl flex items-center justify-center text-[#1d2d6a] hover:bg-[#ee6f1f] hover:text-white transition-all active:scale-90">
-                                                <ExternalLink size={20} />
-                                            </button>
-                                        </div>
                                     </div>
 
                                     <div className="p-8 space-y-8 flex-1">
@@ -955,8 +960,10 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                 {/* View Details Button - Footer */}
                                                 <div className="mt-auto pt-6 border-t border-slate-50">
                                                     <button className="w-full py-4 bg-[#1d2d6a] hover:bg-[#ee6f1f] text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-[#1d2d6a]/20 hover:shadow-[#ee6f1f]/30 flex items-center justify-center gap-3">
-                                                        View Station Details
-                                                        <ChevronRight size={18} />
+                                                        <span className="flex items-center gap-3">
+                                                            View Details
+                                                            <ChevronRight size={18} />
+                                                        </span>
                                                     </button>
                                                 </div>
                                             </div>
