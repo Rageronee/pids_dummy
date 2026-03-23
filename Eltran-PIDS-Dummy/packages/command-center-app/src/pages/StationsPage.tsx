@@ -214,7 +214,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
             <div className="flex items-center gap-3 text-xl font-black uppercase">
                 {selectedStation ? (
                     <div className="flex items-center gap-2 tracking-normal">
-                        <button 
+                        <button
                             onClick={() => setSelectedStation(null)}
                             className="text-slate-400 hover:text-[#1d2d6a] transition-colors"
                         >
@@ -364,10 +364,9 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                             <div className="absolute top-8 left-8 z-20">
                                 <button
                                     onClick={() => setSelectedStation(null)}
-                                    className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-2xl hover:bg-white/30 transition-all shadow-xl font-black text-xs uppercase tracking-widest"
+                                    className="flex items-center gap-2 px-6 py-3 bg-[#ee6f1f] backdrop-blur-md border border-white/20 text-white rounded-2xl hover:bg-[#ee6f1f]/80 transition-all shadow-xl font-black text-xs uppercase tracking-widest"
                                 >
                                     <ChevronRight size={18} className="rotate-180" />
-                                    Kembali
                                 </button>
                             </div>
                             <div className="absolute top-8 right-8 z-20 flex gap-3">
@@ -526,10 +525,21 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                     {/* Map Preview */}
                                     <div className="relative h-64 rounded-[2.25rem] m-2 overflow-hidden group">
                                         <div className="absolute inset-0 bg-[#1d2d6a]/5 flex items-center justify-center">
-                                            <div 
-                                                className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-1000"
-                                                style={{ backgroundImage: `url('https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-l+ee6f1f(${selectedStation.longitude},${selectedStation.latitude})/${selectedStation.longitude},${selectedStation.latitude},14/600x400?access_token=pk.eyJ1IjoiYWZuYW5tcSIsImEiOiJjbHN2M3BvMHAwMGRnMmpwOHZ4cHV4amJzIn0.Y_x0g0Fz_7f1V9y2c9f_1Q')` }}
-                                            />
+                                            {(() => {
+                                                const lat = Number(selectedStation.latitude) || -6.176770;
+                                                const lon = Number(selectedStation.longitude) || 106.830616;
+                                                const zoom = 14;
+                                                const size = '600x400';
+                                                const token = 'pk.eyJ1IjoiYWZuYW5tcSIsImEiOiJjbHN2M3BvMHAwMGRnMmpwOHZ4cHV4amJzIn0.Y_x0g0Fz_7f1V9y2c9f_1Q';
+                                                const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-l+ee6f1f(${lon},${lat})/${lon},${lat},${zoom}/${size}?access_token=${token}`;
+                                                
+                                                return (
+                                                    <div
+                                                        className="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-1000"
+                                                        style={{ backgroundImage: `url('${mapUrl}')` }}
+                                                    />
+                                                );
+                                            })()}
                                         </div>
                                         <div className="absolute inset-0 bg-black/10" />
                                     </div>
