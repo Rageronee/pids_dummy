@@ -38,6 +38,7 @@ export default function App() {
     const [activePage, setActivePage] = useState('dashboard');
     const [currentTime, setCurrentTime] = useState(new Date());
     const [headerActions, setHeaderActions] = useState<React.ReactNode>(null);
+    const [headerTitle, setHeaderTitle] = useState<React.ReactNode>(null);
 
     // Restore session
     useEffect(() => {
@@ -121,7 +122,15 @@ export default function App() {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="text-xl font-black text-[#1d2d6a] uppercase tracking-normal">{NAV.find(n => n.id === activePage)?.label}</span>
+                                {headerTitle ? (
+                                    <div className="flex items-center gap-2">
+                                        {headerTitle}
+                                    </div>
+                                ) : (
+                                    <span className="text-xl font-black text-[#1d2d6a] uppercase tracking-normal">
+                                        {NAV.find(n => n.id === activePage)?.label}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -141,7 +150,11 @@ export default function App() {
                     <AnimatePresence mode="wait">
                         <motion.div key={activePage} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="h-full">
                             <Suspense fallback={<PageLoader />}>
-                                <ActivePageComponent token={authToken} setHeader={setHeaderActions} />
+                                <ActivePageComponent 
+                                    token={authToken} 
+                                    setHeader={setHeaderActions} 
+                                    setHeaderTitle={setHeaderTitle} 
+                                />
                             </Suspense>
                         </motion.div>
                     </AnimatePresence>
