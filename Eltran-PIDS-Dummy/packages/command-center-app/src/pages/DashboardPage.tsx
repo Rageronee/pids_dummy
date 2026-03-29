@@ -14,7 +14,7 @@ import MapComponent from '../components/MapComponent';
 
 import { API } from '../config';
 
-const DashboardPage: React.FC = () => {
+const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({ setPage }) => {
     const [schedules, setSchedules] = useState<any[]>([]);
     const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -128,7 +128,10 @@ const DashboardPage: React.FC = () => {
                                 )}
                             </div>
 
-                            <button className="mt-6 w-full h-10 text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                            <button 
+                                onClick={() => setPage?.('logs')}
+                                className="mt-6 w-full h-10 text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+                            >
                                 View All Logs
                             </button>
                         </div>

@@ -154,6 +154,7 @@ export default function App() {
                                     token={authToken} 
                                     setHeader={setHeaderActions} 
                                     setHeaderTitle={setHeaderTitle} 
+                                    setPage={setActivePage}
                                 />
                             </Suspense>
                         </motion.div>

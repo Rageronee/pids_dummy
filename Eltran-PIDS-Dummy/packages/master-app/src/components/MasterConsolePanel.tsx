@@ -332,7 +332,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     // Sync GPS coordinates perfectly, preventing random jitter. Coordinates act as primary anchor.
     useEffect(() => {
         if (!stationsData.length || !data?.currentStation) return;
-        const currentStn = stationsData.find(s => s.name === data.currentStation);
+        const currentStn = stationsData.find(s => s.name === getStationName(data.currentStation));
         if (currentStn) {
             const newGps = {
                 lng: currentStn.longitude,
@@ -379,7 +379,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
 
             // Find current station point in GeoJSON (case-insensitive and trimmed)
-            const currentStationClean = (data.currentStation || '').trim().toLowerCase();
+            const currentStationName = getStationName(data.currentStation);
+            const currentStationClean = (currentStationName || '').trim().toLowerCase();
             const stationFeature = features.find((f: any) => {
                 if (f.geometry?.type !== 'Point') return false;
                 const propName = (f.properties?.name || '').trim().toLowerCase();
@@ -415,18 +416,34 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const activeRouteStations = data?.activeRoute?.stations || data?.stations || [];
 
     // Derived: relasi (first station code - last station code)
-    const firstStation = activeRouteStations[0] || '-';
-    const lastStation = activeRouteStations[activeRouteStations.length - 1] || '-';
+    // Helper to robustly extract station name from string, JSON string, or object
+    const getStationName = (s: any): string => {
+        if (!s || s === '-') return '-';
+        if (typeof s === 'string') {
+            try {
+                // Check if it's a JSON string
+                if (s.startsWith('{') && s.endsWith('}')) {
+                    const parsed = JSON.parse(s);
+                    if (parsed && parsed.name) return parsed.name;
+                }
+            } catch (e) { /* Not valid JSON, continue */ }
+            return s;
+        }
+        return s.name || s.id || '-';
+    };
 
     // Helper to safely get 3 chars of station name or object
     const getStn3 = (s: any) => {
-        if (!s) return '---';
-        const nameStr = typeof s === 'string' ? s : (s.name || s.id || 'STN');
+        const nameStr = getStationName(s);
+        if (nameStr === '-') return '---';
         return String(nameStr).substring(0, 3).toUpperCase();
     };
 
-    const firstStationObj = stationsData.find(s => s.name === (typeof firstStation === 'string' ? firstStation : firstStation.name));
-    const lastStationObj = stationsData.find(s => s.name === (typeof lastStation === 'string' ? lastStation : lastStation.name));
+    const firstStation = activeRouteStations[0] || '-';
+    const lastStation = activeRouteStations[activeRouteStations.length - 1] || '-';
+
+    const firstStationObj = stationsData.find(s => s.name === getStationName(firstStation));
+    const lastStationObj = stationsData.find(s => s.name === getStationName(lastStation));
     const relasiCode = `${firstStationObj?.id || getStn3(firstStation)} - ${lastStationObj?.id || getStn3(lastStation)}`;
 
     // Derived: schedule for the active service
@@ -438,7 +455,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const departureLabel = `${firstStationObj?.id || getStn3(firstStation)} ${departureTime}`;
     const arrivalLabel = `${lastStationObj?.id || getStn3(lastStation)} ${arrivalTime}`;
 
-    const nextStationName = data?.nextStation || (activeRouteStations.length > 1 ? activeRouteStations[1] : '-');
+    const nextStationName = getStationName(data?.nextStation) || (activeRouteStations.length > 1 ? getStationName(activeRouteStations[1]) : '-');
 
 
 
@@ -447,7 +464,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const etaTime = nextStopSchedule?.arrival_time || '-';
 
     // Derived: distance to nearest POI (approximate)
-    const currentStnObj = stationsData.find(s => s.name === data?.currentStation);
+    const currentStnObj = stationsData.find(s => s.name === getStationName(data?.currentStation));
     const nextStnObj = stationsData.find(s => s.name === nextStationName);
     let distToNext = '-';
     if (currentStnObj && nextStnObj) {
@@ -474,7 +491,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     const stnObj = stationsData.find(s => (s.name || '').toUpperCase() === sName);
                     const stopSched = activeSchedule?.stops?.find((s: any) => (s.station_name || '').toUpperCase() === sName);
 
-                    const isBerhenti = sName === (data?.currentStation || '').trim().toUpperCase();
+                    const isBerhenti = sName === (getStationName(data?.currentStation) || '').trim().toUpperCase();
                     const lng = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[0]?.toFixed(6) : "-";
                     const lat = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[1]?.toFixed(6) : "-";
 
@@ -498,7 +515,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     // Fallback logic if GeoJSON not available or has no point features
     if (navData.length === 0) {
         navData = activeRouteStations.map((s: any, idx: number) => {
-            const sName = typeof s === 'string' ? s : (s.name || '');
+            const sName = getStationName(s);
             const station = stationsData.find(st => st.name === sName) || {};
             const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === sName);
             return {
@@ -507,9 +524,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 lng: station.longitude?.toFixed(6) || "-",
                 lat: station.latitude?.toFixed(6) || "-",
                 eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
-                status: sName === data?.currentStation ? "BERHENTI" : "",
+                status: sName === getStationName(data?.currentStation) ? "BERHENTI" : "",
                 media: s.media || station.media || "",
-                next: (typeof activeRouteStations[idx + 1] === 'string' ? activeRouteStations[idx + 1] : activeRouteStations[idx + 1]?.name) || "-"
+                next: getStationName(activeRouteStations[idx + 1])
             };
         });
     }
@@ -902,7 +919,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                         Posisi Terkini
                                     </span>
                                     <span className="text-base font-bold text-[#1d2d6a] uppercase tracking-tight">
-                                        {data?.currentStation || firstStation}
+                                        {getStationName(data?.currentStation) || getStationName(firstStation)}
                                     </span>
                                 </div>
                             </div>
