@@ -500,18 +500,24 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
         input.click();
     }, [dbStations, resetForm, handleSaveRoute, showToast]);
 
-    const addStationToRoute = useCallback((stationName: string) => {
-        if (selectedStations.find(s => s.name === stationName)) return;
+    const addStationToRoute = useCallback((station: any) => {
+        const sName = String(typeof station === 'object' ? (station.name || '') : station).trim();
+        if (!sName || selectedStations.find(s => String(s.name).toUpperCase() === sName.toUpperCase())) return;
+        
         let foundTime = '';
         if (currentRouteGeojson?.features) {
-            const f = currentRouteGeojson.features.find((feat: any) => feat.properties?.name?.toUpperCase() === stationName.toUpperCase());
+            const f = currentRouteGeojson.features.find((feat: any) => 
+                String(feat.properties?.name || '').toUpperCase() === sName.toUpperCase()
+            );
             if (f?.properties) foundTime = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
         }
-        if (!foundTime) {
-            const f = masterStations.find(feat => feat.properties.name.toUpperCase() === stationName.toUpperCase());
+        if (!foundTime && masterStations?.length > 0) {
+            const f = masterStations.find((feat: any) => 
+                String(feat.properties?.name || '').toUpperCase() === sName.toUpperCase()
+            );
             if (f?.properties) foundTime = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
         }
-        setSelectedStations([...selectedStations, { name: stationName, time: foundTime, platform: '1', status: 'On Track' }]);
+        setSelectedStations([...selectedStations, { name: sName, time: foundTime, platform: '1', status: 'On Track' }]);
         setStationSearch('');
     }, [selectedStations, currentRouteGeojson, masterStations]);
 

@@ -64,11 +64,13 @@ function App() {
     // Direction for Malabar (KA 67 / KA 68)
     const [activeKa, setActiveKa] = useState<'ka67' | 'ka68'>('ka68');
 
-    const getScheduledTime = useCallback((stationName: string) => {
+    const getScheduledTime = useCallback((stationName: any) => {
+        const name = typeof stationName === 'object' && stationName !== null ? stationName.name : stationName;
+        const nameStr = String(name ?? '');
         const activeRoute = data?.activeRoute as any;
-        if (!activeRoute?.features) return null;
+        if (!activeRoute?.features || !nameStr) return null;
         const stationFeature = activeRoute.features.find((f: any) =>
-            f.geometry.type === 'Point' && f.properties.name.toUpperCase() === stationName.toUpperCase()
+            f.geometry.type === 'Point' && String(f.properties.name ?? '').toUpperCase() === nameStr.toUpperCase()
         );
         if (!stationFeature) return null;
         return stationFeature.properties[`schedule_${activeKa}`];
@@ -126,8 +128,9 @@ function App() {
         showNotification('Configuration Saved', `LED scroll speed set to ${speedValue}ms`);
     }, [sendData, setMasterSyncedLedSpeed, showNotification]);
 
-    const currentStation = stations[currentIndex] || 'INITIALIZING SYNC...';
-    const nextStation = stations[(currentIndex + 1) % stations.length] || '---';
+    const getStationName = (s: any) => typeof s === 'object' && s !== null ? s.name : s;
+    const currentStation = getStationName(stations[currentIndex]) || 'INITIALIZING SYNC...';
+    const nextStation = getStationName(stations[(currentIndex + 1) % stations.length]) || '---';
 
     // ---- Auth guard ----
     if (!authUser) return <LoginScreen onLogin={handleLogin} />;
@@ -192,7 +195,7 @@ function App() {
                     <div className="flex items-center gap-4 bg-[#ee6f1f] py-2 px-6 rounded-2xl shadow-lg border border-white/20 max-w-[350px] flex-1">
                         <div className="flex flex-col items-end min-w-0 flex-1">
                             <span className="text-2xl font-bold text-white tracking-tight uppercase truncate w-full text-right">
-                                {stations.length > 0 ? stations[stations.length - 1] : '---'}
+                                {stations.length > 0 ? getStationName(stations[stations.length - 1]) : '---'}
                             </span>
                         </div>
                         <div className="w-[44px] h-[44px] rounded-xl flex items-center justify-center shrink-0">
@@ -249,8 +252,9 @@ function App() {
                                 const renderUpcoming = [];
                                 // i = 1 is the Next Station already featured above, so we start from i = 2
                                 for (let i = 2; i < Math.min(stations.length, 5); i++) {
-                                    const upcomingStation = stations[(currentIndex + i) % stations.length];
-                                    if (upcomingStation !== stations[stations.length - 1] && upcomingStation !== stations[currentIndex]) {
+                                    const upcomingStationObj = stations[(currentIndex + i) % stations.length];
+                                    const upcomingStationName = getStationName(upcomingStationObj);
+                                    if (upcomingStationObj !== stations[stations.length - 1] && upcomingStationObj !== stations[currentIndex]) {
                                         renderUpcoming.push(
                                             <div key={`upcoming-${i}`} className="flex items-center gap-6 relative z-10 w-full mb-3 shrink-0">
                                                 <div className="w-[68px] flex justify-center relative z-10">
@@ -258,12 +262,12 @@ function App() {
                                                 </div>
                                                 <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">                                                     <div className="flex flex-col">
                                                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
-                                                        <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStation}</span>
+                                                        <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStationName}</span>
                                                     </div>
                                                     <div className="text-right">
                                                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
                                                         <span className="text-xl font-semibold text-slate-600">
-                                                            {getScheduledTime(upcomingStation) || new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
+                                                            {getScheduledTime(upcomingStationName) || new Date(currentTime.getTime() + (15 * i) * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
                                                         </span>
                                                     </div>
                                                 </div>

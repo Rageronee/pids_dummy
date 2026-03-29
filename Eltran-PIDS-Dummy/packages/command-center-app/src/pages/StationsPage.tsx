@@ -193,7 +193,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
 
             const el = document.createElement('div');
             el.className = 'w-6 h-6 bg-[#ee6f1f] rounded-full border-4 border-white shadow-[0_0_20px_rgba(238,111,31,0.6)] animate-pulse relative z-50';
-            
+
             markerRef.current = new maplibregl.Marker({ element: el })
                 .setLngLat([lon, lat])
                 .addTo(map);

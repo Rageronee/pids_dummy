@@ -56,8 +56,9 @@ const TVMonitor = React.memo(function TVMonitor({
                             {(() => {
                                 const activeStationName = tvDisplayMode === 'current' ? currentStation : nextStation;
                                 const stationObj = data?.activeRoute?.stations?.find((s: any) => {
-                                    const sName = typeof s === 'string' ? s : s.name;
-                                    return sName?.toUpperCase() === activeStationName?.toUpperCase();
+                                    const sName = String(typeof s === 'object' ? s.name : s || '').trim();
+                                    const aName = String(typeof activeStationName === 'object' ? (activeStationName as any).name : activeStationName || '').trim();
+                                    return sName.toUpperCase() === aName.toUpperCase();
                                 });
                                 const mediaFile = (stationObj as any)?.media || null;
                                 const bgUrl = mediaFile 
