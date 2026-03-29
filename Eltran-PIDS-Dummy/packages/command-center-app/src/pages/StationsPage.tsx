@@ -450,7 +450,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                             {/* Hero Actions */}
                             <div className="absolute top-8 left-8 z-20">
                                 <button
-                                    onClick={() => setSelectedStation(null)}
+                                    onClick={() => { setSelectedStation(null); setShowForm(false); setEditingId(null); }}
                                     className="flex items-center gap-2 px-6 py-3 bg-[#ee6f1f] backdrop-blur-md border border-white/20 text-white rounded-2xl hover:bg-[#ee6f1f]/80 transition-all shadow-xl font-black text-xs uppercase tracking-widest"
                                 >
                                     <ChevronRight size={18} className="rotate-180" />
@@ -458,11 +458,20 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                             </div>
                             <div className="absolute top-8 right-8 z-20 flex gap-3">
                                 <button
-                                    onClick={() => { setEditingId(selectedStation.id); setForm(selectedStation); setShowForm(true); }}
-                                    className="p-3 bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-2xl hover:bg-white/30 transition-all shadow-xl"
-                                    title="Edit Details"
+                                    onClick={() => {
+                                        if (showForm) {
+                                            setShowForm(false);
+                                            setEditingId(null);
+                                        } else {
+                                            setEditingId(selectedStation.id);
+                                            setForm(selectedStation);
+                                            setShowForm(true);
+                                        }
+                                    }}
+                                    className={`p-3 backdrop-blur-md border border-white/20 rounded-2xl transition-all shadow-xl ${showForm ? 'bg-white/40 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                                    title={showForm ? "Cancel Edit" : "Edit Details"}
                                 >
-                                    <Pencil size={20} />
+                                    {showForm ? <X size={20} /> : <Pencil size={20} />}
                                 </button>
                             </div>
                             <img
@@ -482,194 +491,380 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                     <h2 className="text-6xl font-black text-white tracking-tighter leading-none">
                                         STASIUN {selectedStation.name}
                                     </h2>
-
+                                    {showForm && (
+                                        <div className="flex items-center gap-2 bg-[#ee6f1f]/90 backdrop-blur-md px-4 py-2 rounded-xl w-fit">
+                                            <Pencil size={14} className="text-white" />
+                                            <span className="text-sm font-black text-white uppercase tracking-widest">Mode Edit</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Detail Cards Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Column 1: Administrative */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 px-2">
-                                    <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
-                                    <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Administrative</h3>
-                                </div>
-                                <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 group transition-all hover:border-[#ee6f1f]/20 h-full">
-                                    <div className="space-y-6">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Stasiun</p>
-                                            <p className="text-2xl font-black text-[#1d2d6a] leading-tight transition-colors group-hover:text-[#ee6f1f]">
-                                                {selectedStation.name} {selectedStation.kode_kota ? `(${selectedStation.kode_kota})` : ''}
-                                            </p>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-8">
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode Kota</p>
-                                                <p className="text-lg font-black text-[#1d2d6a] uppercase tracking-tighter">
-                                                    {selectedStation.kode_kota || 'JKT-C'}
-                                                </p>
+                        {/* Inline Edit Form - Shown when showForm is true */}
+                        <AnimatePresence mode="wait">
+                            {showForm ? (
+                                <motion.div
+                                    key="edit-form"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-xl shadow-slate-200/40 overflow-hidden">
+                                        {/* Section 1: Basic Information */}
+                                        <div className="p-6 border-b bg-slate-50/50 flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-[#ee6f1f]/10 rounded-xl flex items-center justify-center text-[#ee6f1f]">
+                                                <Info size={20} />
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode Pos</p>
-                                                <p className="text-lg font-black text-[#1d2d6a]">
-                                                    {selectedStation.kode_pos || '10110'}
-                                                </p>
+                                            <div>
+                                                <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight">Informasi Dasar</h3>
+                                                <p className="text-xs font-medium text-slate-400">Station identity & contact person</p>
                                             </div>
                                         </div>
+                                        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Station Name</label>
+                                                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Gambir Station" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">City Code</label>
+                                                <input value={form.kode_kota} onChange={e => setForm({ ...form, kode_kota: e.target.value.toUpperCase() })} placeholder="E.G. GMR" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300 uppercase" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">PIC Name</label>
+                                                <input value={form.nama_pic} onChange={e => setForm({ ...form, nama_pic: e.target.value })} placeholder="Full name of person in charge" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">PIC Contact</label>
+                                                <input value={form.kontak_pic} onChange={e => setForm({ ...form, kontak_pic: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Email</label>
+                                                <input value={form.email || ''} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="station@kai.id" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Fixed Line</label>
+                                                <input value={form.fixed_line || ''} onChange={e => setForm({ ...form, fixed_line: e.target.value })} placeholder="(021) 3862222" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">IP Address</label>
+                                                <input value={form.ip_address} onChange={e => setForm({ ...form, ip_address: e.target.value })} placeholder="192.168.1.1" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold font-mono text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                            </div>
+                                        </div>
 
-                                        <div className="h-px bg-slate-50" />
+                                        {/* Section 2: Location & Mapping */}
+                                        <div className="p-6 border-y bg-slate-50/50 flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-[#ee6f1f]/10 rounded-xl flex items-center justify-center text-[#ee6f1f]">
+                                                <MapPin size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight">Lokasi & Peta</h3>
+                                                <p className="text-xs font-medium text-slate-400">Geographic coordinates & address</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-8 space-y-8">
+                                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                                <div className="lg:col-span-8 space-y-2">
+                                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Pinpoint Location</label>
+                                                    <div className="relative h-[340px] rounded-2xl overflow-hidden border-2 border-slate-100 shadow-inner group">
+                                                        <div ref={mapContainerRef} className="absolute inset-0" />
+                                                        <div className="absolute top-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl border border-slate-200 text-[10px] font-black text-slate-600 shadow-lg group-hover:bg-white transition-colors uppercase tracking-widest">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2 h-2 rounded-full bg-[#ee6f1f] animate-pulse" />
+                                                                Click map to set coordinates
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="lg:col-span-4 flex flex-col justify-center gap-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Latitude</label>
+                                                        <input type="number" step="0.000001" value={form.latitude} onChange={e => setForm({ ...form, latitude: Number(e.target.value) })} className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-mono font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none transition-all" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Longitude</label>
+                                                        <input type="number" step="0.000001" value={form.longitude} onChange={e => setForm({ ...form, longitude: Number(e.target.value) })} className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-mono font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none transition-all" />
+                                                    </div>
+                                                    <div className="p-5 bg-blue-50 rounded-2xl flex gap-4 border border-blue-100">
+                                                        <div className="w-6 h-6 rounded-full bg-[#1d2d6a] flex items-center justify-center text-white flex-shrink-0 mt-0.5">
+                                                            <Info size={12} />
+                                                        </div>
+                                                        <p className="text-[12px] text-[#1d2d6a] leading-relaxed font-bold">
+                                                            Coordinates are used for the PIDS real-time map synchronization across the network.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
 
+                                            <div className="space-y-2 pt-4 border-t border-slate-100">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Full Address</label>
+                                                <textarea value={form.alamat} onChange={e => setForm({ ...form, alamat: e.target.value })} placeholder="Street name, building number, district, etc." rows={2} className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none transition-all resize-none" />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Province</label>
+                                                    <select value={form.provinsi} onChange={e => setForm({ ...form, provinsi: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none appearance-none bg-white cursor-pointer">
+                                                        <option value="">Select Province</option>
+                                                        <option value="DKI Jakarta">DKI Jakarta</option>
+                                                        <option value="Jawa Barat">Jawa Barat</option>
+                                                        <option value="Jawa Tengah">Jawa Tengah</option>
+                                                        <option value="Jawa Timur">Jawa Timur</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">City / Regency</label>
+                                                    <select value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none appearance-none bg-white cursor-pointer">
+                                                        <option value="">Select City</option>
+                                                        <option value="Jakarta Pusat">Jakarta Pusat</option>
+                                                        <option value="Bandung">Bandung</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">District</label>
+                                                    <input value={form.kecamatan} onChange={e => setForm({ ...form, kecamatan: e.target.value })} placeholder="Kecamatan" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none transition-all" />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Village</label>
+                                                    <input value={form.kelurahan_desa} onChange={e => setForm({ ...form, kelurahan_desa: e.target.value })} placeholder="Kelurahan / Desa" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none transition-all" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Postal Code</label>
+                                                    <input value={form.kode_pos} onChange={e => setForm({ ...form, kode_pos: e.target.value })} placeholder="e.g. 10110" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] outline-none transition-all" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Form Actions Footer */}
+                                    <div className="flex items-center justify-between gap-4">
+                                        <button
+                                            onClick={() => { setShowForm(false); setEditingId(null); }}
+                                            className="h-14 px-8 rounded-2xl font-black text-sm bg-white border-2 border-slate-100 text-slate-500 hover:bg-slate-50 hover:border-slate-200 transition-all active:scale-95 uppercase tracking-widest flex items-center gap-3"
+                                        >
+                                            <X size={18} />
+                                            Batal
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                await handleSave();
+                                                // After successful save, update the selectedStation with the new data
+                                                if (form.name && form.city) {
+                                                    setSelectedStation({ ...selectedStation, ...form } as Station);
+                                                }
+                                            }}
+                                            disabled={saving}
+                                            className="h-14 px-12 rounded-2xl font-black text-sm bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-xl shadow-[#ee6f1f]/20 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:bg-slate-300 disabled:shadow-none uppercase tracking-widest"
+                                        >
+                                            {saving ? (
+                                                <RefreshCw size={18} className="animate-spin" />
+                                            ) : (
+                                                <Save size={18} />
+                                            )}
+                                            {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="detail-view"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="space-y-8"
+                                >
+                                    {/* Detail Cards Grid */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                        {/* Column 1: Administrative */}
                                         <div className="space-y-6">
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provinsi</p>
-                                                <p className="text-lg font-bold text-slate-600">{selectedStation.provinsi || 'DKI Jakarta'}</p>
+                                            <div className="flex items-center gap-3 px-2">
+                                                <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
+                                                <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Administrative</h3>
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kabupaten/Kota</p>
-                                                <p className="text-lg font-bold text-slate-600">{selectedStation.city}</p>
+                                            <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 group transition-all hover:border-[#ee6f1f]/20 h-full">
+                                                <div className="space-y-6">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Stasiun</p>
+                                                        <p className="text-2xl font-black text-[#1d2d6a] leading-tight transition-colors group-hover:text-[#ee6f1f]">
+                                                            {selectedStation.name} {selectedStation.kode_kota ? `(${selectedStation.kode_kota})` : ''}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-8">
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode Kota</p>
+                                                            <p className="text-lg font-black text-[#1d2d6a] uppercase tracking-tighter">
+                                                                {selectedStation.kode_kota || 'JKT-C'}
+                                                            </p>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode Pos</p>
+                                                            <p className="text-lg font-black text-[#1d2d6a]">
+                                                                {selectedStation.kode_pos || '10110'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="h-px bg-slate-50" />
+
+                                                    <div className="space-y-6">
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provinsi</p>
+                                                            <p className="text-lg font-bold text-slate-600">{selectedStation.provinsi || 'DKI Jakarta'}</p>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kabupaten/Kota</p>
+                                                            <p className="text-lg font-bold text-slate-600">{selectedStation.city}</p>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kecamatan</p>
+                                                            <p className="text-lg font-bold text-slate-600">{selectedStation.kecamatan || 'Gambir'}</p>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kelurahan/Desa</p>
+                                                            <p className="text-lg font-bold text-slate-600">{selectedStation.kelurahan || 'Gambir'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kecamatan</p>
-                                                <p className="text-lg font-bold text-slate-600">{selectedStation.kecamatan || 'Gambir'}</p>
+                                        </div>
+
+                                        {/* Column 2: PIC & Contact */}
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-3 px-2">
+                                                <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
+                                                <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">PIC & Contact</h3>
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kelurahan/Desa</p>
-                                                <p className="text-lg font-bold text-slate-600">{selectedStation.kelurahan || 'Gambir'}</p>
+                                            <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 h-full">
+                                                {/* Manager Card */}
+                                                <div className="bg-blue-50/50 rounded-3xl p-6 border border-blue-100 flex items-center gap-5">
+                                                    <div className="w-16 h-16 bg-[#1d2d6a] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#1d2d6a]/20">
+                                                        <User size={32} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Station Manager</p>
+                                                        <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.nama_pic || 'Arya Wiguna'}</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Contacts */}
+                                                <div className="space-y-6 px-2">
+                                                    <div className="flex gap-5">
+                                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#1d2d6a] shrink-0">
+                                                            <Phone size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Kontak PIC</p>
+                                                            <p className="text-lg font-black text-[#1d2d6a]">{selectedStation.kontak_pic || '+62 811-2345-6789'}</p>
+                                                            <p className="text-[10px] font-medium text-slate-400">Primary Mobile Line</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-5">
+                                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#1d2d6a] shrink-0">
+                                                            <Mail size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Email Operasional</p>
+                                                            <p className="text-lg font-black text-[#1d2d6a] break-all">{selectedStation.email || `${selectedStation.name.toLowerCase().replace(/\s+/g, '.')}@kai.id`}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-5">
+                                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#1d2d6a] shrink-0">
+                                                            <PhoneCall size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Fixed Line</p>
+                                                            <p className="text-lg font-black text-[#1d2d6a]">{selectedStation.fixed_line || '(021) 3862222'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button className="w-full py-5 bg-white border-2 border-slate-100 rounded-3xl text-[#1d2d6a] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#1d2d6a] hover:text-white hover:border-[#1d2d6a] transition-all active:scale-95 group">
+                                                    <MessageSquare size={18} className="group-hover:scale-110 transition-transform" />
+                                                    Message PIC
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Column 3: Geographic */}
+                                        <div className="space-y-6">
+                                            <div className="flex items-center gap-3 px-2">
+                                                <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
+                                                <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Geographic</h3>
+                                            </div>
+                                            <div className="bg-white rounded-[2.5rem] p-1 border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden h-full flex flex-col">
+                                                {/* Interactive Map Preview */}
+                                                <div className="relative h-64 rounded-[2.25rem] m-2 overflow-hidden group">
+                                                    <div ref={mapDetailContainerRef} className="absolute inset-0 bg-slate-100" />
+                                                    <div className="absolute inset-0 bg-black/5 pointer-events-none" />
+                                                </div>
+
+                                                <div className="p-8 space-y-8 flex-1">
+                                                    <div className="grid grid-cols-2 gap-8">
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lintang (Lat)</p>
+                                                            <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.latitude?.toFixed(6) || '-6.176770'}</p>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bujur (Long)</p>
+                                                            <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.longitude?.toFixed(6) || '106.830616'}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alamat</p>
+                                                        <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
+                                                            {selectedStation.address || `Jl. Medan Merdeka Timur No.1, RT.5/RW.2, ${selectedStation.city}, Kecamatan Gambir, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta`}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Column 2: PIC & Contact */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 px-2">
-                                    <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
-                                    <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">PIC & Contact</h3>
-                                </div>
-                                <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-8 h-full">
-                                    {/* Manager Card */}
-                                    <div className="bg-blue-50/50 rounded-3xl p-6 border border-blue-100 flex items-center gap-5">
-                                        <div className="w-16 h-16 bg-[#1d2d6a] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#1d2d6a]/20">
-                                            <User size={32} />
+                                    {/* Media & Attachments Section */}
+                                    <div className="space-y-6 pt-12">
+                                        <div className="flex items-center justify-between px-2">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
+                                                <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Media & Attachments</h3>
+                                            </div>
+                                            <button className="text-sm font-black text-[#ee6f1f] flex items-center gap-2 hover:translate-x-1 transition-transform">
+                                                <Plus size={18} />
+                                                Upload New File
+                                            </button>
                                         </div>
-                                        <div>
-                                            <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Station Manager</p>
-                                            <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.nama_pic || 'Arya Wiguna'}</p>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-20">
+                                            {[
+                                                { icon: <Image size={24} />, name: "Facade_Vi...", type: "IMAGE • 4.2 MB", color: "text-orange-600 bg-orange-50" },
+                                                { icon: <FileText size={24} />, name: "Station_S...", type: "DOCUMENT • 1.8 MB", color: "text-blue-600 bg-blue-50" },
+                                                { icon: <MapPinned size={24} />, name: "Floor_Pla...", type: "CAD • 12.5 MB", color: "text-slate-600 bg-slate-50" },
+                                                { icon: <Briefcase size={24} />, name: "Staff_List...", type: "SHEET • 0.4 MB", color: "text-green-600 bg-green-50" }
+                                            ].map((file, i) => (
+                                                <div key={i} className="group bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-200/40 hover:border-[#ee6f1f]/30 transition-all cursor-pointer flex items-center gap-4">
+                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${file.color}`}>
+                                                        {file.icon}
+                                                    </div>
+                                                    <div className="overflow-hidden">
+                                                        <p className="font-black text-[#1d2d6a] truncate">{file.name}</p>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{file.type}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-
-                                    {/* Contacts */}
-                                    <div className="space-y-6 px-2">
-                                        <div className="flex gap-5">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#1d2d6a] shrink-0">
-                                                <Phone size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Kontak PIC</p>
-                                                <p className="text-lg font-black text-[#1d2d6a]">{selectedStation.kontak_pic || '+62 811-2345-6789'}</p>
-                                                <p className="text-[10px] font-medium text-slate-400">Primary Mobile Line</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-5">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#1d2d6a] shrink-0">
-                                                <Mail size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Email Operasional</p>
-                                                <p className="text-lg font-black text-[#1d2d6a] break-all">{selectedStation.email || `${selectedStation.name.toLowerCase().replace(/\s+/g, '.')}@kai.id`}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-5">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#1d2d6a] shrink-0">
-                                                <PhoneCall size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Fixed Line</p>
-                                                <p className="text-lg font-black text-[#1d2d6a]">{selectedStation.fixed_line || '(021) 3862222'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full py-5 bg-white border-2 border-slate-100 rounded-3xl text-[#1d2d6a] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#1d2d6a] hover:text-white hover:border-[#1d2d6a] transition-all active:scale-95 group">
-                                        <MessageSquare size={18} className="group-hover:scale-110 transition-transform" />
-                                        Message PIC
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Column 3: Geographic */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 px-2">
-                                    <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
-                                    <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Geographic</h3>
-                                </div>
-                                <div className="bg-white rounded-[2.5rem] p-1 border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden h-full flex flex-col">
-                                    {/* Interactive Map Preview */}
-                                    <div className="relative h-64 rounded-[2.25rem] m-2 overflow-hidden group">
-                                        <div ref={mapDetailContainerRef} className="absolute inset-0 bg-slate-100" />
-                                        <div className="absolute inset-0 bg-black/5 pointer-events-none" />
-                                    </div>
-
-                                    <div className="p-8 space-y-8 flex-1">
-                                        <div className="grid grid-cols-2 gap-8">
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lintang (Lat)</p>
-                                                <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.latitude?.toFixed(6) || '-6.176770'}</p>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bujur (Long)</p>
-                                                <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.longitude?.toFixed(6) || '106.830616'}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alamat</p>
-                                            <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
-                                                {selectedStation.address || `Jl. Medan Merdeka Timur No.1, RT.5/RW.2, ${selectedStation.city}, Kecamatan Gambir, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta`}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Media & Attachments Section */}
-                        <div className="space-y-6 pt-12">
-                            <div className="flex items-center justify-between px-2">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1 h-6 bg-[#ee6f1f] rounded-full" />
-                                    <h3 className="text-xs font-black text-[#1d2d6a] uppercase tracking-[0.3em]">Media & Attachments</h3>
-                                </div>
-                                <button className="text-sm font-black text-[#ee6f1f] flex items-center gap-2 hover:translate-x-1 transition-transform">
-                                    <Plus size={18} />
-                                    Upload New File
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-20">
-                                {[
-                                    { icon: <Image size={24} />, name: "Facade_Vi...", type: "IMAGE • 4.2 MB", color: "text-orange-600 bg-orange-50" },
-                                    { icon: <FileText size={24} />, name: "Station_S...", type: "DOCUMENT • 1.8 MB", color: "text-blue-600 bg-blue-50" },
-                                    { icon: <MapPinned size={24} />, name: "Floor_Pla...", type: "CAD • 12.5 MB", color: "text-slate-600 bg-slate-50" },
-                                    { icon: <Briefcase size={24} />, name: "Staff_List...", type: "SHEET • 0.4 MB", color: "text-green-600 bg-green-50" }
-                                ].map((file, i) => (
-                                    <div key={i} className="group bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-200/40 hover:border-[#ee6f1f]/30 transition-all cursor-pointer flex items-center gap-4">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${file.color}`}>
-                                            {file.icon}
-                                        </div>
-                                        <div className="overflow-hidden">
-                                            <p className="font-black text-[#1d2d6a] truncate">{file.name}</p>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{file.type}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 ) : (
                     <motion.div
