@@ -477,6 +477,8 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         distToNext = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
     }
 
+    const normalizeStn = (n: string) => String(n || '').toUpperCase().trim().replace(/STASIUN\s+/g, '');
+
     let navData = [];
     if (route?.geojson && route.geojson !== '{}') {
         try {
@@ -484,22 +486,53 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             const features = geojson.features || (geojson.type === 'FeatureCollection' ? geojson.features : [geojson]);
             const pts = features?.filter((f: any) => f.geometry?.type === 'Point' && f.properties?.name) || [];
 
-            if (pts.length > 0) {
+            if (activeRouteStations.length > 0) {
+                // IMPORTANT: Primary order must follow the context (activeRouteStations from Selector)
+                navData = activeRouteStations.map((s: any, idx: number) => {
+                    const sName = getStationName(s);
+                    const sNameNorm = normalizeStn(sName);
+                    
+                    // Find corresponding feature in GeoJSON
+                    const feature = pts.find((f: any) => 
+                        normalizeStn(f.properties?.name) === sNameNorm || 
+                        normalizeStn(f.properties?.station_name) === sNameNorm
+                    );
+
+                    const stnObj = stationsData.find(st => normalizeStn(st.name) === sNameNorm);
+                    const stopSched = activeSchedule?.stops?.find((ss: any) => normalizeStn(ss.station_name) === sNameNorm);
+                    const isBerhenti = sNameNorm === normalizeStn(getStationName(data?.currentStation));
+                    
+                    const lng = feature && Array.isArray(feature.geometry?.coordinates) 
+                        ? feature.geometry.coordinates[0]?.toFixed(6) 
+                        : (stnObj?.longitude?.toFixed(6) || "-");
+                    
+                    const lat = feature && Array.isArray(feature.geometry?.coordinates) 
+                        ? feature.geometry.coordinates[1]?.toFixed(6) 
+                        : (stnObj?.latitude?.toFixed(6) || "-");
+
+                    return {
+                        name: sName,
+                        type: idx === 0 ? 'ASAL' : idx === activeRouteStations.length - 1 ? 'TUJUAN' : 'ANTARA',
+                        lng: lng,
+                        lat: lat,
+                        eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
+                        status: isBerhenti ? "BERHENTI" : "",
+                        media: stnObj?.media || "",
+                        next: getStationName(activeRouteStations[idx + 1])
+                    };
+                });
+            } else if (pts.length > 0) {
+                // Fallback to plain GeoJSON order if no system stations selected
                 navData = pts.map((f: any, idx: number) => {
                     const sName = (f.properties?.name || '').toUpperCase();
-                    // Try to find the station in stationsData list to get its media (photo)
-                    const stnObj = stationsData.find(s => (s.name || '').toUpperCase() === sName);
-                    const stopSched = activeSchedule?.stops?.find((s: any) => (s.station_name || '').toUpperCase() === sName);
-
-                    const isBerhenti = sName === (getStationName(data?.currentStation) || '').trim().toUpperCase();
-                    const lng = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[0]?.toFixed(6) : "-";
-                    const lat = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[1]?.toFixed(6) : "-";
-
+                    const stnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(sName));
+                    const stopSched = activeSchedule?.stops?.find((s: any) => normalizeStn(s.station_name) === normalizeStn(sName));
+                    const isBerhenti = normalizeStn(sName) === normalizeStn(getStationName(data?.currentStation));
                     return {
                         name: f.properties?.name || sName,
                         type: idx === 0 ? 'ASAL' : idx === pts.length - 1 ? 'TUJUAN' : 'ANTARA',
-                        lng: lng,
-                        lat: lat,
+                        lng: Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[0]?.toFixed(6) : "-",
+                        lat: Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates[1]?.toFixed(6) : "-",
                         eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
                         status: isBerhenti ? "BERHENTI" : "",
                         media: stnObj?.media || "",
@@ -512,19 +545,20 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         }
     }
 
-    // Fallback logic if GeoJSON not available or has no point features
+    // Secondary fallback logic if GeoJSON not available or failed
     if (navData.length === 0) {
         navData = activeRouteStations.map((s: any, idx: number) => {
             const sName = getStationName(s);
-            const station = stationsData.find(st => st.name === sName) || {};
-            const stopSched = activeSchedule?.stops?.find((s: any) => s.station_name === sName);
+            const sNameNorm = normalizeStn(sName);
+            const station = stationsData.find(st => normalizeStn(st.name) === sNameNorm) || {};
+            const stopSched = activeSchedule?.stops?.find((ss: any) => normalizeStn(ss.station_name) === sNameNorm);
             return {
                 name: sName,
                 type: idx === 0 ? 'ASAL' : idx === activeRouteStations.length - 1 ? 'TUJUAN' : 'ANTARA',
                 lng: station.longitude?.toFixed(6) || "-",
                 lat: station.latitude?.toFixed(6) || "-",
                 eta: stopSched?.arrival_time || stopSched?.departure_time || "-",
-                status: sName === getStationName(data?.currentStation) ? "BERHENTI" : "",
+                status: sNameNorm === normalizeStn(getStationName(data?.currentStation)) ? "BERHENTI" : "",
                 media: s.media || station.media || "",
                 next: getStationName(activeRouteStations[idx + 1])
             };

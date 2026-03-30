@@ -5,6 +5,64 @@
 import pg from 'pg';
 const { Pool } = pg;
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Normalizes station names for comparison
+ */
+function normalizeName(name) {
+    return String(name || '').toUpperCase().trim().replace(/STASIUN\s+/g, '');
+}
+
+/**
+ * Merges coordinates from master stations into GeoJSON and strips bloat.
+ */
+function mergeAndOptimizeGeoJSON(geojsonText, masterStations) {
+    try {
+        const geojson = JSON.parse(geojsonText);
+        const stationMap = new Map();
+        masterStations.forEach(s => {
+            stationMap.set(normalizeName(s.name), s);
+            stationMap.set(s.code, s);
+        });
+
+        if (geojson.features) {
+            geojson.features = geojson.features.map(f => {
+                if (f.geometry?.type === 'Point') {
+                    const name = normalizeName(f.properties?.name);
+                    const master = stationMap.get(name);
+                    if (master) {
+                        // Sync coordinates
+                        f.geometry.coordinates = [master.lng, master.lat];
+                    }
+                    
+                    // Strip non-essential properties
+                    const cleanProps = {};
+                    const essentials = ['name', 'isCheckpoint', 'role'];
+                    essentials.forEach(p => { if (f.properties[p] !== undefined) cleanProps[p] = f.properties[p]; });
+                    
+                    // Keep schedules
+                    Object.keys(f.properties).forEach(p => {
+                        if (p.startsWith('schedule_') || p.startsWith('is_origin_')) {
+                            cleanProps[p] = f.properties[p];
+                        }
+                    });
+                    f.properties = cleanProps;
+                }
+                return f;
+            });
+        }
+        return JSON.stringify(geojson);
+    } catch (e) {
+        console.error('[PIDS-DB] Error optimizing GeoJSON:', e.message);
+        return geojsonText;
+    }
+}
 
 // ---- Password Hashing Utilities (scrypt, built-in Node.js) ----
 const SALT_LENGTH = 16;
@@ -383,68 +441,11 @@ export async function seedData() {
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
         ['USR002', 'operator', hashedOpPw, 'Operator', 'Operator PIDS', '081100000002', 'operator@eltran.co.id']);
 
-    // ============================================================
-    // C. STATIONS — Master List (Merged: Malabar + Parahyangan + Argo Wilis routes)
-    //    Every station has: id, name, city, lat, lon, kode_kota, provinsi, kabupaten_kota, alamat, media
-    // ============================================================
-    const masterStations = [
-        // --- Jakarta area ---
-        ['GMR',  'GAMBIR',             'JAKARTA',      -6.176270, 106.830800, 'JKT', 'DKI Jakarta',  'Jakarta Pusat',    'Gambir',        'Jl. Medan Merdeka Timur No.1',   '10110', 'gambir.jpg'],
-        ['JAKK', 'JAKARTA KOTA',       'JAKARTA',      -6.137600, 106.812500, 'JKT', 'DKI Jakarta',  'Jakarta Barat',    'Taman Sari',    'Jl. Stasiun Kota No.1',          '11110', ''],
-        ['PSEN', 'PASAR SENEN',        'JAKARTA',      -6.184400, 106.846700, 'JKT', 'DKI Jakarta',  'Jakarta Pusat',    'Senen',         'Jl. Stasiun Senen',              '10440', ''],
-        ['JTE',  'JATINEGARA',         'JAKARTA',      -6.216700, 106.856700, 'JKT', 'DKI Jakarta',  'Jakarta Timur',    'Jatinegara',    'Jl. Jatinegara Barat',           '13350', ''],
-        ['BKS',  'BEKASI',             'BEKASI',       -6.241200, 106.992200, 'BKS', 'Jawa Barat',   'Kota Bekasi',      'Bekasi',        'Jl. Stasiun Bekasi',             '17143', ''],
-        // --- Bandung corridor ---
-        ['KAC',  'KIARACONDONG',       'BANDUNG',      -6.924500, 107.645800, 'BDG', 'Jawa Barat',   'Kota Bandung',     'Batununggal',   'Jl. Ibrahim Adjie No.1',         '40275', 'kiaracondong.jpg'],
-        ['BD',   'BANDUNG',            'BANDUNG',      -6.914374, 107.601368, 'BDG', 'Jawa Barat',   'Kota Bandung',     'Andir',         'Jl. Stasiun Selatan No.25',      '40181', 'bandung.jpg'],
-        ['CMI',  'CIMAHI',             'CIMAHI',       -6.884300, 107.541200, 'CMI', 'Jawa Barat',   'Kota Cimahi',      'Cimahi',        'Jl. Stasiun Timur',              '40533', ''],
-        ['GRT',  'GARUT',              'GARUT',        -7.216200, 107.906600, 'GRT', 'Jawa Barat',   'Kabupaten Garut',  'Garut Kota',    'Jl. Stasiun No.1',               '44117', ''],
-        ['C26',  'LELES',              'GARUT',        -7.083900, 107.899700, 'LLS', 'Jawa Barat',   'Kabupaten Garut',  'Leles',         'Jl. Stasiun Leles',              '44152', 'leles.jpg'],
-        ['CPD',  'CIPEUNDEUY',         'GARUT',        -7.093200, 108.099800, 'CPD', 'Jawa Barat',   'Kabupaten Garut',  'Cipeundeuy',    'Jl. Stasiun Cipeundeuy',         '44186', 'cipeundeuy.jpg'],
-        ['TSM',  'TASIKMALAYA',        'TASIKMALAYA',  -7.321300, 108.223100, 'TSM', 'Jawa Barat',   'Kota Tasikmalaya', 'Cipedes',       'Jl. Stasiun No.1',               '46133', 'tasikmalaya.jpg'],
-        ['CI',   'CIAMIS',             'CIAMIS',       -7.329300, 108.355500, 'CI',  'Jawa Barat',   'Kabupaten Ciamis', 'Ciamis',        'Jl. Stasiun Ciamis',             '46211', 'ciamis.jpg'],
-        ['BJR',  'BANJAR',             'BANJAR',       -7.376300, 108.542000, 'BJR', 'Jawa Barat',   'Kota Banjar',      'Banjar',        'Jl. Stasiun Banjar',             '46311', 'banjar.jpg'],
-        // --- Cilacap / Jawa Tengah ---
-        ['SDR',  'SIDAREJA',           'CILACAP',      -7.486100, 108.806900, 'SDR', 'Jawa Tengah',  'Kabupaten Cilacap','Sidareja',      'Jl. Stasiun Sidareja',           '53261', 'sidareja.jpg'],
-        ['MA',   'MAOS',               'CILACAP',      -7.619000, 109.138900, 'MA',  'Jawa Tengah',  'Kabupaten Cilacap','Maos',          'Jl. Stasiun Maos',               '53153', 'maos.jpg'],
-        ['KYA',  'KROYA',              'CILACAP',      -7.630200, 109.252900, 'KYA', 'Jawa Tengah',  'Kabupaten Cilacap','Kroya',         'Jl. Stasiun Kroya',              '53282', 'kroya.jpg'],
-        ['CL',   'CILACAP',            'CILACAP',      -7.720900, 109.023400, 'CLP', 'Jawa Tengah',  'Kabupaten Cilacap','Cilacap',       'Jl. Stasiun Cilacap',            '53212', ''],
-        ['GB',   'GOMBONG',            'KEBUMEN',      -7.611100, 109.504700, 'KBM', 'Jawa Tengah',  'Kabupaten Kebumen','Gombong',       'Jl. Stasiun Gombong',            '54416', 'gombong.jpg'],
-        ['KM',   'KEBUMEN',            'KEBUMEN',      -7.681700, 109.661700, 'KBM', 'Jawa Tengah',  'Kabupaten Kebumen','Kebumen',       'Jl. Stasiun Kebumen',             '54315', 'kebumen.jpg'],
-        ['KTA',  'KUTOARJO',           'PURWOREJO',    -7.725900, 109.906300, 'KTA', 'Jawa Tengah',  'Kabupaten Purworejo','Kutoarjo',    'Jl. Stasiun Kutoarjo',           '54211', 'kutoarjo.jpg'],
-        // --- Yogyakarta & Solo ---
-        ['YK',   'YOGYAKARTA',         'YOGYAKARTA',   -7.788958, 110.362218, 'YOG', 'DI Yogyakarta','Kota Yogyakarta',  'Gedongtengen',  'Jl. Pasar Kembang No.1',         '55271', 'yogyakarta.jpg'],
-        ['LPN',  'LEMPUYANGAN',        'YOGYAKARTA',   -7.784800, 110.375200, 'YOG', 'DI Yogyakarta','Kota Yogyakarta',  'Danurejan',     'Jl. Lempuyangan No.1',           '55211', ''],
-        ['KT',   'KLATEN',             'KLATEN',       -7.712800, 110.602300, 'KT',  'Jawa Tengah',  'Kabupaten Klaten', 'Klaten Selatan','Jl. Stasiun Klaten',             '57416', 'klaten.jpg'],
-        ['SLO',  'SOLO BALAPAN',       'SURAKARTA',    -7.557157, 110.819955, 'SLO', 'Jawa Tengah',  'Kota Surakarta',   'Banjarsari',    'Jl. Monginsidi No.112',          '57139', 'solo_balapan.png'],
-        ['SLJ',  'SOLO JEBRES',        'SURAKARTA',    -7.554900, 110.840300, 'SLO', 'Jawa Tengah',  'Kota Surakarta',   'Jebres',        'Jl. Stasiun Solo Jebres',        '57128', ''],
-        ['SR',   'SRAGEN',             'SRAGEN',       -7.428610, 111.020560, 'SR',  'Jawa Tengah',  'Kabupaten Sragen', 'Sragen',        'Jl. Stasiun Sragen',             '57213', 'sragen.jpg'],
-        // --- Madiun & Ngawi ---
-        ['NGW',  'NGAWI',              'NGAWI',        -7.441992, 111.386074, 'NGW', 'Jawa Timur',   'Kabupaten Ngawi',  'Ngawi',         'Jl. Stasiun Ngawi',              '63211', 'ngawi.jpg'],
-        ['MN',   'MADIUN',             'MADIUN',       -7.618583, 111.523887, 'MN',  'Jawa Timur',   'Kota Madiun',      'Manguharjo',    'Jl. Kompol Sunaryo No.14',       '63122', 'madiun.jpg'],
-        ['NJ',   'NGANJUK',            'NGANJUK',      -7.600246, 111.901700, 'NGJ', 'Jawa Timur',   'Kabupaten Nganjuk','Nganjuk',       'Jl. Stasiun Nganjuk',            '64411', 'nganjuk.jpg'],
-        ['KTS',  'KERTOSONO',          'NGANJUK',      -7.591834, 112.099925, 'NGJ', 'Jawa Timur',   'Kabupaten Nganjuk','Kertosono',     'Jl. Stasiun Kertosono',          '64381', 'kertosono.jpg'],
-        // --- Kediri & Blitar ---
-        ['KD',   'KEDIRI',             'KEDIRI',       -7.816245, 112.015731, 'KD',  'Jawa Timur',   'Kota Kediri',      'Mojoroto',      'Jl. Stasiun No.1',               '64119', 'kediri.jpg'],
-        ['TA',   'TULUNGAGUNG',        'TULUNGAGUNG',  -8.062563, 111.904602, 'TA',  'Jawa Timur',   'Kabupaten Tulungagung','Tulungagung','Jl. Stasiun Tulungagung',       '66224', 'tulungagung.jpg'],
-        ['BL',   'BLITAR',             'BLITAR',       -8.101126, 112.161395, 'BL',  'Jawa Timur',   'Kota Blitar',      'Sananwetan',    'Jl. Stasiun Blitar',             '66133', 'blitar.jpg'],
-        // --- Malang area ---
-        ['SBP',  'SUMBERPUCUNG',       'MALANG',       -8.158379, 112.478053, 'MLG', 'Jawa Timur',   'Kabupaten Malang', 'Sumberpucung',  'Jl. Stasiun Sumberpucung',       '65165', 'sumberpucung.jpg'],
-        ['KPN',  'KEPANJEN',           'MALANG',       -8.132748, 112.572881, 'MLG', 'Jawa Timur',   'Kabupaten Malang', 'Kepanjen',      'Jl. Stasiun Kepanjen',           '65163', 'kepanjen.jpg'],
-        ['WG',   'WLINGI',             'BLITAR',       -8.087987, 112.319464, 'BL',  'Jawa Timur',   'Kabupaten Blitar', 'Wlingi',        'Jl. Stasiun Wlingi',             '66182', 'wlingi.jpg'],
-        ['MLK',  'MALANG KOTALAMA',    'MALANG',       -7.995447, 112.631942, 'MLG', 'Jawa Timur',   'Kota Malang',      'Klojen',        'Jl. Stasiun Kotalama',           '65119', 'malang.jpg'],
-        ['ML',   'MALANG',             'MALANG',       -7.979028, 112.637346, 'MLG', 'Jawa Timur',   'Kota Malang',      'Klojen',        'Jl. Trunojoyo No.1',             '65113', 'malang.jpg'],
-        // --- Surabaya area ---
-        ['SGU',  'SURABAYA GUBENG',    'SURABAYA',     -7.265500, 112.752900, 'SBY', 'Jawa Timur',   'Kota Surabaya',    'Gubeng',        'Jl. Gubeng No.1',                '60281', 'surabaya_gubeng.jpg'],
-        ['SBI',  'SURABAYA PASARTURI', 'SURABAYA',     -7.230400, 112.731700, 'SBY', 'Jawa Timur',   'Kota Surabaya',    'Pabean Cantikan','Jl. Raya Pasarturi No.1',       '60161', 'surabaya_pasarturi.jpg'],
-        // --- Semarang ---
-        ['SMT',  'SEMARANG TAWANG',    'SEMARANG',     -6.968800, 110.418400, 'SMG', 'Jawa Tengah',  'Kota Semarang',    'Semarang Tengah','Jl. Taman Tawang No.1',        '50174', ''],
-        ['SMB',  'SEMARANG PONCOL',    'SEMARANG',     -6.974800, 110.410900, 'SMG', 'Jawa Tengah',  'Kota Semarang',    'Semarang Tengah','Jl. Siliwangi',                '50141', ''],
-        // --- Cirebon ---
-        ['CN',   'CIREBON',            'CIREBON',      -6.705200, 108.557600, 'CN',  'Jawa Barat',   'Kota Cirebon',     'Pekalipan',     'Jl. Stasiun No.1',               '45117', ''],
-    ];
+    // B. STATIONS — Seeding from JSON (Single Source of Truth)
+    const stationsPath = path.join(__dirname, '..', 'data', 'stations_master.json');
+    const masterStations = JSON.parse(fs.readFileSync(stationsPath, 'utf8'));
 
-    for (const [id, name, city, lat, lon, kode, prov, kab, kec, alamat, kodepos, med] of masterStations) {
+    for (const s of masterStations) {
         await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota, provinsi, kabupaten_kota, kecamatan, alamat, kode_pos, media) 
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
                      ON CONFLICT (id) DO UPDATE SET 
@@ -454,9 +455,9 @@ export async function seedData() {
                         kabupaten_kota=EXCLUDED.kabupaten_kota, kecamatan=EXCLUDED.kecamatan,
                         alamat=EXCLUDED.alamat, kode_pos=EXCLUDED.kode_pos,
                         media=EXCLUDED.media`,
-            [id, name, city, lat, lon, kode, prov, kab, kec, alamat, kodepos, med]);
+            [s.code, s.name, s.city, s.lat, s.lng, s.region_code, s.province, s.regency, s.district, s.address, s.postal_code, s.image_url]);
     }
-    console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded`);
+    console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from JSON`);
 
     // ============================================================
     // D. TRAIN SERVICES — Malabar only (single active train for this deployment)
@@ -544,9 +545,13 @@ export async function seedData() {
             if (!train) continue;
             const route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [train.id]);
             if (!route) continue;
+
+            // NEW: Merge coordinates from stations_master.json and strip bloat
+            const optimizedGeoJSON = mergeAndOptimizeGeoJSON(geojsonText, masterStations);
+
             await query('UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3',
-                [geojsonText, filePath.split(/[\\/]/).pop(), route.id]);
-            console.log(`[PIDS-DB] ✓ GeoJSON attached for ${trainName}`);
+                [optimizedGeoJSON, filePath.split(/[\\/]/).pop(), route.id]);
+            console.log(`[PIDS-DB] ✓ Optimized GeoJSON attached for ${trainName} (${optimizedGeoJSON.length} bytes)`);
         }
     } catch (e) {
         console.warn('[PIDS-DB] GeoJSON auto-attach skipped:', e.message);
