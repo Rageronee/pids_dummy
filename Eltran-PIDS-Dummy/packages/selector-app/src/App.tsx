@@ -41,6 +41,7 @@ function App() {
     const [trainNameIndex, setTrainNameIndex] = useState(-1);
     const [kaDropdownOpen, setKaDropdownOpen] = useState(false);
     const kaDropdownRef = useRef<HTMLDivElement>(null);
+    const [trainCategory, setTrainCategory] = useState<'EKSEKUTIF' | 'EKONOMI PREMIUM'>('EKSEKUTIF');
 
     useEffect(() => {
         const idx = trainNames.indexOf(masterSyncedServiceName);
@@ -76,19 +77,28 @@ function App() {
     }, []);
 
     // Direction for Malabar (KA 67 / KA 68)
-    const [activeKa, setActiveKa] = useState<'ka67' | 'ka68'>('ka68');
+    const [activeKa, setActiveKa] = useState<string>('ka68');
 
     const getScheduledTime = useCallback((stationName: any) => {
         const name = typeof stationName === 'object' && stationName !== null ? stationName.name : stationName;
-        const nameStr = String(name ?? '');
-        const activeRoute = data?.activeRoute as any;
+        const nameStr = String(name ?? '').trim();
+        let activeRoute = data?.activeRoute as any;
+
+        if (!activeRoute?.features && masterSyncedServiceName && routes?.[masterSyncedServiceName]) {
+            activeRoute = routes[masterSyncedServiceName];
+        }
+
         if (!activeRoute?.features || !nameStr) return null;
+        
         const stationFeature = activeRoute.features.find((f: any) =>
-            f.geometry.type === 'Point' && String(f.properties.name ?? '').toUpperCase() === nameStr.toUpperCase()
+            f.geometry?.type === 'Point' && String(f.properties?.name ?? '').toUpperCase().trim() === nameStr.toUpperCase()
         );
         if (!stationFeature) return null;
-        return stationFeature.properties[`schedule_${activeKa}`];
-    }, [data?.activeRoute, activeKa]);
+        
+        const expectedKey = `schedule_${activeKa.toLowerCase()}`;
+        const key = Object.keys(stationFeature.properties || {}).find(k => k.toLowerCase() === expectedKey);
+        return key ? stationFeature.properties[key] : null;
+    }, [data?.activeRoute, activeKa, masterSyncedServiceName, routes]);
 
     const showNotification = useCallback((title: string, message: string) => {
         setToastMsg({ title, message, id: Date.now() });
@@ -146,6 +156,97 @@ function App() {
     const currentStation = getStationName(stations[currentIndex]) || 'INITIALIZING SYNC...';
     const nextStation = getStationName(stations[(currentIndex + 1) % stations.length]) || '---';
 
+    // ---- Route directions from GeoJSON ----
+    const activeRouteAny = data?.activeRoute as any;
+    const geojson = activeRouteAny?.features ? activeRouteAny : activeRouteAny?.geojson;
+    const availableDirections: { num: string; label: string }[] =
+        geojson?.features?.find((f: any) => f.geometry?.type === 'LineString')?.properties?.available_directions || [];
+
+    // Format 'KA 68 (Bandung -> Malang)' → 'KA 68 (BD-ML)'
+    const formatDirLabel = (label: string) => {
+        const cityMap: Record<string, string> = { 'BANDUNG': 'BD', 'MALANG': 'ML' };
+        return label.replace(/\(([^)]+?)\s*->?\s*([^)]+?)\)/, (_: string, from: string, to: string) => {
+            const f = from.trim().toUpperCase();
+            const t = to.trim().toUpperCase();
+            const abbr = (s: string) => cityMap[s] || s.substring(0, 2).toUpperCase();
+            return `(${abbr(f)}-${abbr(t)})`;
+        });
+    };
+
+    const handleChangeDirection = useCallback((newKa: string) => {
+        setActiveKa(newKa);
+        setKaDropdownOpen(false);
+
+        if (stations.length < 2) return;
+
+        const rawStations = stations;
+        let newStations = rawStations.filter((s: any) => {
+            const sn = typeof s === 'object' && s !== null ? s.name : s;
+            return sn && !String(sn).toUpperCase().includes('CIKUDAPATEUH');
+        });
+
+        let needsReverse = false;
+
+        // Dynamic direction logic based on exact Origin embedded in parsed GeoJSON
+        let routeFeatures = (data?.activeRoute as any)?.features;
+        if (!routeFeatures && masterSyncedServiceName && routes?.[masterSyncedServiceName]) {
+            routeFeatures = routes[masterSyncedServiceName].features;
+        }
+
+        let dynamicOriginName = null;
+        if (routeFeatures) {
+            const originFeature = routeFeatures.find((f: any) => f.properties?.[`is_origin_${newKa.toLowerCase()}`] === true);
+            if (originFeature) {
+                dynamicOriginName = String(originFeature.properties.name || '').toUpperCase().trim();
+            }
+        }
+
+        if (dynamicOriginName && newStations.length > 0) {
+            const lastSn = getStationName(newStations[newStations.length - 1]);
+            const lastStr = String(lastSn || '').toUpperCase().trim();
+            
+            // If the tail end of the current sequence is the newKA's origin, we MUST reverse it
+            if (lastStr === dynamicOriginName) {
+                needsReverse = true;
+            }
+        } else if (newStations.length >= 2) {
+            // Static Fallback for unconfigured routes
+            const firstSn = getStationName(newStations[0]);
+            const lastSn = getStationName(newStations[newStations.length - 1]);
+            
+            const firstStr = String(firstSn || '').toUpperCase().trim();
+            const lastStr = String(lastSn || '').toUpperCase().trim();
+            
+            const isCurrentlyMlToBd = firstStr.includes('MALANG') || lastStr.includes('BANDUNG');
+            const needsBdToMl = ['ka68', 'ka70'].includes(newKa);
+            const needsMlToBd = ['ka67', 'ka69'].includes(newKa);
+
+            if (needsBdToMl && isCurrentlyMlToBd) needsReverse = true;
+            if (needsMlToBd && !isCurrentlyMlToBd) needsReverse = true;
+        }
+
+        if (needsReverse) {
+            newStations.reverse();
+        }
+            
+        setStations(newStations);
+        setCurrentIndex(0);
+        
+        // Auto sync to display immediately
+        // CRITICAL: We MUST update activeRoute.stations so the backend TV socket relay doesn't reverse it back!
+        sendData({
+            stations: newStations,
+            activeRoute: {
+                ...(data?.activeRoute || {}),
+                stations: newStations
+            },
+            currentStation: newStations[0],
+            nextStation: newStations[Math.min(1, newStations.length - 1)],
+            isSyncing: true
+        });
+        showNotification('Direction Changed', `Route direction set for ${newKa.toUpperCase()} sync.`);
+    }, [stations, setStations, sendData, showNotification, data?.activeRoute]);
+
     // ---- Auth guard ----
     if (!authUser) return <LoginScreen onLogin={handleLogin} />;
 
@@ -178,31 +279,44 @@ function App() {
                         <div className="relative min-w-[200px]" ref={kaDropdownRef}>
                             <button
                                 onClick={() => setKaDropdownOpen(!kaDropdownOpen)}
-                                className={`w-full bg-white/10 border-2 rounded-xl px-4 py-2 shadow-lg transition-all flex items-center justify-between group ${kaDropdownOpen ? 'border-[#ee6f1f] bg-white/20' : 'border-white/10 hover:border-white/20'}`}
+                                className={`flex items-center gap-4 text-left group transition-all active:scale-95 ${kaDropdownOpen ? 'opacity-90' : ''}`}
                             >
-                                <div className="flex flex-col items-start">
-                                    <span className="text-[10px] font-bold text-blue-200/60 tracking-widest uppercase">Select Direction</span>
-                                    <span className="text-sm font-bold text-white uppercase tracking-tight">
-                                        {activeKa === 'ka68' ? 'KA 68 (BD-ML)' : 'KA 67 (ML-BD)'}
-                                    </span>
+                                <div className={`w-[56px] h-[56px] rounded-[14px] flex items-center justify-center shadow-lg transition-all duration-500 ${kaDropdownOpen ? 'bg-[#ee6f1f] scale-110' : 'bg-white/10 group-hover:bg-white/20'}`}>
+                                    <Route className={`${kaDropdownOpen ? 'text-white' : 'text-blue-200'}`} size={32} />
                                 </div>
-                                <ChevronDown size={18} strokeWidth={2.5} className={`text-blue-200/60 transition-transform ${kaDropdownOpen ? 'rotate-180 text-[#ee6f1f]' : ''}`} />
+                                <div className="flex flex-col min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold text-blue-200/60 tracking-[0.25em] uppercase">Select Direction</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl font-bold text-white uppercase tracking-tight truncate">
+                                            {availableDirections.length > 0
+                                                ? formatDirLabel(availableDirections.find(d => `ka${d.num}` === activeKa)?.label ?? activeKa)
+                                                : activeKa.toUpperCase()}
+                                        </span>
+                                        <ChevronDown size={24} strokeWidth={2.5} className={`text-white/40 group-hover:text-white transition-transform ${kaDropdownOpen ? 'rotate-180 text-[#ee6f1f]' : ''}`} />
+                                    </div>
+                                </div>
                             </button>
 
                             {kaDropdownOpen && (
                                 <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-xl shadow-2xl overflow-hidden py-1">
-                                    <button 
-                                        onClick={() => { setActiveKa('ka68'); setKaDropdownOpen(false); }}
-                                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === 'ka68' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
-                                    >
-                                        KA 68 (BD-ML)
-                                    </button>
-                                    <button 
-                                        onClick={() => { setActiveKa('ka67'); setKaDropdownOpen(false); }}
-                                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === 'ka67' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
-                                    >
-                                        KA 67 (ML-BD)
-                                    </button>
+                                    {availableDirections.length > 0 ? availableDirections.map(dir => (
+                                        <button
+                                            key={dir.num}
+                                            onClick={() => handleChangeDirection(`ka${dir.num}`)}
+                                            className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${
+                                                activeKa === `ka${dir.num}` ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            {formatDirLabel(dir.label)}
+                                        </button>
+                                    )) : (
+                                        <>
+                                            <button onClick={() => handleChangeDirection('ka68')} className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === 'ka68' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}>KA 68 (BD-ML)</button>
+                                            <button onClick={() => handleChangeDirection('ka67')} className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === 'ka67' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}>KA 67 (ML-BD)</button>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -210,10 +324,13 @@ function App() {
                 </div>
 
                 <div className="flex items-center gap-6">
-                    <div className="hidden lg:flex flex-col items-end text-right">
-                        <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase mb-0.5">Category</span>
-                        <span className="text-2xl font-bold tracking-tight uppercase leading-none">{masterSyncedServiceName ? 'REGULAR' : '---'}</span>
-                    </div>
+                    <button 
+                        onClick={() => setTrainCategory(prev => prev === 'EKSEKUTIF' ? 'EKONOMI PREMIUM' : 'EKSEKUTIF')}
+                        className="hidden lg:flex flex-col items-end text-right hover:opacity-80 transition-opacity cursor-pointer group"
+                    >
+                        <span className="text-[10px] font-bold text-white/40 group-hover:text-white/70 tracking-[0.2em] uppercase mb-0.5 transition-colors">Category</span>
+                        <span className="text-2xl font-bold tracking-tight uppercase leading-none text-blue-200 group-hover:text-white transition-colors">{masterSyncedServiceName ? trainCategory : '---'}</span>
+                    </button>
 
                     <div className="w-px h-10 bg-white/20 mx-2" />
 
@@ -226,7 +343,7 @@ function App() {
                     <div className="flex items-center gap-4 bg-[#ee6f1f] py-2 px-6 rounded-2xl shadow-lg border border-white/20 max-w-[350px] flex-1">
                         <div className="flex flex-col items-end min-w-0 flex-1">
                             <span className="text-2xl font-bold text-white tracking-tight uppercase truncate w-full text-right">
-                                {stations.length > 0 ? getStationName(stations[stations.length - 1]) : '---'}
+                                {['ka68', 'ka70'].includes(activeKa) ? 'MALANG' : 'BANDUNG'}
                             </span>
                         </div>
                         <div className="w-[44px] h-[44px] rounded-xl flex items-center justify-center shrink-0">

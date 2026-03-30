@@ -1,0 +1,507 @@
+Train Number
+KA 68
+Bandung
+Origin
+
+Dep 18:09:59
+Cikudapateuh
+Transit station
+
+Kiaracondong
+Transit station
+
+Arr 18:18:59
+Dep 18:24:59
+Gedebage
+Transit station
+
+Dep 18:33:00
+Cimekar
+Transit station
+
+Rancaekek
+Transit station
+
+Dep 18:38:59
+Haurpugur
+Transit station
+
+Dep 18:42:59
+Cicalengka
+Transit station
+
+Dep 18:45:59
+Nagreg
+Transit station
+
+Dep 18:58:59
+Lebakjero
+Transit station
+
+Dep 19:07:00
+Leles
+Transit station
+
+Arr 19:16:59
+Dep 19:20:00
+Karangsari (Garut)
+Transit station
+
+Dep 19:27:00
+Leuwigoong
+Transit station
+
+Cibatu
+Transit station
+
+Note: X KA 127 (KA 127 X)
+
+Dep 19:34:59
+Warungbandrek
+Transit station
+
+Dep 19:41:59
+Bumiwaluya
+Transit station
+
+Dep 19:54:00
+Cipeundeuy
+Transit station
+
+Arr 20:03:59
+Dep 20:14:00
+Cirahayu
+Transit station
+
+Dep 20:26:59
+Ciawi
+Transit station
+
+Dep 20:35:00
+Rajapolah
+Transit station
+
+Note: X KA 287 (KA 287 X)
+
+Dep 20:42:59
+Indihiang
+Transit station
+
+Dep 20:48:59
+Tasikmalaya
+Transit station
+
+Arr 20:53:59
+Dep 20:57:00
+Awipari
+Transit station
+
+Dep 21:02:59
+Manonjaya
+Transit station
+
+Dep 21:06:00
+Ciamis
+Transit station
+
+Arr 21:17:00
+Dep 21:18:59
+Bojong
+Transit station
+
+Dep 21:27:00
+Karangpucung
+Transit station
+
+Note: X KA 205F JJ (KA 205F JJ X)
+
+Dep 21:33:59
+Banjar
+Transit station
+
+Arr 21:40:00
+Dep 21:44:00
+Langen
+Transit station
+
+Dep 21:51:59
+Meluwung
+Transit station
+
+Dep 21:56:59
+Cipari
+Transit station
+
+Dep 22:02:00
+Sidareja
+Transit station
+
+Arr 22:07:59
+Dep 22:09:59
+Gandrungmangun
+Transit station
+
+Dep 22:16:00
+Kawunganten
+Transit station
+
+Dep 22:21:00
+Jeruklegi
+Transit station
+
+Note: X KA 79 (KA 79 X)
+
+Dep 22:32:00
+Lebeng
+Transit station
+
+Dep 22:36:00
+Kasugihan
+Transit station
+
+Dep 22:39:00
+Maos
+Transit station
+
+Arr 22:41:59
+Dep 22:43:59
+Sikampuh
+Transit station
+
+Dep 22:50:00
+Kroya
+Transit station
+
+Note: (KA L2642F-1 X)
+
+Arr 22:56:00
+Dep 22:59:00
+Kemranjen
+Transit station
+
+Dep 23:05:00
+Sumpiuh
+Transit station
+
+Dep 23:08:00
+Tambak
+Transit station
+
+Dep 23:10:59
+Ijo
+Transit station
+
+Dep 23:14:00
+Gombong
+Transit station
+
+Arr 23:21:00
+Dep 23:23:00
+Karanganyar
+Transit station
+
+Dep 23:30:00
+Sruweng
+Transit station
+
+Dep 23:33:00
+Kebumen
+Transit station
+
+Arr 23:39:59
+Dep 23:42:00
+Wonosari
+Transit station
+
+Dep 23:46:59
+Kutowinangun
+Transit station
+
+Dep 23:48:59
+Prembun
+Transit station
+
+Dep 23:53:00
+Butuh
+Transit station
+
+Dep 23:57:59
+Kutoarjo
+Transit station
+
+Arr 00:02:59
+Dep 00:06:00
+Jenar
+Transit station
+
+Dep 00:15:00
+Wojo
+Transit station
+
+Dep 00:20:00
+Kedundang
+Transit station
+
+Dep 00:24:00
+Wates
+Transit station
+
+Dep 00:27:59
+Sentolo
+Transit station
+
+Dep 00:36:00
+Rewulu
+Transit station
+
+Dep 00:42:59
+Patukan
+Transit station
+
+Dep 00:45:59
+Yogyakarta
+Transit station
+
+Arr 00:51:00
+Dep 00:56:00
+Lempuyangan
+Transit station
+
+Dep 00:58:59
+Maguwo
+Transit station
+
+Dep 01:03:00
+Brambanan
+Transit station
+
+Dep 01:07:59
+Srowot
+Transit station
+
+Dep 01:12:00
+Klaten
+Transit station
+
+Arr 01:16:59
+Dep 01:18:59
+Ceper
+Transit station
+
+Dep 01:25:59
+Delanggu
+Transit station
+
+Dep 01:30:00
+Gawok
+Transit station
+
+Dep 01:32:59
+Purwosari
+Transit station
+
+Dep 01:36:59
+Solo Balapan
+Transit station
+
+Arr 01:41:00
+Dep 01:43:59
+Solo Jebres
+Transit station
+
+Dep 01:48:00
+Palur
+Transit station
+
+Dep 01:50:59
+Kemiri
+Transit station
+
+Dep 01:54:00
+Masaran
+Transit station
+
+Dep 01:59:00
+Sragen
+Transit station
+
+Arr 02:06:00
+Dep 02:08:00
+Kebonromo
+Transit station
+
+Dep 02:14:00
+Kedungbanteng
+Transit station
+
+Dep 02:17:59
+Walikukun
+Transit station
+
+Note: // KA 252 (KA 252 =)
+
+Dep 02:26:00
+Kedunggalar
+Transit station
+
+Dep 02:30:59
+Ngawi
+Transit station
+
+Arr 02:37:59
+Dep 02:39:59
+Geneng
+Transit station
+
+Dep 02:46:00
+Magetan
+Transit station
+
+Dep 02:51:59
+Madiun
+Transit station
+
+Arr 03:00:00
+Dep 03:04:59
+Babadan
+Transit station
+
+Dep 03:11:00
+Caruban
+Transit station
+
+Dep 03:15:59
+Saradan
+Transit station
+
+Dep 03:20:59
+Bagor
+Transit station
+
+Dep 03:31:00
+Nganjuk
+Transit station
+
+Arr 03:36:59
+Dep 03:38:59
+Sukomoro
+Transit station
+
+Dep 03:44:00
+Baron
+Transit station
+
+Dep 03:49:59
+Kertosono
+Transit station
+
+Arr 03:56:00
+Dep 03:58:59
+Purwoasri
+Transit station
+
+Dep 04:05:59
+Papar
+Transit station
+
+Dep 04:09:00
+Minggiran
+Transit station
+
+Dep 04:12:00
+Susuhan
+Transit station
+
+Dep 04:14:59
+Kediri
+Transit station
+
+Arr 04:20:00
+Dep 04:23:00
+Ngadiluwih
+Transit station
+
+Dep 04:30:00
+Kras
+Transit station
+
+Dep 04:34:00
+Ngujang
+Transit station
+
+Dep 04:38:00
+Tulungagung
+Transit station
+
+Arr 04:43:59
+Dep 04:45:59
+Sumbergempol
+Transit station
+
+Dep 04:50:59
+Ngunut
+Transit station
+
+Note: X KA 421 (KA 421 X)
+
+Dep 04:54:59
+Rejotangan
+Transit station
+
+Dep 04:59:59
+Blitar
+Transit station
+
+Arr 05:08:59
+Dep 05:12:00
+Garum
+Transit station
+
+Dep 05:21:00
+Talun
+Transit station
+
+Note: X KA 423 (KA 423 X)
+
+Dep 05:28:59
+Wlingi
+Transit station
+
+Arr 05:35:00
+Dep 05:39:59
+Kesamben
+Transit station
+
+Dep 05:50:00
+Pogajih
+Transit station
+
+Dep 05:57:59
+Sumberpucung
+Transit station
+
+Dep 06:06:00
+Ngebruk
+Transit station
+
+Note: X KA 69 (KA 69 X)
+
+Dep 06:11:59
+Kepanjen
+Transit station
+
+Arr 06:20:59
+Dep 06:24:00
+Pakisaji
+Transit station
+
+Dep 06:33:00
+Malang Kotalama
+Transit station
+
+Arr 06:44:00
+Dep 06:45:59
+Malang
+Destination
+
+Arr 06:51:59

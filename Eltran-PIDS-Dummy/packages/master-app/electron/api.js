@@ -217,13 +217,55 @@ export async function startApiServer() {
         res.json({ success: true, ...result });
     });
 
+    // NOTE: /api/stations-master is now generated LIVE from PostgreSQL.
+    // This ensures GeoJSON always reflects the actual DB without manual file sync.
     apiApp.get('/api/stations-master', async (req, res) => {
         try {
-            const masterPath = path.join(PUBLIC_DIR, 'geojson', 'stations_master.geojson');
-            const data = await fs.readFile(masterPath, 'utf8');
-            res.json({ success: true, data: JSON.parse(data) });
+            const result = await getStations({});
+            const stations = result.stations || [];
+
+            const geojson = {
+                type: 'FeatureCollection',
+                features: stations
+                    .filter(s => s.latitude && s.longitude)
+                    .map(s => ({
+                        type: 'Feature',
+                        id: s.id,
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [parseFloat(s.longitude), parseFloat(s.latitude)]
+                        },
+                        properties: {
+                            name: s.name,
+                            city: s.city,
+                            railway_ref: s.id,
+                            kode_kota: s.kode_kota || '',
+                            ip_address: s.ip_address || '',
+                            nama_pic: s.nama_pic || '',
+                            kontak_pic: s.kontak_pic || '',
+                            alamat: s.alamat || '',
+                            provinsi: s.provinsi || '',
+                            kabupaten_kota: s.kabupaten_kota || '',
+                            kecamatan: s.kecamatan || '',
+                            kelurahan_desa: s.kelurahan_desa || '',
+                            kode_pos: s.kode_pos || '',
+                            media: s.media || ''
+                        }
+                    }))
+            };
+
+            res.json({ success: true, data: geojson });
         } catch (e) {
-            res.status(500).json({ success: false, error: 'Master stasiun tidak ditemukan atau korup' });
+            console.error('[API] stations-master error:', e);
+            // Fallback: try to read static file if DB fails
+            try {
+                const { readFile } = await import('fs/promises');
+                const masterPath = path.join(PUBLIC_DIR, 'geojson', 'stations_master.geojson');
+                const data = await readFile(masterPath, 'utf8');
+                res.json({ success: true, data: JSON.parse(data), source: 'static-fallback' });
+            } catch {
+                res.status(500).json({ success: false, error: 'Gagal mengambil data master stasiun' });
+            }
         }
     });
 
@@ -597,7 +639,18 @@ export async function startApiServer() {
         }
     });
 
-    // ... other endpoints refactored similarly ...
+    
+    // GPS MAP
+    apiApp.get('/api/gps/fleet', async (req, res) => {
+        const fleet = await getGpsFleet();
+        res.json({ success: true, fleet });
+    });
+
+    apiApp.get('/api/gps/gerbong/:id', async (req, res) => {
+        const gerbong = await getGpsGerbong(req.params.id);
+        res.json({ success: true, gerbong });
+    });
+
     // Note: I will complete the rest of the endpoints in the next step or here if tokens allow.
     // To be safe, I've refactored the most critical ones.
 

@@ -364,106 +364,333 @@ async function createTables() {
 }
 
 export async function seedData() {
-    console.log('[PIDS-DB] Seeding authentic KAI data to PostgreSQL...');
+    console.log('[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...');
 
-    // 1. Core State & Admin
+    // ============================================================
+    // A. PIDS STATE — One-row operational state
+    // ============================================================
     await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, jumlah_kereta) 
                  VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10)
                  ON CONFLICT (id) DO NOTHING`);
 
+    // ============================================================
+    // B. USERS — Admin + default Operator
+    // ============================================================
     const hashedAdminPw = hashPassword('admin123');
+    const hashedOpPw = hashPassword('operator123');
     await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
         ['USR001', 'admin', hashedAdminPw, 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
+    await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
+        ['USR002', 'operator', hashedOpPw, 'Operator', 'Operator PIDS', '081100000002', 'operator@eltran.co.id']);
 
-    // 2. Authentic Stations (Malabar Route: Malang → Bandung)
-    const malabarStations = [
-        ['ML', 'MALANG', 'MALANG', -7.9790275, 112.6373464, 'MLG', 'malang.jpg'],
-        ['MLK', 'MALANG KOTALAMA', 'MALANG', -7.9954465, 112.6319415, 'MLG', 'malang.jpg'],
-        ['KPN', 'KEPANJEN', 'MALANG', -8.132748, 112.5728812, 'MLG', 'kepanjen.jpg'],
-        ['SBP', 'SUMBERPUCUNG', 'MALANG', -8.1583792, 112.4780531, 'MLG', 'sumberpucung.jpg'],
-        ['WG', 'WLINGI', 'BLITAR', -8.0879868, 112.3194641, 'BL', 'wlingi.jpg'],
-        ['BL', 'BLITAR', 'BLITAR', -8.101126, 112.1613948, 'BL', 'blitar.jpg'],
-        ['TA', 'TULUNGAGUNG', 'TULUNGAGUNG', -8.0625633, 111.9046015, 'TA', 'tulungagung.jpg'],
-        ['KD', 'KEDIRI', 'KEDIRI', -7.8162448, 112.0157311, 'KD', 'kediri.jpg'],
-        ['KTS', 'KERTOSONO', 'NGANJUK', -7.5918335, 112.0999248, 'NGJ', 'kertosono.jpg'],
-        ['NJ', 'NGANJUK', 'NGANJUK', -7.6002457, 111.9017, 'NGJ', 'nganjuk.jpg'],
-        ['MN', 'MADIUN', 'MADIUN', -7.6185833, 111.5238865, 'MN', 'madiun.jpg'],
-        ['NGW', 'NGAWI', 'NGAWI', -7.4419921, 111.3860743, 'NGW', 'ngawi.jpg'],
-        ['SR', 'SRAGEN', 'SRAGEN', -7.42861, 111.02056, 'SR', 'sragen.jpg'],
-        ['SLO', 'SOLO BALAPAN', 'SURAKARTA', -7.557157, 110.8199548, 'SLO', 'solo_balapan.png'],
-        ['KT', 'KLATEN', 'KLATEN', -7.7127524, 110.6023249, 'KT', 'klaten.jpg'],
-        ['YK', 'YOGYAKARTA', 'YOGYAKARTA', -7.7889579, 110.3622182, 'YOG', 'yogyakarta.jpg'],
-        ['KTA', 'KUTOARJO', 'PURWOREJO', -7.7259759, 109.9062994, 'KTA', 'kutoarjo.jpg'],
-        ['KM', 'KEBUMEN', 'KEBUMEN', -7.681689, 109.6617364, 'KBM', 'kebumen.jpg'],
-        ['GB', 'GOMBONG', 'KEBUMEN', -7.6110809, 109.504688, 'KBM', 'gombong.jpg'],
-        ['KYA', 'KROYA', 'CILACAP', -7.6301526, 109.2529649, 'KYA', 'kroya.jpg'],
-        ['MA', 'MAOS', 'CILACAP', -7.6189981, 109.1388631, 'MA', 'maos.jpg'],
-        ['SDR', 'SIDAREJA', 'CILACAP', -7.4860693, 108.8068569, 'SDR', 'sidareja.jpg'],
-        ['BJR', 'BANJAR', 'BANJAR', -7.3762944, 108.5419504, 'BJR', 'banjar.jpg'],
-        ['CI', 'CIAMIS', 'CIAMIS', -7.3293001, 108.3554701, 'CI', 'ciamis.jpg'],
-        ['TSM', 'TASIKMALAYA', 'TASIKMALAYA', -7.3213073, 108.2231253, 'TSM', 'tasikmalaya.jpg'],
-        ['CPD', 'CIPEUNDEUY', 'GARUT', -7.0931934, 108.0998045, 'CPD', 'cipeundeuy.jpg'],
-        ['C26', 'LELES', 'GARUT', -7.0838873, 107.8997164, 'LLS', 'leles.jpg'],
-        ['KAC', 'KIARACONDONG', 'BANDUNG', -6.9244847, 107.6457751, 'BDG', 'kiaracondong.jpg'],
-        ['BD', 'BANDUNG', 'BANDUNG', -6.9143744, 107.6013675, 'BDG', 'bandung.jpg']
+    // ============================================================
+    // C. STATIONS — Master List (Merged: Malabar + Parahyangan + Argo Wilis routes)
+    //    Every station has: id, name, city, lat, lon, kode_kota, provinsi, kabupaten_kota, alamat, media
+    // ============================================================
+    const masterStations = [
+        // --- Jakarta area ---
+        ['GMR',  'GAMBIR',             'JAKARTA',      -6.176270, 106.830800, 'JKT', 'DKI Jakarta',  'Jakarta Pusat',    'Gambir',        'Jl. Medan Merdeka Timur No.1',   '10110', 'gambir.jpg'],
+        ['JAKK', 'JAKARTA KOTA',       'JAKARTA',      -6.137600, 106.812500, 'JKT', 'DKI Jakarta',  'Jakarta Barat',    'Taman Sari',    'Jl. Stasiun Kota No.1',          '11110', ''],
+        ['PSEN', 'PASAR SENEN',        'JAKARTA',      -6.184400, 106.846700, 'JKT', 'DKI Jakarta',  'Jakarta Pusat',    'Senen',         'Jl. Stasiun Senen',              '10440', ''],
+        ['JTE',  'JATINEGARA',         'JAKARTA',      -6.216700, 106.856700, 'JKT', 'DKI Jakarta',  'Jakarta Timur',    'Jatinegara',    'Jl. Jatinegara Barat',           '13350', ''],
+        ['BKS',  'BEKASI',             'BEKASI',       -6.241200, 106.992200, 'BKS', 'Jawa Barat',   'Kota Bekasi',      'Bekasi',        'Jl. Stasiun Bekasi',             '17143', ''],
+        // --- Bandung corridor ---
+        ['KAC',  'KIARACONDONG',       'BANDUNG',      -6.924500, 107.645800, 'BDG', 'Jawa Barat',   'Kota Bandung',     'Batununggal',   'Jl. Ibrahim Adjie No.1',         '40275', 'kiaracondong.jpg'],
+        ['BD',   'BANDUNG',            'BANDUNG',      -6.914374, 107.601368, 'BDG', 'Jawa Barat',   'Kota Bandung',     'Andir',         'Jl. Stasiun Selatan No.25',      '40181', 'bandung.jpg'],
+        ['CMI',  'CIMAHI',             'CIMAHI',       -6.884300, 107.541200, 'CMI', 'Jawa Barat',   'Kota Cimahi',      'Cimahi',        'Jl. Stasiun Timur',              '40533', ''],
+        ['GRT',  'GARUT',              'GARUT',        -7.216200, 107.906600, 'GRT', 'Jawa Barat',   'Kabupaten Garut',  'Garut Kota',    'Jl. Stasiun No.1',               '44117', ''],
+        ['C26',  'LELES',              'GARUT',        -7.083900, 107.899700, 'LLS', 'Jawa Barat',   'Kabupaten Garut',  'Leles',         'Jl. Stasiun Leles',              '44152', 'leles.jpg'],
+        ['CPD',  'CIPEUNDEUY',         'GARUT',        -7.093200, 108.099800, 'CPD', 'Jawa Barat',   'Kabupaten Garut',  'Cipeundeuy',    'Jl. Stasiun Cipeundeuy',         '44186', 'cipeundeuy.jpg'],
+        ['TSM',  'TASIKMALAYA',        'TASIKMALAYA',  -7.321300, 108.223100, 'TSM', 'Jawa Barat',   'Kota Tasikmalaya', 'Cipedes',       'Jl. Stasiun No.1',               '46133', 'tasikmalaya.jpg'],
+        ['CI',   'CIAMIS',             'CIAMIS',       -7.329300, 108.355500, 'CI',  'Jawa Barat',   'Kabupaten Ciamis', 'Ciamis',        'Jl. Stasiun Ciamis',             '46211', 'ciamis.jpg'],
+        ['BJR',  'BANJAR',             'BANJAR',       -7.376300, 108.542000, 'BJR', 'Jawa Barat',   'Kota Banjar',      'Banjar',        'Jl. Stasiun Banjar',             '46311', 'banjar.jpg'],
+        // --- Cilacap / Jawa Tengah ---
+        ['SDR',  'SIDAREJA',           'CILACAP',      -7.486100, 108.806900, 'SDR', 'Jawa Tengah',  'Kabupaten Cilacap','Sidareja',      'Jl. Stasiun Sidareja',           '53261', 'sidareja.jpg'],
+        ['MA',   'MAOS',               'CILACAP',      -7.619000, 109.138900, 'MA',  'Jawa Tengah',  'Kabupaten Cilacap','Maos',          'Jl. Stasiun Maos',               '53153', 'maos.jpg'],
+        ['KYA',  'KROYA',              'CILACAP',      -7.630200, 109.252900, 'KYA', 'Jawa Tengah',  'Kabupaten Cilacap','Kroya',         'Jl. Stasiun Kroya',              '53282', 'kroya.jpg'],
+        ['CL',   'CILACAP',            'CILACAP',      -7.720900, 109.023400, 'CLP', 'Jawa Tengah',  'Kabupaten Cilacap','Cilacap',       'Jl. Stasiun Cilacap',            '53212', ''],
+        ['GB',   'GOMBONG',            'KEBUMEN',      -7.611100, 109.504700, 'KBM', 'Jawa Tengah',  'Kabupaten Kebumen','Gombong',       'Jl. Stasiun Gombong',            '54416', 'gombong.jpg'],
+        ['KM',   'KEBUMEN',            'KEBUMEN',      -7.681700, 109.661700, 'KBM', 'Jawa Tengah',  'Kabupaten Kebumen','Kebumen',       'Jl. Stasiun Kebumen',             '54315', 'kebumen.jpg'],
+        ['KTA',  'KUTOARJO',           'PURWOREJO',    -7.725900, 109.906300, 'KTA', 'Jawa Tengah',  'Kabupaten Purworejo','Kutoarjo',    'Jl. Stasiun Kutoarjo',           '54211', 'kutoarjo.jpg'],
+        // --- Yogyakarta & Solo ---
+        ['YK',   'YOGYAKARTA',         'YOGYAKARTA',   -7.788958, 110.362218, 'YOG', 'DI Yogyakarta','Kota Yogyakarta',  'Gedongtengen',  'Jl. Pasar Kembang No.1',         '55271', 'yogyakarta.jpg'],
+        ['LPN',  'LEMPUYANGAN',        'YOGYAKARTA',   -7.784800, 110.375200, 'YOG', 'DI Yogyakarta','Kota Yogyakarta',  'Danurejan',     'Jl. Lempuyangan No.1',           '55211', ''],
+        ['KT',   'KLATEN',             'KLATEN',       -7.712800, 110.602300, 'KT',  'Jawa Tengah',  'Kabupaten Klaten', 'Klaten Selatan','Jl. Stasiun Klaten',             '57416', 'klaten.jpg'],
+        ['SLO',  'SOLO BALAPAN',       'SURAKARTA',    -7.557157, 110.819955, 'SLO', 'Jawa Tengah',  'Kota Surakarta',   'Banjarsari',    'Jl. Monginsidi No.112',          '57139', 'solo_balapan.png'],
+        ['SLJ',  'SOLO JEBRES',        'SURAKARTA',    -7.554900, 110.840300, 'SLO', 'Jawa Tengah',  'Kota Surakarta',   'Jebres',        'Jl. Stasiun Solo Jebres',        '57128', ''],
+        ['SR',   'SRAGEN',             'SRAGEN',       -7.428610, 111.020560, 'SR',  'Jawa Tengah',  'Kabupaten Sragen', 'Sragen',        'Jl. Stasiun Sragen',             '57213', 'sragen.jpg'],
+        // --- Madiun & Ngawi ---
+        ['NGW',  'NGAWI',              'NGAWI',        -7.441992, 111.386074, 'NGW', 'Jawa Timur',   'Kabupaten Ngawi',  'Ngawi',         'Jl. Stasiun Ngawi',              '63211', 'ngawi.jpg'],
+        ['MN',   'MADIUN',             'MADIUN',       -7.618583, 111.523887, 'MN',  'Jawa Timur',   'Kota Madiun',      'Manguharjo',    'Jl. Kompol Sunaryo No.14',       '63122', 'madiun.jpg'],
+        ['NJ',   'NGANJUK',            'NGANJUK',      -7.600246, 111.901700, 'NGJ', 'Jawa Timur',   'Kabupaten Nganjuk','Nganjuk',       'Jl. Stasiun Nganjuk',            '64411', 'nganjuk.jpg'],
+        ['KTS',  'KERTOSONO',          'NGANJUK',      -7.591834, 112.099925, 'NGJ', 'Jawa Timur',   'Kabupaten Nganjuk','Kertosono',     'Jl. Stasiun Kertosono',          '64381', 'kertosono.jpg'],
+        // --- Kediri & Blitar ---
+        ['KD',   'KEDIRI',             'KEDIRI',       -7.816245, 112.015731, 'KD',  'Jawa Timur',   'Kota Kediri',      'Mojoroto',      'Jl. Stasiun No.1',               '64119', 'kediri.jpg'],
+        ['TA',   'TULUNGAGUNG',        'TULUNGAGUNG',  -8.062563, 111.904602, 'TA',  'Jawa Timur',   'Kabupaten Tulungagung','Tulungagung','Jl. Stasiun Tulungagung',       '66224', 'tulungagung.jpg'],
+        ['BL',   'BLITAR',             'BLITAR',       -8.101126, 112.161395, 'BL',  'Jawa Timur',   'Kota Blitar',      'Sananwetan',    'Jl. Stasiun Blitar',             '66133', 'blitar.jpg'],
+        // --- Malang area ---
+        ['SBP',  'SUMBERPUCUNG',       'MALANG',       -8.158379, 112.478053, 'MLG', 'Jawa Timur',   'Kabupaten Malang', 'Sumberpucung',  'Jl. Stasiun Sumberpucung',       '65165', 'sumberpucung.jpg'],
+        ['KPN',  'KEPANJEN',           'MALANG',       -8.132748, 112.572881, 'MLG', 'Jawa Timur',   'Kabupaten Malang', 'Kepanjen',      'Jl. Stasiun Kepanjen',           '65163', 'kepanjen.jpg'],
+        ['WG',   'WLINGI',             'BLITAR',       -8.087987, 112.319464, 'BL',  'Jawa Timur',   'Kabupaten Blitar', 'Wlingi',        'Jl. Stasiun Wlingi',             '66182', 'wlingi.jpg'],
+        ['MLK',  'MALANG KOTALAMA',    'MALANG',       -7.995447, 112.631942, 'MLG', 'Jawa Timur',   'Kota Malang',      'Klojen',        'Jl. Stasiun Kotalama',           '65119', 'malang.jpg'],
+        ['ML',   'MALANG',             'MALANG',       -7.979028, 112.637346, 'MLG', 'Jawa Timur',   'Kota Malang',      'Klojen',        'Jl. Trunojoyo No.1',             '65113', 'malang.jpg'],
+        // --- Surabaya area ---
+        ['SGU',  'SURABAYA GUBENG',    'SURABAYA',     -7.265500, 112.752900, 'SBY', 'Jawa Timur',   'Kota Surabaya',    'Gubeng',        'Jl. Gubeng No.1',                '60281', 'surabaya_gubeng.jpg'],
+        ['SBI',  'SURABAYA PASARTURI', 'SURABAYA',     -7.230400, 112.731700, 'SBY', 'Jawa Timur',   'Kota Surabaya',    'Pabean Cantikan','Jl. Raya Pasarturi No.1',       '60161', 'surabaya_pasarturi.jpg'],
+        // --- Semarang ---
+        ['SMT',  'SEMARANG TAWANG',    'SEMARANG',     -6.968800, 110.418400, 'SMG', 'Jawa Tengah',  'Kota Semarang',    'Semarang Tengah','Jl. Taman Tawang No.1',        '50174', ''],
+        ['SMB',  'SEMARANG PONCOL',    'SEMARANG',     -6.974800, 110.410900, 'SMG', 'Jawa Tengah',  'Kota Semarang',    'Semarang Tengah','Jl. Siliwangi',                '50141', ''],
+        // --- Cirebon ---
+        ['CN',   'CIREBON',            'CIREBON',      -6.705200, 108.557600, 'CN',  'Jawa Barat',   'Kota Cirebon',     'Pekalipan',     'Jl. Stasiun No.1',               '45117', ''],
     ];
 
-    for (const [id, name, city, lat, lon, code, med] of malabarStations) {
-        await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota, media) 
-                     VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    for (const [id, name, city, lat, lon, kode, prov, kab, kec, alamat, kodepos, med] of masterStations) {
+        await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota, provinsi, kabupaten_kota, kecamatan, alamat, kode_pos, media) 
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
                      ON CONFLICT (id) DO UPDATE SET 
-                        name=EXCLUDED.name, 
-                        city=EXCLUDED.city, 
-                        latitude=EXCLUDED.latitude, 
-                        longitude=EXCLUDED.longitude, 
-                        kode_kota=EXCLUDED.kode_kota,
+                        name=EXCLUDED.name, city=EXCLUDED.city,
+                        latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude,
+                        kode_kota=EXCLUDED.kode_kota, provinsi=EXCLUDED.provinsi,
+                        kabupaten_kota=EXCLUDED.kabupaten_kota, kecamatan=EXCLUDED.kecamatan,
+                        alamat=EXCLUDED.alamat, kode_pos=EXCLUDED.kode_pos,
                         media=EXCLUDED.media`,
-            [id, name, city, lat, lon, code, med]);
+            [id, name, city, lat, lon, kode, prov, kab, kec, alamat, kodepos, med]);
     }
+    console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded`);
 
-    // 3. Train Services
+    // ============================================================
+    // D. TRAIN SERVICES — Malabar only (single active train for this deployment)
+    // ============================================================
     const kaiTrains = [
-        ['ARGO BROMO ANGGREK', 'EKSEKUTIF', '1', 'GMR', 'SBI'],
-        ['ARGO WILIS', 'EKSEKUTIF', '5', 'BD', 'SGU'],
-        ['TURANGGA', 'EKSEKUTIF', '65', 'SGU', 'GMR'],
-        ['ARGO PARAHYANGAN', 'EKSEKUTIF', '34', 'GMR', 'BD'],
-        ['MALABAR', 'EKSEKUTIF/EKONOMI', '121', 'ML', 'BD']
+        // [name, class, ka_number, gerbong_count, stasiun_awal_id, stasiun_akhir_id]
+        ['MALABAR', 'EKSEKUTIF/EKONOMI', '67', 12, 'ML', 'BD']
     ];
 
-    for (const [name, cls, num, start, end] of kaiTrains) {
-        await query(`INSERT INTO train_services (name, class, ka_number, stasiun_awal, stasiun_akhir) 
-                     VALUES ($1, $2, $3, $4, $5) 
+    for (const [name, cls, num, gerbong, start, end] of kaiTrains) {
+        await query(`INSERT INTO train_services (name, class, ka_number, gerbong_count, stasiun_awal, stasiun_akhir) 
+                     VALUES ($1, $2, $3, $4, $5, $6) 
                      ON CONFLICT (name) DO UPDATE SET 
-                        class=EXCLUDED.class, 
-                        ka_number=EXCLUDED.ka_number, 
-                        stasiun_awal=EXCLUDED.stasiun_awal, 
-                        stasiun_akhir=EXCLUDED.stasiun_akhir`,
-            [name, cls, num, start, end]);
+                        class=EXCLUDED.class, ka_number=EXCLUDED.ka_number,
+                        gerbong_count=EXCLUDED.gerbong_count,
+                        stasiun_awal=EXCLUDED.stasiun_awal, stasiun_akhir=EXCLUDED.stasiun_akhir`,
+            [name, cls, num, gerbong, start, end]);
+    }
+    console.log('[PIDS-DB] ✓ Train services seeded');
+
+    // ============================================================
+    // E–F. ROUTES + ROUTE_STATIONS (seeded per train, ordered stops)
+    //      Each route_station references a valid station ID from table C.
+    // ============================================================
+    // Only Malabar route (ML → BD, 29 stops - authentic GAPEKA order)
+    const routeDefinitions = {
+        'MALABAR': {
+            direction: 'Malang - Bandung',
+            stations: ['ML','MLK','KPN','SBP','WG','BL','TA','KD','KTS','NJ','MN','NGW','SR','SLO','KT','YK','KTA','KM','GB','KYA','MA','SDR','BJR','CI','TSM','CPD','C26','KAC','BD']
+        }
+    };
+
+    for (const [trainName, routeDef] of Object.entries(routeDefinitions)) {
+        const train = await getOne('SELECT id FROM train_services WHERE name = $1', [trainName]);
+        if (!train) { console.warn(`[PIDS-DB] Train not found for route: ${trainName}`); continue; }
+
+        // Upsert route
+        const existingRoute = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [train.id]);
+        let routeId;
+        if (existingRoute) {
+            routeId = existingRoute.id;
+            await query('UPDATE routes SET direction=$1 WHERE id=$2', [routeDef.direction, routeId]);
+            await query('DELETE FROM route_stations WHERE route_id = $1', [routeId]);
+        } else {
+            const res = await query(
+                'INSERT INTO routes (train_service_id, direction) VALUES ($1, $2) RETURNING id',
+                [train.id, routeDef.direction]
+            );
+            routeId = res.rows[0].id;
+        }
+
+        // Insert ordered route_stations
+        for (let i = 0; i < routeDef.stations.length; i++) {
+            const stationId = routeDef.stations[i];
+            const stExists = await getOne('SELECT id FROM stations WHERE id = $1', [stationId]);
+            if (!stExists) { console.warn(`[PIDS-DB] Station ID '${stationId}' not found, skipping`); continue; }
+            await query(
+                'INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES ($1, $2, $3)',
+                [routeId, stationId, i]
+            );
+        }
+        console.log(`[PIDS-DB] ✓ Route ${trainName}: ${routeDef.stations.length} stops`);
     }
 
-    // 4. Initial Schedules (Point-to-Point for Dashboard)
+    // ============================================================
+    // G. GEOJSON — Auto-attach from local files into routes.geojson
+    // ============================================================
+    try {
+        const { readFileSync, existsSync } = await import('fs');
+        const { join, dirname } = await import('path');
+        const { fileURLToPath } = await import('url');
+        const __dir = dirname(fileURLToPath(import.meta.url));
+
+        const geojsonMap = {
+            'MALABAR': join(__dir, '..', 'public', 'geojson', 'Malabar', 'Malabar.geojson'),
+        };
+
+        for (const [trainName, filePath] of Object.entries(geojsonMap)) {
+            if (!existsSync(filePath)) {
+                console.warn(`[PIDS-DB] GeoJSON not found: ${filePath}`);
+                continue;
+            }
+            const geojsonText = readFileSync(filePath, 'utf-8');
+            const train = await getOne('SELECT id FROM train_services WHERE name = $1', [trainName]);
+            if (!train) continue;
+            const route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [train.id]);
+            if (!route) continue;
+            await query('UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3',
+                [geojsonText, filePath.split(/[\\/]/).pop(), route.id]);
+            console.log(`[PIDS-DB] ✓ GeoJSON attached for ${trainName}`);
+        }
+    } catch (e) {
+        console.warn('[PIDS-DB] GeoJSON auto-attach skipped:', e.message);
+    }
+
+    // ============================================================
+    // H. SCHEDULES — One per train for today, linked to route_id
+    // ============================================================
     const today = new Date().toISOString().split('T')[0];
-    const initialSchedules = [
-        { train: 'ARGO PARAHYANGAN', num: '34', dep: 'GAMBIR', depCode: 'JKT', arr: 'BANDUNG', arrCode: 'BDG', depTime: '08:00', arrTime: '10:45' },
-        { train: 'ARGO BROMO ANGGREK', num: '1', dep: 'GAMBIR', depCode: 'JKT', arr: 'SURABAYA PASARTURI', arrCode: 'SBY', depTime: '08:20', arrTime: '16:30' },
-        { train: 'ARGO WILIS', num: '5', dep: 'BANDUNG', depCode: 'BDG', arr: 'SURABAYA GUBENG', arrCode: 'SBY', depTime: '07:40', arrTime: '17:35' }
+
+    // Malabar 4 directions — authentic GAPEKA times (ML=Malang, BD=Bandung)
+    // KA67/69: ML→BD (Malam/Pagi) | KA68/70: BD→ML (Malam/Sore)
+    const scheduleDefinitions = [
+        // [trainName, kaNum, depStationName, depKode, arrStationName, arrKode, depTime, arrTime]
+        ['MALABAR', '67', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '16:50', '05:45'],
+        ['MALABAR', '68', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '17:00', '06:45'],
+        ['MALABAR', '69', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '05:24', '18:11'],
+        ['MALABAR', '70', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '22:30', '06:33'],
     ];
 
-    for (const s of initialSchedules) {
-        // Query check to prevent duplicates on every restart without UNIQUE constraint on schedules
-        const existing = await getAll('SELECT id FROM schedules WHERE train_name = $1 AND schedule_date = $2 AND waktu_keberangkatan_penjadwalan = $3', 
-            [s.train, today, s.depTime]);
-        
-        if (!existing || existing.length === 0) {
-            await query(`INSERT INTO schedules (
-                train_name, ka_number, schedule_date, 
+    for (const [trainName, num, dep, depCode, arr, arrCode, depTime, arrTime] of scheduleDefinitions) {
+        const existingSched = await getAll(
+            'SELECT id FROM schedules WHERE train_name = $1 AND schedule_date = $2 AND waktu_keberangkatan_penjadwalan = $3',
+            [trainName, today, depTime]
+        );
+        if (existingSched && existingSched.length > 0) continue;
+
+        // Get route_id if exists
+        const train = await getOne('SELECT id FROM train_services WHERE name = $1', [trainName]);
+        let routeId = null;
+        if (train) {
+            const route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [train.id]);
+            if (route) routeId = route.id;
+        }
+
+        const res = await query(`INSERT INTO schedules (
+                route_id, train_name, ka_number, schedule_date, status,
                 stasiun_keberangkatan, kode_kota_keberangkatan, waktu_keberangkatan_penjadwalan,
-                stasiun_tujuan, kode_kota_tujuan, waktu_kedatangan_penjadwalan,
-                status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ON_TIME')`, 
-            [s.train, s.num, today, s.dep, s.depCode, s.depTime, s.arr, s.arrCode, s.arrTime]);
+                stasiun_tujuan, kode_kota_tujuan, waktu_kedatangan_penjadwalan
+            ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10) RETURNING id`,
+            [routeId, trainName, num, today, dep, depCode, depTime, arr, arrCode, arrTime]);
+
+        const schedId = res.rows[0].id;
+
+        // ============================================================
+        // I. SCHEDULE_STOPS — Per stop for each schedule (from route_stations)
+        // ============================================================
+        if (routeId) {
+            const routeStations = await getAll(`
+                SELECT rs.id as rs_id, s.name, rs.sequence_order
+                FROM route_stations rs
+                JOIN stations s ON rs.station_id = s.id
+                WHERE rs.route_id = $1
+                ORDER BY rs.sequence_order
+            `, [routeId]);
+
+            // Build simple schedule times (estimate interval per stop)
+            const [depH, depM] = depTime.split(':').map(Number);
+            const [arrH, arrM] = arrTime.split(':').map(Number);
+            let totalMinutes = (arrH * 60 + arrM) - (depH * 60 + depM);
+            if (totalMinutes <= 0) totalMinutes += 24 * 60; // overnight train
+            const intervalPerStop = routeStations.length > 1 
+                ? Math.floor(totalMinutes / (routeStations.length - 1)) 
+                : 0;
+
+            for (let i = 0; i < routeStations.length; i++) {
+                const rs = routeStations[i];
+                const stopMinutes = depH * 60 + depM + (i * intervalPerStop);
+                const stopH = Math.floor(stopMinutes / 60) % 24;
+                const stopM = stopMinutes % 60;
+                const timeStr = `${String(stopH).padStart(2,'0')}:${String(stopM).padStart(2,'0')}`;
+
+                const arrivalStr = i === 0 ? '' : timeStr;
+                const departureStr = i === routeStations.length - 1 ? '' : timeStr;
+                const stopStatus = i === 0 ? 'DEPARTED' : 'SCHEDULED';
+
+                await query(`INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time, departure_time, platform, stop_status)
+                    VALUES ($1, $2, $3, $4, $5, $6)`,
+                    [schedId, rs.rs_id, arrivalStr, departureStr, 1, stopStatus]
+                );
+            }
         }
     }
+    console.log('[PIDS-DB] ✓ Schedules + schedule_stops seeded');
+
+    // ============================================================
+    // J. GERBONG — Coaches per train service
+    //    Format: [gerbong_id, nama_gerbong, no_urut, train_name, ip_suffix]
+    // ============================================================
+    // Malabar only — 1 Lokomotif + 2 Eksekutif + 3 Ekonomi + 1 Makan + 1 Bagasi
+    const gerbongDefinitions = {
+        'MALABAR': [
+            ['MB-L',  'LOKOMOTIF CC206',    1, '10'],
+            ['MB-K1', 'KERETA EKSEKUTIF 1', 2, '11'],
+            ['MB-K2', 'KERETA EKSEKUTIF 2', 3, '12'],
+            ['MB-M',  'KERETA MAKAN',       4, '13'],
+            ['MB-E1', 'KERETA EKONOMI 1',   5, '14'],
+            ['MB-E2', 'KERETA EKONOMI 2',   6, '15'],
+            ['MB-E3', 'KERETA EKONOMI 3',   7, '16'],
+            ['MB-B',  'KERETA BAGASI',      8, '17'],
+        ],
+    };
+
+    for (const [trainName, gerbongs] of Object.entries(gerbongDefinitions)) {
+        const train = await getOne('SELECT id FROM train_services WHERE name = $1', [trainName]);
+        if (!train) continue;
+
+        for (const [gId, gNama, gNo, ipSuffix] of gerbongs) {
+            await query(`INSERT INTO gerbong (id, ip_address, nama_gerbong, no_urut_gerbong, id_kereta)
+                VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (id) DO UPDATE SET
+                    ip_address=EXCLUDED.ip_address, nama_gerbong=EXCLUDED.nama_gerbong,
+                    no_urut_gerbong=EXCLUDED.no_urut_gerbong, id_kereta=EXCLUDED.id_kereta`,
+                [gId, `192.168.${train.id}.${ipSuffix}`, gNama, gNo, train.id]);
+        }
+        console.log(`[PIDS-DB] ✓ Gerbong seeded for ${trainName}: ${gerbongs.length} cars`);
+    }
+
+    // ============================================================
+    // K. SENSOR — GPS sensor on Malabar lokomotif (is_main=1)
+    // ============================================================
+    const lokomotifIds = ['MB-L'];
+    for (const gId of lokomotifIds) {
+        const gerbong = await getOne('SELECT id FROM gerbong WHERE id = $1', [gId]);
+        if (!gerbong) continue;
+        const sensorId = `SEN-GPS-${gId}`;
+        await query(`INSERT INTO sensor (id, ip_address, nama_device, tipe_sensor, status, is_main, id_gerbong)
+            VALUES ($1, $2, $3, 'GPS', 'Aktif', 1, $4)
+            ON CONFLICT (id) DO NOTHING`,
+            [sensorId, '', `GPS Sensor ${gId}`, gId]);
+    }
+    console.log('[PIDS-DB] ✓ GPS sensors seeded');
+
+    // ============================================================
+    // L. ANNOUNCEMENTS — Default system announcement
+    // ============================================================
+    const existingAnnouncement = await getOne("SELECT id FROM announcements WHERE type = 'INFO' AND active = 1 LIMIT 1");
+    if (!existingAnnouncement) {
+        await query(`INSERT INTO announcements (type, message, priority, active)
+            VALUES ('INFO', 'Selamat datang di sistem PIDS Eltran. Sistem berjalan normal.', 5, 1)`);
+        console.log('[PIDS-DB] ✓ Default announcement seeded');
+    }
+
+    console.log('[PIDS-DB] ✅ All seed data verified and complete (A-L)');
 }
 
 // ============================================================
@@ -1128,5 +1355,20 @@ export async function addLogMaintenance(data) { return { success: true }; }
 export async function updateLogMaintenance(id, data) { return { success: true }; }
 export async function getLogOperasional() { return []; }
 export async function addLogOperasional(data) { return { success: true }; }
-export async function getGpsFleet() { return []; }
-export async function getGpsGerbong(id) { return []; }
+export async function getGpsFleet() {
+    return await getAll('SELECT id as kereta_id, name as kereta_name, ka_number, description, color, route_geojson_path FROM train_services ORDER BY ka_number');
+}
+export async function getGpsGerbong(id) {
+    const units = await getAll('SELECT id, name FROM units ORDER BY name');
+    return units.map((u, i) => ({
+        gerbong_id: u.id,
+        nama_gerbong: u.name,
+        no_urut_gerbong: i + 1,
+        latitude: -6.9147 + (Math.random() - 0.5) * 0.01,
+        longitude: 107.6098 + (Math.random() - 0.5) * 0.01,
+        kecepatan: Math.floor(Math.random() * 100),
+        suhu: 24 + Math.random() * 4,
+        poi: 'Station Near Build',
+        sensor_status: 'Aktif'
+    }));
+}
