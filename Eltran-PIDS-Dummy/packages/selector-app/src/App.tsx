@@ -8,7 +8,7 @@
  * - A change in toast won't re-render the TV monitor
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Navigation, Route, ChevronRight } from 'lucide-react';
+import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Navigation, Route, ChevronRight, ChevronDown } from 'lucide-react';
 import { LoginScreen } from './components/LoginScreen';
 import { useSelectorSync } from './hooks/useSelectorSync';
 import TVMonitor from './components/TVMonitor';
@@ -39,10 +39,24 @@ function App() {
 
     // Sync train name index with master
     const [trainNameIndex, setTrainNameIndex] = useState(-1);
+    const [kaDropdownOpen, setKaDropdownOpen] = useState(false);
+    const kaDropdownRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const idx = trainNames.indexOf(masterSyncedServiceName);
         if (idx !== -1) setTrainNameIndex(idx);
     }, [masterSyncedServiceName, trainNames]);
+
+    // Close KA dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (kaDropdownRef.current && !kaDropdownRef.current.contains(e.target as Node)) {
+                setKaDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // TV display mode sync
     useEffect(() => {
@@ -159,21 +173,38 @@ function App() {
                         </div>
                     </button>
 
-                    {/* Direction Toggle for Malabar */}
+                    {/* Direction Dropdown for Malabar */}
                     {(masterSyncedServiceName?.toUpperCase().includes('MALABAR')) && (
-                        <div className="flex bg-white/10 p-1 rounded-xl items-center border border-white/10">
+                        <div className="relative min-w-[200px]" ref={kaDropdownRef}>
                             <button
-                                onClick={() => setActiveKa('ka68')}
-                                className={`px-4 py-1.5 rounded-lg text-[15px] font-bold transition-all ${activeKa === 'ka68' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
+                                onClick={() => setKaDropdownOpen(!kaDropdownOpen)}
+                                className={`w-full bg-white/10 border-2 rounded-xl px-4 py-2 shadow-lg transition-all flex items-center justify-between group ${kaDropdownOpen ? 'border-[#ee6f1f] bg-white/20' : 'border-white/10 hover:border-white/20'}`}
                             >
-                                KA 68 (BD-ML)
+                                <div className="flex flex-col items-start">
+                                    <span className="text-[10px] font-bold text-blue-200/60 tracking-widest uppercase">Select Direction</span>
+                                    <span className="text-sm font-bold text-white uppercase tracking-tight">
+                                        {activeKa === 'ka68' ? 'KA 68 (BD-ML)' : 'KA 67 (ML-BD)'}
+                                    </span>
+                                </div>
+                                <ChevronDown size={18} strokeWidth={2.5} className={`text-blue-200/60 transition-transform ${kaDropdownOpen ? 'rotate-180 text-[#ee6f1f]' : ''}`} />
                             </button>
-                            <button
-                                onClick={() => setActiveKa('ka67')}
-                                className={`px-4 py-1.5 rounded-lg text-[15px] font-bold transition-all ${activeKa === 'ka67' ? 'bg-[#ee6f1f] text-white' : 'text-white/60 hover:text-white'}`}
-                            >
-                                KA 67 (ML-BD)
-                            </button>
+
+                            {kaDropdownOpen && (
+                                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-xl shadow-2xl overflow-hidden py-1">
+                                    <button 
+                                        onClick={() => { setActiveKa('ka68'); setKaDropdownOpen(false); }}
+                                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === 'ka68' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
+                                    >
+                                        KA 68 (BD-ML)
+                                    </button>
+                                    <button 
+                                        onClick={() => { setActiveKa('ka67'); setKaDropdownOpen(false); }}
+                                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === 'ka67' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
+                                    >
+                                        KA 67 (ML-BD)
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -261,9 +292,9 @@ function App() {
                                                     <div className="w-[20px] h-[20px] bg-slate-300 rounded-full border-[5px] border-white shadow-sm mt-3" />
                                                 </div>
                                                 <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">                                                     <div className="flex flex-col">
-                                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
-                                                        <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStationName}</span>
-                                                    </div>
+                                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
+                                                    <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStationName}</span>
+                                                </div>
                                                     <div className="text-right">
                                                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
                                                         <span className="text-xl font-semibold text-slate-600">
@@ -283,19 +314,27 @@ function App() {
                     </div>
 
                     {/* STATUS BAR (Bottom Left) */}
-                    <div className="flex gap-4 h-[80px] shrink-0">
+                    <div className="flex gap-3 h-[80px] shrink-0">
+                        {/* SETTINGS BUTTON */}
+                        <button
+                            onClick={() => setShowSystemSettings(true)}
+                            className="w-[80px] h-[80px] bg-white border border-slate-200 text-[#1d2d6a] hover:bg-slate-50 rounded-[24px] shadow-sm flex items-center justify-center transition-all active:scale-95 group shrink-0"
+                        >
+                            <Settings size={32} className="text-[#1d2d6a] group-hover:text-[#1d2d6a] group-hover:rotate-90 transition-all duration-500" />
+                        </button>
+
                         {/* TIMESTAMP STATUS */}
-                        <div className="flex-1 bg-white rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200">
-                            <div className="w-12 h-12 rounded-full bg-[]]/10 text-[#ee6f1f] flex items-center justify-center shrink-0 mr-4">
-                                <Clock size={24} strokeWidth={2.5} />
+                        <div className="flex-1 bg-white rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200 gap-4">
+                            <div className="w-12 h-12 rounded-full bg-orange-50 text-[#ee6f1f] flex items-center justify-center shrink-0">
+                                <Clock size={26} strokeWidth={2.5} />
                             </div>
-                            <div className="flex flex-col flex-1 border-r border-slate-100 mr-4 pr-4">
+                            <div className="flex flex-col border-r border-slate-100 pr-6">
                                 <span className="text-[#1d2d6a] font-bold text-3xl tracking-tighter leading-none">
                                     {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
                                 </span>
                             </div>
-                            <div className="flex flex-col flex-1 pl-2">
-                                <span className="text-slate-700 font-semibold text-3xl tracking-tighter leading-none pt-1">
+                            <div className="flex flex-col flex-1 justify-center text-right">
+                                <span className="text-[#1d2d6a] font-semibold text-3xl tracking-tighter uppercase leading-none">
                                     {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
                                 </span>
                             </div>
@@ -316,14 +355,10 @@ function App() {
                         <ChevronsDown size={72} className="transition-transform group-hover:translate-y-2 stroke-[3]" />
                     </button>
 
-                    <div className="flex gap-4 mt-2 h-[80px]">
-                        <button onClick={handleSelectStation} className="flex-[0.8] bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[24px] font-bold tracking-wide shadow-md flex items-center justify-center gap-4 transition-transform active:scale-95 text-2xl border border-blue-900 overflow-hidden relative group">
+                    <div className="flex mt-2 h-[80px]">
+                        <button onClick={handleSelectStation} className="flex-1 bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[24px] font-bold tracking-wide shadow-md flex items-center justify-center gap-4 transition-transform active:scale-95 text-2xl border border-blue-900 overflow-hidden relative group">
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-                            <RefreshCcw size={32} className="group-hover:rotate-180 transition-transform duration-500" /> SYNC
-                        </button>
-
-                        <button onClick={() => setShowSystemSettings(true)} className="flex-[0.2] bg-white border border-slate-200 text-[#1d2d6a] hover:bg-slate-50 rounded-[24px] shadow-sm flex items-center justify-center transition-transform active:scale-95 group">
-                            <Settings size={32} className="text-slate-500 group-hover:text-[#1d2d6a] group-hover:rotate-90 transition-all duration-500" />
+                            <RefreshCcw size={32} className="group-hover:rotate-180 transition-transform duration-500" /> SYNC DATA TO DISPLAY
                         </button>
                     </div>
                 </div>

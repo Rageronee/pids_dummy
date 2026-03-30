@@ -20,15 +20,22 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
     const [trainSearchQuery, setTrainSearchQuery] = useState('');
     const [selectedGerbong, setSelectedGerbong] = useState(1);
     const [serviceDropdownOpen, setServiceDropdownOpen] = useState(false);
+    const [carriageDropdownOpen, setCarriageDropdownOpen] = useState(false);
     const serviceDropdownRef = useRef<HTMLDivElement>(null);
+    const carriageDropdownRef = useRef<HTMLDivElement>(null);
 
     // Sync external index when master updates
     useEffect(() => { setTrainNameIndex(initialTrainNameIndex); }, [initialTrainNameIndex]);
 
-    // Close dropdown on outside click
+    // Close dropdowns on outside click
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
-            if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(e.target as Node)) setServiceDropdownOpen(false);
+            if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(e.target as Node)) {
+                setServiceDropdownOpen(false);
+            }
+            if (carriageDropdownRef.current && !carriageDropdownRef.current.contains(e.target as Node)) {
+                setCarriageDropdownOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -93,11 +100,33 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
                         {/* Unit Selection */}
                         <div className="flex flex-col gap-3">
                             <label className="text-xs font-bold text-[#1d2d6a] pl-1 uppercase tracking-wider">Select Carriage Number</label>
-                            <div className="relative flex-1">
-                                <select value={selectedGerbong} onChange={(e) => setSelectedGerbong(parseInt(e.target.value))} className="w-full appearance-none bg-white border-2 border-slate-200 rounded-xl px-5 py-4 text-base font-bold text-[#1d2d6a] shadow-sm hover:border-slate-300 focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-12">
-                                    {[...Array(maxWagons)].map((_, i) => (<option key={i + 1} value={i + 1}>Gerbong {i + 1}</option>))}
-                                </select>
-                                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400"><ChevronDown size={20} strokeWidth={2.5} /></div>
+                            <div className="relative flex-1" ref={carriageDropdownRef}>
+                                <div 
+                                    className={`w-full bg-white border-2 rounded-xl px-5 py-4 shadow-sm transition-all cursor-pointer flex items-center justify-between ${carriageDropdownOpen ? 'border-[#ee6f1f] ring-4 ring-orange-500/10' : 'border-slate-200 hover:border-slate-300'}`}
+                                    onClick={() => {
+                                        setCarriageDropdownOpen(!carriageDropdownOpen);
+                                        if (serviceDropdownOpen) setServiceDropdownOpen(false);
+                                    }}
+                                >
+                                    <span className="text-base font-bold text-[#1d2d6a]">Gerbong {selectedGerbong}</span>
+                                    <ChevronDown size={20} strokeWidth={2.5} className={`text-slate-400 transition-transform ${carriageDropdownOpen ? 'rotate-180' : ''}`} />
+                                </div>
+                                {carriageDropdownOpen && (
+                                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border-2 border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto py-1">
+                                        {[...Array(maxWagons)].map((_, i) => (
+                                            <div 
+                                                key={i + 1} 
+                                                onClick={() => { 
+                                                    setSelectedGerbong(i + 1); 
+                                                    setCarriageDropdownOpen(false); 
+                                                }}
+                                                className={`px-5 py-3 text-base font-bold cursor-pointer transition-colors ${selectedGerbong === i + 1 ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'}`}
+                                            >
+                                                Gerbong {i + 1}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
