@@ -3,7 +3,7 @@
  * Extracted from MasterConsolePanel for modularity.
  */
 import { ChangeEvent } from 'react';
-import { MapPin, ChevronRight, Upload, Trash2, Info, Satellite, Camera } from 'lucide-react';
+import { MapPin, ChevronRight, Upload, Trash2, Info } from 'lucide-react';
 import { SectionAccordion } from './ui/SectionAccordion';
 
 interface RouteCheckpointsProps {

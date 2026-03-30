@@ -6,7 +6,7 @@ import {
     X, Search, ArrowUp, ArrowDown, FileJson, MapPinned,
     Save, Navigation, Map as MapIcon, Train, Users, Clock,
     AlertCircle, ExternalLink, MoreVertical, LayoutGrid, List,
-    Lock, Unlock, RefreshCw, Check, Layers
+    Lock, Unlock, RefreshCw, Check, Layers, Minus, Moon, Target
 } from 'lucide-react';
 import { API } from '../config';
 import { useToast } from '../hooks/useToast';
@@ -59,6 +59,8 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
     const stationsListRef = useRef<HTMLDivElement>(null);
     const [isMapFullscreen, setIsMapFullscreen] = useState(false);
     const [mapIsReady, setMapIsReady] = useState(false);
+    const lastZoomedRouteId = useRef<string | null>(null);
+    const [mapStyle, setMapStyle] = useState<'streets' | 'satellite'>('streets');
 
     useEffect(() => {
         const handleFullscreenChange = () => {
@@ -130,7 +132,10 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
 
                 keys.forEach((key, idx) => {
                     const r = d.routes[key];
-                    const stations = r.stations || [];
+                    const stations = (sData.serviceName === r.name && sData.stations && Array.isArray(sData.stations) && sData.stations.length > 0) 
+                        ? sData.stations 
+                        : (r.stations || []);
+                    
                     let foundIndex = r.current_station_index;
 
                     // Always try to recalculate index from live station name as a secondary safeguard
@@ -313,7 +318,7 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     .addTo(map);
             }
 
-            // Sync Bounds
+            // Sync Bounds - ONLY ONCE PER ROUTE SELECTION
             const bounds = new maplibregl.LngLatBounds();
             let hasAny = false;
             geojson.features.forEach((f: any) => {
@@ -327,13 +332,32 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                     });
                 }
             });
-            if (hasAny) {
+
+            if (hasAny && lastZoomedRouteId.current !== selectedRouteId) {
                 map.fitBounds(bounds, { padding: 50, duration: 1500 });
+                lastZoomedRouteId.current = selectedRouteId;
             }
         } catch (e) {
             console.error("[Map] Logic error:", e);
         }
     }, [selectedRouteId, routes, mapIsReady]);
+
+    // Handle Map Style Toggle
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !mapIsReady) return;
+
+        const styleUrl = mapStyle === 'streets'
+            ? 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+            : 'https://api.maptiler.com/maps/satellite/style.json?key=get_your_own_key'; // Fallback or placeholder
+
+        // For simplicity in this demo, we'll just use simple voyager vs dark/light if satellite isn't available
+        const actualStyle = mapStyle === 'streets'
+            ? 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+            : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+
+        map.setStyle(actualStyle);
+    }, [mapStyle, mapIsReady]);
 
     useEffect(() => {
         const socket = io(API, { transports: ['websocket', 'polling'], reconnection: true });
@@ -503,16 +527,16 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
     const addStationToRoute = useCallback((station: any) => {
         const sName = String(typeof station === 'object' ? (station.name || '') : station).trim();
         if (!sName || selectedStations.find(s => String(s.name).toUpperCase() === sName.toUpperCase())) return;
-        
+
         let foundTime = '';
         if (currentRouteGeojson?.features) {
-            const f = currentRouteGeojson.features.find((feat: any) => 
+            const f = currentRouteGeojson.features.find((feat: any) =>
                 String(feat.properties?.name || '').toUpperCase() === sName.toUpperCase()
             );
             if (f?.properties) foundTime = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
         }
         if (!foundTime && masterStations?.length > 0) {
-            const f = masterStations.find((feat: any) => 
+            const f = masterStations.find((feat: any) =>
                 String(feat.properties?.name || '').toUpperCase() === sName.toUpperCase()
             );
             if (f?.properties) foundTime = f.properties.schedule_ka68 || f.properties.schedule_ka67 || f.properties.time || '';
@@ -522,7 +546,11 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
     }, [selectedStations, currentRouteGeojson, masterStations]);
 
     const routeList = Object.values(routes)
-        .filter(r => activeCategory === 'All Routes' || r.type === activeCategory)
+        .filter(r => {
+            if (activeCategory === 'All Routes') return true;
+            const rType = r.type || (r.name.toLowerCase().includes('malabar') ? 'Intercity' : 'Intercity'); // Default to Intercity if missing
+            return rType === activeCategory;
+        })
         .filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.train_number?.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const totalPages = Math.ceil(routeList.length / itemsPerPage);
@@ -748,12 +776,62 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
 
                                 {/* Fullscreen Close Button */}
                                 {isMapFullscreen ? (
-                                    <button
-                                        onClick={toggleMapFullscreen}
-                                        className="absolute top-8 right-8 p-4 bg-white/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] hover:bg-white shadow-2xl transition-all z-[1100] active:scale-90"
-                                    >
-                                        <X size={24} strokeWidth={2.5} />
-                                    </button>
+                                    <div className="absolute top-8 right-8 flex flex-col gap-3 z-[1100]">
+                                        <button
+                                            onClick={toggleMapFullscreen}
+                                            className="p-4 bg-white/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] hover:bg-white shadow-2xl transition-all active:scale-90 border border-white/20"
+                                            title="Close Fullscreen"
+                                        >
+                                            <X size={24} strokeWidth={2.5} />
+                                        </button>
+                                        <div className="flex flex-col bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+                                            <button
+                                                onClick={() => mapRef.current?.zoomIn()}
+                                                className="p-4 text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100"
+                                                title="Zoom In"
+                                            >
+                                                <Plus size={20} strokeWidth={2.5} />
+                                            </button>
+                                            <button
+                                                onClick={() => mapRef.current?.zoomOut()}
+                                                className="p-4 text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100"
+                                                title="Zoom Out"
+                                            >
+                                                <Minus size={20} strokeWidth={2.5} />
+                                            </button>
+                                            <button
+                                                onClick={() => setMapStyle(prev => prev === 'streets' ? 'satellite' : 'streets')}
+                                                className={`p-4 transition-all active:scale-90 border-b border-slate-100 ${mapStyle === 'satellite' ? 'text-[#ee6f1f] bg-orange-50' : 'text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f]'}`}
+                                                title="Toggle Map Style"
+                                            >
+                                                <Moon size={20} strokeWidth={2.5} />
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const map = mapRef.current;
+                                                    if (!map || !selectedRoute?.geojson) return;
+                                                    try {
+                                                        const geojson = typeof selectedRoute.geojson === 'string' ? JSON.parse(selectedRoute.geojson) : selectedRoute.geojson;
+                                                        const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+                                                        const lineString = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
+                                                        const coords = lineString?.geometry?.coordinates || lineString?.coordinates;
+                                                        if (coords && coords.length > 0) {
+                                                            const bounds = coords.reduce((acc: any, coord: any) => {
+                                                                return acc.extend(coord);
+                                                            }, new maplibregl.LngLatBounds(coords[0], coords[0]));
+                                                            map.fitBounds(bounds, { padding: 80, duration: 2000 });
+                                                        }
+                                                    } catch (e) {
+                                                        console.error("Fit bounds failed:", e);
+                                                    }
+                                                }}
+                                                className="p-4 text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90"
+                                                title="Pusatkan Peta"
+                                            >
+                                                <Target size={20} strokeWidth={2.5} />
+                                            </button>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <button
                                         onClick={toggleMapFullscreen}
@@ -764,88 +842,116 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
                                     </button>
                                 )}
 
-                                {/* Fullscreen Info Panel */}
+                                {/* Fullscreen Info Panel - Horizontal Transformation */}
                                 {isMapFullscreen && (
-                                    <div className="absolute bottom-10 left-10 p-8 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/20 max-w-md w-full z-[1100]">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="p-3 bg-orange-50 text-[#ee6f1f] rounded-2xl">
-                                                <Train size={24} />
+                                    <motion.div
+                                        initial={{ y: 100, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 z-[1100] flex items-center justify-between gap-10"
+                                    >
+                                        {/* Left Section: Identity */}
+                                        <div className="flex items-center gap-5 border-r border-slate-100 pr-10 shrink-0">
+                                            <div className="p-4 bg-orange-50 text-[#ee6f1f] rounded-3xl shadow-inner">
+                                                <Train size={32} />
                                             </div>
-                                            <div>
-                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Operating Route</div>
-                                                <h3 className="text-2xl font-bold text-[#1d2d6a] tracking-tight">{selectedRoute.name}</h3>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4 mb-6">
-                                            <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-                                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Train Number</div>
-                                                <div className="text-sm font-bold text-[#1d2d6a]">{selectedRoute.train_number}</div>
-                                            </div>
-                                            <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-                                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</div>
-                                                <div className={`text-sm font-bold ${selectedRoute.status === 'ON TRACK' ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {selectedRoute.status}
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-2xl font-black text-[#1d2d6a] tracking-tight">{selectedRoute.name}</h3>
+                                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${selectedRoute.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                                        {selectedRoute.status}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Train No. <span className="text-[#1d2d6a] ml-1">{selectedRoute.train_number}</span></div>
+                                                    <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Type <span className="text-[#1d2d6a] ml-1">{(selectedRoute.type as any) === 'FeatureCollection' ? 'Intercity' : (selectedRoute.type || 'Intercity')}</span></div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-end">
-                                                <div className="space-y-1">
-                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Current Location</div>
-                                                    <div className="text-base font-bold text-[#1d2d6a]">
-                                                        {selectedRoute.stations[selectedRoute.current_station_index || 0]?.name || 'Unknown'}
+                                        {/* Center Section: Progress & Journey */}
+                                        <div className="flex-1 space-y-4">
+                                            <div className="flex justify-between items-end px-1">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="space-y-0.5">
+                                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Departed from</div>
+                                                        <div className="text-sm font-bold text-[#1d2d6a]">
+                                                            {(() => {
+                                                                const curr = selectedRoute.current_station_index || 0;
+                                                                if (curr === 0) return selectedRoute.stations[0]?.name || 'Origin';
+                                                                return selectedRoute.stations[curr - 1]?.name || 'Origin';
+                                                            })()}
+                                                        </div>
+                                                    </div>
+                                                    <ChevronRight className="text-slate-300 mt-4" size={16} />
+                                                    <div className="space-y-0.5">
+                                                        <div className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-[0.2em]">Arriving Next</div>
+                                                        <div className="text-base font-black text-[#1d2d6a] flex items-center gap-2">
+                                                            {selectedRoute.stations[selectedRoute.current_station_index || 0]?.name || 'Unknown'}
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-[#ee6f1f] animate-pulse" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Next Sync</div>
-                                                    <div className="text-sm font-bold text-[#ee6f1f]">LIVE</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
-                                                    <span>Trip Progress</span>
-                                                    <span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Trip Progress</span>
+                                                    <span className="text-lg font-black text-[#1d2d6a]">
                                                         {(() => {
                                                             const total = selectedRoute.stations?.length || 0;
                                                             const curr = selectedRoute.current_station_index || 0;
-                                                            return total > 1 ? Math.round((curr / (total - 1)) * 100) : 0;
+                                                            const progress = total > 1 ? Math.round((Math.max(0, curr) / (total - 1)) * 100) : 0;
+                                                            return Math.min(100, progress);
                                                         })()}%
                                                     </span>
                                                 </div>
-                                                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                            </div>
+
+                                            <div className="relative pt-2">
+                                                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
                                                     <motion.div
                                                         initial={{ width: 0 }}
                                                         animate={{
                                                             width: `${(() => {
                                                                 const total = selectedRoute.stations?.length || 0;
                                                                 const curr = selectedRoute.current_station_index || 0;
-                                                                return total > 1 ? Math.round((curr / (total - 1)) * 100) : 0;
+                                                                const progress = total > 1 ? Math.round((Math.max(0, curr) / (total - 1)) * 100) : 0;
+                                                                return Math.min(100, progress);
                                                             })()}%`
                                                         }}
-                                                        className="h-full bg-[#ee6f1f] rounded-full shadow-[0_0_10px_rgba(238,111,31,0.5)]"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-3 gap-3 pt-2">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Distance</span>
-                                                    <span className="text-xs font-bold text-[#1d2d6a]">{selectedRoute.distance} KM</span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Occupancy</span>
-                                                    <span className="text-xs font-bold text-[#1d2d6a]">{selectedRoute.occupancy}%</span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Units</span>
-                                                    <span className="text-xs font-bold text-[#1d2d6a]">{selectedRoute.units} Unit</span>
+                                                        className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fbc02d] rounded-full shadow-[0_0_15px_rgba(238,111,31,0.4)] relative"
+                                                    >
+                                                        <div className="absolute top-0 bottom-0 right-0 w-4 bg-white/20 skew-x-[20deg] translate-x-2" />
+                                                    </motion.div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+
+                                        {/* Right Section: Stats */}
+                                        <div className="flex items-center gap-8 pl-10 border-l border-slate-100 shrink-0">
+                                            <div className="grid grid-cols-3 gap-x-8 gap-y-3">
+                                                <div className="space-y-0.5">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Speed</span>
+                                                    <div className="text-sm font-black text-[#1d2d6a] flex items-baseline gap-1">
+                                                        {selectedRoute.status === 'ON TRACK' ? '74' : '0'}
+                                                        <span className="text-[9px] text-slate-400 font-bold uppercase">km/h</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Est. Arrival</span>
+                                                    <div className="text-sm font-black text-[#ee6f1f]">14:45</div>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Suhu</span>
+                                                    <div className="flex items-center gap-1.5 text-sm font-black text-[#1d2d6a]">
+                                                        28°C
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Distance</span>
+                                                    <div className="text-sm font-black text-[#1d2d6a]">{selectedRoute.distance} <span className="text-[10px] text-slate-400 ml-0.5">KM</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
                                 )}
                             </div>
 

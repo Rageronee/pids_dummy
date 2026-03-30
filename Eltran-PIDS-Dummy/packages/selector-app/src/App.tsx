@@ -77,7 +77,7 @@ function App() {
     }, []);
 
     // Direction for Malabar (KA 67 / KA 68)
-    const [activeKa, setActiveKa] = useState<string>('ka68');
+    const [activeKa, setActiveKa] = useState<string>('ka67');
 
     const getScheduledTime = useCallback((stationName: any) => {
         const name = typeof stationName === 'object' && stationName !== null ? stationName.name : stationName;
@@ -180,10 +180,8 @@ function App() {
         if (stations.length < 2) return;
 
         const rawStations = stations;
-        let newStations = rawStations.filter((s: any) => {
-            const sn = typeof s === 'object' && s !== null ? s.name : s;
-            return sn && !String(sn).toUpperCase().includes('CIKUDAPATEUH');
-        });
+        let newStations = rawStations;
+
 
         let needsReverse = false;
 
@@ -242,6 +240,7 @@ function App() {
             },
             currentStation: newStations[0],
             nextStation: newStations[Math.min(1, newStations.length - 1)],
+            current_station_index: 0,
             isSyncing: true
         });
         showNotification('Direction Changed', `Route direction set for ${newKa.toUpperCase()} sync.`);

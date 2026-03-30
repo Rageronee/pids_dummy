@@ -1,15 +1,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize, Plus, Minus, Moon, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
 import type { AuthUser, LogEntry } from '@eltran/pids-core';
 
 import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import * as turf from '@turf/turf';
 
 const API_URL = 'http://localhost:3001';
+
+// --- Helper Functions ---
+const getStationName = (val: any): string => {
+    if (!val || val === '-') return '';
+    if (typeof val === 'object' && val !== null) return (val as any).name || '';
+    if (typeof val === 'string' && val.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(val);
+            return parsed.name || val;
+        } catch {
+            return val;
+        }
+    }
+    return String(val);
+};
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
@@ -146,11 +162,10 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                                                 handleSelectGerbong(idx);
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
-                                                currentCamIndex === idx 
-                                                    ? 'bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]' 
-                                                    : 'text-white/70 hover:bg-white/5 hover:text-white'
-                                            }`}
+                                            className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${currentCamIndex === idx
+                                                ? 'bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]'
+                                                : 'text-white/70 hover:bg-white/5 hover:text-white'
+                                                }`}
                                         >
                                             <div className={`p-1.5 rounded-lg ${currentCamIndex === idx ? 'bg-white/20' : 'bg-white/5'}`}>
                                                 <Cctv size={14} />
@@ -167,14 +182,13 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${
-                            isDropdownOpen ? 'border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20' : 'border-white/10 hover:border-[#ee6f1f]/40'
-                        }`}
+                        className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${isDropdownOpen ? 'border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20' : 'border-white/10 hover:border-[#ee6f1f]/40'
+                            }`}
                     >
                         <div className={`p-2.5 rounded-xl transition-colors ${isDropdownOpen ? 'bg-[#ee6f1f] text-white' : 'bg-[#ee6f1f]/20 text-[#ee6f1f]'}`}>
                             <Cctv size={20} />
                         </div>
-                        
+
                         <div className="flex items-center gap-6 min-w-[300px]">
                             <span className="text-xl font-semibold text-white truncate px-2">
                                 {cameras[currentCamIndex].location}
@@ -201,6 +215,8 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markersRef = useRef<Record<number, maplibregl.Marker>>({});
+    const lastZoomedRouteId = useRef<string | null>(null);
+    const [mapStyle, setMapStyle] = useState<'streets' | 'satellite'>('streets');
 
     // Fetch trains list for selector
     useEffect(() => {
@@ -238,11 +254,31 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
     useEffect(() => {
         if (!mapContainer.current) return;
 
-        // Free dark tile style (no API key needed)
-        const darkStyle: maplibregl.StyleSpecification = {
+        const voyagerRasterStyle: maplibregl.StyleSpecification = {
             version: 8,
             sources: {
-                'carto-dark': {
+                'voyager-raster': {
+                    type: 'raster',
+                    tiles: [
+                        'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                }
+            },
+            layers: [{
+                id: 'voyager-raster-layer',
+                type: 'raster',
+                source: 'voyager-raster',
+                minzoom: 0,
+                maxzoom: 19
+            }]
+        };
+
+        const darkRasterStyle: maplibregl.StyleSpecification = {
+            version: 8,
+            sources: {
+                'dark-raster': {
                     type: 'raster',
                     tiles: [
                         'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
@@ -252,9 +288,9 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                 }
             },
             layers: [{
-                id: 'carto-dark-layer',
+                id: 'dark-raster-layer',
                 type: 'raster',
-                source: 'carto-dark',
+                source: 'dark-raster',
                 minzoom: 0,
                 maxzoom: 19
             }]
@@ -262,10 +298,10 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
 
         map.current = new maplibregl.Map({
             container: mapContainer.current,
-            style: darkStyle,
+            style: mapStyle === 'streets' ? voyagerRasterStyle : darkRasterStyle,
             center: [107.6098, -6.9147],
-            zoom: 11,
-            pitch: 45,
+            zoom: 14,
+            pitch: 0,
             attributionControl: false
         });
 
@@ -279,6 +315,22 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             map.current = null;
         };
     }, []);
+
+    // Effect to switch map style
+    useEffect(() => {
+        if (!map.current) return;
+        const voyagerStyle = {
+            version: 8,
+            sources: { 'voyager': { type: 'raster', tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'], tileSize: 256 } },
+            layers: [{ id: 'voyager', type: 'raster', source: 'voyager' }]
+        };
+        const darkStyle = {
+            version: 8,
+            sources: { 'dark': { type: 'raster', tiles: ['https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'], tileSize: 256 } },
+            layers: [{ id: 'dark', type: 'raster', source: 'dark' }]
+        };
+        map.current.setStyle((mapStyle === 'streets' ? voyagerStyle : darkStyle) as any);
+    }, [mapStyle]);
 
     // Effect for handling GeoJSON changes
     useEffect(() => {
@@ -339,19 +391,6 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                         'line-opacity': 1
                     },
                     filter: ['==', '$type', 'LineString']
-                });
-
-                map.current?.addLayer({
-                    id: 'station-points',
-                    type: 'circle',
-                    source: 'route-path',
-                    paint: {
-                        'circle-radius': 6,
-                        'circle-color': '#ffffff',
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ee6f1f'
-                    },
-                    filter: ['==', '$type', 'Point']
                 });
 
                 // Add static geofencing layers (Polygon features in route geojson)
@@ -451,6 +490,19 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
                         'fill-outline-color': '#ee6f1f'
                     }
                 });
+
+                map.current?.addLayer({
+                    id: 'active-station-dot',
+                    type: 'circle',
+                    source: 'active-station-circles',
+                    filter: ['==', 'type', 'center-dot'],
+                    paint: {
+                        'circle-radius': 8,
+                        'circle-color': '#ee6f1f',
+                        'circle-stroke-width': 3,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
             }
 
             // Fit map to route bounds if coordinates exist
@@ -459,11 +511,19 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
 
             if (coordinates && coordinates.length > 0) {
-                if (!existingSource) {
+                // Only zoom if this is a new route or haven't zoomed yet for this route
+                const routeId = route.id || route.name;
+                if (lastZoomedRouteId.current !== routeId) {
                     const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
                         return bounds.extend(coord);
                     }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-                    map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
+
+                    map.current?.fitBounds(bounds, {
+                        padding: 80,
+                        duration: 1500,
+                        essential: true
+                    });
+                    lastZoomedRouteId.current = routeId;
                 }
             }
         } catch (err) {
@@ -491,14 +551,27 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             if (g.longitude && g.latitude) {
                 if (!markersRef.current[g.gerbong_id]) {
                     const el = document.createElement('div');
-                    el.className = 'w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-[0_0_10px_rgba(238,111,31,0.8)] flex items-center justify-center';
-                    el.title = g.nama_gerbong;
+                    el.className = 'marker-train-pids';
+                    el.innerHTML = `
+                        <div class="relative flex items-center justify-center">
+                            <div class="absolute w-8 h-8 bg-orange-500/20 rounded-full animate-ping"></div>
+                            <div class="relative w-5 h-5 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
+                                <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                            </div>
+                        </div>
+                    `;
 
                     markersRef.current[g.gerbong_id] = new maplibregl.Marker({ element: el })
                         .setLngLat([g.longitude, g.latitude])
                         .addTo(map.current!);
                 } else {
                     markersRef.current[g.gerbong_id].setLngLat([g.longitude, g.latitude]);
+                }
+
+                // If it's the first gerbong and we just selected a new route, we can zoom.
+                // Or if user wants to "follow" the fleet, we setCenter here.
+                if (g.gerbong_id === currentIds[0] && map.current) {
+                    // map.current.setCenter([g.longitude, g.latitude]); // Disabled for now to not jump around too much
                 }
             }
         });
@@ -545,7 +618,8 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
 
             // Find current station point in GeoJSON (case-insensitive and trimmed)
-            const currentStationClean = (data.currentStation || '').trim().toLowerCase();
+            const currentName = getStationName(data.currentStation);
+            const currentStationClean = (currentName || '').trim().toLowerCase();
             const stationFeature = features.find((f: any) => {
                 if (f.geometry?.type !== 'Point') return false;
                 const propName = (f.properties?.name || '').trim().toLowerCase();
@@ -560,12 +634,13 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
 
                 const innerCircle = turf.circle(center, innerRadius, { steps: 64, units: 'kilometers', properties: { type: 'inner' } });
                 const outerCircle = turf.circle(center, outerRadius, { steps: 64, units: 'kilometers', properties: { type: 'outer' } });
+                const centerDot = turf.point(center, { type: 'center-dot' });
 
                 const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
                 if (source) {
                     source.setData({
                         type: 'FeatureCollection',
-                        features: [outerCircle, innerCircle]
+                        features: [outerCircle, innerCircle, centerDot]
                     });
                 }
             } else {
@@ -583,22 +658,190 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
         <div className="space-y-6 h-full flex flex-col">
 
             {/* Map Area */}
-            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[400px] relative flex flex-col">
+            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[550px] relative flex flex-col">
                 <div className="flex items-center justify-between mb-4 shrink-0 px-4">
                     <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
                         <MapPin className="text-[#ee6f1f]" /> Peta Lokasi Armada
                     </h2>
-                    <select
-                        value={selectedKereta || ''}
-                        onChange={e => setSelectedKereta(parseInt(e.target.value))}
-                        className="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-2.5 text-sm font-semibold text-[#1d2d6a] focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all"
-                    >
-                        {trains.map(t => <option key={t.kereta_id} value={t.kereta_id}>{t.kereta_name} ({t.ka_number})</option>)}
-                    </select>
+
                 </div>
 
                 <div className="relative flex-1 w-full rounded-2xl overflow-hidden shadow-inner border border-slate-200 bg-[#0a0f1e]">
                     <div ref={mapContainer} className="absolute inset-0" />
+
+                    {/* Map Controls */}
+                    <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
+                        <div className="flex flex-col bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                            <button
+                                onClick={() => map.current?.zoomIn()}
+                                className="p-3 hover:bg-slate-50 transition-colors text-slate-600 border-b border-slate-100"
+                                title="Zoom In"
+                            >
+                                <Plus size={20} />
+                            </button>
+                            <button
+                                onClick={() => map.current?.zoomOut()}
+                                className="p-3 hover:bg-slate-50 transition-colors text-slate-600"
+                                title="Zoom Out"
+                            >
+                                <Minus size={20} />
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                if (!map.current || !route?.geojson) return;
+                                try {
+                                    const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+                                    const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+                                    const lineString = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
+                                    const coords = lineString?.geometry?.coordinates || lineString?.coordinates;
+                                    if (coords && coords.length > 0) {
+                                        const bounds = coords.reduce((acc: any, coord: any) => {
+                                            return acc.extend(coord);
+                                        }, new maplibregl.LngLatBounds(coords[0], coords[0]));
+                                        map.current.fitBounds(bounds, { padding: 80, duration: 2000 });
+                                    }
+                                } catch (e) {
+                                    console.error("Fit bounds failed:", e);
+                                }
+                            }}
+                            className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 text-[#ee6f1f] hover:bg-orange-50 transition-all flex items-center justify-center active:scale-95"
+                            title="Pusatkan Peta"
+                        >
+                            <Target size={20} />
+                        </button>
+
+                        <button
+                            onClick={() => setMapStyle(prev => prev === 'streets' ? 'satellite' : 'streets')}
+                            className={`p-3 rounded-2xl shadow-xl border transition-all flex items-center justify-center ${mapStyle === 'streets'
+                                ? 'bg-white/90 backdrop-blur-md border-slate-200 text-slate-600'
+                                : 'bg-[#1d2d6a] border-blue-400/30 text-white'
+                                }`}
+                            title="Switch Style"
+                        >
+                            <Moon size={20} />
+                        </button>
+                    </div>
+
+                    {/* Bottom Info Bar (Premium Dock Style) */}
+                    {route && (
+                        <motion.div
+                            initial={{ y: 100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-2xl border-t border-slate-200 z-[1100] flex items-center justify-between gap-6 h-24 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+                        >
+                            {/* Left Section: Identity */}
+                            <div className="flex items-center gap-4 border-r border-slate-100 pr-8 shrink-0">
+                                <div className="p-3 bg-orange-50 text-[#ee6f1f] rounded-2xl shadow-inner">
+                                    <Train size={24} />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight truncate max-w-[120px]">{route.name}</h3>
+                                        <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${data.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                                            {data.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No. <span className="text-[#1d2d6a] ml-0.5">{data.trainNumber}</span></div>
+                                        <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type <span className="text-[#1d2d6a] ml-0.5">{(route.type as any) === 'FeatureCollection' ? 'Intercity' : (route.type || 'Intercity')}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Center Section: Progress & Journey */}
+                            <div className="flex-1 space-y-3">
+                                <div className="flex justify-between items-end px-1">
+                                    <div className="flex items-center gap-3">
+                                        <div className="space-y-0.5">
+                                            <div className="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">Departed</div>
+                                            <div className="text-xs font-bold text-[#1d2d6a] max-w-[100px] truncate">
+                                                {(() => {
+                                                    const stations = (data.stations && Array.isArray(data.stations) && data.stations.length > 0) ? data.stations : (route.stations || []);
+                                                    const currentName = getStationName(data.currentStation);
+                                                    const currentIdx = stations.length > 0 ? stations.findIndex((s: any) => (s.name || s) === currentName) : -1;
+                                                    if (currentIdx === 0) return stations[0]?.name || 'Origin';
+                                                    if (currentIdx < 0) return stations[0]?.name || 'Origin';
+                                                    return stations[currentIdx - 1]?.name || 'Origin';
+                                                })()}
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="text-slate-300 mt-3" size={14} />
+                                        <div className="space-y-0.5">
+                                            <div className="text-[8px] font-black text-[#ee6f1f] uppercase tracking-[0.1em]">Next Arrival</div>
+                                            <div className="text-xs font-black text-[#1d2d6a] flex items-center gap-1.5">
+                                                {getStationName(data.currentStation) || 'Unknown'}
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#ee6f1f] animate-pulse" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Progress</span>
+                                        <span className="text-sm font-black text-[#1d2d6a]">
+                                            {(() => {
+                                                const total = (data.stations && data.stations.length > 0) ? data.stations.length : (route.stations?.length || 0);
+                                                const currentName = getStationName(data.currentStation);
+                                                const stationsArr = (data.stations && Array.isArray(data.stations) && data.stations.length > 0) ? data.stations : (route.stations || []);
+                                                const currentIdx = stationsArr.findIndex((s: any) => (s.name || s) === currentName);
+
+                                                // Default to data.current_station_index if search fails
+                                                const finalIdx = currentIdx !== -1 ? currentIdx : (data.current_station_index || 0);
+                                                return total > 1 ? Math.round((Math.max(0, finalIdx) / (total - 1)) * 100) : 0;
+                                            })()}%
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="relative pt-1">
+                                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{
+                                                width: `${(() => {
+                                                    const total = (data.stations && data.stations.length > 0) ? data.stations.length : (route.stations?.length || 0);
+                                                    const currentName = getStationName(data.currentStation);
+                                                    const stationsArr = (data.stations && Array.isArray(data.stations) && data.stations.length > 0) ? data.stations : (route.stations || []);
+                                                    const currentIdx = stationsArr.findIndex((s: any) => (s.name || s) === currentName);
+                                                    const finalIdx = currentIdx !== -1 ? currentIdx : (data.current_station_index || 0);
+                                                    return total > 1 ? Math.round((Math.max(0, finalIdx) / (total - 1)) * 100) : 0;
+                                                })()}%`
+                                            }}
+                                            className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fbc02d] rounded-full shadow-[0_0_10px_rgba(238,111,31,0.3)] relative"
+                                        >
+                                            <div className="absolute top-0 bottom-0 right-0 w-3 bg-white/20 skew-x-[20deg] translate-x-1" />
+                                        </motion.div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Section: Stats */}
+                            <div className="flex items-center gap-6 pl-8 border-l border-slate-100 shrink-0">
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                                    <div className="space-y-1">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Speed</span>
+                                        <div className="text-sm font-black text-[#1d2d6a] flex items-baseline gap-0.5">
+                                            {data.speed || 0}
+                                            <span className="text-[8px] text-slate-400 font-bold uppercase">km/h</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Arrival</span>
+                                        <div className="text-sm font-black text-[#ee6f1f]">14:45</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Distance</span>
+                                        <div className="text-sm font-black text-[#1d2d6a]">142.5 <span className="text-[9px] text-slate-400">KM</span></div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Suhu</span>
+                                        <div className="text-sm font-black text-[#1d2d6a]">{data.temperature || '28'}°C</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
 
                     {!route?.geojson && (
                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">

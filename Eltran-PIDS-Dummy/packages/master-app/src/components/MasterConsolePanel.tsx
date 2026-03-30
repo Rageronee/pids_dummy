@@ -447,11 +447,20 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const relasiCode = `${firstStationObj?.id || getStn3(firstStation)} - ${lastStationObj?.id || getStn3(lastStation)}`;
 
     // Derived: schedule for the active service
-    const activeSchedule = scheduleData.find(s => s.train_name === activeTrainName);
+    // IMPROVED: More robust matching by trying to find the train number or name in the schedule
+    const activeSchedule = scheduleData.find(s => {
+        const sName = String(s.train_name || '').toUpperCase();
+        const aName = String(activeTrainName || '').toUpperCase();
+        const tNum = String(data?.trainNumber || '').toUpperCase();
+        return sName.includes(aName) || aName.includes(sName) || (tNum && sName.includes(tNum.replace('KA ', '')));
+    });
+
     const firstStop = activeSchedule?.stops?.[0];
     const lastStop = activeSchedule?.stops?.[activeSchedule.stops.length - 1];
     const departureTime = firstStop?.departure_time || '-';
     const arrivalTime = lastStop?.arrival_time || '-';
+    
+    // Use station ID if available, otherwise 3-char name
     const departureLabel = `${firstStationObj?.id || getStn3(firstStation)} ${departureTime}`;
     const arrivalLabel = `${lastStationObj?.id || getStn3(lastStation)} ${arrivalTime}`;
 
@@ -463,21 +472,27 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const nextStopSchedule = activeSchedule?.stops?.find((s: any) => s.station_name === nextStationName);
     const etaTime = nextStopSchedule?.arrival_time || '-';
 
+    const normalizeStn = (n: any) => String(n || '').toUpperCase().trim().replace(/STASIUN\s+/g, '');
+
     // Derived: distance to nearest POI (approximate)
-    const currentStnObj = stationsData.find(s => s.name === getStationName(data?.currentStation));
-    const nextStnObj = stationsData.find(s => s.name === nextStationName);
+    const currentName = getStationName(data?.currentStation);
+    const currentStnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(currentName));
+    const nextStnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(nextStationName));
+    
     let distToNext = '-';
     if (currentStnObj && nextStnObj) {
-        const R = 6371;
+        const R = 6371; // Radius of the earth in km
         const dLat = (nextStnObj.latitude - currentStnObj.latitude) * Math.PI / 180;
         const dLon = (nextStnObj.longitude - currentStnObj.longitude) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) ** 2 + Math.cos(currentStnObj.latitude * Math.PI / 180) * Math.cos(nextStnObj.latitude * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const d = R * c;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(currentStnObj.latitude * Math.PI / 180) * Math.cos(nextStnObj.latitude * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const d = R * c; // Distance in km
         distToNext = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
     }
 
-    const normalizeStn = (n: string) => String(n || '').toUpperCase().trim().replace(/STASIUN\s+/g, '');
 
     let navData = [];
     if (route?.geojson && route.geojson !== '{}') {
