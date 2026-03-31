@@ -938,32 +938,22 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                     </div>
 
                     <div className="flex flex-col gap-8 flex-1 justify-start">
-                        {/* Box 1: Identitas & Jadwal */}
-                        <div className="flex flex-col bg-[#1d2d6a] rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-[210px]">
-                            <div className="flex justify-between items-center px-6 py-4">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">No KA / Nama</span>
-                                    <span className="text-lg font-bold text-white tracking-tight leading-none truncate">
-                                        {activeTrainName} <span className="opacity-60 font-medium">—</span> {stripGerbong(data?.trainNumber || '-')}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col text-right">
-                                    <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Relasi</span>
-                                    <span className="text-xl font-bold text-white">{relasiCode}</span>
-                                </div>
+                        {/* Box 1: Identitas (Kotak A) */}
+                        <div className="flex flex-col bg-[#1d2d6a] rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-[190px]">
+                            {/* NO KA / NAMA */}
+                            <div className="px-8 py-3 flex-1 flex flex-col justify-center">
+                                <span className="text-[12px] font-semibold text-slate-400 mb-1 uppercase tracking-[0.2em] block">No KA / Nama</span>
+                                <span className="text-xl font-bold text-white tracking-tight leading-none truncate block">
+                                    {activeTrainName} <span className="opacity-60 font-medium">—</span> {stripGerbong(data?.trainNumber || '-')}
+                                </span>
                             </div>
 
-                            <div className="h-px bg-slate-50 mx-6" />
+                            <div className="h-px bg-slate-50/10 mx-8" />
 
-                            <div className="grid grid-cols-2">
-                                <div className="px-6 py-4 border-r border-slate-50/10">
-                                    <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Berangkat</span>
-                                    <span className="text-lg font-bold text-white tracking-tight">{departureLabel}</span>
-                                </div>
-                                <div className="px-6 py-4">
-                                    <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Tiba</span>
-                                    <span className="text-lg font-bold text-white tracking-tight">{arrivalLabel}</span>
-                                </div>
+                            {/* RELASI */}
+                            <div className="px-8 py-3 flex-1 flex flex-col justify-center">
+                                <span className="text-[12px] font-semibold text-slate-400 mb-1 uppercase tracking-[0.2em] block">Relasi</span>
+                                <span className="text-xl font-bold text-white tracking-tighter block">{relasiCode}</span>
                             </div>
                         </div>
 
@@ -1027,16 +1017,36 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         </span>
                     </div>
                     <div className="flex flex-col gap-8 flex-1 justify-start">
-                        {/* Speed Hero Box */}
-                        <div className="bg-[#1d2d6a] p-8 rounded-3xl border border-slate-100 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden h-[210px] group">
-                            <div className="flex flex-col z-10">
-                                <span className="text-white/80 text-xs font-bold uppercase tracking-[0.2em] mb-1">Realtime Speed (GPS)</span>
-                                <h4 className="text-2xl font-bold text-white uppercase tracking-tight">Kecepatan KA</h4>
+                        {/* Speed Hero Box (Kotak B: Telemetri) */}
+                        <div className="bg-gradient-to-r from-[#1d2d6a] to-[#111f57] rounded-3xl border border-slate-100 shadow-lg flex flex-col relative overflow-hidden h-[190px] group">
+                            {/* SPEED SECTION */}
+                            <div className="px-8 flex-1 flex flex-col justify-center relative z-10">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-white/80 text-[12px] font-bold uppercase tracking-[0.2em] mb-0.5">Realtime Speed (GPS)</span>
+                                        <h4 className="text-lg font-bold text-white uppercase tracking-tight">Kecepatan KA</h4>
+                                    </div>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-5xl font-mono font-bold text-white drop-shadow-sm">{(data?.speed || 0).toFixed(1)}</span>
+                                        <span className="text-[10px] font-bold text-white/90 uppercase tracking-widest">km/h</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex items-baseline gap-2 z-10">
-                                <span className="text-7xl font-mono font-bold text-white drop-shadow-sm">{(data?.speed || 0).toFixed(1)}</span>
-                                <span className="text-l font-bold text-white/90 uppercase tracking-widest">km/h</span>
+
+                            <div className="h-px bg-slate-50/10 mx-8 relative z-10" />
+
+                            {/* SCHEDULE SECTION */}
+                            <div className="grid grid-cols-2 relative z-10 flex-1">
+                                <div className="px-8 border-r border-slate-50/10 flex flex-col justify-center">
+                                    <span className="text-[12px] font-semibold text-slate-400 block mb-0.5 uppercase tracking-wider">Berangkat</span>
+                                    <span className="text-xl font-bold text-white tracking-tight">{departureLabel}</span>
+                                </div>
+                                <div className="px-8 flex flex-col justify-center">
+                                    <span className="text-[12px] font-semibold text-slate-400 block mb-0.5 uppercase tracking-wider">Tiba</span>
+                                    <span className="text-xl font-bold text-white tracking-tight">{arrivalLabel}</span>
+                                </div>
                             </div>
+
                             {/* Abstract Glow Effect (Subtle) */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
                         </div>
