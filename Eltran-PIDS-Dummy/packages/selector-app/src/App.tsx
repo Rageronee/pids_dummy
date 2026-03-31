@@ -367,7 +367,10 @@ function App() {
                         <div className="flex items-center gap-3 text-[#ffffff] font-bold text-xl tracking-widest uppercase mb-3">
                             <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT POSITION
                         </div>
-                        <h2 className="text-5xl font-bold text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
+                        <div className="flex items-center gap-6">
+                            <Train className="text-white/20 shrink-0" size={64} strokeWidth={2.5} />
+                            <h2 className="text-5xl font-bold text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
+                        </div>
                     </div>
 
                     {/* ITINERARY */}
@@ -382,10 +385,10 @@ function App() {
 
                             {/* Next Stop */}
                             <div className="flex items-center gap-6 mb-4 relative z-10 w-full shrink-0">
-                                <div className="w-[68px] h-[68px] bg-white border-[3px] border-[#1d2d6a] rounded-[22px] flex items-center justify-center flex-shrink-0 shadow-sm relative z-10 mt-2">
-                                    <Train className="text-[#1d2d6a]" size={36} />
+                                <div className="w-[68px] flex justify-center relative z-10">
+                                    <div className="w-[24px] h-[24px] bg-[#1d2d6a] rounded-full border-[6px] border-white shadow-sm" />
                                 </div>
-                                <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-[#5a6cb5] shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                                <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-slate-100 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                                     <div className="flex flex-col relative z-10 text-slate-400">
                                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Next Station</span>
                                         <span className="text-3xl text-slate-700 font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>

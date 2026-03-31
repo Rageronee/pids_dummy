@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize, Plus, Minus, Moon, Target } from 'lucide-react';
+import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginScreen } from './components/LoginScreen';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
@@ -8,24 +8,11 @@ import type { AuthUser, LogEntry } from '@eltran/pids-core';
 
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import * as turf from '@turf/turf';
+
 
 const API_URL = 'http://localhost:3001';
 
-// --- Helper Functions ---
-const getStationName = (val: any): string => {
-    if (!val || val === '-') return '';
-    if (typeof val === 'object' && val !== null) return (val as any).name || '';
-    if (typeof val === 'string' && val.startsWith('{')) {
-        try {
-            const parsed = JSON.parse(val);
-            return parsed.name || val;
-        } catch {
-            return val;
-        }
-    }
-    return String(val);
-};
+
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
@@ -208,15 +195,15 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
     );
 };
 
-const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
+const MonitorGPS = ({ route }: { route: any }) => {
     const [gerbongData, setGerbongData] = useState<any[]>([]);
     const [selectedKereta, setSelectedKereta] = useState<number | null>(null);
     const [trains, setTrains] = useState<any[]>([]);
-    const mapContainer = useRef<HTMLDivElement>(null);
-    const map = useRef<maplibregl.Map | null>(null);
+    const mapRef = useRef<maplibregl.Map | null>(null);
     const markersRef = useRef<Record<number, maplibregl.Marker>>({});
     const lastZoomedRouteId = useRef<string | null>(null);
-    const [mapStyle, setMapStyle] = useState<'streets' | 'satellite'>('streets');
+
+    const [mapIsReady, setMapIsReady] = useState(false);
 
     // Fetch trains list for selector
     useEffect(() => {
@@ -248,295 +235,127 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
         return () => clearInterval(interval);
     }, [selectedKereta]);
 
-    const [mapLoaded, setMapLoaded] = useState(false);
-
-    // Initialize map ONCE
-    useEffect(() => {
-        if (!mapContainer.current) return;
-
-        const voyagerRasterStyle: maplibregl.StyleSpecification = {
-            version: 8,
-            sources: {
-                'voyager-raster': {
-                    type: 'raster',
-                    tiles: [
-                        'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
-                    ],
-                    tileSize: 256,
-                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-                }
-            },
-            layers: [{
-                id: 'voyager-raster-layer',
-                type: 'raster',
-                source: 'voyager-raster',
-                minzoom: 0,
-                maxzoom: 19
-            }]
-        };
-
-        const darkRasterStyle: maplibregl.StyleSpecification = {
-            version: 8,
-            sources: {
-                'dark-raster': {
-                    type: 'raster',
-                    tiles: [
-                        'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
-                    ],
-                    tileSize: 256,
-                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-                }
-            },
-            layers: [{
-                id: 'dark-raster-layer',
-                type: 'raster',
-                source: 'dark-raster',
-                minzoom: 0,
-                maxzoom: 19
-            }]
-        };
-
-        map.current = new maplibregl.Map({
-            container: mapContainer.current,
-            style: mapStyle === 'streets' ? voyagerRasterStyle : darkRasterStyle,
-            center: [107.6098, -6.9147],
-            zoom: 14,
-            pitch: 0,
-            attributionControl: false
-        });
-
-        map.current.on('load', () => {
-            setMapLoaded(true);
-        });
-
-        return () => {
-            Object.values(markersRef.current).forEach((m: maplibregl.Marker) => m.remove());
-            map.current?.remove();
-            map.current = null;
-        };
-    }, []);
-
-    // Effect to switch map style
-    useEffect(() => {
-        if (!map.current) return;
-        const voyagerStyle = {
-            version: 8,
-            sources: { 'voyager': { type: 'raster', tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'], tileSize: 256 } },
-            layers: [{ id: 'voyager', type: 'raster', source: 'voyager' }]
-        };
-        const darkStyle = {
-            version: 8,
-            sources: { 'dark': { type: 'raster', tiles: ['https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'], tileSize: 256 } },
-            layers: [{ id: 'dark', type: 'raster', source: 'dark' }]
-        };
-        map.current.setStyle((mapStyle === 'streets' ? voyagerStyle : darkStyle) as any);
-    }, [mapStyle]);
-
-    // Effect for handling GeoJSON changes
-    useEffect(() => {
-        if (!map.current || !mapLoaded) return;
-
-        if (!route?.geojson) {
-            // Remove existing route-path if geojson is deleted
-            const source = map.current.getSource('route-path');
-            if (source) {
-                // we have to remove layers first before the source
-                if (map.current.getLayer('route-line')) map.current.removeLayer('route-line');
-                if (map.current.getLayer('route-line-glow')) map.current.removeLayer('route-line-glow');
-                if (map.current.getLayer('station-points')) map.current.removeLayer('station-points');
-                if (map.current.getLayer('route-static-geofencing-outer')) map.current.removeLayer('route-static-geofencing-outer');
-                if (map.current.getLayer('route-static-geofencing-inner')) map.current.removeLayer('route-static-geofencing-inner');
-                map.current.removeSource('route-path');
+    // Use a Callback Ref to guarantee initialization EXACTLY when the div exists
+    const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
+        if (!node) {
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+                setMapIsReady(false);
             }
             return;
         }
 
+        if (mapRef.current) return;
+
         try {
-            let geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+            const map = new maplibregl.Map({
+                container: node,
+                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                center: [106.8272, -6.1751],
+                zoom: 12,
+                pitch: 45,
+                attributionControl: false,
+                trackResize: true,
+                antialias: true
+            });
 
-            if (!geojson || (geojson.features && geojson.features.length === 0)) {
-                console.warn("[MonitorGPS] GeoJSON is empty for route:", route.name);
-                return;
-            }
+            mapRef.current = map;
 
-            const existingSource = map.current.getSource('route-path') as maplibregl.GeoJSONSource;
+            map.on('load', () => {
+                setMapIsReady(true);
+                setTimeout(() => map.resize(), 50);
+            });
 
-            if (existingSource) {
-                existingSource.setData(geojson);
-            } else {
-                map.current?.addSource('route-path', {
-                    type: 'geojson',
-                    data: geojson
-                });
+            // Handle resizes
+            const ro = new ResizeObserver(() => {
+                if (mapRef.current) mapRef.current.resize();
+            });
+            ro.observe(node);
 
-                map.current?.addLayer({
-                    id: 'route-line',
-                    type: 'line',
-                    source: 'route-path',
-                    paint: {
-                        'line-color': '#ffffff',
-                        'line-width': 4,
-                        'line-opacity': 0.8
-                    },
-                    filter: ['==', '$type', 'LineString']
-                });
+            const originalRemove = map.remove.bind(map);
+            map.remove = () => {
+                ro.disconnect();
+                originalRemove();
+            };
 
-                map.current?.addLayer({
+        } catch (e) {
+            console.error('[Map] Init error:', e);
+        }
+    }, []);
+
+    // Sync GeoJSON layers with route data
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !mapIsReady || !route?.geojson) return;
+
+        try {
+            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+
+            // Route Path Sources & Layers
+            if (!map.getSource('route-path')) {
+                map.addSource('route-path', { type: 'geojson', data: geojson });
+                
+                // Outer Glow Layer
+                map.addLayer({
                     id: 'route-line-glow',
                     type: 'line',
                     source: 'route-path',
                     paint: {
                         'line-color': '#ee6f1f',
-                        'line-width': 2,
-                        'line-opacity': 1
+                        'line-width': 8,
+                        'line-opacity': 0.15,
+                        'line-blur': 4
                     },
                     filter: ['==', '$type', 'LineString']
                 });
 
-                // Add static geofencing layers (Polygon features in route geojson)
-                map.current?.addLayer({
-                    id: 'route-static-geofencing-outer',
-                    type: 'fill',
+                // Main Route Line
+                map.addLayer({
+                    id: 'route-line',
+                    type: 'line',
                     source: 'route-path',
-                    filter: ['all',
-                        ['==', '$type', 'Polygon'],
-                        ['==', ['get', 'style'], 'outer']
-                    ],
-                    layout: {},
-                    paint: {
-                        'fill-color': '#0080ff',
-                        'fill-opacity': 0.15,
-                        'fill-outline-color': '#0080ff'
-                    }
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: { 'line-color': '#ee6f1f', 'line-width': 4 },
+                    filter: ['==', '$type', 'LineString']
                 });
 
-                map.current?.addLayer({
-                    id: 'route-static-geofencing-inner',
-                    type: 'fill',
-                    source: 'route-path',
-                    filter: ['all',
-                        ['==', '$type', 'Polygon'],
-                        ['==', ['get', 'style'], 'inner']
-                    ],
-                    layout: {},
-                    paint: {
-                        'fill-color': '#00ffff',
-                        'fill-opacity': 0.25,
-                        'fill-outline-color': '#00ffff'
-                    }
-                });
-            }
-
-            // Always ensure geo-fencing source circles are created (handled by other effect)
-            if (!map.current.getSource('geofencing-circles')) {
-                // Add dynamic geofencing source
-                map.current?.addSource('geofencing-circles', {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
-                });
-
-                map.current?.addLayer({
-                    id: 'geofencing-outer',
-                    type: 'fill',
-                    source: 'geofencing-circles',
-                    filter: ['==', 'type', 'outer'],
-                    paint: {
-                        'fill-color': '#0080ff',
-                        'fill-opacity': 0.1,
-                        'fill-outline-color': '#0080ff'
-                    }
-                });
-
-                map.current?.addLayer({
-                    id: 'geofencing-inner',
-                    type: 'fill',
-                    source: 'geofencing-circles',
-                    filter: ['==', 'type', 'inner'],
-                    paint: {
-                        'fill-color': '#00ffff',
-                        'fill-opacity': 0.15,
-                        'fill-outline-color': '#00ffff'
-                    }
-                });
-            }
-
-            if (!map.current.getSource('active-station-circles')) {
-                // Add active station radius source
-                map.current?.addSource('active-station-circles', {
-                    type: 'geojson',
-                    data: { type: 'FeatureCollection', features: [] }
-                });
-
-                map.current?.addLayer({
-                    id: 'active-station-outer',
-                    type: 'fill',
-                    source: 'active-station-circles',
-                    filter: ['==', 'type', 'outer'],
-                    paint: {
-                        'fill-color': '#ee6f1f',
-                        'fill-opacity': 0.1,
-                        'fill-outline-color': '#ee6f1f'
-                    }
-                });
-
-                map.current?.addLayer({
-                    id: 'active-station-inner',
-                    type: 'fill',
-                    source: 'active-station-circles',
-                    filter: ['==', 'type', 'inner'],
-                    paint: {
-                        'fill-color': '#ee6f1f',
-                        'fill-opacity': 0.2,
-                        'fill-outline-color': '#ee6f1f'
-                    }
-                });
-
-                map.current?.addLayer({
-                    id: 'active-station-dot',
+                // Station Dots
+                map.addLayer({
+                    id: 'station-points',
                     type: 'circle',
-                    source: 'active-station-circles',
-                    filter: ['==', 'type', 'center-dot'],
+                    source: 'route-path',
                     paint: {
-                        'circle-radius': 8,
-                        'circle-color': '#ee6f1f',
-                        'circle-stroke-width': 3,
-                        'circle-stroke-color': '#ffffff'
-                    }
+                        'circle-radius': 5,
+                        'circle-color': '#ffffff',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ee6f1f'
+                    },
+                    filter: ['==', '$type', 'Point']
                 });
+            } else {
+                (map.getSource('route-path') as maplibregl.GeoJSONSource).setData(geojson);
             }
 
-            // Fit map to route bounds if coordinates exist
-            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
-            const lineStringFeature = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
-            const coordinates = lineStringFeature?.geometry?.coordinates || lineStringFeature?.coordinates;
-
-            if (coordinates && coordinates.length > 0) {
-                // Only zoom if this is a new route or haven't zoomed yet for this route
-                const routeId = route.id || route.name;
-                if (lastZoomedRouteId.current !== routeId) {
-                    const bounds = coordinates.reduce((bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
-                        return bounds.extend(coord);
-                    }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
-
-                    map.current?.fitBounds(bounds, {
-                        padding: 80,
-                        duration: 1500,
-                        essential: true
-                    });
-                    lastZoomedRouteId.current = routeId;
-                }
+            // Sync Bounds
+            const features = geojson.features || [];
+            const lineFeature = features.find((f: any) => f.geometry?.type === 'LineString');
+            if (lineFeature?.geometry?.coordinates?.length > 0 && lastZoomedRouteId.current !== route.name) {
+                const bounds = new maplibregl.LngLatBounds();
+                lineFeature.geometry.coordinates.forEach((c: any) => bounds.extend(c));
+                map.fitBounds(bounds, { padding: 80, duration: 2000 });
+                lastZoomedRouteId.current = route.name;
             }
-        } catch (err) {
-            console.error("Failed to render GeoJSON:", err);
+        } catch (e) {
+            console.error("[Map] Layer sync error:", e);
         }
+    }, [route?.geojson, mapIsReady]);
 
-    }, [route?.geojson, mapLoaded]);
-
-    // Update markers when gerbong data changes
+    // Update markers based on gerbongData
     useEffect(() => {
-        if (!map.current) return;
+        const map = mapRef.current;
+        if (!map || !mapIsReady) return;
 
-        // Clean up old markers
         const currentIds = gerbongData.map(g => g.gerbong_id);
         Object.keys(markersRef.current).forEach(id => {
             const numId = parseInt(id);
@@ -546,340 +365,114 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
             }
         });
 
-        // Add or update markers
         gerbongData.forEach(g => {
             if (g.longitude && g.latitude) {
                 if (!markersRef.current[g.gerbong_id]) {
                     const el = document.createElement('div');
-                    el.className = 'marker-train-pids';
+                    el.className = 'marker-train-pids relative flex items-center justify-center';
                     el.innerHTML = `
-                        <div class="relative flex items-center justify-center">
-                            <div class="absolute w-8 h-8 bg-orange-500/20 rounded-full animate-ping"></div>
-                            <div class="relative w-5 h-5 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                                <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                        <div class="absolute w-12 h-12 bg-orange-500/20 rounded-full animate-ping-large"></div>
+                        <div class="relative w-7 h-7 bg-white rounded-full p-1 shadow-[0_0_15px_rgba(238,111,31,0.5)] border border-orange-500/30 flex items-center justify-center">
+                            <div class="w-full h-full bg-[#ee6f1f] rounded-full flex items-center justify-center">
+                                <div class="w-2 h-2 bg-white rounded-full"></div>
                             </div>
                         </div>
                     `;
 
                     markersRef.current[g.gerbong_id] = new maplibregl.Marker({ element: el })
                         .setLngLat([g.longitude, g.latitude])
-                        .addTo(map.current!);
+                        .addTo(map);
                 } else {
                     markersRef.current[g.gerbong_id].setLngLat([g.longitude, g.latitude]);
                 }
-
-                // If it's the first gerbong and we just selected a new route, we can zoom.
-                // Or if user wants to "follow" the fleet, we setCenter here.
-                if (g.gerbong_id === currentIds[0] && map.current) {
-                    // map.current.setCenter([g.longitude, g.latitude]); // Disabled for now to not jump around too much
-                }
             }
         });
-
-    }, [gerbongData]);
-
-    // Update geofencing circles based on first gerbong position
-    useEffect(() => {
-        if (!map.current || gerbongData.length === 0) return;
-
-        const firstGerbong = gerbongData[0];
-        if (!firstGerbong.longitude || !firstGerbong.latitude) return;
-
-        const center = [firstGerbong.longitude, firstGerbong.latitude];
-        const innerRadius = (data.geofencingInnerRadius || 250) / 1000; // in km
-        const outerRadius = (data.geofencingOuterRadius || 750) / 1000; // in km
-
-        try {
-            const innerCircle = turf.circle(center, innerRadius, { steps: 64, units: 'kilometers', properties: { type: 'inner' } });
-            const outerCircle = turf.circle(center, outerRadius, { steps: 64, units: 'kilometers', properties: { type: 'outer' } });
-
-            const source = map.current.getSource('geofencing-circles') as maplibregl.GeoJSONSource;
-            if (source) {
-                source.setData({
-                    type: 'FeatureCollection',
-                    features: [outerCircle, innerCircle]
-                });
-            }
-        } catch (err) {
-            console.error("Failed to update geofencing circles:", err);
-        }
-    }, [gerbongData, data.geofencingInnerRadius, data.geofencingOuterRadius]);
-
-    // Update active station highlight circles
-    useEffect(() => {
-        if (!map.current || !route?.geojson || data.currentStation === '-') {
-            const source = map.current?.getSource('active-station-circles') as maplibregl.GeoJSONSource;
-            if (source) source.setData({ type: 'FeatureCollection', features: [] });
-            return;
-        }
-
-        try {
-            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
-            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
-
-            // Find current station point in GeoJSON (case-insensitive and trimmed)
-            const currentName = getStationName(data.currentStation);
-            const currentStationClean = (currentName || '').trim().toLowerCase();
-            const stationFeature = features.find((f: any) => {
-                if (f.geometry?.type !== 'Point') return false;
-                const propName = (f.properties?.name || '').trim().toLowerCase();
-                const propStationName = (f.properties?.station_name || '').trim().toLowerCase();
-                return propName === currentStationClean || propStationName === currentStationClean;
-            });
-
-            if (stationFeature) {
-                const center = stationFeature.geometry.coordinates;
-                const innerRadius = (data.geofencingInnerRadius || 250) / 1000;
-                const outerRadius = (data.geofencingOuterRadius || 750) / 1000;
-
-                const innerCircle = turf.circle(center, innerRadius, { steps: 64, units: 'kilometers', properties: { type: 'inner' } });
-                const outerCircle = turf.circle(center, outerRadius, { steps: 64, units: 'kilometers', properties: { type: 'outer' } });
-                const centerDot = turf.point(center, { type: 'center-dot' });
-
-                const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
-                if (source) {
-                    source.setData({
-                        type: 'FeatureCollection',
-                        features: [outerCircle, innerCircle, centerDot]
-                    });
-                }
-            } else {
-                // Clear circles if station not found
-                const source = map.current.getSource('active-station-circles') as maplibregl.GeoJSONSource;
-                if (source) source.setData({ type: 'FeatureCollection', features: [] });
-            }
-        } catch (err) {
-            console.error("Failed to update station highlight circles:", err);
-        }
-    }, [route?.geojson, data.currentStation, data.geofencingInnerRadius, data.geofencingOuterRadius]);
-
+    }, [gerbongData, mapIsReady]);
 
     return (
         <div className="space-y-6 h-full flex flex-col">
-
-            {/* Map Area */}
-            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex-1 min-h-[550px] relative flex flex-col">
-                <div className="flex items-center justify-between mb-4 shrink-0 px-4">
-                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
-                        <MapPin className="text-[#ee6f1f]" /> Peta Lokasi Armada
-                    </h2>
-
+            {/* Map Container Box */}
+            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
+                {/* Header Information Overlay */}
+                <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
+                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 shadow-lg flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                        <span className="text-xs font-bold text-[#1d2d6a] uppercase tracking-wide">Peta Lokasi Armada</span>
+                    </div>
                 </div>
 
-                <div className="relative flex-1 w-full rounded-2xl overflow-hidden shadow-inner border border-slate-200 bg-[#0a0f1e]">
-                    <div ref={mapContainer} className="absolute inset-0" />
+                {/* Map Implementation */}
+                <div ref={mapContainerRef} className="absolute inset-0 z-0 bg-slate-50" />
 
-                    {/* Map Controls */}
-                    <div className="absolute top-6 right-6 z-20 flex flex-col gap-2">
-                        <div className="flex flex-col bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                            <button
-                                onClick={() => map.current?.zoomIn()}
-                                className="p-3 hover:bg-slate-50 transition-colors text-slate-600 border-b border-slate-100"
-                                title="Zoom In"
-                            >
-                                <Plus size={20} />
-                            </button>
-                            <button
-                                onClick={() => map.current?.zoomOut()}
-                                className="p-3 hover:bg-slate-50 transition-colors text-slate-600"
-                                title="Zoom Out"
-                            >
-                                <Minus size={20} />
-                            </button>
+                {/* Legend / Info Overlay */}
+                <div className="absolute bottom-6 right-6 z-10">
+                    <div className="bg-[#1d2d6a] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 transition-all hover:scale-105">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">Active Units</span>
+                            <span className="text-sm font-bold">{gerbongData.length} Rangkaian</span>
                         </div>
-
-                        <button
-                            onClick={() => {
-                                if (!map.current || !route?.geojson) return;
-                                try {
-                                    const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
-                                    const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
-                                    const lineString = features.find((f: any) => f.geometry?.type === 'LineString' || f.type === 'LineString');
-                                    const coords = lineString?.geometry?.coordinates || lineString?.coordinates;
-                                    if (coords && coords.length > 0) {
-                                        const bounds = coords.reduce((acc: any, coord: any) => {
-                                            return acc.extend(coord);
-                                        }, new maplibregl.LngLatBounds(coords[0], coords[0]));
-                                        map.current.fitBounds(bounds, { padding: 80, duration: 2000 });
-                                    }
-                                } catch (e) {
-                                    console.error("Fit bounds failed:", e);
-                                }
-                            }}
-                            className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 text-[#ee6f1f] hover:bg-orange-50 transition-all flex items-center justify-center active:scale-95"
-                            title="Pusatkan Peta"
-                        >
-                            <Target size={20} />
-                        </button>
-
-                        <button
-                            onClick={() => setMapStyle(prev => prev === 'streets' ? 'satellite' : 'streets')}
-                            className={`p-3 rounded-2xl shadow-xl border transition-all flex items-center justify-center ${mapStyle === 'streets'
-                                ? 'bg-white/90 backdrop-blur-md border-slate-200 text-slate-600'
-                                : 'bg-[#1d2d6a] border-blue-400/30 text-white'
-                                }`}
-                            title="Switch Style"
-                        >
-                            <Moon size={20} />
-                        </button>
+                        <div className="w-px h-8 bg-white/10" />
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">Service</span>
+                            <span className="text-sm font-bold truncate max-w-[120px]">{route?.name || '-'}</span>
+                        </div>
                     </div>
-
-                    {/* Bottom Info Bar (Premium Dock Style) */}
-                    {route && (
-                        <motion.div
-                            initial={{ y: 100, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-2xl border-t border-slate-200 z-[1100] flex items-center justify-between gap-6 h-24 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
-                        >
-                            {/* Left Section: Identity */}
-                            <div className="flex items-center gap-4 border-r border-slate-100 pr-8 shrink-0">
-                                <div className="p-3 bg-orange-50 text-[#ee6f1f] rounded-2xl shadow-inner">
-                                    <Train size={24} />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight truncate max-w-[120px]">{route.name}</h3>
-                                        <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${data.status === 'ON TRACK' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
-                                            {data.status}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No. <span className="text-[#1d2d6a] ml-0.5">{data.trainNumber}</span></div>
-                                        <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type <span className="text-[#1d2d6a] ml-0.5">{(route.type as any) === 'FeatureCollection' ? 'Intercity' : (route.type || 'Intercity')}</span></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Center Section: Progress & Journey */}
-                            <div className="flex-1 space-y-3">
-                                <div className="flex justify-between items-end px-1">
-                                    <div className="flex items-center gap-3">
-                                        <div className="space-y-0.5">
-                                            <div className="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">Departed</div>
-                                            <div className="text-xs font-bold text-[#1d2d6a] max-w-[100px] truncate">
-                                                {(() => {
-                                                    const stations = (data.stations && Array.isArray(data.stations) && data.stations.length > 0) ? data.stations : (route.stations || []);
-                                                    const currentName = getStationName(data.currentStation);
-                                                    const currentIdx = stations.length > 0 ? stations.findIndex((s: any) => (s.name || s) === currentName) : -1;
-                                                    if (currentIdx === 0) return stations[0]?.name || 'Origin';
-                                                    if (currentIdx < 0) return stations[0]?.name || 'Origin';
-                                                    return stations[currentIdx - 1]?.name || 'Origin';
-                                                })()}
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="text-slate-300 mt-3" size={14} />
-                                        <div className="space-y-0.5">
-                                            <div className="text-[8px] font-black text-[#ee6f1f] uppercase tracking-[0.1em]">Next Arrival</div>
-                                            <div className="text-xs font-black text-[#1d2d6a] flex items-center gap-1.5">
-                                                {getStationName(data.currentStation) || 'Unknown'}
-                                                <div className="w-1.5 h-1.5 rounded-full bg-[#ee6f1f] animate-pulse" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Progress</span>
-                                        <span className="text-sm font-black text-[#1d2d6a]">
-                                            {(() => {
-                                                const total = (data.stations && data.stations.length > 0) ? data.stations.length : (route.stations?.length || 0);
-                                                const currentName = getStationName(data.currentStation);
-                                                const stationsArr = (data.stations && Array.isArray(data.stations) && data.stations.length > 0) ? data.stations : (route.stations || []);
-                                                const currentIdx = stationsArr.findIndex((s: any) => (s.name || s) === currentName);
-
-                                                // Default to data.current_station_index if search fails
-                                                const finalIdx = currentIdx !== -1 ? currentIdx : (data.current_station_index || 0);
-                                                return total > 1 ? Math.round((Math.max(0, finalIdx) / (total - 1)) * 100) : 0;
-                                            })()}%
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="relative pt-1">
-                                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{
-                                                width: `${(() => {
-                                                    const total = (data.stations && data.stations.length > 0) ? data.stations.length : (route.stations?.length || 0);
-                                                    const currentName = getStationName(data.currentStation);
-                                                    const stationsArr = (data.stations && Array.isArray(data.stations) && data.stations.length > 0) ? data.stations : (route.stations || []);
-                                                    const currentIdx = stationsArr.findIndex((s: any) => (s.name || s) === currentName);
-                                                    const finalIdx = currentIdx !== -1 ? currentIdx : (data.current_station_index || 0);
-                                                    return total > 1 ? Math.round((Math.max(0, finalIdx) / (total - 1)) * 100) : 0;
-                                                })()}%`
-                                            }}
-                                            className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fbc02d] rounded-full shadow-[0_0_10px_rgba(238,111,31,0.3)] relative"
-                                        >
-                                            <div className="absolute top-0 bottom-0 right-0 w-3 bg-white/20 skew-x-[20deg] translate-x-1" />
-                                        </motion.div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Section: Stats */}
-                            <div className="flex items-center gap-6 pl-8 border-l border-slate-100 shrink-0">
-                                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                                    <div className="space-y-1">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Speed</span>
-                                        <div className="text-sm font-black text-[#1d2d6a] flex items-baseline gap-0.5">
-                                            {data.speed || 0}
-                                            <span className="text-[8px] text-slate-400 font-bold uppercase">km/h</span>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Arrival</span>
-                                        <div className="text-sm font-black text-[#ee6f1f]">14:45</div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Distance</span>
-                                        <div className="text-sm font-black text-[#1d2d6a]">142.5 <span className="text-[9px] text-slate-400">KM</span></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block">Suhu</span>
-                                        <div className="text-sm font-black text-[#1d2d6a]">{data.temperature || '28'}°C</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {!route?.geojson && (
-                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
-                            <MapPin size={48} className="text-white/30 mb-4" />
-                            <span className="text-white font-semibold text-xl mb-1 drop-shadow-md">Peta Belum Dikonfigurasi</span>
-                            <span className="text-white/70 text-sm font-normal drop-shadow-md">Sistem PIDS belum memiliki data GeoJSON.</span>
-                        </div>
-                    )}
                 </div>
             </div>
 
             {/* Per-Gerbong GPS Tracking Panel */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 shrink-0">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
-                        <MapPin className="text-[#ee6f1f]" />Detail State per Gerbong
-                    </h2>
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200 shrink-0">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-orange-50 p-2.5 rounded-2xl text-[#ee6f1f]">
+                            <MapPin size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight">Detail State per Gerbong</h2>
+                            <p className="text-xs text-slate-400 font-medium mt-0.5">Monitoring real-time telemetri rangkaian</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        {trains.map(t => (
+                            <button key={t.kereta_id} onClick={() => setSelectedKereta(t.kereta_id)}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedKereta === t.kereta_id ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
+                                KA {t.kereta_id}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+                
                 {gerbongData.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 font-normal">Tidak ada data gerbong</div>
+                    <div className="flex flex-col items-center justify-center py-12 text-slate-300 gap-4">
+                        <MapPin size={40} className="opacity-20" />
+                        <span className="text-sm font-bold uppercase tracking-widest opacity-40">Tidak ada data gerbong terdeteksi</span>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
                         {gerbongData.map((g, i) => (
                             <motion.div key={g.gerbong_id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                                className="bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className={`w-2.5 h-2.5 rounded-full ${g.sensor_status === 'Aktif' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`} />
-                                    <span className="text-[#1d2d6a] font-bold text-sm flex-1">{g.nama_gerbong}</span>
-                                    <span className="text-slate-400 text-[10px] font-semibold">#{String(g.no_urut_gerbong).padStart(2, '0')}</span>
+                                className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 hover:shadow-xl hover:bg-white hover:border-orange-100 transition-all group">
+                                <div className="flex items-center gap-3 mb-5">
+                                    <div className={`w-3 h-3 rounded-full ${g.sensor_status === 'Aktif' ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-slate-300'}`} />
+                                    <div className="flex-1">
+                                        <div className="text-[#1d2d6a] font-bold text-base leading-none mb-1 group-hover:text-[#ee6f1f]">{g.nama_gerbong}</div>
+                                        <div className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">ID {String(g.no_urut_gerbong).padStart(2, '0')}</div>
+                                    </div>
                                 </div>
-                                <div className="space-y-1.5 text-xs">
-                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Koordinat</span><span className="text-slate-500 font-mono text-[10px]">{g.latitude?.toFixed(4) || '-'}, {g.longitude?.toFixed(4) || '-'}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Altitude</span><span className="text-slate-600 font-mono">{g.altitude?.toFixed(1) || '-'} m</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Kecepatan</span><span className="text-[#ee6f1f] font-bold">{g.kecepatan?.toFixed(1) || '0'} km/h</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Suhu</span><span className="text-slate-600 font-medium">{g.suhu?.toFixed(1) || '-'}°C</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">POI</span><span className="text-slate-500 font-medium truncate max-w-[120px]">{g.poi || 'N/A'}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-400 font-semibold">Sensor</span>
-                                        <span className={`text-[10px] font-bold ${g.sensor_status === 'Aktif' ? 'text-green-500' : 'text-red-400'}`}>{g.sensor_status}</span>
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
+                                            <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">Speed</div>
+                                            <div className="text-sm font-black text-[#ee6f1f]">{g.kecepatan?.toFixed(1) || '0'} <span className="text-[10px] font-bold opacity-50">km/h</span></div>
+                                        </div>
+                                        <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
+                                            <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">Temp</div>
+                                            <div className="text-sm font-black text-[#1d2d6a]">{g.suhu?.toFixed(1) || '-'} <span className="text-[10px] font-bold opacity-50">°C</span></div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase">Status Sensor</span>
+                                        <span className={`text-[11px] font-black ${g.sensor_status === 'Aktif' ? 'text-green-600' : 'text-red-400'}`}>{g.sensor_status}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -890,6 +483,7 @@ const MonitorGPS = ({ route, data }: { route: any, data: any }) => {
         </div>
     );
 };
+
 
 // --- Log Viewer Component ---
 const LogViewer = ({ token }: { token: string }) => {
@@ -1191,7 +785,7 @@ function App() {
                             </motion.div>
                         ) : activeTab === 'gps' ? (
                             <motion.div key="gps" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.3 }} className="h-full w-full max-w-6xl mx-auto">
-                                <MonitorGPS route={activeRoute} data={data} />
+                                <MonitorGPS route={activeRoute} />
                             </motion.div>
                         ) : activeTab === 'logs' ? (
                             <motion.div key="logs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>

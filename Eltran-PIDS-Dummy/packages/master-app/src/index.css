@@ -86,3 +86,25 @@ body {
     scrollbar-width: thin;
     scrollbar-color: #e2e8f0 transparent;
 }
+
+/* Fleet Map Markers */
+.marker-train-pids {
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.marker-train-pids:hover {
+    transform: scale(1.25);
+    z-index: 100 !important;
+}
+
+@keyframes ping-large {
+    75%, 100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+.animate-ping-large {
+    animation: ping-large 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}

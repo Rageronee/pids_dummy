@@ -65,7 +65,7 @@ export function RouteCheckpoints({
                             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">File Aktif:</span>
                             <span className="text-base font-bold text-[#1d2d6a]">
                                 {route?.geojson ? (route.geojson_filename || `${route.name.replace(/\s+/g, '_')}.geojson`) : 'Belum Ada GeoJSON'}
-                                {route?.geojson && <span className="ml-3 text-xs text-green-500 font-bold bg-green-50 px-2 py-1 rounded-lg border border-green-100 italic uppercase tracking-widest">Aktif</span>}
+                                {route?.geojson && <span className="ml-3 text-xs text-white font-bold bg-[#ee6f1f] px-2 py-1 rounded-lg border border-[#ee6f1f] italic uppercase tracking-widest">Aktif</span>}
                             </span>
                         </div>
                         <div className="flex items-center gap-3">

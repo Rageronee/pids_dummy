@@ -283,14 +283,6 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         radiusRef.current = { inner: innerRadius, outer: outerRadius };
     }, [innerRadius, outerRadius]);
 
-    const sendGeofencingUpdate = async () => {
-        await sendData({
-            geofencingInnerRadius: innerRadius,
-            geofencingOuterRadius: outerRadius
-        });
-        showToast('Radius geofencing berhasil diperbarui.');
-    };
-
     // Auto-load route when service name is selected
     useEffect(() => {
         if (!activeTrainName || activeTrainName === 'Belum Dikonfigurasi' || route?.name === activeTrainName) return;
@@ -448,10 +440,31 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const relasiCode = `${firstStationObj?.id || getStn3(firstStation)} - ${lastStationObj?.id || getStn3(lastStation)}`;
 
     // Derived: schedule for the active service
-    // IMPROVED: More robust matching by trying to find the train number or name in the schedule
     const stripGerbong = (s: string) => s.replace(/\s*Gerbong\s*\d+/gi, '').replace(/KA[- ]/gi, 'KA ').trim();
     const cleanTrainNumber = stripGerbong(data?.trainNumber || '').replace('KA ', '');
 
+    // Determine active KA direction key (e.g., "ka67") from trainNumber
+    const activeKaKey = cleanTrainNumber ? `ka${cleanTrainNumber}` : '';
+
+    // Helper: look up schedule time from GeoJSON feature properties (same approach as selector app)
+    const getScheduleFromGeoJSON = (stationName: string): string | null => {
+        if (!stationName || stationName === '-' || !activeKaKey) return null;
+        try {
+            const geojson = route?.geojson ? (typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson) : null;
+            if (!geojson?.features) return null;
+            const normalizedTarget = stationName.toUpperCase().trim();
+            const stationFeature = geojson.features.find((f: any) =>
+                f.geometry?.type === 'Point' &&
+                String(f.properties?.name ?? '').toUpperCase().trim() === normalizedTarget
+            );
+            if (!stationFeature) return null;
+            const expectedKey = `schedule_${activeKaKey.toLowerCase()}`;
+            const key = Object.keys(stationFeature.properties || {}).find(k => k.toLowerCase() === expectedKey);
+            return key ? stationFeature.properties[key] : null;
+        } catch { return null; }
+    };
+
+    // Database schedule fallback
     const activeSchedule = scheduleData.find(s => {
         const sKa = String(s.display_ka_number || s.ka_number || '').toUpperCase();
         return sKa === cleanTrainNumber;
@@ -461,43 +474,80 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
         return sName.includes(aName) || aName.includes(sName);
     });
 
-    const firstStop = activeSchedule?.stops?.[0];
-    const lastStop = activeSchedule?.stops?.[activeSchedule.stops.length - 1];
-    const departureTime = firstStop?.departure_time || activeSchedule?.waktu_keberangkatan_penjadwalan || '-';
-    const arrivalTime = lastStop?.arrival_time || activeSchedule?.waktu_kedatangan_penjadwalan || '-';
+    // Departure & Arrival: prefer GeoJSON schedule, fall back to DB schedule
+    const firstStationName = getStationName(firstStation);
+    const lastStationName = getStationName(lastStation);
+    const departureTime = getScheduleFromGeoJSON(firstStationName)
+        || activeSchedule?.stops?.[0]?.departure_time
+        || activeSchedule?.waktu_keberangkatan_penjadwalan || '-';
+    const arrivalTime = getScheduleFromGeoJSON(lastStationName)
+        || activeSchedule?.stops?.[activeSchedule?.stops?.length - 1]?.arrival_time
+        || activeSchedule?.waktu_kedatangan_penjadwalan || '-';
 
-    // Use station ID if available, otherwise 3-char name
     const departureLabel = `${firstStationObj?.id || getStn3(firstStation)} ${departureTime}`;
     const arrivalLabel = `${lastStationObj?.id || getStn3(lastStation)} ${arrivalTime}`;
 
     const nextStationName = getStationName(data?.nextStation) || (activeRouteStations.length > 1 ? getStationName(activeRouteStations[1]) : '-');
 
-
-
-    // Derived: ETA to next station from schedule
-    const nextStopSchedule = activeSchedule?.stops?.find((s: any) => s.station_name === nextStationName);
-    const etaTime = nextStopSchedule?.arrival_time || '-';
+    // ETA: prefer GeoJSON schedule for next station, fall back to DB, then dynamic estimate
+    const geoJsonEta = getScheduleFromGeoJSON(nextStationName);
+    const dbEta = activeSchedule?.stops?.find((s: any) =>
+        String(s.station_name || '').toUpperCase().trim() === nextStationName.toUpperCase().trim()
+    )?.arrival_time;
 
     const normalizeStn = (n: any) => String(n || '').toUpperCase().trim().replace(/STASIUN\s+/g, '');
 
-    // Derived: distance to nearest POI (approximate)
-    const currentName = getStationName(data?.currentStation);
-    const currentStnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(currentName));
+    // Distance: use live GPS position → next station (from GeoJSON or DB)
     const nextStnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(nextStationName));
 
+    // Try to get next station coords from GeoJSON first
+    let nextStnLat: number | null = null;
+    let nextStnLng: number | null = null;
+    try {
+        const geojson = route?.geojson ? (typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson) : null;
+        if (geojson?.features) {
+            const normalizedNext = nextStationName.toUpperCase().trim();
+            const feat = geojson.features.find((f: any) =>
+                f.geometry?.type === 'Point' &&
+                String(f.properties?.name ?? '').toUpperCase().trim() === normalizedNext
+            );
+            if (feat?.geometry?.coordinates) {
+                nextStnLng = feat.geometry.coordinates[0];
+                nextStnLat = feat.geometry.coordinates[1];
+            }
+        }
+    } catch { /* ignore */ }
+    // Fallback to DB station coords
+    if (nextStnLat === null && nextStnObj) {
+        nextStnLat = nextStnObj.latitude;
+        nextStnLng = nextStnObj.longitude;
+    }
+
     let distToNext = '-';
-    if (currentStnObj && nextStnObj) {
-        const R = 6371; // Radius of the earth in km
-        const dLat = (nextStnObj.latitude - currentStnObj.latitude) * Math.PI / 180;
-        const dLon = (nextStnObj.longitude - currentStnObj.longitude) * Math.PI / 180;
+    let distToNextKm = 0;
+    // Use live GPS position (simGps) instead of current station's fixed coords
+    if (nextStnLat !== null && nextStnLng !== null && (simGps.lat !== 0 || simGps.lng !== 0)) {
+        const R = 6371;
+        const dLat = (nextStnLat - simGps.lat) * Math.PI / 180;
+        const dLon = (nextStnLng! - simGps.lng) * Math.PI / 180;
         const a =
             Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(currentStnObj.latitude * Math.PI / 180) * Math.cos(nextStnObj.latitude * Math.PI / 180) *
+            Math.cos(simGps.lat * Math.PI / 180) * Math.cos(nextStnLat * Math.PI / 180) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const d = R * c; // Distance in km
-        distToNext = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
+        distToNextKm = R * c;
+        distToNext = distToNextKm < 1 ? `${Math.round(distToNextKm * 1000)} m` : `${distToNextKm.toFixed(1)} km`;
     }
+
+    // Dynamic ETA: if we have distance and speed, estimate arrival
+    let dynamicEta = '-';
+    const currentSpeed = data?.speed || 0;
+    if (distToNextKm > 0 && currentSpeed > 0) {
+        const hoursToArrive = distToNextKm / currentSpeed;
+        const etaDate = new Date(Date.now() + hoursToArrive * 3600000);
+        dynamicEta = etaDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':');
+    }
+    const etaTime = geoJsonEta || dbEta || (dynamicEta !== '-' ? `~${dynamicEta}` : '-');
 
 
     let navData = [];
@@ -1052,9 +1102,9 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                         </div>
 
                         {/* Unified Telemetry Bento Container */}
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1">
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1 relative overflow-hidden">
                             {/* Longitude */}
-                            <div className="flex flex-col gap-1.5 group">
+                            <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
                                     Longitude <Info size={12} className="text-slate-300" />
                                 </span>
@@ -1064,7 +1114,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
 
                             {/* Latitude */}
-                            <div className="flex flex-col gap-1.5 group">
+                            <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
                                     Latitude <Info size={12} className="text-slate-300" />
                                 </span>
@@ -1074,7 +1124,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
 
                             {/* Haluan */}
-                            <div className="flex flex-col gap-1.5 group">
+                            <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
                                     Haluan (Dir) <Info size={12} className="text-slate-300" />
                                 </span>
@@ -1084,7 +1134,7 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
 
                             {/* Elevasi */}
-                            <div className="flex flex-col gap-1.5 group">
+                            <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
                                     Elevasi <Info size={12} className="text-slate-300" />
                                 </span>
@@ -1094,41 +1144,49 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             </div>
 
                             {/* Radius Luar */}
-                            <div className="flex flex-col gap-1.5 group">
+                            <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
                                     Rad Luar <Info size={12} className="text-slate-300" />
                                 </span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center justify-center gap-2">
                                     <input
                                         type="number"
                                         value={outerRadius}
                                         onChange={(e) => setOuterRadius(Number(e.target.value))}
-                                        onBlur={sendGeofencingUpdate}
-                                        onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
-                                        className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f]"
+                                        className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f] text-center"
                                     />
                                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Meter</span>
                                 </div>
                             </div>
 
                             {/* Radius Dalam */}
-                            <div className="flex flex-col gap-1.5 group">
+                            <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
                                     Rad Dalam <Info size={12} className="text-slate-300" />
                                 </span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center justify-center gap-2">
                                     <input
                                         type="number"
                                         value={innerRadius}
                                         onChange={(e) => setInnerRadius(Number(e.target.value))}
-                                        onBlur={sendGeofencingUpdate}
-                                        onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
-                                        className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f]"
+                                        className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f] text-center"
                                     />
                                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Meter</span>
                                 </div>
                             </div>
+
+                            {/* Dividers (Premium Aesthetic) */}
+                            {/* Desktop (3 Cols x 2 Rows) */}
+                            <div className="absolute top-12 bottom-12 left-1/3 w-px bg-gradient-to-b from-transparent via-slate-100 to-transparent hidden lg:block" />
+                            <div className="absolute top-12 bottom-12 left-2/3 w-px bg-gradient-to-b from-transparent via-slate-100 to-transparent hidden lg:block" />
+                            <div className="absolute left-10 right-10 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent hidden lg:block" />
+
+                            {/* Mobile (2 Cols x 3 Rows) */}
+                            <div className="absolute top-10 bottom-10 left-1/2 w-px bg-gradient-to-b from-transparent via-slate-100 to-transparent lg:hidden" />
+                            <div className="absolute left-10 right-10 top-1/3 h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent lg:hidden" />
+                            <div className="absolute left-10 right-10 top-2/3 h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent lg:hidden" />
                         </div>
+
                     </div>
 
                 </div>
@@ -1619,7 +1677,13 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
             </SectionAccordion>
 
             {/* FIXED BOTTOM TOOLBAR */}
-            <MasterToolbar jumlahKereta={jumlahKereta} sendData={sendData} showToast={showToast} />
+            <MasterToolbar 
+                jumlahKereta={jumlahKereta} 
+                innerRadius={innerRadius}
+                outerRadius={outerRadius}
+                sendData={sendData} 
+                showToast={showToast} 
+            />
 
             {/* ALL MODALS & TOAST */}
             <MasterModals
