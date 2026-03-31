@@ -8,7 +8,8 @@ import {
     ChevronDown, RadioTower, Video, Info,
     ListVideo, Satellite,
     Repeat, Shuffle, Plus, FolderOpen,
-    Trash2, Maximize, VolumeX
+    Trash2, Maximize, VolumeX,
+    MapPin
 } from 'lucide-react';
 import { StateToggle } from './ui/StateToggle';
 import { TextToggle } from './ui/TextToggle';
@@ -448,18 +449,23 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
     // Derived: schedule for the active service
     // IMPROVED: More robust matching by trying to find the train number or name in the schedule
+    const stripGerbong = (s: string) => s.replace(/\s*Gerbong\s*\d+/gi, '').replace(/KA[- ]/gi, 'KA ').trim();
+    const cleanTrainNumber = stripGerbong(data?.trainNumber || '').replace('KA ', '');
+
     const activeSchedule = scheduleData.find(s => {
+        const sKa = String(s.display_ka_number || s.ka_number || '').toUpperCase();
+        return sKa === cleanTrainNumber;
+    }) || scheduleData.find(s => {
         const sName = String(s.train_name || '').toUpperCase();
         const aName = String(activeTrainName || '').toUpperCase();
-        const tNum = String(data?.trainNumber || '').toUpperCase();
-        return sName.includes(aName) || aName.includes(sName) || (tNum && sName.includes(tNum.replace('KA ', '')));
+        return sName.includes(aName) || aName.includes(sName);
     });
 
     const firstStop = activeSchedule?.stops?.[0];
     const lastStop = activeSchedule?.stops?.[activeSchedule.stops.length - 1];
-    const departureTime = firstStop?.departure_time || '-';
-    const arrivalTime = lastStop?.arrival_time || '-';
-    
+    const departureTime = firstStop?.departure_time || activeSchedule?.waktu_keberangkatan_penjadwalan || '-';
+    const arrivalTime = lastStop?.arrival_time || activeSchedule?.waktu_kedatangan_penjadwalan || '-';
+
     // Use station ID if available, otherwise 3-char name
     const departureLabel = `${firstStationObj?.id || getStn3(firstStation)} ${departureTime}`;
     const arrivalLabel = `${lastStationObj?.id || getStn3(lastStation)} ${arrivalTime}`;
@@ -478,17 +484,17 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
     const currentName = getStationName(data?.currentStation);
     const currentStnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(currentName));
     const nextStnObj = stationsData.find(s => normalizeStn(s.name) === normalizeStn(nextStationName));
-    
+
     let distToNext = '-';
     if (currentStnObj && nextStnObj) {
         const R = 6371; // Radius of the earth in km
         const dLat = (nextStnObj.latitude - currentStnObj.latitude) * Math.PI / 180;
         const dLon = (nextStnObj.longitude - currentStnObj.longitude) * Math.PI / 180;
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(currentStnObj.latitude * Math.PI / 180) * Math.cos(nextStnObj.latitude * Math.PI / 180) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(currentStnObj.latitude * Math.PI / 180) * Math.cos(nextStnObj.latitude * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const d = R * c; // Distance in km
         distToNext = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
     }
@@ -506,23 +512,23 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                 navData = activeRouteStations.map((s: any, idx: number) => {
                     const sName = getStationName(s);
                     const sNameNorm = normalizeStn(sName);
-                    
+
                     // Find corresponding feature in GeoJSON
-                    const feature = pts.find((f: any) => 
-                        normalizeStn(f.properties?.name) === sNameNorm || 
+                    const feature = pts.find((f: any) =>
+                        normalizeStn(f.properties?.name) === sNameNorm ||
                         normalizeStn(f.properties?.station_name) === sNameNorm
                     );
 
                     const stnObj = stationsData.find(st => normalizeStn(st.name) === sNameNorm);
                     const stopSched = activeSchedule?.stops?.find((ss: any) => normalizeStn(ss.station_name) === sNameNorm);
                     const isBerhenti = sNameNorm === normalizeStn(getStationName(data?.currentStation));
-                    
-                    const lng = feature && Array.isArray(feature.geometry?.coordinates) 
-                        ? feature.geometry.coordinates[0]?.toFixed(6) 
+
+                    const lng = feature && Array.isArray(feature.geometry?.coordinates)
+                        ? feature.geometry.coordinates[0]?.toFixed(6)
                         : (stnObj?.longitude?.toFixed(6) || "-");
-                    
-                    const lat = feature && Array.isArray(feature.geometry?.coordinates) 
-                        ? feature.geometry.coordinates[1]?.toFixed(6) 
+
+                    const lat = feature && Array.isArray(feature.geometry?.coordinates)
+                        ? feature.geometry.coordinates[1]?.toFixed(6)
                         : (stnObj?.latitude?.toFixed(6) || "-");
 
                     return {
@@ -925,43 +931,48 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
 
             {/* INFO RANGKAIAN & TELEMETRI HEADER */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col xl:flex-row">
-                <div className="p-8 xl:w-[38%] bg-slate-50 border-b xl:border-b-0 xl:border-r border-slate-200 flex flex-col">
+                <div className="p-8 xl:w-[38%] bg-white border-b xl:border-b-0 xl:border-r border-slate-200 flex flex-col">
                     <div className="flex items-center gap-3 mb-6 shrink-0">
                         <div className="text-[#ee6f1f]"><Train size={24} /></div>
                         <h3 className="font-bold text-[#1d2d6a] text-xs uppercase tracking-wider">Status Perjalanan</h3>
                     </div>
 
-                    <div className="flex flex-col gap-4 flex-1 justify-center">
-                        {/* Identitas */}
-                        <div className="flex justify-between items-center bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">No KA / Nama</span>
-                                <span className="text-xl font-bold text-[#1d2d6a]">KA {activeTrainName}</span>
+                    <div className="flex flex-col gap-8 flex-1 justify-start">
+                        {/* Box 1: Identitas & Jadwal */}
+                        <div className="flex flex-col bg-[#1d2d6a] rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-[210px]">
+                            <div className="flex justify-between items-center px-6 py-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">No KA / Nama</span>
+                                    <span className="text-lg font-bold text-white tracking-tight leading-none truncate">
+                                        {activeTrainName} <span className="opacity-60 font-medium">—</span> {stripGerbong(data?.trainNumber || '-')}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col text-right">
+                                    <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Relasi</span>
+                                    <span className="text-xl font-bold text-white">{relasiCode}</span>
+                                </div>
                             </div>
-                            <div className="flex flex-col text-right">
-                                <span className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Relasi</span>
-                                <span className="text-xl font-bold text-[#1d2d6a]">{relasiCode}</span>
+
+                            <div className="h-px bg-slate-50 mx-6" />
+
+                            <div className="grid grid-cols-2">
+                                <div className="px-6 py-4 border-r border-slate-50/10">
+                                    <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Berangkat</span>
+                                    <span className="text-lg font-bold text-white tracking-tight">{departureLabel}</span>
+                                </div>
+                                <div className="px-6 py-4">
+                                    <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Tiba</span>
+                                    <span className="text-lg font-bold text-white tracking-tight">{arrivalLabel}</span>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Berangkat & Tiba */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Berangkat</span>
-                                <span className="text-[15px] font-bold text-[#1d2d6a]">{departureLabel}</span>
-                            </div>
-                            <div className="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="text-[10px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Tiba</span>
-                                <span className="text-[15px] font-bold text-[#1d2d6a]">{arrivalLabel}</span>
-                            </div>
-                        </div>
-
-                        {/* POI Info Terdekat */}
-                        <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-5">
-                            {/* Posisi Terkini Bento Header */}
-                            <div className="flex items-center gap-4 bg-slate-50/80 p-4 rounded-2xl border border-slate-100 flex-shrink-0">
-                                <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm text-[#1d2d6a]">
-                                    <Train size={22} />
+                        {/* Box 2: Navigasi & Tujuan (Bento White) */}
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-6 flex-1">
+                            {/* Posisi Terkini */}
+                            <div className="flex items-center gap-4">
+                                <div className="w-11 h-11 rounded-xl border border-slate-200 flex items-center justify-center shadow-sm text-[#1d2d6a]">
+                                    <MapPin size={22} />
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-0.5">
@@ -973,32 +984,29 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                                 </div>
                             </div>
 
-                            {/* Tujuan Berikutnya */}
-                            <div className="flex flex-col gap-3.5">
-                                <div className="bg-gradient-to-br from-[#1d2d6a] to-[#2b3a75] p-6 rounded-2xl shadow-lg relative overflow-hidden group">
-                                    {/* Abstract BG Decor */}
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
-                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12 group-hover:scale-125 transition-transform duration-1000" />
-                                    <span className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-2">
-                                        TUJUAN BERIKUTNYA
-                                    </span>
-                                    <div className="relative z-10 flex flex-col gap-5">
-                                        <h4 className="text-2xl font-bold text-white uppercase tracking-tight leading-tight">
-                                            {nextStationName}
-                                        </h4>
+                            <div className="h-px bg-slate-100/60" />
 
-                                        <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4 mt-1">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.15em]">Jarak Target</span>
-                                                <div className="text-lg font-bold text-white flex items-baseline gap-1">
-                                                    {distToNext}
-                                                </div>
+                            {/* Tujuan Berikutnya */}
+                            <div className="flex flex-col gap-4">
+                                <span className="text-[10px] font-bold text-[#1d2d6a] uppercase tracking-[0.1em] flex items-center gap-2">
+                                    TUJUAN BERIKUTNYA
+                                </span>
+                                <div className="flex flex-col gap-4">
+                                    <h4 className="text-2xl font-bold text-[#ee6f1f] uppercase tracking-tight leading-tight">
+                                        {nextStationName}
+                                    </h4>
+
+                                    <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-1">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em]">Jarak Target</span>
+                                            <div className="text-lg font-bold text-[#1d2d6a] flex items-baseline gap-1">
+                                                {distToNext}
                                             </div>
-                                            <div className="flex flex-col gap-1 border-l border-white/10 pl-5">
-                                                <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.15em]">Estimasi (ETA)</span>
-                                                <div className="text-lg font-bold text-[#ee6f1f] drop-shadow-[0_0_10px_rgba(238,111,31,0.3)]">
-                                                    {etaTime}
-                                                </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1 border-l border-slate-100 pl-5">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em]">Estimasi (ETA)</span>
+                                            <div className="text-lg font-bold text-[#ee6f1f] drop-shadow-[0_0_10px_rgba(238,111,31,0.2)]">
+                                                {etaTime}
                                             </div>
                                         </div>
                                     </div>
@@ -1018,108 +1026,97 @@ export function MasterConsolePanel({ route, data, sendData }: { route: any, data
                             TANGGAL: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </span>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                        <div className="bg-gradient-to-r from-[#ee6f1f] to-[#d46832] p-5 sm:p-6 rounded-[1.5rem] border shadow-md col-span-2 lg:col-span-3 relative overflow-hidden group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="relative z-10 flex flex-col">
-                                <div className="text-lg text-white font-bold mb-1 flex items-center gap-2">
-                                    Kecepatan
+                    <div className="flex flex-col gap-8 flex-1 justify-start">
+                        {/* Speed Hero Box */}
+                        <div className="bg-[#1d2d6a] p-8 rounded-3xl border border-slate-100 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden h-[210px] group">
+                            <div className="flex flex-col z-10">
+                                <span className="text-white/80 text-xs font-bold uppercase tracking-[0.2em] mb-1">Realtime Speed (GPS)</span>
+                                <h4 className="text-2xl font-bold text-white uppercase tracking-tight">Kecepatan KA</h4>
+                            </div>
+                            <div className="flex items-baseline gap-2 z-10">
+                                <span className="text-7xl font-mono font-bold text-white drop-shadow-sm">{(data?.speed || 0).toFixed(1)}</span>
+                                <span className="text-l font-bold text-white/90 uppercase tracking-widest">km/h</span>
+                            </div>
+                            {/* Abstract Glow Effect (Subtle) */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+                        </div>
+
+                        {/* Unified Telemetry Bento Container */}
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1">
+                            {/* Longitude */}
+                            <div className="flex flex-col gap-1.5 group">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                                    Longitude <Info size={12} className="text-slate-300" />
+                                </span>
+                                <div className="text-2xl font-mono font-bold text-[#1d2d6a] transition-all group-hover:text-[#ee6f1f]">
+                                    {simGps.lng.toFixed(6)}
                                 </div>
-                                <div className="text-xs text-white/90 font-semibold uppercase tracking-widest">Realtime Speed (GPS)</div>
                             </div>
-                            <div className="text-5xl font-mono font-bold text-white leading-none relative z-10 text-right drop-shadow-sm flex items-baseline">
-                                {(data?.speed || 0).toFixed(1)}<span className="text-sm font-sans ml-3 text-white/90 font-bold uppercase">km/h</span>
-                            </div>
-                        </div>
 
-                        {/* Longitude */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
-                                Longitude <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
+                            {/* Latitude */}
+                            <div className="flex flex-col gap-1.5 group">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                                    Latitude <Info size={12} className="text-slate-300" />
+                                </span>
+                                <div className="text-2xl font-mono font-bold text-[#1d2d6a] transition-all group-hover:text-[#ee6f1f]">
+                                    {simGps.lat.toFixed(6)}
+                                </div>
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a]">{simGps.lng.toFixed(6)}</div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
-                                Garis Bujur Timur
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
-                            </div>
-                        </div>
 
-                        {/* Latitude */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
-                                Latitude <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
+                            {/* Haluan */}
+                            <div className="flex flex-col gap-1.5 group">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                                    Haluan (Dir) <Info size={12} className="text-slate-300" />
+                                </span>
+                                <div className="text-2xl font-mono font-bold text-[#1d2d6a] transition-all group-hover:text-[#ee6f1f]">
+                                    {simGps.heading.toFixed(2)}&deg;
+                                </div>
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a]">{simGps.lat.toFixed(6)}</div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
-                                Garis Lintang Selatan
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
-                            </div>
-                        </div>
 
-                        {/* Haluan */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
-                                Haluan (Dir) <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
+                            {/* Elevasi */}
+                            <div className="flex flex-col gap-1.5 group">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                                    Elevasi <Info size={12} className="text-slate-300" />
+                                </span>
+                                <div className="text-2xl font-mono font-bold text-[#1d2d6a] flex items-baseline gap-2 transition-all group-hover:text-[#ee6f1f]">
+                                    {data?.altitude || 0} <span className="text-xs text-slate-400 font-semibold uppercase tracking-widest">MDPL</span>
+                                </div>
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a]">{simGps.heading.toFixed(2)}&deg;</div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
-                                Arah Orientasi KA
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
-                            </div>
-                        </div>
 
-                        {/* Ketinggian */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
-                                Elevasi <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
+                            {/* Radius Luar */}
+                            <div className="flex flex-col gap-1.5 group">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                                    Rad Luar <Info size={12} className="text-slate-300" />
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        value={outerRadius}
+                                        onChange={(e) => setOuterRadius(Number(e.target.value))}
+                                        onBlur={sendGeofencingUpdate}
+                                        onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
+                                        className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f]"
+                                    />
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Meter</span>
+                                </div>
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-bold text-[#1d2d6a] flex items-baseline gap-1.5">{data?.altitude || 0} <span className="text-xs text-slate-400 font-semibold uppercase tracking-widest">MDPL</span></div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
-                                Ketinggian Permukaan
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
-                            </div>
-                        </div>
 
-                        {/* Radius Luar */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
-                                Rad Luar <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    value={outerRadius}
-                                    onChange={(e) => setOuterRadius(Number(e.target.value))}
-                                    onBlur={sendGeofencingUpdate}
-                                    onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
-                                    className="w-full max-w-[6rem] bg-white border border-slate-200 rounded-lg px-2 py-1 text-lg sm:text-xl font-mono font-bold text-[#1d2d6a] transition-colors focus:outline-none focus:border-[#ee6f1f] focus:ring-1 focus:ring-[#ee6f1f] shadow-inner"
-                                />
-                                <span className="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-widest">Meter</span>
-                            </div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
-                                Batas Toleransi Jarak
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
-                            </div>
-                        </div>
-
-                        {/* Radius Dalam */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-[#1d2d6a]/20 transition-all flex flex-col justify-center relative group">
-                            <div className="text-[11px] sm:text-xs text-slate-400 font-semibold mb-2 flex justify-between items-center uppercase tracking-wider">
-                                Rad Dalam <Info size={14} className="text-slate-300 group-hover:text-[#ee6f1f] transition-colors cursor-help" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    value={innerRadius}
-                                    onChange={(e) => setInnerRadius(Number(e.target.value))}
-                                    onBlur={sendGeofencingUpdate}
-                                    onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
-                                    className="w-full max-w-[6rem] bg-white border border-slate-200 rounded-lg px-2 py-1 text-lg sm:text-xl font-mono font-bold text-[#1d2d6a] transition-colors focus:outline-none focus:border-[#ee6f1f] focus:ring-1 focus:ring-[#ee6f1f] shadow-inner"
-                                />
-                                <span className="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase tracking-widest">Meter</span>
-                            </div>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 bg-[#1d2d6a] text-white text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-[#2a3b7a]">
-                                Limit Presisi Jarak
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#1d2d6a]"></div>
+                            {/* Radius Dalam */}
+                            <div className="flex flex-col gap-1.5 group">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                                    Rad Dalam <Info size={12} className="text-slate-300" />
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        value={innerRadius}
+                                        onChange={(e) => setInnerRadius(Number(e.target.value))}
+                                        onBlur={sendGeofencingUpdate}
+                                        onKeyDown={(e) => e.key === 'Enter' && sendGeofencingUpdate()}
+                                        className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f]"
+                                    />
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Meter</span>
+                                </div>
                             </div>
                         </div>
                     </div>

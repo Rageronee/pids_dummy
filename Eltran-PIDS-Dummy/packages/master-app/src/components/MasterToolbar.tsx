@@ -34,7 +34,7 @@ export function MasterToolbar({ jumlahKereta, sendData, showToast }: MasterToolb
                 <div className="w-full md:w-px md:h-10 bg-[#2a3b7a] mx-2 hidden md:block" />
 
                 <button onClick={async () => { await sendData({ jumlahKereta }); showToast('Konfigurasi baru berhasil disimpan'); }} className="flex items-center justify-center gap-3 px-10 py-4 rounded-[1.25rem] bg-[#ee6f1f] hover:bg-[#f87a2c] text-sm font-bold text-white transition-all shadow-xl hover:shadow-[0_12px_24px_rgba(238,111,31,0.3)] focus:outline-none focus:ring-2 focus:ring-[#ee6f1f]/50 active:scale-95 w-full md:w-auto">
-                    <Save size={22} /> Simpan Konfig
+                    <Save size={22} /> Simpan Konfigurasi
                 </button>
             </div>
         </div>

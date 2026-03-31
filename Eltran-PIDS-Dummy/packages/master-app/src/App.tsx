@@ -1123,7 +1123,7 @@ function App() {
                             <div className="text-right">
                                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Active Unit</div>
                                 <div className="text-base font-bold text-[#1d2d6a] tracking-tight">
-                                    {activeTrainName} <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-xs border border-orange-100">K1-90-{activeTrainNumber}</span>
+                                    {activeTrainName} <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-md border border-orange-100">KA {activeTrainNumber?.split(' Gerbong')[0]}</span>
                                 </div>
                             </div>
                         </div>

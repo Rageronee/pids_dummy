@@ -564,12 +564,16 @@ export async function seedData() {
 
     // Malabar 4 directions — authentic GAPEKA times (ML=Malang, BD=Bandung)
     // KA67/69: ML→BD (Malam/Pagi) | KA68/70: BD→ML (Malam/Sore)
+
+    // Ensure updated times are applied by clearing existing Malabar entries for today
+    await query(`DELETE FROM schedules WHERE train_name = 'MALABAR' AND schedule_date = $1`, [today]);
+
     const scheduleDefinitions = [
         // [trainName, kaNum, depStationName, depKode, arrStationName, arrKode, depTime, arrTime]
-        ['MALABAR', '67', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '16:50', '05:45'],
-        ['MALABAR', '68', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '17:00', '06:45'],
-        ['MALABAR', '69', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '05:24', '18:11'],
-        ['MALABAR', '70', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '22:30', '06:33'],
+        ['MALABAR', '67', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '16:50', '05:44'],
+        ['MALABAR', '68', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '18:09', '06:51'],
+        ['MALABAR', '69', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '05:24', '18:04'],
+        ['MALABAR', '70', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '09:29', '22:36'],
     ];
 
     for (const [trainName, num, dep, depCode, arr, arrCode, depTime, arrTime] of scheduleDefinitions) {
@@ -1065,6 +1069,19 @@ export async function getSchedules(filter = {}) {
             getAll(sql, params),
             getOne(countSql, params.slice(0, filter.search ? 1 : 0))
         ]);
+
+        if (schedules && schedules.length > 0) {
+            for (const s of schedules) {
+                s.stops = await getAll(`
+                    SELECT ss.*, s.name as station_name, s.id as station_id
+                    FROM schedule_stops ss
+                    JOIN route_stations rs ON ss.route_station_id = rs.id
+                    JOIN stations s ON rs.station_id = s.id
+                    WHERE ss.schedule_id = $1
+                    ORDER BY rs.sequence_order
+                `, [s.id]);
+            }
+        }
 
         return {
             schedules: schedules || [],

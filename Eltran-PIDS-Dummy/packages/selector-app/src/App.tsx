@@ -42,6 +42,7 @@ function App() {
     const [kaDropdownOpen, setKaDropdownOpen] = useState(false);
     const kaDropdownRef = useRef<HTMLDivElement>(null);
     const [trainCategory, setTrainCategory] = useState<'EKSEKUTIF' | 'EKONOMI PREMIUM'>('EKSEKUTIF');
+    const [selectedGerbong, setSelectedGerbong] = useState(1);
 
     useEffect(() => {
         const idx = trainNames.indexOf(masterSyncedServiceName);
@@ -89,16 +90,19 @@ function App() {
         }
 
         if (!activeRoute?.features || !nameStr) return null;
-        
+
         const stationFeature = activeRoute.features.find((f: any) =>
             f.geometry?.type === 'Point' && String(f.properties?.name ?? '').toUpperCase().trim() === nameStr.toUpperCase()
         );
         if (!stationFeature) return null;
-        
+
         const expectedKey = `schedule_${activeKa.toLowerCase()}`;
         const key = Object.keys(stationFeature.properties || {}).find(k => k.toLowerCase() === expectedKey);
         return key ? stationFeature.properties[key] : null;
     }, [data?.activeRoute, activeKa, masterSyncedServiceName, routes]);
+
+    // Format Train Number from activeKa (e.g. "ka67" -> "67")
+    const getTrainId = useCallback((ka: string) => ka.replace(/\D/g, ''), []);
 
     const showNotification = useCallback((title: string, message: string) => {
         setToastMsg({ title, message, id: Date.now() });
@@ -130,20 +134,21 @@ function App() {
 
     const handleSetConfig = useCallback((serviceName: string, routeData: any, newStations: string[], gerbong: number) => {
         if (newStations.length > 0) { setStations(newStations); setCurrentIndex(0); }
+        setSelectedGerbong(gerbong);
         sendData({
             serviceName,
             stations: newStations,
             activeRoute: routeData,
-            trainNumber: `Gerbong ${gerbong}`
+            trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}`
         });
-        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to Gerbong ${gerbong}`);
-    }, [sendData, setStations, showNotification]);
-
+        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to K ${getTrainId(activeKa)} Gerbong ${gerbong}`);
+    }, [sendData, setStations, showNotification, getTrainId, activeKa]);
 
     const handleSetGerbong = useCallback((gerbong: number) => {
-        sendData({ trainNumber: `Gerbong ${gerbong}` });
-        showNotification('Configuration Saved', `Unit configuration set to Gerbong ${gerbong}`);
-    }, [sendData, showNotification]);
+        setSelectedGerbong(gerbong);
+        sendData({ trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}` });
+        showNotification('Configuration Saved', `Unit configuration set to K ${getTrainId(activeKa)} Gerbong ${gerbong}`);
+    }, [sendData, showNotification, getTrainId, activeKa]);
 
 
     const handleSetLedSpeed = useCallback((speedValue: number) => {
@@ -202,7 +207,7 @@ function App() {
         if (dynamicOriginName && newStations.length > 0) {
             const lastSn = getStationName(newStations[newStations.length - 1]);
             const lastStr = String(lastSn || '').toUpperCase().trim();
-            
+
             // If the tail end of the current sequence is the newKA's origin, we MUST reverse it
             if (lastStr === dynamicOriginName) {
                 needsReverse = true;
@@ -211,10 +216,10 @@ function App() {
             // Static Fallback for unconfigured routes
             const firstSn = getStationName(newStations[0]);
             const lastSn = getStationName(newStations[newStations.length - 1]);
-            
+
             const firstStr = String(firstSn || '').toUpperCase().trim();
             const lastStr = String(lastSn || '').toUpperCase().trim();
-            
+
             const isCurrentlyMlToBd = firstStr.includes('MALANG') || lastStr.includes('BANDUNG');
             const needsBdToMl = ['ka68', 'ka70'].includes(newKa);
             const needsMlToBd = ['ka67', 'ka69'].includes(newKa);
@@ -226,10 +231,10 @@ function App() {
         if (needsReverse) {
             newStations.reverse();
         }
-            
+
         setStations(newStations);
         setCurrentIndex(0);
-        
+
         // Auto sync to display immediately
         // CRITICAL: We MUST update activeRoute.stations so the backend TV socket relay doesn't reverse it back!
         sendData({
@@ -241,10 +246,11 @@ function App() {
             currentStation: newStations[0],
             nextStation: newStations[Math.min(1, newStations.length - 1)],
             current_station_index: 0,
+            trainNumber: `${getTrainId(newKa)} Gerbong ${selectedGerbong}`,
             isSyncing: true
         });
         showNotification('Direction Changed', `Route direction set for ${newKa.toUpperCase()} sync.`);
-    }, [stations, setStations, sendData, showNotification, data?.activeRoute]);
+    }, [stations, setStations, sendData, showNotification, data?.activeRoute, getTrainId, selectedGerbong]);
 
     // ---- Auth guard ----
     if (!authUser) return <LoginScreen onLogin={handleLogin} />;
@@ -304,9 +310,8 @@ function App() {
                                         <button
                                             key={dir.num}
                                             onClick={() => handleChangeDirection(`ka${dir.num}`)}
-                                            className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${
-                                                activeKa === `ka${dir.num}` ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'
-                                            }`}
+                                            className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === `ka${dir.num}` ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'text-[#1d2d6a] hover:bg-slate-50'
+                                                }`}
                                         >
                                             {formatDirLabel(dir.label)}
                                         </button>
@@ -323,7 +328,7 @@ function App() {
                 </div>
 
                 <div className="flex items-center gap-6">
-                    <button 
+                    <button
                         onClick={() => setTrainCategory(prev => prev === 'EKSEKUTIF' ? 'EKONOMI PREMIUM' : 'EKSEKUTIF')}
                         className="hidden lg:flex flex-col items-end text-right hover:opacity-80 transition-opacity cursor-pointer group"
                     >
@@ -380,7 +385,7 @@ function App() {
                                 <div className="w-[68px] h-[68px] bg-white border-[3px] border-[#1d2d6a] rounded-[22px] flex items-center justify-center flex-shrink-0 shadow-sm relative z-10 mt-2">
                                     <Train className="text-[#1d2d6a]" size={36} />
                                 </div>
-                                <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-[#1d2d6a] shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                                <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-[#5a6cb5] shadow-md flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                                     <div className="flex flex-col relative z-10 text-slate-400">
                                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Next Station</span>
                                         <span className="text-3xl text-slate-700 font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
@@ -489,6 +494,8 @@ function App() {
                     onSetConfig={handleSetConfig}
                     onSetGerbong={handleSetGerbong}
                     initialTrainNameIndex={trainNameIndex}
+                    selectedGerbong={selectedGerbong}
+                    setSelectedGerbong={setSelectedGerbong}
                 />
 
                 <SystemSettingsModal

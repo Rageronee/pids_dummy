@@ -11,14 +11,15 @@ interface ServiceConfigProps {
     onSetConfig: (name: string, routeData: any, newStations: string[], gerbong: number) => void;
     onSetGerbong: (gerbong: number) => void;
     initialTrainNameIndex: number;
+    selectedGerbong: number;
+    setSelectedGerbong: (gerbong: number) => void;
 }
 
 const ServiceConfigModal = React.memo(function ServiceConfigModal({
-    show, onClose, trainNames, routes, jumlahKereta, onSetConfig, onSetGerbong, initialTrainNameIndex
+    show, onClose, trainNames, routes, jumlahKereta, onSetConfig, onSetGerbong, initialTrainNameIndex, selectedGerbong, setSelectedGerbong
 }: ServiceConfigProps) {
     const [trainNameIndex, setTrainNameIndex] = useState(initialTrainNameIndex);
     const [trainSearchQuery, setTrainSearchQuery] = useState('');
-    const [selectedGerbong, setSelectedGerbong] = useState(1);
     const [serviceDropdownOpen, setServiceDropdownOpen] = useState(false);
     const [carriageDropdownOpen, setCarriageDropdownOpen] = useState(false);
     const serviceDropdownRef = useRef<HTMLDivElement>(null);
