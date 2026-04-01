@@ -98,11 +98,26 @@ function App() {
 
         const expectedKey = `schedule_${activeKa.toLowerCase()}`;
         const key = Object.keys(stationFeature.properties || {}).find(k => k.toLowerCase() === expectedKey);
-        return key ? stationFeature.properties[key] : null;
+        if (!key) return null;
+        const raw = String(stationFeature.properties[key] ?? '');
+        // Normalize to HH:MM (strip seconds if present)
+        const parts = raw.split(':');
+        return parts.length >= 2 ? `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}` : raw;
     }, [data?.activeRoute, activeKa, masterSyncedServiceName, routes]);
 
     // Format Train Number from activeKa (e.g. "ka67" -> "67")
+
     const getTrainId = useCallback((ka: string) => ka.replace(/\D/g, ''), []);
+
+    const getSmallestKa = useCallback((route: any) => {
+        const geo = route?.features ? route : route?.geojson;
+        const directions = geo?.features?.find((f: any) => f.geometry?.type === 'LineString')?.properties?.available_directions;
+        if (directions && directions.length > 0) {
+            const sorted = [...directions].sort((a, b) => a.num.localeCompare(b.num, undefined, { numeric: true, sensitivity: 'base' }));
+            return sorted[0].num;
+        }
+        return null;
+    }, []);
 
     const showNotification = useCallback((title: string, message: string) => {
         setToastMsg({ title, message, id: Date.now() });
@@ -135,19 +150,25 @@ function App() {
     const handleSetConfig = useCallback((serviceName: string, routeData: any, newStations: string[], gerbong: number) => {
         if (newStations.length > 0) { setStations(newStations); setCurrentIndex(0); }
         setSelectedGerbong(gerbong);
+
+        // Dynamic default KA Number: smallest one available
+        const minKa = getSmallestKa(routeData);
+        const resolvedKa = minKa ? `ka${minKa}` : activeKa;
+        if (minKa) setActiveKa(resolvedKa);
+
         sendData({
             serviceName,
             stations: newStations,
             activeRoute: routeData,
-            trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}`
+            trainNumber: `${getTrainId(resolvedKa)} Gerbong ${gerbong}`
         });
-        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to K ${getTrainId(activeKa)} Gerbong ${gerbong}`);
-    }, [sendData, setStations, showNotification, getTrainId, activeKa]);
+        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to Gerbong ${gerbong}`);
+    }, [sendData, setStations, showNotification, getSmallestKa, activeKa, getTrainId]);
 
     const handleSetGerbong = useCallback((gerbong: number) => {
         setSelectedGerbong(gerbong);
         sendData({ trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}` });
-        showNotification('Configuration Saved', `Unit configuration set to K ${getTrainId(activeKa)} Gerbong ${gerbong}`);
+        showNotification('Configuration Saved', `Unit configuration set to Gerbong ${gerbong}`);
     }, [sendData, showNotification, getTrainId, activeKa]);
 
 
@@ -333,14 +354,16 @@ function App() {
                         className="hidden lg:flex flex-col items-end text-right hover:opacity-80 transition-opacity cursor-pointer group"
                     >
                         <span className="text-[10px] font-bold text-white/40 group-hover:text-white/70 tracking-[0.2em] uppercase mb-0.5 transition-colors">Category</span>
-                        <span className="text-2xl font-bold tracking-tight uppercase leading-none text-blue-200 group-hover:text-white transition-colors">{masterSyncedServiceName ? trainCategory : '---'}</span>
+                        <span className="text-2xl font-bold tracking-tight uppercase leading-none text-white group-hover:text-white transition-colors">{masterSyncedServiceName ? trainCategory : '---'}</span>
                     </button>
 
                     <div className="w-px h-10 bg-white/20 mx-2" />
 
                     <div className="flex flex-col items-end text-right">
                         <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase mb-0.5">Unit</span>
-                        <span className="text-2xl font-bold tracking-widest uppercase leading-none">{masterSyncedNumber || '---'}</span>
+                        <span className="text-2xl font-bold tracking-widest uppercase leading-none">
+                            {masterSyncedNumber ? masterSyncedNumber.replace(/^\d+\s+/, '').toUpperCase() : '---'}
+                        </span>
                     </div>
 
                     {/* Destination Section - Flex Optimized */}
@@ -368,7 +391,7 @@ function App() {
                             <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT POSITION
                         </div>
                         <div className="flex items-center gap-6">
-                            <Train className="text-white/20 shrink-0" size={64} strokeWidth={2.5} />
+                            <Train className="text-white/100 shrink-0" size={64} strokeWidth={1.5} />
                             <h2 className="text-5xl font-bold text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">{currentStation}</h2>
                         </div>
                     </div>
@@ -379,46 +402,48 @@ function App() {
                             <Route size={18} /> DETAILED ROUTES
                         </div>
 
-                        <div className="relative pl-[30px] pr-2 mt-2 flex-1 flex flex-col justify-start">
-                            {/* Vertical Line */}
-                            <div className="absolute left-[61px] top-[40px] bottom-6 w-[4px] bg-slate-100 rounded-full" />
+                        <div className="relative pl-0 pr-2 mt-2 flex-1 flex flex-col justify-start overflow-y-auto scrollbar-hide">
+                            <div className="relative w-full">
+                                {/* Single Vertical Line that spans all stations */}
+                                <div className="absolute left-[22px] top-[40px] bottom-[20px] w-[4px] bg-slate-100 rounded-full z-0" />
 
-                            {/* Next Stop */}
-                            <div className="flex items-center gap-6 mb-4 relative z-10 w-full shrink-0">
-                                <div className="w-[68px] flex justify-center relative z-10">
-                                    <div className="w-[24px] h-[24px] bg-[#1d2d6a] rounded-full border-[6px] border-white shadow-sm" />
-                                </div>
-                                <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-slate-100 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-                                    <div className="flex flex-col relative z-10 text-slate-400">
-                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Next Station</span>
-                                        <span className="text-3xl text-slate-700 font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
+                                {/* Next Stop */}
+                                <div className="flex items-center gap-4 mb-4 relative z-10 w-full shrink-0">
+                                    <div className="w-[48px] flex justify-center relative z-10">
+                                        <div className="w-[24px] h-[24px] bg-[#cbd5e1] rounded-full border-[6px] border-white shadow-sm" />
                                     </div>
-                                    <div className="text-right flex flex-col items-end relative z-10 shrink-0">
-                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
-                                        <span className="text-3xl font-bold text-slate-600">
-                                            {getScheduledTime(nextStation) || (stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--')}
-                                        </span>
+                                    <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-slate-100 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                                        <div className="flex flex-col relative z-10 text-slate-400">
+                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Next Station</span>
+                                            <span className="text-3xl text-slate-700 font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">{nextStation}</span>
+                                        </div>
+                                        <div className="text-right flex flex-col items-end relative z-10 shrink-0">
+                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
+                                            <span className="text-3xl font-bold text-slate-600">
+                                                {getScheduledTime(nextStation) || (stations.length > 0 ? new Date(currentTime.getTime() + 15 * 60000).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':') : '--:--')}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Upcoming Stops Generator */}
-                            {stations.length > 2 && (() => {
-                                const renderUpcoming = [];
-                                // i = 1 is the Next Station already featured above, so we start from i = 2
-                                for (let i = 2; i < Math.min(stations.length, 5); i++) {
-                                    const upcomingStationObj = stations[(currentIndex + i) % stations.length];
-                                    const upcomingStationName = getStationName(upcomingStationObj);
-                                    if (upcomingStationObj !== stations[stations.length - 1] && upcomingStationObj !== stations[currentIndex]) {
+                                {/* Upcoming Stops Generator */}
+                                {stations.length > 2 && (() => {
+                                    const renderUpcoming = [];
+                                    for (let i = 2; i < stations.length; i++) {
+                                        const upcomingStationObj = stations[(currentIndex + i) % stations.length];
+                                        const upcomingStationName = getStationName(upcomingStationObj);
+                                        if (upcomingStationObj === stations[currentIndex]) break;
+
                                         renderUpcoming.push(
-                                            <div key={`upcoming-${i}`} className="flex items-center gap-6 relative z-10 w-full mb-3 shrink-0">
-                                                <div className="w-[68px] flex justify-center relative z-10">
+                                            <div key={`upcoming-${i}`} className="flex items-center gap-4 relative z-10 w-full mb-3 shrink-0">
+                                                <div className="w-[48px] flex justify-center relative z-10">
                                                     <div className="w-[20px] h-[20px] bg-slate-300 rounded-full border-[5px] border-white shadow-sm mt-3" />
                                                 </div>
-                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">                                                     <div className="flex flex-col">
-                                                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
-                                                    <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStationName}</span>
-                                                </div>
+                                                <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">UPCOMING STATION</span>
+                                                        <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">{upcomingStationName}</span>
+                                                    </div>
                                                     <div className="text-right">
                                                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">ETA</span>
                                                         <span className="text-xl font-semibold text-slate-600">
@@ -428,12 +453,10 @@ function App() {
                                                 </div>
                                             </div>
                                         );
-                                    } else {
-                                        break; // stop generating past the final station or loop
                                     }
-                                }
-                                return renderUpcoming;
-                            })()}
+                                    return renderUpcoming;
+                                })()}
+                            </div>
                         </div>
                     </div>
 

@@ -1,3037 +1,3053 @@
 {
-    "type": "FeatureCollection",
-    "features": [
-        {
-            "type": "Feature",
-            "properties": {
-                "colour": "orange",
-                "from": "Malang",
-                "name": "Malabar: Malang → Bandung",
-                "network": "KAI",
-                "network:wikidata": "Q2745027",
-                "operator": "KAI",
-                "public_transport:version": "2",
-                "ref": "Malabar",
-                "route": "train",
-                "to": "Bandung",
-                "type": "route",
-                "wikidata": "Q12491164",
-                "wikipedia": "id:Kereta api Malabar",
-                "algorithm": "Douglas-Peucker (Rerouted & Simplified via OSM Relation)",
-                "epsilon": 0.006,
-                "points": 148,
-                "train_numbers": [
-                    "67",
-                    "68",
-                    "69",
-                    "70"
-                ],
-                "available_directions": [
-                    {
-                        "num": "67",
-                        "label": "KA 67 (Malang -> Bandung)"
-                    },
-                    {
-                        "num": "68",
-                        "label": "KA 68 (Bandung -> Malang)"
-                    },
-                    {
-                        "num": "69",
-                        "label": "KA 69 (Malang -> Bandung)"
-                    },
-                    {
-                        "num": "70",
-                        "label": "KA 70 (Bandung -> Malang)"
-                    }
-                ],
-                "ka67_active": true,
-                "ka68_active": true,
-                "ka69_active": true,
-                "ka70_active": true
-            },
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        112.6373464,
-                        -7.9790275
-                    ],
-                    [
-                        112.6319415,
-                        -7.9954465
-                    ],
-                    [
-                        112.6046,
-                        -8.064
-                    ],
-                    [
-                        112.57694,
-                        -8.13056
-                    ],
-                    [
-                        112.5275,
-                        -8.1445
-                    ],
-                    [
-                        112.4780531,
-                        -8.1583792
-                    ],
-                    [
-                        112.3988,
-                        -8.1232
-                    ],
-                    [
-                        112.3194641,
-                        -8.0879868
-                    ],
-                    [
-                        112.2413,
-                        -8.0945
-                    ],
-                    [
-                        112.16306,
-                        -8.10139
-                    ],
-                    [
-                        112.0338,
-                        -8.0819
-                    ],
-                    [
-                        111.9046015,
-                        -8.0625633
-                    ],
-                    [
-                        111.9601,
-                        -7.9393
-                    ],
-                    [
-                        112.0157311,
-                        -7.8162448
-                    ],
-                    [
-                        112.0578,
-                        -7.704
-                    ],
-                    [
-                        112.0999248,
-                        -7.5918335
-                    ],
-                    [
-                        112.0008,
-                        -7.596
-                    ],
-                    [
-                        111.9017,
-                        -7.6002457
-                    ],
-                    [
-                        111.7126,
-                        -7.5844
-                    ],
-                    [
-                        111.5238865,
-                        -7.6185833
-                    ],
-                    [
-                        111.455,
-                        -7.5303
-                    ],
-                    [
-                        111.3860743,
-                        -7.4419921
-                    ],
-                    [
-                        111.2033,
-                        -7.4353
-                    ],
-                    [
-                        111.02056,
-                        -7.42861
-                    ],
-                    [
-                        110.9207,
-                        -7.4928
-                    ],
-                    [
-                        110.8213985,
-                        -7.5567545
-                    ],
-                    [
-                        110.7121,
-                        -7.6345
-                    ],
-                    [
-                        110.603,
-                        -7.71222
-                    ],
-                    [
-                        110.4838,
-                        -7.7566
-                    ],
-                    [
-                        110.36472,
-                        -7.80139
-                    ],
-                    [
-                        110.137,
-                        -7.7749
-                    ],
-                    [
-                        109.90944,
-                        -7.72389
-                    ],
-                    [
-                        109.7841,
-                        -7.7028
-                    ],
-                    [
-                        109.6589,
-                        -7.681689
-                    ],
-                    [
-                        109.5818,
-                        -7.6464
-                    ],
-                    [
-                        109.504688,
-                        -7.6110809
-                    ],
-                    [
-                        109.3788,
-                        -7.6206
-                    ],
-                    [
-                        109.2529649,
-                        -7.6301526
-                    ],
-                    [
-                        109.1962,
-                        -7.6246
-                    ],
-                    [
-                        109.139396,
-                        -7.6190643
-                    ],
-                    [
-                        108.9744,
-                        -7.5611
-                    ],
-                    [
-                        108.8068569,
-                        -7.4860693
-                    ],
-                    [
-                        108.6746,
-                        -7.4311
-                    ],
-                    [
-                        108.5423889,
-                        -7.3762806
-                    ],
-                    [
-                        108.4489,
-                        -7.3526
-                    ],
-                    [
-                        108.3554701,
-                        -7.3293001
-                    ],
-                    [
-                        108.2896,
-                        -7.3257
-                    ],
-                    [
-                        108.22394,
-                        -7.32223
-                    ],
-                    [
-                        108.1618,
-                        -7.2077
-                    ],
-                    [
-                        108.0998045,
-                        -7.0931934
-                    ],
-                    [
-                        107.9997,
-                        -7.0885
-                    ],
-                    [
-                        107.8997164,
-                        -7.0838873
-                    ],
-                    [
-                        107.7707,
-                        -7.0041
-                    ],
-                    [
-                        107.6457751,
-                        -6.9244847
-                    ],
-                    [
-                        107.6263,
-                        -6.9194
-                    ],
-                    [
-                        107.60694,
-                        -6.9143744
-                    ]
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Malang",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "ML",
-                "ref": "P25",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop_entry_only",
-                "schedule_ka67": "16:50",
-                "is_origin_ka67": true,
-                "schedule_ka68": "06:51",
-                "schedule_ka69": "05:24",
-                "is_origin_ka69": true,
-                "schedule_ka70": "22:36"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.6373464,
-                    -7.9790275
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Malang Kotalama",
-                "network": "KAI",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MLK",
-                "ref": "P25",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "16:57",
-                "schedule_ka68": "06:45",
-                "schedule_ka69": "05:33",
-                "schedule_ka70": "22:30"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.6319415,
-                    -7.9954465
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Pakisaji",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PKS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "17:08",
-                "schedule_ka68": "06:33",
-                "schedule_ka69": "05:44",
-                "schedule_ka70": "22:14"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.6046,
-                    -8.064
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kepanjen",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KPN",
-                "ref": "P27",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "17:21",
-                "schedule_ka68": "06:24",
-                "schedule_ka69": "05:59",
-                "schedule_ka70": "22:05"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.57694,
-                    -8.13056
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ngebruk",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NGB",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "17:30",
-                "schedule_ka68": "06:11",
-                "schedule_ka69": "06:13",
-                "schedule_ka70": "21:53"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.5275,
-                    -8.1445
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sumberpucung",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SBP",
-                "ref": "P29",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "17:35",
-                "schedule_ka68": "06:06",
-                "schedule_ka69": "06:27",
-                "schedule_ka70": "21:49"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.4780531,
-                    -8.1583792
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Pogajih",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PGJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "17:44",
-                "schedule_ka68": "05:57",
-                "schedule_ka69": "06:38",
-                "schedule_ka70": "21:42"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.3988,
-                    -8.1232
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kesamben",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KSB",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "17:53",
-                "schedule_ka68": "05:50",
-                "schedule_ka69": "06:45",
-                "schedule_ka70": "21:36"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.3194641,
-                    -8.0879868
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Wlingi",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "WG",
-                "ref": "P32",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:06",
-                "schedule_ka68": "05:39",
-                "schedule_ka69": "06:58",
-                "schedule_ka70": "21:27"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.2413,
-                    -8.0945
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Talun",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "TAN",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:11",
-                "schedule_ka68": "05:28",
-                "schedule_ka69": "07:03",
-                "schedule_ka70": "21:18"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.16306,
-                    -8.10139
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Garum",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "GRM",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:18",
-                "schedule_ka68": "05:21",
-                "schedule_ka69": "07:11",
-                "schedule_ka70": "21:11"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.0338,
-                    -8.0819
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Blitar",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BL",
-                "ref": "P36",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:29",
-                "schedule_ka68": "05:12",
-                "schedule_ka69": "07:21",
-                "schedule_ka70": "21:02"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.9046015,
-                    -8.0625633
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Rejotangan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "RTG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:38",
-                "schedule_ka68": "04:59",
-                "schedule_ka69": "07:30",
-                "schedule_ka70": "20:46"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.9601,
-                    -7.9393
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ngunut",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NNT",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:42",
-                "schedule_ka68": "04:54",
-                "schedule_ka69": "07:34",
-                "schedule_ka70": "20:42"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.0157311,
-                    -7.8162448
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sumbergempol",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SGP",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:45",
-                "schedule_ka68": "04:50",
-                "schedule_ka69": "07:39",
-                "schedule_ka70": "20:39"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.0578,
-                    -7.704
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Tulungagung",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "TA",
-                "ref": "D25",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:51",
-                "schedule_ka68": "04:45",
-                "schedule_ka69": "07:45",
-                "schedule_ka70": "20:33"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.0999248,
-                    -7.5918335
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ngujang",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NGJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "18:58",
-                "schedule_ka68": "04:38",
-                "schedule_ka69": "07:52",
-                "schedule_ka70": "20:24"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    112.0008,
-                    -7.596
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kras",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KRS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:02",
-                "schedule_ka68": "04:34",
-                "schedule_ka69": "07:56",
-                "schedule_ka70": "20:21"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.9017,
-                    -7.6002457
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ngadiluwih",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NDL",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:05",
-                "schedule_ka68": "04:30",
-                "schedule_ka69": "07:59",
-                "schedule_ka70": "20:17"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.7126,
-                    -7.5844
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kediri",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KD",
-                "ref": "D21",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:14",
-                "schedule_ka68": "04:23",
-                "schedule_ka69": "08:08",
-                "schedule_ka70": "20:10"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.5238865,
-                    -7.6185833
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Susuhan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SSH",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:18",
-                "schedule_ka68": "04:14",
-                "schedule_ka69": "08:14",
-                "schedule_ka70": "19:59"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.455,
-                    -7.5303
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Minggiran",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MNG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:21",
-                "schedule_ka68": "04:12",
-                "schedule_ka69": "08:17",
-                "schedule_ka70": "19:56"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.3860743,
-                    -7.4419921
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Papar",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PPR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:25",
-                "schedule_ka68": "04:09",
-                "schedule_ka69": "08:19",
-                "schedule_ka70": "19:52"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.2033,
-                    -7.4353
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Purwoasri",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PWS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:27",
-                "schedule_ka68": "04:05",
-                "schedule_ka69": "08:24",
-                "schedule_ka70": "19:48"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    111.02056,
-                    -7.42861
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kertosono",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KTS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:36",
-                "schedule_ka68": "03:58",
-                "schedule_ka69": "08:33",
-                "schedule_ka70": "19:41"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.9207,
-                    -7.4928
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Baron",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BRN",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:41",
-                "schedule_ka68": "03:49",
-                "schedule_ka69": "08:39",
-                "schedule_ka70": "19:32"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.8213985,
-                    -7.5567545
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sukomoro",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SKM",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:48",
-                "schedule_ka68": "03:44",
-                "schedule_ka69": "08:44",
-                "schedule_ka70": "19:25"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.7121,
-                    -7.6345
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Nganjuk",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "19:56",
-                "schedule_ka68": "03:38",
-                "schedule_ka69": "08:51",
-                "schedule_ka70": "19:21"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.603,
-                    -7.71222
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Bagor",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BGR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:01",
-                "schedule_ka68": "03:31",
-                "schedule_ka69": "08:57",
-                "schedule_ka70": "19:12"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.4838,
-                    -7.7566
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Saradan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SRD",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:12",
-                "schedule_ka68": "03:20",
-                "schedule_ka69": "09:08",
-                "schedule_ka70": "19:02"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.36472,
-                    -7.80139
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Caruban",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CRB",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:17",
-                "schedule_ka68": "03:15",
-                "schedule_ka69": "09:13",
-                "schedule_ka70": "18:56"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    110.137,
-                    -7.7749
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Babadan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BBD",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:23",
-                "schedule_ka68": "03:11",
-                "schedule_ka69": "09:18",
-                "schedule_ka70": "18:51"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.90944,
-                    -7.72389
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Madiun",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MN",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:35",
-                "schedule_ka68": "03:04",
-                "schedule_ka69": "09:29",
-                "schedule_ka70": "18:45"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.7841,
-                    -7.7028
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Magetan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MGT",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:42",
-                "schedule_ka68": "02:51",
-                "schedule_ka69": "09:36",
-                "schedule_ka70": "18:29"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.6589,
-                    -7.681689
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Geneng",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "GNG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:48",
-                "schedule_ka68": "02:46",
-                "schedule_ka69": "09:42",
-                "schedule_ka70": "18:24"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.5818,
-                    -7.6464
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ngawi",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NGW",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "20:57",
-                "schedule_ka68": "02:39",
-                "schedule_ka69": "09:49",
-                "schedule_ka70": "18:18"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.504688,
-                    -7.6110809
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kedunggalar",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KDL",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:04",
-                "schedule_ka68": "02:30",
-                "schedule_ka69": "09:56",
-                "schedule_ka70": "18:09"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.3788,
-                    -7.6206
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Walikukun",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "WKK",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:09",
-                "schedule_ka68": "02:26",
-                "schedule_ka69": "10:03",
-                "schedule_ka70": "18:04"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.2529649,
-                    -7.6301526
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kedungbanteng",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KDB",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:18",
-                "schedule_ka68": "02:17",
-                "schedule_ka69": "10:09",
-                "schedule_ka70": "17:55"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.1962,
-                    -7.6246
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kebonromo",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KBR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:22",
-                "schedule_ka68": "02:14",
-                "schedule_ka69": "10:12",
-                "schedule_ka70": "17:51"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    109.139396,
-                    -7.6190643
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sragen",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:29",
-                "schedule_ka68": "02:08",
-                "schedule_ka69": "10:20",
-                "schedule_ka70": "17:46"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.9744,
-                    -7.5611
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Masaran",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MSN",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:36",
-                "schedule_ka68": "01:59",
-                "schedule_ka69": "10:27",
-                "schedule_ka70": "17:37"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.8068569,
-                    -7.4860693
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kemiri",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KMR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:40",
-                "schedule_ka68": "01:54",
-                "schedule_ka69": "10:32",
-                "schedule_ka70": "17:32"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.6746,
-                    -7.4311
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Palur",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PLR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:44",
-                "schedule_ka68": "01:50",
-                "schedule_ka69": "10:34",
-                "schedule_ka70": "17:28"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.5423889,
-                    -7.3762806
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Solo Jebres",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SJB",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:47",
-                "schedule_ka68": "01:48",
-                "schedule_ka69": "10:38",
-                "schedule_ka70": "17:26"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.4489,
-                    -7.3526
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Solo Balapan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SLO",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:54",
-                "schedule_ka68": "01:43",
-                "schedule_ka69": "10:45",
-                "schedule_ka70": "17:21"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.3554701,
-                    -7.3293001
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Purwosari",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PWS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "21:58",
-                "schedule_ka68": "01:36",
-                "schedule_ka69": "10:48",
-                "schedule_ka70": "17:15"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.2896,
-                    -7.3257
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Gawok",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "GWK",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:02",
-                "schedule_ka68": "01:32",
-                "schedule_ka69": "10:52",
-                "schedule_ka70": "17:10"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.22394,
-                    -7.32223
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Delanggu",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "DLG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:05",
-                "schedule_ka68": "01:30",
-                "schedule_ka69": "10:56",
-                "schedule_ka70": "17:08"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.1618,
-                    -7.2077
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ceper",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CPR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:09",
-                "schedule_ka68": "01:25",
-                "schedule_ka69": "10:59",
-                "schedule_ka70": "17:03"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.0998045,
-                    -7.0931934
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Klaten",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KT",
-                "ref": "Y06;AS01;JS02",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:14",
-                "schedule_ka68": "01:18",
-                "schedule_ka69": "11:05",
-                "schedule_ka70": "16:57"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.9997,
-                    -7.0885
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Srowot",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SWT",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:18",
-                "schedule_ka68": "01:12",
-                "schedule_ka69": "11:08",
-                "schedule_ka70": "16:50"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.8997164,
-                    -7.0838873
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Brambanan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BBN",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:23",
-                "schedule_ka68": "01:07",
-                "schedule_ka69": "11:12",
-                "schedule_ka70": "16:46"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.7707,
-                    -7.0041
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Maguwo",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MGW",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:27",
-                "schedule_ka68": "01:03",
-                "schedule_ka69": "11:17",
-                "schedule_ka70": "16:41"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Lempuyangan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "LPY",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:32",
-                "schedule_ka68": "00:58",
-                "schedule_ka69": "11:23",
-                "schedule_ka70": "16:38"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6263,
-                    -6.9194
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Yogyakarta",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "YK",
-                "ref": "JS05",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:41",
-                "schedule_ka68": "00:56",
-                "schedule_ka69": "11:30",
-                "schedule_ka70": "16:34"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Patukan",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PTK",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:45",
-                "schedule_ka68": "00:45",
-                "schedule_ka69": "11:35",
-                "schedule_ka70": "16:25"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Rewulu",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "RWL",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:48",
-                "schedule_ka68": "00:42",
-                "schedule_ka69": "11:39",
-                "schedule_ka70": "16:21"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sentolo",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "STL",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "22:56",
-                "schedule_ka68": "00:36",
-                "schedule_ka69": "11:46",
-                "schedule_ka70": "16:14"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Wates",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "WTS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:03",
-                "schedule_ka68": "00:27",
-                "schedule_ka69": "11:53",
-                "schedule_ka70": "16:07"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kedundang",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KDD",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:08",
-                "schedule_ka68": "00:24",
-                "schedule_ka69": "11:59",
-                "schedule_ka70": "16:03"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Wojo",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "WOJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:14",
-                "schedule_ka68": "00:20",
-                "schedule_ka69": "12:02",
-                "schedule_ka70": "15:58"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Jenar",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "JNR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:19",
-                "schedule_ka68": "00:15",
-                "schedule_ka69": "12:08",
-                "schedule_ka70": "15:54"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kutoarjo",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KTA",
-                "ref": "JS07",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:33",
-                "schedule_ka68": "00:06",
-                "schedule_ka69": "12:20",
-                "schedule_ka70": "15:45"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Butuh",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BTH",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:39",
-                "schedule_ka68": "23:57",
-                "schedule_ka69": "12:26",
-                "schedule_ka70": "15:36"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Prembun",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "PMB",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:42",
-                "schedule_ka68": "23:53",
-                "schedule_ka69": "12:29",
-                "schedule_ka70": "15:33"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kutowinangun",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KTW",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:46",
-                "schedule_ka68": "23:48",
-                "schedule_ka69": "12:33",
-                "schedule_ka70": "15:29"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Wonosari",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "WNS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:48",
-                "schedule_ka68": "23:46",
-                "schedule_ka69": "12:36",
-                "schedule_ka70": "15:27"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kebumen",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KM",
-                "ref": "JS08",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "23:55",
-                "schedule_ka68": "23:42",
-                "schedule_ka69": "12:42",
-                "schedule_ka70": "15:22"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sruweng",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SRG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:02",
-                "schedule_ka68": "23:33",
-                "schedule_ka69": "12:49",
-                "schedule_ka70": "15:11"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Karanganyar",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KGY",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:04",
-                "schedule_ka68": "23:30",
-                "schedule_ka69": "12:51",
-                "schedule_ka70": "15:09"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Gombong",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "GB",
-                "ref": "JS09",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:13",
-                "schedule_ka68": "23:23",
-                "schedule_ka69": "12:56",
-                "schedule_ka70": "15:02"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ijo",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "IJO",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:20",
-                "schedule_ka68": "23:14",
-                "schedule_ka69": "13:00",
-                "schedule_ka70": "14:53"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Tambak",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "TBK",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:24",
-                "schedule_ka68": "23:10",
-                "schedule_ka69": "13:03",
-                "schedule_ka70": "14:51"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sumpiuh",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SPH",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:27",
-                "schedule_ka68": "23:08",
-                "schedule_ka69": "13:05",
-                "schedule_ka70": "14:48"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kemranjen",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KMJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:29",
-                "schedule_ka68": "23:05",
-                "schedule_ka69": "13:09",
-                "schedule_ka70": "14:44"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kroya",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KYA",
-                "ref": "JS12",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:42",
-                "schedule_ka68": "22:59",
-                "schedule_ka69": "13:18",
-                "schedule_ka70": "14:39"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sikampuh",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SKP",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:49",
-                "schedule_ka68": "22:50",
-                "schedule_ka69": "13:25",
-                "schedule_ka70": "14:30"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Maos",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KD12;JC01",
-                "ref": "MA",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "00:56",
-                "schedule_ka68": "22:43",
-                "schedule_ka69": "13:29",
-                "schedule_ka70": "14:24"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kasugihan",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KSG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:00",
-                "schedule_ka68": "22:39",
-                "schedule_ka69": "13:30",
-                "schedule_ka70": "14:19"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Lebeng",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "LBG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:03",
-                "schedule_ka68": "22:36",
-                "schedule_ka69": "13:32",
-                "schedule_ka70": "14:15"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Jeruklegi",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "JLG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:07",
-                "schedule_ka68": "22:32",
-                "schedule_ka69": "13:36",
-                "schedule_ka70": "14:10"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kawunganten",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KWT",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:18",
-                "schedule_ka68": "22:21",
-                "schedule_ka69": "13:48",
-                "schedule_ka70": "13:50"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Gandrungmangun",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "GDM",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:23",
-                "schedule_ka68": "22:16",
-                "schedule_ka69": "13:52",
-                "schedule_ka70": "13:34"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Sidareja",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "SDR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:32",
-                "schedule_ka68": "22:09",
-                "schedule_ka69": "14:01",
-                "schedule_ka70": "13:27"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cipari",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CPI",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:39",
-                "schedule_ka68": "22:02",
-                "schedule_ka69": "14:06",
-                "schedule_ka70": "13:18"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Meluwung",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MLG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:45",
-                "schedule_ka68": "21:56",
-                "schedule_ka69": "14:12",
-                "schedule_ka70": "13:14"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Langen",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "LGN",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "01:50",
-                "schedule_ka68": "21:51",
-                "schedule_ka69": "14:17",
-                "schedule_ka70": "13:09"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Banjar",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "ref": "BJR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:03",
-                "schedule_ka68": "21:44",
-                "schedule_ka69": "14:30",
-                "schedule_ka70": "13:00"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Karangpucung",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KGP",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:10",
-                "schedule_ka68": "21:33",
-                "schedule_ka69": "14:37",
-                "schedule_ka70": "12:49"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Bojong",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BJG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:17",
-                "schedule_ka68": "21:27",
-                "schedule_ka69": "14:44",
-                "schedule_ka70": "12:42"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ciamis",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CI",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:28",
-                "schedule_ka68": "21:18",
-                "schedule_ka69": "14:55",
-                "schedule_ka70": "12:35"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Manonjaya",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "MNJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:42",
-                "schedule_ka68": "21:06",
-                "schedule_ka69": "15:09",
-                "schedule_ka70": "12:22"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Awipari",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "AWP",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:46",
-                "schedule_ka68": "21:02",
-                "schedule_ka69": "15:13",
-                "schedule_ka70": "12:18"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Tasikmalaya",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "TSM",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "02:55",
-                "schedule_ka68": "20:57",
-                "schedule_ka69": "15:20",
-                "schedule_ka70": "12:11"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Indihiang",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "IHH",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "03:02",
-                "schedule_ka68": "20:48",
-                "schedule_ka69": "15:27",
-                "schedule_ka70": "12:04"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Rajapolah",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "RJP",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "03:09",
-                "schedule_ka68": "20:42",
-                "schedule_ka69": "15:33",
-                "schedule_ka70": "11:57"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.8997164,
-                    -7.0838873
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Ciawi",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CWI",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "03:18",
-                "schedule_ka68": "20:35",
-                "schedule_ka69": "15:42",
-                "schedule_ka70": "11:50"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cirahayu",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CRH",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "03:27",
-                "schedule_ka68": "20:26",
-                "schedule_ka69": "15:51",
-                "schedule_ka70": "11:42"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6263,
-                    -6.9194
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cipeundeuy",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "ref": "CPD",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "03:51",
-                "schedule_ka68": "20:14",
-                "schedule_ka69": "16:14",
-                "schedule_ka70": "11:30"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    108.0998045,
-                    -7.0931934
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Bumiwaluya",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "BMW",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "04:02",
-                "schedule_ka68": "19:54",
-                "schedule_ka69": "16:23",
-                "schedule_ka70": "11:08"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.9997,
-                    -7.0885
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Warungbandrek",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "WBD",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "04:14",
-                "schedule_ka68": "19:41",
-                "schedule_ka69": "16:36",
-                "schedule_ka70": "10:56"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.7707,
-                    -7.0041
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cibatu",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CBT",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "04:21",
-                "schedule_ka68": "19:34",
-                "schedule_ka69": "16:43",
-                "schedule_ka70": "10:48"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6263,
-                    -6.9194
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Leuwigoong",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "LWG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Karangsari",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KRS",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6263,
-                    -6.9194
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Leles",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "ref": "C26",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "04:39",
-                "schedule_ka68": "19:20",
-                "schedule_ka69": "16:59",
-                "schedule_ka70": "10:34"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.8997164,
-                    -7.0838873
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Lebakjero",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "LBJ",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "04:52",
-                "schedule_ka68": "19:07",
-                "schedule_ka69": "17:10",
-                "schedule_ka70": "10:23"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.7707,
-                    -7.0041
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Nagreg",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "NAG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "04:59",
-                "schedule_ka68": "18:58",
-                "schedule_ka69": "17:17",
-                "schedule_ka70": "10:14"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cicalengka",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CCL",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "05:12",
-                "schedule_ka68": "18:45",
-                "schedule_ka69": "17:30",
-                "schedule_ka70": "10:02"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Haurpugur",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "HPR",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "05:15",
-                "schedule_ka68": "18:42",
-                "schedule_ka69": "17:32",
-                "schedule_ka70": "09:58"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6263,
-                    -6.9194
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Rancaekek",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "RKE",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "05:21",
-                "schedule_ka68": "18:38",
-                "schedule_ka69": "17:39",
-                "schedule_ka70": "09:54"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cimekar",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CMK",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6263,
-                    -6.9194
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Gedebage",
-                "network": "KAI",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "DBG",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop",
-                "schedule_ka67": "05:26",
-                "schedule_ka68": "18:33",
-                "schedule_ka69": "17:44",
-                "schedule_ka70": "09:49"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Kiaracondong",
-                "network": "KAI",
-                "operator": "KAI",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "KAC",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop_exit_only",
-                "schedule_ka67": "05:35",
-                "schedule_ka68": "18:24",
-                "schedule_ka69": "17:55",
-                "schedule_ka70": "09:42"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6457751,
-                    -6.9244847
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "Cikudapateuh",
-                "network": "KAI",
-                "operator": "KAI",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "railway:ref": "CKP",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop_exit_only"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.6166,
-                    -6.9169
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "local_ref": "4",
-                "name": "Bandung",
-                "name:ja": "バンドン",
-                "network": "KAI Commuter",
-                "operator": "Kereta Api Indonesia",
-                "public_transport": "stop_position",
-                "railway": "stop",
-                "ref": "B16;C16",
-                "train": "yes",
-                "isCheckpoint": true,
-                "role": "stop_exit_only",
-                "schedule_ka67": "05:44",
-                "schedule_ka68": "18:09",
-                "is_origin_ka68": true,
-                "schedule_ka69": "18:04",
-                "schedule_ka70": "09:29",
-                "is_origin_ka70": true
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    107.60694,
-                    -6.9143744
-                ]
-            }
-        }
-    ]
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "colour": "orange",
+        "from": "Malang",
+        "name": "Malabar: Malang → Bandung",
+        "network": "KAI",
+        "network:wikidata": "Q2745027",
+        "operator": "KAI",
+        "public_transport:version": "2",
+        "ref": "Malabar",
+        "route": "train",
+        "to": "Bandung",
+        "type": "route",
+        "wikidata": "Q12491164",
+        "wikipedia": "id:Kereta api Malabar",
+        "algorithm": "Douglas-Peucker (Rerouted & Simplified via OSM Relation)",
+        "epsilon": 0.006,
+        "points": 148,
+        "train_numbers": [
+          "67",
+          "68",
+          "69",
+          "70"
+        ],
+        "available_directions": [
+          {
+            "num": "67",
+            "label": "KA 67 (Malang -> Bandung)"
+          },
+          {
+            "num": "68",
+            "label": "KA 68 (Bandung -> Malang)"
+          },
+          {
+            "num": "69",
+            "label": "KA 69 (Malang -> Bandung)"
+          },
+          {
+            "num": "70",
+            "label": "KA 70 (Bandung -> Malang)"
+          }
+        ],
+        "ka67_active": true,
+        "ka68_active": true,
+        "ka69_active": true,
+        "ka70_active": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.6373464,
+            -7.9790275
+          ],
+          [
+            112.6319415,
+            -7.9954465
+          ],
+          [
+            112.6046,
+            -8.064
+          ],
+          [
+            112.57694,
+            -8.13056
+          ],
+          [
+            112.5275,
+            -8.1445
+          ],
+          [
+            112.4780531,
+            -8.1583792
+          ],
+          [
+            112.3988,
+            -8.1232
+          ],
+          [
+            112.3194641,
+            -8.0879868
+          ],
+          [
+            112.2413,
+            -8.0945
+          ],
+          [
+            112.16306,
+            -8.10139
+          ],
+          [
+            112.0338,
+            -8.0819
+          ],
+          [
+            111.9046015,
+            -8.0625633
+          ],
+          [
+            111.9601,
+            -7.9393
+          ],
+          [
+            112.0157311,
+            -7.8162448
+          ],
+          [
+            112.0578,
+            -7.704
+          ],
+          [
+            112.0999248,
+            -7.5918335
+          ],
+          [
+            112.0008,
+            -7.596
+          ],
+          [
+            111.9017,
+            -7.6002457
+          ],
+          [
+            111.7126,
+            -7.5844
+          ],
+          [
+            111.5238865,
+            -7.6185833
+          ],
+          [
+            111.455,
+            -7.5303
+          ],
+          [
+            111.3860743,
+            -7.4419921
+          ],
+          [
+            111.2033,
+            -7.4353
+          ],
+          [
+            111.02056,
+            -7.42861
+          ],
+          [
+            110.9207,
+            -7.4928
+          ],
+          [
+            110.8213985,
+            -7.5567545
+          ],
+          [
+            110.7121,
+            -7.6345
+          ],
+          [
+            110.603,
+            -7.71222
+          ],
+          [
+            110.4838,
+            -7.7566
+          ],
+          [
+            110.36472,
+            -7.80139
+          ],
+          [
+            110.137,
+            -7.7749
+          ],
+          [
+            109.90944,
+            -7.72389
+          ],
+          [
+            109.7841,
+            -7.7028
+          ],
+          [
+            109.6589,
+            -7.681689
+          ],
+          [
+            109.5818,
+            -7.6464
+          ],
+          [
+            109.504688,
+            -7.6110809
+          ],
+          [
+            109.3788,
+            -7.6206
+          ],
+          [
+            109.2529649,
+            -7.6301526
+          ],
+          [
+            109.1962,
+            -7.6246
+          ],
+          [
+            109.139396,
+            -7.6190643
+          ],
+          [
+            108.9744,
+            -7.5611
+          ],
+          [
+            108.8068569,
+            -7.4860693
+          ],
+          [
+            108.6746,
+            -7.4311
+          ],
+          [
+            108.5423889,
+            -7.3762806
+          ],
+          [
+            108.4489,
+            -7.3526
+          ],
+          [
+            108.3554701,
+            -7.3293001
+          ],
+          [
+            108.2896,
+            -7.3257
+          ],
+          [
+            108.22394,
+            -7.32223
+          ],
+          [
+            108.1618,
+            -7.2077
+          ],
+          [
+            108.0998045,
+            -7.0931934
+          ],
+          [
+            107.9997,
+            -7.0885
+          ],
+          [
+            107.8997164,
+            -7.0838873
+          ],
+          [
+            107.7707,
+            -7.0041
+          ],
+          [
+            107.6457751,
+            -6.9244847
+          ],
+          [
+            107.6263,
+            -6.9194
+          ],
+          [
+            107.60694,
+            -6.9143744
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Malang",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "ML",
+        "ref": "P25",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop_entry_only",
+        "schedule_ka67": "16:50",
+        "schedule_ka68": "06:51",
+        "schedule_ka69": "05:24",
+        "schedule_ka70": "22:36",
+        "is_origin_ka67": true,
+        "is_origin_ka69": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.6373464,
+          -7.9790275
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Malang Kotalama",
+        "network": "KAI",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MLK",
+        "ref": "P25",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "16:56",
+        "schedule_ka68": "06:45",
+        "schedule_ka69": "05:33",
+        "schedule_ka70": "22:23"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.6319415,
+          -7.9954465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pakisaji",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PKS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "17:08",
+        "schedule_ka68": "06:33",
+        "schedule_ka69": "05:44",
+        "schedule_ka70": "22:14"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.6046,
+          -8.064
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kepanjen",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KPN",
+        "ref": "P27",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "17:21",
+        "schedule_ka68": "06:24",
+        "schedule_ka69": "05:53",
+        "schedule_ka70": "22:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.57694,
+          -8.13056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ngebruk",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NGB",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "17:30",
+        "schedule_ka68": "06:11",
+        "schedule_ka69": "06:08",
+        "schedule_ka70": "21:53"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.5275,
+          -8.1445
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumberpucung",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SBP",
+        "ref": "P29",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "17:35",
+        "schedule_ka68": "06:06",
+        "schedule_ka69": "06:22",
+        "schedule_ka70": "21:49"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.4780531,
+          -8.1583792
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pogajih",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PGJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "17:44",
+        "schedule_ka68": "05:57",
+        "schedule_ka69": "06:38",
+        "schedule_ka70": "21:42"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.3988,
+          -8.1232
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kesamben",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KSB",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "17:53",
+        "schedule_ka68": "05:50",
+        "schedule_ka69": "06:45",
+        "schedule_ka70": "21:36"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.3194641,
+          -8.0879868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wlingi",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WG",
+        "ref": "P32",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:04",
+        "schedule_ka68": "05:39",
+        "schedule_ka69": "06:58",
+        "schedule_ka70": "21:27"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.2413,
+          -8.0945
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Talun",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "TAN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:11",
+        "schedule_ka68": "05:28",
+        "schedule_ka69": "07:03",
+        "schedule_ka70": "21:18"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.16306,
+          -8.10139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Garum",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "GRM",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:18",
+        "schedule_ka68": "05:21",
+        "schedule_ka69": "07:11",
+        "schedule_ka70": "21:11"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0338,
+          -8.0819
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Blitar",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BL",
+        "ref": "P36",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:29",
+        "schedule_ka68": "05:12",
+        "schedule_ka69": "07:21",
+        "schedule_ka70": "20:55"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.9046015,
+          -8.0625633
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rejotangan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "RTG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:38",
+        "schedule_ka68": "04:59",
+        "schedule_ka69": "07:30",
+        "schedule_ka70": "20:46"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.9601,
+          -7.9393
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ngunut",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NNT",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:42",
+        "schedule_ka68": "04:54",
+        "schedule_ka69": "07:34",
+        "schedule_ka70": "20:42"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0157311,
+          -7.8162448
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumbergempol",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SGP",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:45",
+        "schedule_ka68": "04:50",
+        "schedule_ka69": "07:39",
+        "schedule_ka70": "20:39"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0578,
+          -7.704
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tulungagung",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "TA",
+        "ref": "D25",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:51",
+        "schedule_ka68": "04:45",
+        "schedule_ka69": "07:45",
+        "schedule_ka70": "20:33"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0999248,
+          -7.5918335
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ngujang",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NGJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "18:58",
+        "schedule_ka68": "04:38",
+        "schedule_ka69": "07:52",
+        "schedule_ka70": "20:24"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.0008,
+          -7.596
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kras",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KRS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:02",
+        "schedule_ka68": "04:34",
+        "schedule_ka69": "07:56",
+        "schedule_ka70": "20:21"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.9017,
+          -7.6002457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ngadiluwih",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NDL",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:05",
+        "schedule_ka68": "04:30",
+        "schedule_ka69": "07:59",
+        "schedule_ka70": "20:17"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.7126,
+          -7.5844
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kediri",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KD",
+        "ref": "D21",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:14",
+        "schedule_ka68": "04:23",
+        "schedule_ka69": "08:08",
+        "schedule_ka70": "20:03"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.5238865,
+          -7.6185833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Susuhan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SSH",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:18",
+        "schedule_ka68": "04:14",
+        "schedule_ka69": "08:14",
+        "schedule_ka70": "19:59"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.455,
+          -7.5303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Minggiran",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MNG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:21",
+        "schedule_ka68": "04:12",
+        "schedule_ka69": "08:17",
+        "schedule_ka70": "19:56"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.3860743,
+          -7.4419921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Papar",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PPR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:25",
+        "schedule_ka68": "04:09",
+        "schedule_ka69": "08:19",
+        "schedule_ka70": "19:52"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.2033,
+          -7.4353
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Purwoasri",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PWS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:27",
+        "schedule_ka68": "04:05",
+        "schedule_ka69": "08:24",
+        "schedule_ka70": "19:48"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.02056,
+          -7.42861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kertosono",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KTS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:36",
+        "schedule_ka68": "03:58",
+        "schedule_ka69": "08:33",
+        "schedule_ka70": "19:41"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.9207,
+          -7.4928
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Baron",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BRN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:41",
+        "schedule_ka68": "03:49",
+        "schedule_ka69": "08:39",
+        "schedule_ka70": "19:32"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.8213985,
+          -7.5567545
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sukomoro",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SKM",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:48",
+        "schedule_ka68": "03:44",
+        "schedule_ka69": "08:44",
+        "schedule_ka70": "19:25"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.7121,
+          -7.6345
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nganjuk",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "19:56",
+        "schedule_ka68": "03:38",
+        "schedule_ka69": "08:51",
+        "schedule_ka70": "19:21"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.603,
+          -7.71222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bagor",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BGR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:01",
+        "schedule_ka68": "03:31",
+        "schedule_ka69": "08:57",
+        "schedule_ka70": "19:12"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.4838,
+          -7.7566
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saradan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SRD",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:12",
+        "schedule_ka68": "03:20",
+        "schedule_ka69": "09:08",
+        "schedule_ka70": "19:02"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.36472,
+          -7.80139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Caruban",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CRB",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:17",
+        "schedule_ka68": "03:15",
+        "schedule_ka69": "09:13",
+        "schedule_ka70": "18:56"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.137,
+          -7.7749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Babadan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BBD",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:23",
+        "schedule_ka68": "03:11",
+        "schedule_ka69": "09:18",
+        "schedule_ka70": "18:51"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.90944,
+          -7.72389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Madiun",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:35",
+        "schedule_ka68": "03:04",
+        "schedule_ka69": "09:29",
+        "schedule_ka70": "18:45"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.7841,
+          -7.7028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Magetan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MGT",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:42",
+        "schedule_ka68": "02:51",
+        "schedule_ka69": "09:36",
+        "schedule_ka70": "18:29"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.6589,
+          -7.681689
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Geneng",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "GNG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:48",
+        "schedule_ka68": "02:46",
+        "schedule_ka69": "09:42",
+        "schedule_ka70": "18:24"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.5818,
+          -7.6464
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ngawi",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NGW",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "20:57",
+        "schedule_ka68": "02:39",
+        "schedule_ka69": "09:49",
+        "schedule_ka70": "18:18"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.504688,
+          -7.6110809
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedunggalar",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KDL",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:04",
+        "schedule_ka68": "02:30",
+        "schedule_ka69": "09:56",
+        "schedule_ka70": "18:09"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.3788,
+          -7.6206
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Walikukun",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WKK",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:09",
+        "schedule_ka68": "02:26",
+        "schedule_ka69": "10:03",
+        "schedule_ka70": "18:04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.2529649,
+          -7.6301526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedungbanteng",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KDB",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:18",
+        "schedule_ka68": "02:17",
+        "schedule_ka69": "10:09",
+        "schedule_ka70": "17:55"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.1962,
+          -7.6246
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebonromo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KBR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:22",
+        "schedule_ka68": "02:14",
+        "schedule_ka69": "10:12",
+        "schedule_ka70": "17:51"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.139396,
+          -7.6190643
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sragen",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:29",
+        "schedule_ka68": "02:08",
+        "schedule_ka69": "10:20",
+        "schedule_ka70": "17:46"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.9744,
+          -7.5611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Masaran",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MSN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:36",
+        "schedule_ka68": "01:59",
+        "schedule_ka69": "10:27",
+        "schedule_ka70": "17:37"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.8068569,
+          -7.4860693
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kemiri",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KMR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:40",
+        "schedule_ka68": "01:54",
+        "schedule_ka69": "10:32",
+        "schedule_ka70": "17:32"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.6746,
+          -7.4311
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Palur",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PLR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:44",
+        "schedule_ka68": "01:50",
+        "schedule_ka69": "10:34",
+        "schedule_ka70": "17:28"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.5423889,
+          -7.3762806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Solo Jebres",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SJB",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:47",
+        "schedule_ka68": "01:48",
+        "schedule_ka69": "10:38",
+        "schedule_ka70": "17:26"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.4489,
+          -7.3526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Solo Balapan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SLO",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:54",
+        "schedule_ka68": "01:43",
+        "schedule_ka69": "10:45",
+        "schedule_ka70": "17:21"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.3554701,
+          -7.3293001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Purwosari",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PWS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "21:58",
+        "schedule_ka68": "01:36",
+        "schedule_ka69": "10:48",
+        "schedule_ka70": "17:15"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.2896,
+          -7.3257
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gawok",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "GWK",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:02",
+        "schedule_ka68": "01:32",
+        "schedule_ka69": "10:52",
+        "schedule_ka70": "17:10"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.22394,
+          -7.32223
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Delanggu",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "DLG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:05",
+        "schedule_ka68": "01:30",
+        "schedule_ka69": "10:56",
+        "schedule_ka70": "17:08"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.1618,
+          -7.2077
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ceper",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CPR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:09",
+        "schedule_ka68": "01:25",
+        "schedule_ka69": "10:59",
+        "schedule_ka70": "17:03"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.0998045,
+          -7.0931934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Klaten",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KT",
+        "ref": "Y06;AS01;JS02",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:14",
+        "schedule_ka68": "01:18",
+        "schedule_ka69": "11:05",
+        "schedule_ka70": "16:57"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.9997,
+          -7.0885
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Srowot",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SWT",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:18",
+        "schedule_ka68": "01:12",
+        "schedule_ka69": "11:08",
+        "schedule_ka70": "16:50"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.8997164,
+          -7.0838873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Brambanan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BBN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:23",
+        "schedule_ka68": "01:07",
+        "schedule_ka69": "11:12",
+        "schedule_ka70": "16:46"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.7707,
+          -7.0041
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Maguwo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MGW",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:27",
+        "schedule_ka68": "01:03",
+        "schedule_ka69": "11:17",
+        "schedule_ka70": "16:41"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lempuyangan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "LPY",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:32",
+        "schedule_ka68": "00:58",
+        "schedule_ka69": "11:23",
+        "schedule_ka70": "16:38"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6263,
+          -6.9194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Yogyakarta",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "YK",
+        "ref": "JS05",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:41",
+        "schedule_ka68": "00:56",
+        "schedule_ka69": "11:30",
+        "schedule_ka70": "16:34"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Patukan",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PTK",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:45",
+        "schedule_ka68": "00:45",
+        "schedule_ka69": "11:35",
+        "schedule_ka70": "16:25"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rewulu",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "RWL",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:48",
+        "schedule_ka68": "00:42",
+        "schedule_ka69": "11:39",
+        "schedule_ka70": "16:21"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sentolo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "STL",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "22:56",
+        "schedule_ka68": "00:36",
+        "schedule_ka69": "11:46",
+        "schedule_ka70": "16:14"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wates",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WTS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:03",
+        "schedule_ka68": "00:27",
+        "schedule_ka69": "11:53",
+        "schedule_ka70": "16:07"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedundang",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KDD",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:08",
+        "schedule_ka68": "00:24",
+        "schedule_ka69": "11:59",
+        "schedule_ka70": "16:03"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wojo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WOJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:14",
+        "schedule_ka68": "00:20",
+        "schedule_ka69": "12:02",
+        "schedule_ka70": "15:58"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jenar",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "JNR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:19",
+        "schedule_ka68": "00:15",
+        "schedule_ka69": "12:08",
+        "schedule_ka70": "15:54"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kutoarjo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KTA",
+        "ref": "JS07",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:33",
+        "schedule_ka68": "00:06",
+        "schedule_ka69": "12:20",
+        "schedule_ka70": "15:45"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Butuh",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BTH",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:39",
+        "schedule_ka68": "23:57",
+        "schedule_ka69": "12:26",
+        "schedule_ka70": "15:36"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Prembun",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "PMB",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:42",
+        "schedule_ka68": "23:53",
+        "schedule_ka69": "12:29",
+        "schedule_ka70": "15:33"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kutowinangun",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KTW",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:46",
+        "schedule_ka68": "23:48",
+        "schedule_ka69": "12:33",
+        "schedule_ka70": "15:29"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wonosari",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WNS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:48",
+        "schedule_ka68": "23:46",
+        "schedule_ka69": "12:36",
+        "schedule_ka70": "15:27"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebumen",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KM",
+        "ref": "JS08",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "23:55",
+        "schedule_ka68": "23:42",
+        "schedule_ka69": "12:42",
+        "schedule_ka70": "15:22"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sruweng",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SRG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:02",
+        "schedule_ka68": "23:33",
+        "schedule_ka69": "12:49",
+        "schedule_ka70": "15:11"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karanganyar",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KGY",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:04",
+        "schedule_ka68": "23:30",
+        "schedule_ka69": "12:51",
+        "schedule_ka70": "15:09"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gombong",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "GB",
+        "ref": "JS09",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:13",
+        "schedule_ka68": "23:23",
+        "schedule_ka69": "12:56",
+        "schedule_ka70": "15:02"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ijo",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "IJO",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:20",
+        "schedule_ka68": "23:14",
+        "schedule_ka69": "13:00",
+        "schedule_ka70": "14:53"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tambak",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "TBK",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:24",
+        "schedule_ka68": "23:10",
+        "schedule_ka69": "13:03",
+        "schedule_ka70": "14:51"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumpiuh",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SPH",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:27",
+        "schedule_ka68": "23:08",
+        "schedule_ka69": "13:05",
+        "schedule_ka70": "14:48"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kemranjen",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KMJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:29",
+        "schedule_ka68": "23:05",
+        "schedule_ka69": "13:09",
+        "schedule_ka70": "14:44"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kroya",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KYA",
+        "ref": "JS12",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:36",
+        "schedule_ka68": "22:56",
+        "schedule_ka69": "13:16",
+        "schedule_ka70": "14:39"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sikampuh",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SKP",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:49",
+        "schedule_ka68": "22:50",
+        "schedule_ka69": "13:25",
+        "schedule_ka70": "14:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Maos",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KD12;JC01",
+        "ref": "MA",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "00:54",
+        "schedule_ka68": "22:43",
+        "schedule_ka69": "13:29",
+        "schedule_ka70": "14:24"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kasugihan",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KSG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:00",
+        "schedule_ka68": "22:39",
+        "schedule_ka69": "13:30",
+        "schedule_ka70": "14:19"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lebeng",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "LBG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:03",
+        "schedule_ka68": "22:36",
+        "schedule_ka69": "13:32",
+        "schedule_ka70": "14:15"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jeruklegi",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "JLG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:07",
+        "schedule_ka68": "22:32",
+        "schedule_ka69": "13:36",
+        "schedule_ka70": "14:03"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kawunganten",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KWT",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:18",
+        "schedule_ka68": "22:21",
+        "schedule_ka69": "13:48",
+        "schedule_ka70": "13:41"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gandrungmangun",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "GDM",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:23",
+        "schedule_ka68": "22:16",
+        "schedule_ka69": "13:52",
+        "schedule_ka70": "13:34"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sidareja",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "SDR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:32",
+        "schedule_ka68": "22:09",
+        "schedule_ka69": "14:01",
+        "schedule_ka70": "13:25"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cipari",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CPI",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:39",
+        "schedule_ka68": "22:02",
+        "schedule_ka69": "14:06",
+        "schedule_ka70": "13:18"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Meluwung",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MLG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:45",
+        "schedule_ka68": "21:56",
+        "schedule_ka69": "14:12",
+        "schedule_ka70": "13:14"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Langen",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "LGN",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "01:50",
+        "schedule_ka68": "21:51",
+        "schedule_ka69": "14:17",
+        "schedule_ka70": "13:09"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Banjar",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "BJR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:03",
+        "schedule_ka68": "21:44",
+        "schedule_ka69": "14:30",
+        "schedule_ka70": "13:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karangpucung",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KGP",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:10",
+        "schedule_ka68": "21:33",
+        "schedule_ka69": "14:37",
+        "schedule_ka70": "12:49"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bojong",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BJG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:17",
+        "schedule_ka68": "21:27",
+        "schedule_ka69": "14:44",
+        "schedule_ka70": "12:42"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ciamis",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CI",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:28",
+        "schedule_ka68": "21:18",
+        "schedule_ka69": "14:55",
+        "schedule_ka70": "12:35"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Manonjaya",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "MNJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:42",
+        "schedule_ka68": "21:06",
+        "schedule_ka69": "15:09",
+        "schedule_ka70": "12:22"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Awipari",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "AWP",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:46",
+        "schedule_ka68": "21:02",
+        "schedule_ka69": "15:13",
+        "schedule_ka70": "12:18"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tasikmalaya",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "TSM",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "02:55",
+        "schedule_ka68": "20:57",
+        "schedule_ka69": "15:18",
+        "schedule_ka70": "12:11"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Indihiang",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "IHH",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "03:02",
+        "schedule_ka68": "20:48",
+        "schedule_ka69": "15:27",
+        "schedule_ka70": "12:04"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rajapolah",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "RJP",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "03:09",
+        "schedule_ka68": "20:42",
+        "schedule_ka69": "15:33",
+        "schedule_ka70": "11:57"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.8997164,
+          -7.0838873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ciawi",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CWI",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "03:18",
+        "schedule_ka68": "20:35",
+        "schedule_ka69": "15:42",
+        "schedule_ka70": "11:50"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cirahayu",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CRH",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "03:27",
+        "schedule_ka68": "20:26",
+        "schedule_ka69": "15:51",
+        "schedule_ka70": "11:42"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6263,
+          -6.9194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cipeundeuy",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "CPD",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "03:51",
+        "schedule_ka68": "20:14",
+        "schedule_ka69": "16:14",
+        "schedule_ka70": "11:19"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.0998045,
+          -7.0931934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bumiwaluya",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "BMW",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:02",
+        "schedule_ka68": "19:54",
+        "schedule_ka69": "16:23",
+        "schedule_ka70": "11:08"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.9997,
+          -7.0885
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Warungbandrek",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "WBD",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:14",
+        "schedule_ka68": "19:41",
+        "schedule_ka69": "16:36",
+        "schedule_ka70": "10:56"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.7707,
+          -7.0041
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cibatu",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CBT",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:21",
+        "schedule_ka68": "19:34",
+        "schedule_ka69": "16:43",
+        "schedule_ka70": "10:48"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6263,
+          -6.9194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Leuwigoong",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "LWG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:26",
+        "schedule_ka68": "19:31",
+        "schedule_ka69": "16:48",
+        "schedule_ka70": "10:45"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karangsari (Garut)",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KRS",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:30",
+        "schedule_ka68": "19:27",
+        "schedule_ka69": "16:52",
+        "schedule_ka70": "10:41"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6263,
+          -6.9194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Leles",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "C26",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:39",
+        "schedule_ka68": "19:20",
+        "schedule_ka69": "16:59",
+        "schedule_ka70": "10:34"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.8997164,
+          -7.0838873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lebakjero",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "LBJ",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:52",
+        "schedule_ka68": "19:07",
+        "schedule_ka69": "17:10",
+        "schedule_ka70": "10:23"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.7707,
+          -7.0041
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nagreg",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "NAG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "04:59",
+        "schedule_ka68": "18:58",
+        "schedule_ka69": "17:17",
+        "schedule_ka70": "10:14"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cicalengka",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CCL",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "05:12",
+        "schedule_ka68": "18:45",
+        "schedule_ka69": "17:30",
+        "schedule_ka70": "10:02"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Haurpugur",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "HPR",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "05:15",
+        "schedule_ka68": "18:42",
+        "schedule_ka69": "17:32",
+        "schedule_ka70": "09:58"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6263,
+          -6.9194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rancaekek",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "RKE",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "05:21",
+        "schedule_ka68": "18:38",
+        "schedule_ka69": "17:39",
+        "schedule_ka70": "09:54"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cimekar",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CMK",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "05:24",
+        "schedule_ka68": "18:36",
+        "schedule_ka69": "17:42",
+        "schedule_ka70": "09:52"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6263,
+          -6.9194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gedebage",
+        "network": "KAI",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "DBG",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka67": "05:26",
+        "schedule_ka68": "18:33",
+        "schedule_ka69": "17:44",
+        "schedule_ka70": "09:49"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kiaracondong",
+        "network": "KAI",
+        "operator": "KAI",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "KAC",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop_exit_only",
+        "schedule_ka67": "05:35",
+        "schedule_ka68": "18:24",
+        "schedule_ka69": "17:55",
+        "schedule_ka70": "09:42"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6457751,
+          -6.9244847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikudapateuh",
+        "network": "KAI",
+        "operator": "KAI",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "railway:ref": "CKP",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop_exit_only",
+        "schedule_ka67": "05:40",
+        "schedule_ka68": "18:14",
+        "schedule_ka69": "18:00",
+        "schedule_ka70": "09:34"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6166,
+          -6.9169
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "local_ref": "4",
+        "name": "Bandung",
+        "name:ja": "バンドン",
+        "network": "KAI Commuter",
+        "operator": "Kereta Api Indonesia",
+        "public_transport": "stop_position",
+        "railway": "stop",
+        "ref": "B16;C16",
+        "train": "yes",
+        "isCheckpoint": true,
+        "role": "stop_exit_only",
+        "schedule_ka67": "05:44",
+        "schedule_ka68": "18:09",
+        "schedule_ka69": "18:04",
+        "schedule_ka70": "09:29",
+        "is_origin_ka68": true,
+        "is_origin_ka70": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.60694,
+          -6.9143744
+        ]
+      }
+    }
+  ]
 }

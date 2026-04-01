@@ -24,3 +24,11 @@ body {
 .controller-card {
     @apply bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 shadow-2xl;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

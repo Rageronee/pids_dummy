@@ -92,10 +92,7 @@ export function useSelectorSync() {
             if (parsed.jumlahKereta !== undefined) setJumlahKereta(parsed.jumlahKereta);
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
             if (parsed.stations && Array.isArray(parsed.stations)) {
-                setStations(parsed.stations.filter((s: any) => {
-                    const sn = typeof s === 'object' && s !== null ? s.name : s;
-                    return sn && !String(sn).toUpperCase().includes('CIKUDAPATEUH');
-                }));
+                setStations(parsed.stations);
             }
         });
         socket.on('db:update', (dbUpdate: any) => {

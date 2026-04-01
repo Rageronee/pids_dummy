@@ -83,7 +83,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                                     {data?.ledActive !== false ? (
                                         <P10Matrix
                                             text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${stations.length > 0 ? (typeof stations[stations.length - 1] === 'object' ? (stations[stations.length - 1] as any).name : stations[stations.length - 1]) : '---'} ~ BERHENTI DI: ${stations.map((s: any) => typeof s === 'object' ? s.name : s).join(', ')}`}
-                                            fixedText={data?.showTrainNumber ? `${masterSyncedNumber.replace(/\D/g, '').padStart(2, '0')} ` : ''}
+                                            fixedText={data?.showTrainNumber ? (masterSyncedNumber.match(/Gerbong\s*(\d+)/i)?.[1].padStart(2, '0') || masterSyncedNumber.replace(/\D/g, '').slice(-2).padStart(2, '0')) : ''}
                                             color="#ee6f1f"
                                             speed={masterSyncedLedSpeed}
                                             columns={ledType.includes('96') ? 96 : 128}
