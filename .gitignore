@@ -63,11 +63,25 @@ lint_output.txt
 errors.txt
 errors_selector.txt
 tsc_output.txt
+ts_errors.txt
+
+# Developer Artifacts (never commit these)
+*.old.tsx
+*.old.ts
+*.old.js
+update-toast.js
+check_db.js
+force_seed.js
+components.txt
+
+# AI Tool Configs
+.qwen/
 
 # Environment
 .env
 .env.local
 .env.production
+!.env.example
 
 # Database
 # Local postgres data should be in a docker volume, but ignore local sql files if any

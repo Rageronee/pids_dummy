@@ -9,7 +9,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Navigation, Route, ChevronRight, ChevronDown } from 'lucide-react';
-import { LoginScreen } from './components/LoginScreen';
+import { LoginScreen } from '@eltran/shared';
 import { useSelectorSync } from './hooks/useSelectorSync';
 import TVMonitor from './components/TVMonitor';
 import SystemSettingsModal from './components/SystemSettingsModal';
@@ -23,7 +23,7 @@ function App() {
         data, stations, setStations,
         masterSyncedServiceName, masterSyncedNumber,
         masterSyncedLedSpeed, setMasterSyncedLedSpeed,
-        jumlahKereta, trainNames, routes,
+        coachCount, trainNames, routes,
         speed, altitude, temp, sendData,
     } = sync;
 
@@ -160,15 +160,15 @@ function App() {
             serviceName,
             stations: newStations,
             activeRoute: routeData,
-            trainNumber: `${getTrainId(resolvedKa)} Gerbong ${gerbong}`
+            trainNumber: `${getTrainId(resolvedKa)} Coach ${gerbong}`
         });
-        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to Gerbong ${gerbong}`);
+        showNotification('Configuration Saved', `Service set to ${serviceName}, Unit to Coach ${gerbong}`);
     }, [sendData, setStations, showNotification, getSmallestKa, activeKa, getTrainId]);
 
     const handleSetGerbong = useCallback((gerbong: number) => {
         setSelectedGerbong(gerbong);
-        sendData({ trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}` });
-        showNotification('Configuration Saved', `Unit configuration set to Gerbong ${gerbong}`);
+        sendData({ trainNumber: `${getTrainId(activeKa)} Coach ${gerbong}` });
+        showNotification('Configuration Saved', `Unit configuration set to Coach ${gerbong}`);
     }, [sendData, showNotification, getTrainId, activeKa]);
 
 
@@ -274,7 +274,9 @@ function App() {
     }, [stations, setStations, sendData, showNotification, data?.activeRoute, getTrainId, selectedGerbong]);
 
     // ---- Auth guard ----
-    if (!authUser) return <LoginScreen onLogin={handleLogin} />;
+    if (!authUser) {
+        return <LoginScreen onLogin={handleLogin} title="PIDS Selector App" />;
+    }
 
     return (
         <div className="flex flex-col h-[100dvh] w-full bg-[#f4f7f9] text-slate-900 font-sans overflow-hidden select-none">
@@ -516,7 +518,7 @@ function App() {
                     onClose={() => setShowServiceModal(false)}
                     trainNames={trainNames}
                     routes={routes}
-                    jumlahKereta={jumlahKereta}
+                    coachCount={coachCount}
                     onSetConfig={handleSetConfig}
                     onSetGerbong={handleSetGerbong}
                     initialTrainNameIndex={trainNameIndex}

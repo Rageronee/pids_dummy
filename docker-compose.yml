@@ -5,12 +5,15 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD env variable is required}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
       POSTGRES_DB: eltran_pids
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
       - "5432:5432"
     volumes:
       - pids_db_data:/var/lib/postgresql/data
+      - ./pg_hba_custom.conf:/etc/postgresql-custom/pg_hba.conf
+    command: ["-c", "hba_file=/etc/postgresql-custom/pg_hba.conf", "-c", "password_encryption=md5"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

@@ -148,9 +148,9 @@ export async function startApiServer() {
             return res.status(401).json({ success: false, error: 'Username atau password salah' });
         }
         const token = crypto.randomUUID();
-        const sessionUser = { id: user.id, username: user.username, role: user.role, nama: user.nama };
+        const sessionUser = { id: user.id, username: user.username, role: user.role, full_name: user.full_name };
         sessions.set(token, { user: sessionUser, expiresAt: Date.now() + SESSION_TTL });
-        await writeLog({ action: 'LOGIN', user: user.username, role: user.role, details: `${user.nama} (${user.role}) berhasil login` });
+        await writeLog({ action: 'LOGIN', user: user.username, role: user.role, details: `${user.full_name} (${user.role}) berhasil login` });
         res.json({ success: true, token, user: sessionUser });
     });
 
@@ -163,7 +163,7 @@ export async function startApiServer() {
     apiApp.post('/api/auth/logout', requireAuth, async (req, res) => {
         const authHeader = req.headers['authorization'];
         const token = authHeader.slice(7);
-        await writeLog({ action: 'LOGOUT', user: req.user.username, role: req.user.role, details: `${req.user.nama} logout` });
+        await writeLog({ action: 'LOGOUT', user: req.user.username, role: req.user.role, details: `${req.user.full_name} logout` });
         sessions.delete(token);
         res.json({ success: true });
     });
@@ -183,7 +183,7 @@ export async function startApiServer() {
             'stations', 'activeRoute', 'geofencingInnerRadius', 'geofencingOuterRadius',
             'showTrainNumber', 'ledActive', 'videoPlaylist', 'activeVideoIndex', 'isPlaying',
             'playbackProgress', 'playbackMode', 'volume', 'tvStandby', 'isSyncing',
-            'jumlahKereta', 'muteVideo', 'showTelemetry', 'showClock', 'ledType'
+            'coachCount', 'jumlahKereta', 'muteVideo', 'showTelemetry', 'showClock', 'ledType'
         ]);
         for (const key of Object.keys(updates)) {
             if (!ALLOWED_KEYS.has(key)) delete updates[key];
@@ -239,16 +239,16 @@ export async function startApiServer() {
                             name: s.name,
                             city: s.city,
                             railway_ref: s.id,
-                            kode_kota: s.kode_kota || '',
+                            city_code: s.city_code || '',
                             ip_address: s.ip_address || '',
-                            nama_pic: s.nama_pic || '',
-                            kontak_pic: s.kontak_pic || '',
-                            alamat: s.alamat || '',
-                            provinsi: s.provinsi || '',
-                            kabupaten_kota: s.kabupaten_kota || '',
-                            kecamatan: s.kecamatan || '',
-                            kelurahan_desa: s.kelurahan_desa || '',
-                            kode_pos: s.kode_pos || '',
+                            pic_name: s.pic_name || '',
+                            pic_contact: s.pic_contact || '',
+                            address: s.address || '',
+                            province: s.province || '',
+                            regency: s.regency || '',
+                            district: s.district || '',
+                            village: s.village || '',
+                            postal_code: s.postal_code || '',
                             media: s.media || ''
                         }
                     }))
@@ -367,31 +367,30 @@ export async function startApiServer() {
         const trains = await getTrains();
         const train = trains.find(t => t.name === req.params.name);
         if (!train) return res.status(404).json({ success: false, error: 'Train not found' });
-        res.json({ success: true, gerbongs: await getGerbong(train.id) });
+        res.json({ success: true, coaches: await getGerbong(train.id) });
     });
 
     apiApp.post('/api/admin/trains/:name/gerbongs', requireAdmin, async (req, res) => {
         const { name } = req.params;
-        const { gerbongs } = req.body;
-        if (!gerbongs) return res.status(400).json({ success: false, error: 'Gerbongs data required' });
+        const { coaches, gerbongs } = req.body; // allow both for transition
+        const coachesToSave = coaches || gerbongs;
+        if (!coachesToSave) return res.status(400).json({ success: false, error: 'Coaches data required' });
 
         const trains = await getTrains();
         const train = trains.find(t => t.name === name);
         if (!train) return res.status(404).json({ success: false, error: 'Train not found' });
 
         try {
-            // Simple approach: delete existing and add new
-            // In a real app we might want to sync, but for this dummy app it's fine
             const existing = await getGerbong(train.id);
-            for (const g of existing) {
-                await deleteGerbong(g.id);
+            for (const c of existing) {
+                await deleteGerbong(c.id);
             }
 
-            for (const g of gerbongs) {
+            for (const c of coachesToSave) {
                 await addGerbong({
-                    ...g,
-                    id_kereta: train.id,
-                    id: g.id || crypto.randomUUID()
+                    ...c,
+                    train_service_id: train.id,
+                    id: c.id || crypto.randomUUID()
                 });
             }
             res.json({ success: true });
@@ -430,9 +429,9 @@ export async function startApiServer() {
     });
 
     apiApp.post('/api/admin/users', requireAdmin, async (req, res) => {
-        const { username, password, role, nama } = req.body;
-        if (!username || !password || !nama) return res.status(400).json({ success: false, error: 'Missing fields' });
-        const result = await addUser({ username, password, role, nama });
+        const { username, password, role, full_name, nama } = req.body;
+        if (!username || !password || (!full_name && !nama)) return res.status(400).json({ success: false, error: 'Missing fields' });
+        const result = await addUser({ username, password, role, full_name: full_name || nama });
         if (result.error) return res.status(500).json({ success: false, error: result.error });
         await writeLog({ action: 'ADMIN_CRUD', user: req.user.username, role: req.user.role, details: `User baru ditambahkan: ${username}` });
         res.json({ success: true });

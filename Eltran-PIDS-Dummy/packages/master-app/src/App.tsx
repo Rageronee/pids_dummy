@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePidsData } from './hooks/usePidsData';
 import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LoginScreen } from './components/LoginScreen';
+import { LoginScreen } from '@eltran/shared';
 import { MasterConsolePanel } from './components/MasterConsolePanel';
 import type { AuthUser, LogEntry } from '@eltran/pids-core';
 
@@ -16,7 +16,7 @@ const API_URL = 'http://localhost:3001';
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
-    const numGerbong = _data?.jumlahKereta || 4;
+    const numGerbong = _data?.coachCount || 4;
     const sampleImages = [
         "https://img.harianjogja.com/posts/2024/03/26/1169359/kereta-api-ekonomi-generasi-baru.jpg",
         "https://image.fortuneidn.com/post/20250821/upload_e179f189ddfbf16b0482c14a7295b474_2940c5af-a990-4232-ad05-4c52dd5d0431.jpg",
@@ -640,13 +640,13 @@ function App() {
         sessionStorage.removeItem('pids_token');
         sessionStorage.removeItem('pids_user');
         setAuthUser(null);
-        setAuthToken('');
+                        setAuthToken('');
         setActiveTab('pids');
     };
 
     // Auth guard
     if (!authUser) {
-        return <LoginScreen onLogin={handleLogin} />;
+        return <LoginScreen onLogin={handleLogin} title="PIDS Master Controller" />;
     }
 
     const NAV_ITEMS = [
@@ -759,7 +759,7 @@ function App() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100">
-                                                {Array.from({ length: data.jumlahKereta || 10 }).map((_, idx) => (
+                                                {Array.from({ length: data.coachCount || 10 }).map((_, idx) => (
                                                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                                         <td className="p-4 font-bold text-slate-700">K1-{String(idx + 1).padStart(2, '0')}</td>
                                                         <td className="p-4 font-mono text-slate-500">K1{String(idx + 1).padStart(2, '0')}{String(800 + idx)}</td>

@@ -2,6 +2,7 @@
  * PIDS KAI — PostgreSQL Database Layer
  * Replaces SQLite with a proper relational database.
  */
+import 'dotenv/config';
 import pg from 'pg';
 const { Pool } = pg;
 import crypto from 'crypto';
@@ -90,7 +91,12 @@ let pool = null;
 // ============================================================
 
 export async function initDatabase() {
-    const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:greget371@localhost:5432/eltran_pids';
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+        console.error('[PIDS-DB] FATAL: DATABASE_URL environment variable is not set.');
+        console.error('[PIDS-DB] Copy .env.example to .env and fill in your PostgreSQL credentials.');
+        process.exit(1);
+    }
     pool = new Pool({ connectionString });
 
     try {
@@ -98,7 +104,13 @@ export async function initDatabase() {
         console.log('[PIDS-DB] PostgreSQL connected successfully');
         await createTables();
         await seedData();
-        console.log('[PIDS-DB] Database schema and seed data verified');
+        // Indices for performance
+        await pool.query('CREATE INDEX IF NOT EXISTS idx_schedules_date ON schedules(schedule_date)');
+        await pool.query('CREATE INDEX IF NOT EXISTS idx_schedules_service ON schedules(service_name)');
+        await pool.query('CREATE INDEX IF NOT EXISTS idx_sensor_data_sensor ON sensor_data(sensor_id)');
+        await pool.query('CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp DESC)');
+        
+        console.log('[PIDS-DB] Database schema is ready (English).');
     } catch (err) {
         console.error('[PIDS-DB] Database initialization error:', err.message);
     }
@@ -128,6 +140,7 @@ async function getAll(sql, params = []) {
 }
 
 async function createTables() {
+    // ---- stations ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS stations (
             id TEXT PRIMARY KEY,
@@ -136,37 +149,39 @@ async function createTables() {
             latitude REAL DEFAULT 0,
             longitude REAL DEFAULT 0,
             ip_address TEXT DEFAULT '',
-            nama_pic TEXT DEFAULT '',
-            kontak_pic TEXT DEFAULT '',
-            kode_kota TEXT DEFAULT '',
-            alamat TEXT DEFAULT '',
-            provinsi TEXT DEFAULT '',
-            kabupaten_kota TEXT DEFAULT '',
-            kecamatan TEXT DEFAULT '',
-            kelurahan_desa TEXT DEFAULT '',
-            kode_pos TEXT DEFAULT '',
+            pic_name TEXT DEFAULT '',
+            pic_contact TEXT DEFAULT '',
+            city_code TEXT DEFAULT '',
+            address TEXT DEFAULT '',
+            province TEXT DEFAULT '',
+            regency TEXT DEFAULT '',
+            district TEXT DEFAULT '',
+            village TEXT DEFAULT '',
+            postal_code TEXT DEFAULT '',
             poi TEXT DEFAULT '',
             media TEXT DEFAULT ''
         )
     `);
 
+    // ---- train_services ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS train_services (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL UNIQUE,
             class TEXT NOT NULL DEFAULT 'EKSEKUTIF',
-            ka_number TEXT NOT NULL DEFAULT '',
-            gerbong_count INTEGER DEFAULT 10,
+            train_number TEXT NOT NULL DEFAULT '',
+            coach_count INTEGER DEFAULT 10,
             ip_address TEXT DEFAULT '',
-            nama_pic TEXT DEFAULT '',
-            kontak_pic TEXT DEFAULT '',
+            pic_name TEXT DEFAULT '',
+            pic_contact TEXT DEFAULT '',
             media TEXT DEFAULT '',
-            stasiun_awal TEXT DEFAULT '',
-            stasiun_akhir TEXT DEFAULT '',
-            keterangan TEXT DEFAULT ''
+            origin_station_id TEXT DEFAULT '',
+            destination_station_id TEXT DEFAULT '',
+            notes TEXT DEFAULT ''
         )
     `);
 
+    // ---- routes ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS routes (
             id SERIAL PRIMARY KEY,
@@ -179,6 +194,7 @@ async function createTables() {
         )
     `);
 
+    // ---- route_stations ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS route_stations (
             id SERIAL PRIMARY KEY,
@@ -187,14 +203,15 @@ async function createTables() {
             sequence_order INTEGER NOT NULL,
             svg_position TEXT DEFAULT '',
             svg_label TEXT DEFAULT '',
-            keterangan TEXT DEFAULT 'antara',
-            nama_pic TEXT DEFAULT '',
-            kontak_pic TEXT DEFAULT '',
+            stop_type TEXT DEFAULT 'intermediate',
+            pic_name TEXT DEFAULT '',
+            pic_contact TEXT DEFAULT '',
             CONSTRAINT fk_route FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
             CONSTRAINT fk_station FOREIGN KEY (station_id) REFERENCES stations(id)
         )
     `);
 
+    // ---- schedules ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS schedules (
             id SERIAL PRIMARY KEY,
@@ -202,46 +219,27 @@ async function createTables() {
             schedule_date TEXT NOT NULL DEFAULT (CURRENT_DATE::text),
             status TEXT NOT NULL DEFAULT 'ON_TIME',
             notes TEXT DEFAULT '',
-            catatan TEXT DEFAULT '',
             media TEXT DEFAULT '',
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            stasiun_keberangkatan TEXT DEFAULT '',
-            kode_kota_keberangkatan TEXT DEFAULT '',
-            stasiun_tujuan TEXT DEFAULT '',
-            kode_kota_tujuan TEXT DEFAULT '',
-            waktu_keberangkatan_penjadwalan TEXT DEFAULT '',
-            waktu_keberangkatan_realisasi TEXT DEFAULT '',
-            selisih_waktu_keberangkatan TEXT DEFAULT '0',
-            status_keberangkatan TEXT DEFAULT 'Tepat Waktu',
-            waktu_kedatangan_penjadwalan TEXT DEFAULT '',
-            waktu_kedatangan_realisasi TEXT DEFAULT '',
-            selisih_waktu_kedatangan TEXT DEFAULT '0',
-            status_kedatangan TEXT DEFAULT 'Tepat Waktu',
-            train_name TEXT DEFAULT '',
-            ka_number TEXT DEFAULT '',
+            departure_station TEXT DEFAULT '',
+            departure_city_code TEXT DEFAULT '',
+            arrival_station TEXT DEFAULT '',
+            arrival_city_code TEXT DEFAULT '',
+            scheduled_departure TEXT DEFAULT '',
+            actual_departure TEXT DEFAULT '',
+            departure_delay TEXT DEFAULT '0',
+            departure_status TEXT DEFAULT 'On Time',
+            scheduled_arrival TEXT DEFAULT '',
+            actual_arrival TEXT DEFAULT '',
+            arrival_delay TEXT DEFAULT '0',
+            arrival_status TEXT DEFAULT 'On Time',
+            service_name TEXT DEFAULT '',
+            train_number TEXT DEFAULT '',
             CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE
         )
     `);
 
-    await pool.query(`
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_train_services_name ON train_services(name)
-    `).catch(e => console.log('[PIDS-DB] Index migration note:', e.message));
-
-    await pool.query(`
-        ALTER TABLE schedules 
-        ALTER COLUMN route_id DROP NOT NULL,
-        ADD COLUMN IF NOT EXISTS train_name TEXT DEFAULT '',
-        ADD COLUMN IF NOT EXISTS ka_number TEXT DEFAULT '',
-        ADD COLUMN IF NOT EXISTS waktu_keberangkatan_penjadwalan TEXT DEFAULT '',
-        ADD COLUMN IF NOT EXISTS waktu_keberangkatan_realisasi TEXT DEFAULT '',
-        ADD COLUMN IF NOT EXISTS selisih_waktu_keberangkatan TEXT DEFAULT '0',
-        ADD COLUMN IF NOT EXISTS status_keberangkatan TEXT DEFAULT 'Tepat Waktu',
-        ADD COLUMN IF NOT EXISTS waktu_kedatangan_penjadwalan TEXT DEFAULT '',
-        ADD COLUMN IF NOT EXISTS waktu_kedatangan_realisasi TEXT DEFAULT '',
-        ADD COLUMN IF NOT EXISTS selisih_waktu_kedatangan TEXT DEFAULT '0',
-        ADD COLUMN IF NOT EXISTS status_kedatangan TEXT DEFAULT 'Tepat Waktu'
-    `).catch(e => console.log('[PIDS-DB] Column migration note:', e.message));
-
+    // ---- schedule_stops ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS schedule_stops (
             id SERIAL PRIMARY KEY,
@@ -249,12 +247,12 @@ async function createTables() {
             route_station_id INTEGER NOT NULL,
             arrival_time TEXT DEFAULT '',
             departure_time TEXT DEFAULT '',
-            realisasi_datang TEXT DEFAULT '',
-            realisasi_berangkat TEXT DEFAULT '',
-            selisih_datang INTEGER DEFAULT 0,
-            selisih_berangkat INTEGER DEFAULT 0,
-            status_datang TEXT DEFAULT 'Tepat Waktu',
-            status_berangkat TEXT DEFAULT 'Tepat Waktu',
+            actual_arrival TEXT DEFAULT '',
+            actual_departure TEXT DEFAULT '',
+            arrival_delay INTEGER DEFAULT 0,
+            departure_delay INTEGER DEFAULT 0,
+            arrival_status TEXT DEFAULT 'On Time',
+            departure_status TEXT DEFAULT 'On Time',
             platform INTEGER DEFAULT 1,
             stop_status TEXT NOT NULL DEFAULT 'SCHEDULED',
             CONSTRAINT fk_schedule FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
@@ -262,21 +260,23 @@ async function createTables() {
         )
     `);
 
+    // ---- users ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'Operator',
-            nama TEXT NOT NULL,
-            kontak TEXT DEFAULT '',
+            full_name TEXT NOT NULL,
+            contact TEXT DEFAULT '',
             email TEXT DEFAULT '',
             media TEXT DEFAULT '',
-            id_kereta TEXT DEFAULT '',
-            id_stasiun TEXT DEFAULT ''
+            train_service_id TEXT DEFAULT '',
+            station_id TEXT DEFAULT ''
         )
     `);
 
+    // ---- units ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS units (
             id TEXT PRIMARY KEY,
@@ -286,6 +286,7 @@ async function createTables() {
         )
     `);
 
+    // ---- pids_state ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS pids_state (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -312,10 +313,11 @@ async function createTables() {
             video_volume INTEGER DEFAULT 50,
             video_tv_standby BOOLEAN DEFAULT TRUE,
             video_playback_progress REAL DEFAULT 0,
-            jumlah_kereta INTEGER DEFAULT 10
+            coach_count INTEGER DEFAULT 10
         )
     `);
 
+    // ---- system_logs ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS system_logs (
             id TEXT PRIMARY KEY,
@@ -328,6 +330,7 @@ async function createTables() {
         )
     `);
 
+    // ---- announcements ----
     await pool.query(`
         CREATE TABLE IF NOT EXISTS announcements (
             id SERIAL PRIMARY KEY,
@@ -339,86 +342,183 @@ async function createTables() {
         )
     `);
 
+    // ---- coaches (was: gerbong) ----
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS gerbong (
+        CREATE TABLE IF NOT EXISTS coaches (
             id TEXT PRIMARY KEY,
             ip_address TEXT DEFAULT '',
-            nama_gerbong TEXT NOT NULL,
-            no_urut_gerbong INTEGER NOT NULL DEFAULT 1,
-            id_kereta INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            sequence_number INTEGER NOT NULL DEFAULT 1,
+            train_service_id INTEGER NOT NULL,
             media TEXT DEFAULT '',
-            log_maintenance TEXT DEFAULT '',
-            log_operasional TEXT DEFAULT '',
-            CONSTRAINT fk_kereta FOREIGN KEY (id_kereta) REFERENCES train_services(id) ON DELETE CASCADE
+            maintenance_log TEXT DEFAULT '',
+            operational_log TEXT DEFAULT '',
+            CONSTRAINT fk_train_service_coach FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE CASCADE
         )
     `);
 
+    // ---- sensors ----
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS sensor (
+        CREATE TABLE IF NOT EXISTS sensors (
             id TEXT PRIMARY KEY,
             ip_address TEXT DEFAULT '',
-            nama_device TEXT NOT NULL,
-            tipe_sensor TEXT NOT NULL DEFAULT 'GPS',
-            status TEXT NOT NULL DEFAULT 'Aktif',
-            is_main INTEGER NOT NULL DEFAULT 0,
-            id_gerbong TEXT NOT NULL,
-            CONSTRAINT fk_gerbong FOREIGN KEY (id_gerbong) REFERENCES gerbong(id) ON DELETE CASCADE
+            device_name TEXT NOT NULL,
+            sensor_type TEXT NOT NULL DEFAULT 'GPS',
+            status TEXT NOT NULL DEFAULT 'Active',
+            is_primary INTEGER NOT NULL DEFAULT 0,
+            coach_id TEXT NOT NULL,
+            CONSTRAINT fk_coach FOREIGN KEY (coach_id) REFERENCES coaches(id) ON DELETE CASCADE
         )
     `);
 
+    // ---- sensor_readings ----
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS sensor_data (
+        CREATE TABLE IF NOT EXISTS sensor_readings (
             id TEXT PRIMARY KEY,
             latitude REAL DEFAULT 0,
             longitude REAL DEFAULT 0,
             altitude REAL DEFAULT 0,
-            kecepatan REAL DEFAULT 0,
-            suhu REAL DEFAULT 0,
+            speed REAL DEFAULT 0,
+            temperature REAL DEFAULT 0,
             poi TEXT DEFAULT '',
-            waktu_rekam TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
-            id_sensor TEXT NOT NULL,
-            CONSTRAINT fk_sensor FOREIGN KEY (id_sensor) REFERENCES sensor(id) ON DELETE CASCADE
+            recorded_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
+            sensor_id TEXT NOT NULL,
+            CONSTRAINT fk_sensor FOREIGN KEY (sensor_id) REFERENCES sensors(id) ON DELETE CASCADE
         )
     `);
 
+    // ---- maintenance_logs ----
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS log_maintenance (
+        CREATE TABLE IF NOT EXISTS maintenance_logs (
             id TEXT PRIMARY KEY,
-            mulai TEXT NOT NULL,
-            selesai TEXT DEFAULT '',
+            started_at TEXT NOT NULL,
+            finished_at TEXT DEFAULT '',
             status TEXT NOT NULL DEFAULT 'Open',
-            prioritas TEXT NOT NULL DEFAULT 'Medium',
-            deskripsi TEXT DEFAULT '',
-            id_kereta INTEGER NOT NULL,
-            CONSTRAINT fk_kereta_mnt FOREIGN KEY (id_kereta) REFERENCES train_services(id) ON DELETE CASCADE
+            priority TEXT NOT NULL DEFAULT 'Medium',
+            description TEXT DEFAULT '',
+            train_service_id INTEGER NOT NULL,
+            CONSTRAINT fk_train_maint FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE CASCADE
         )
     `);
 
+    // ---- operational_logs ----
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS log_operasional (
+        CREATE TABLE IF NOT EXISTS operational_logs (
             id TEXT PRIMARY KEY,
-            waktu TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
-            catatan TEXT DEFAULT '',
-            id_kereta INTEGER NOT NULL,
-            id_jadwal INTEGER DEFAULT NULL,
-            CONSTRAINT fk_kereta_ops FOREIGN KEY (id_kereta) REFERENCES train_services(id) ON DELETE CASCADE,
-            CONSTRAINT fk_sched_ops FOREIGN KEY (id_jadwal) REFERENCES schedules(id) ON DELETE SET NULL
+            logged_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
+            notes TEXT DEFAULT '',
+            train_service_id INTEGER NOT NULL,
+            schedule_id INTEGER DEFAULT NULL,
+            CONSTRAINT fk_train_ops FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE CASCADE,
+            CONSTRAINT fk_sched_ops FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE SET NULL
         )
     `);
 
-    // Migration for new columns in case they exist
-    try { await pool.query("ALTER TABLE train_services ADD COLUMN IF NOT EXISTS stasiun_awal TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE train_services ADD COLUMN IF NOT EXISTS stasiun_akhir TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE train_services ADD COLUMN IF NOT EXISTS keterangan TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE route_stations ADD COLUMN IF NOT EXISTS nama_pic TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE route_stations ADD COLUMN IF NOT EXISTS kontak_pic TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS stasiun_keberangkatan TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS kode_kota_keberangkatan TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS stasiun_tujuan TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS kode_kota_tujuan TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE gerbong ADD COLUMN IF NOT EXISTS media TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE gerbong ADD COLUMN IF NOT EXISTS log_maintenance TEXT DEFAULT '';"); } catch (e) { }
-    try { await pool.query("ALTER TABLE gerbong ADD COLUMN IF NOT EXISTS log_operasional TEXT DEFAULT '';"); } catch (e) { }
+    // ============================================================
+    // IDEMPOTENT COLUMN RENAMES (runs on existing DB upgrades)
+    // Each rename is wrapped in a DO $$ block — safe to run repeatedly.
+    // ============================================================
+    const renames = [
+        // stations
+        ['stations', 'nama_pic', 'pic_name'],
+        ['stations', 'kontak_pic', 'pic_contact'],
+        ['stations', 'kode_kota', 'city_code'],
+        ['stations', 'alamat', 'address'],
+        ['stations', 'provinsi', 'province'],
+        ['stations', 'kabupaten_kota', 'regency'],
+        ['stations', 'kecamatan', 'district'],
+        ['stations', 'kelurahan_desa', 'village'],
+        ['stations', 'kode_pos', 'postal_code'],
+        // train_services
+        ['train_services', 'nama_pic', 'pic_name'],
+        ['train_services', 'kontak_pic', 'pic_contact'],
+        ['train_services', 'ka_number', 'train_number'],
+        ['train_services', 'gerbong_count', 'coach_count'],
+        ['train_services', 'stasiun_awal', 'origin_station_id'],
+        ['train_services', 'stasiun_akhir', 'destination_station_id'],
+        ['train_services', 'keterangan', 'notes'],
+        // route_stations
+        ['route_stations', 'nama_pic', 'pic_name'],
+        ['route_stations', 'kontak_pic', 'pic_contact'],
+        ['route_stations', 'keterangan', 'stop_type'],
+        // schedules
+        ['schedules', 'train_name', 'service_name'],
+        ['schedules', 'ka_number', 'train_number'],
+        ['schedules', 'stasiun_keberangkatan', 'departure_station'],
+        ['schedules', 'kode_kota_keberangkatan', 'departure_city_code'],
+        ['schedules', 'stasiun_tujuan', 'arrival_station'],
+        ['schedules', 'kode_kota_tujuan', 'arrival_city_code'],
+        ['schedules', 'waktu_keberangkatan_penjadwalan', 'scheduled_departure'],
+        ['schedules', 'waktu_keberangkatan_realisasi', 'actual_departure'],
+        ['schedules', 'selisih_waktu_keberangkatan', 'departure_delay'],
+        ['schedules', 'status_keberangkatan', 'departure_status'],
+        ['schedules', 'waktu_kedatangan_penjadwalan', 'scheduled_arrival'],
+        ['schedules', 'waktu_kedatangan_realisasi', 'actual_arrival'],
+        ['schedules', 'selisih_waktu_kedatangan', 'arrival_delay'],
+        ['schedules', 'status_kedatangan', 'arrival_status'],
+        ['schedules', 'catatan', 'notes'],
+        // schedule_stops
+        ['schedule_stops', 'realisasi_datang', 'actual_arrival'],
+        ['schedule_stops', 'realisasi_berangkat', 'actual_departure'],
+        ['schedule_stops', 'selisih_datang', 'arrival_delay'],
+        ['schedule_stops', 'selisih_berangkat', 'departure_delay'],
+        ['schedule_stops', 'status_datang', 'arrival_status'],
+        ['schedule_stops', 'status_berangkat', 'departure_status'],
+        // pids_state
+        ['pids_state', 'jumlah_kereta', 'coach_count'],
+        // users
+        ['users', 'nama', 'full_name'],
+        ['users', 'kontak', 'contact'],
+        ['users', 'id_kereta', 'train_service_id'],
+        ['users', 'id_stasiun', 'station_id'],
+    ];
+
+    for (const [table, oldCol, newCol] of renames) {
+        await pool.query(`
+            DO $$ BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name='${table}' AND column_name='${oldCol}'
+                ) THEN
+                    ALTER TABLE "${table}" RENAME COLUMN "${oldCol}" TO "${newCol}";
+                END IF;
+            END $$;
+        `).catch(e => console.log(`[PIDS-DB] Rename note (${table}.${oldCol}→${newCol}):`, e.message));
+    }
+
+    // Rename legacy tables if they exist
+    const tableRenames = [
+        ['gerbong', 'coaches'],
+        ['sensor', 'sensors'],
+        ['sensor_data', 'sensor_readings'],
+        ['log_maintenance', 'maintenance_logs'],
+        ['log_operasional', 'operational_logs'],
+    ];
+
+    for (const [oldTable, newTable] of tableRenames) {
+        await pool.query(`
+            DO $$ BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='${oldTable}')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='${newTable}') THEN
+                    ALTER TABLE "${oldTable}" RENAME TO "${newTable}";
+                END IF;
+            END $$;
+        `).catch(e => console.log(`[PIDS-DB] Table rename note (${oldTable}→${newTable}):`, e.message));
+    }
+
+    // ---- Indexes for performance ----
+    const indexes = [
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_train_services_name ON train_services(name)',
+        'CREATE INDEX IF NOT EXISTS idx_schedules_date ON schedules(schedule_date)',
+        'CREATE INDEX IF NOT EXISTS idx_schedules_service ON schedules(service_name)',
+        'CREATE INDEX IF NOT EXISTS idx_sensor_readings_sensor ON sensor_readings(sensor_id)',
+        'CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp DESC)',
+        'CREATE INDEX IF NOT EXISTS idx_route_stations_route ON route_stations(route_id)',
+    ];
+
+    for (const idx of indexes) {
+        await pool.query(idx).catch(e => console.log('[PIDS-DB] Index note:', e.message));
+    }
 }
 
 export async function seedData() {
@@ -427,7 +527,7 @@ export async function seedData() {
     // ============================================================
     // A. PIDS STATE — One-row operational state
     // ============================================================
-    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, jumlah_kereta) 
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count)
                  VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10)
                  ON CONFLICT (id) DO NOTHING`);
 
@@ -436,24 +536,24 @@ export async function seedData() {
     // ============================================================
     const hashedAdminPw = hashPassword('admin123');
     const hashedOpPw = hashPassword('operator123');
-    await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
+    await query('INSERT INTO users (id, username, password, role, full_name, contact, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
         ['USR001', 'admin', hashedAdminPw, 'Admin', 'Administrator', '081100000001', 'admin@eltran.co.id']);
-    await query('INSERT INTO users (id, username, password, role, nama, kontak, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
+    await query('INSERT INTO users (id, username, password, role, full_name, contact, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING',
         ['USR002', 'operator', hashedOpPw, 'Operator', 'Operator PIDS', '081100000002', 'operator@eltran.co.id']);
 
     // B. STATIONS — Seeding from JSON (Single Source of Truth)
-    const stationsPath = path.join(__dirname, '..', 'data', 'stations_master.json');
+    const stationsPath = path.join(__dirname, '..', '..', 'shared', 'data', 'stations_master.json');
     const masterStations = JSON.parse(fs.readFileSync(stationsPath, 'utf8'));
 
     for (const s of masterStations) {
-        await query(`INSERT INTO stations (id, name, city, latitude, longitude, kode_kota, provinsi, kabupaten_kota, kecamatan, alamat, kode_pos, media) 
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
-                     ON CONFLICT (id) DO UPDATE SET 
+        await query(`INSERT INTO stations (id, name, city, latitude, longitude, city_code, province, regency, district, address, postal_code, media)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                     ON CONFLICT (id) DO UPDATE SET
                         name=EXCLUDED.name, city=EXCLUDED.city,
                         latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude,
-                        kode_kota=EXCLUDED.kode_kota, provinsi=EXCLUDED.provinsi,
-                        kabupaten_kota=EXCLUDED.kabupaten_kota, kecamatan=EXCLUDED.kecamatan,
-                        alamat=EXCLUDED.alamat, kode_pos=EXCLUDED.kode_pos,
+                        city_code=EXCLUDED.city_code, province=EXCLUDED.province,
+                        regency=EXCLUDED.regency, district=EXCLUDED.district,
+                        address=EXCLUDED.address, postal_code=EXCLUDED.postal_code,
                         media=EXCLUDED.media`,
             [s.code, s.name, s.city, s.lat, s.lng, s.region_code, s.province, s.regency, s.district, s.address, s.postal_code, s.image_url]);
     }
@@ -467,14 +567,14 @@ export async function seedData() {
         ['MALABAR', 'EKSEKUTIF/EKONOMI', '67', 12, 'ML', 'BD']
     ];
 
-    for (const [name, cls, num, gerbong, start, end] of kaiTrains) {
-        await query(`INSERT INTO train_services (name, class, ka_number, gerbong_count, stasiun_awal, stasiun_akhir) 
-                     VALUES ($1, $2, $3, $4, $5, $6) 
-                     ON CONFLICT (name) DO UPDATE SET 
-                        class=EXCLUDED.class, ka_number=EXCLUDED.ka_number,
-                        gerbong_count=EXCLUDED.gerbong_count,
-                        stasiun_awal=EXCLUDED.stasiun_awal, stasiun_akhir=EXCLUDED.stasiun_akhir`,
-            [name, cls, num, gerbong, start, end]);
+    for (const [name, cls, num, coachCount, start, end] of kaiTrains) {
+        await query(`INSERT INTO train_services (name, class, train_number, coach_count, origin_station_id, destination_station_id)
+                     VALUES ($1, $2, $3, $4, $5, $6)
+                     ON CONFLICT (name) DO UPDATE SET
+                        class=EXCLUDED.class, train_number=EXCLUDED.train_number,
+                        coach_count=EXCLUDED.coach_count,
+                        origin_station_id=EXCLUDED.origin_station_id, destination_station_id=EXCLUDED.destination_station_id`,
+            [name, cls, num, coachCount, start, end]);
     }
     console.log('[PIDS-DB] ✓ Train services seeded');
 
@@ -563,28 +663,25 @@ export async function seedData() {
     const today = new Date().toISOString().split('T')[0];
 
     // Malabar 4 directions — authentic GAPEKA times (ML=Malang, BD=Bandung)
-    // KA67/69: ML→BD (Malam/Pagi) | KA68/70: BD→ML (Malam/Sore)
-
-    // Ensure updated times are applied by clearing existing Malabar entries for today
-    await query(`DELETE FROM schedules WHERE train_name = 'MALABAR' AND schedule_date = $1`, [today]);
+    // KA67/69: ML→BD | KA68/70: BD→ML
+    await query(`DELETE FROM schedules WHERE service_name = 'MALABAR' AND schedule_date = $1`, [today]);
 
     const scheduleDefinitions = [
-        // [trainName, kaNum, depStationName, depKode, arrStationName, arrKode, depTime, arrTime]
+        // [serviceName, trainNumber, depStation, depCityCode, arrStation, arrCityCode, depTime, arrTime]
         ['MALABAR', '67', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '16:50', '05:44'],
         ['MALABAR', '68', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '18:09', '06:51'],
         ['MALABAR', '69', 'MALANG',  'MLG', 'BANDUNG', 'BDG', '05:24', '18:04'],
         ['MALABAR', '70', 'BANDUNG', 'BDG', 'MALANG',  'MLG', '09:29', '22:36'],
     ];
 
-    for (const [trainName, num, dep, depCode, arr, arrCode, depTime, arrTime] of scheduleDefinitions) {
+    for (const [serviceName, trainNum, dep, depCode, arr, arrCode, depTime, arrTime] of scheduleDefinitions) {
         const existingSched = await getAll(
-            'SELECT id FROM schedules WHERE train_name = $1 AND schedule_date = $2 AND waktu_keberangkatan_penjadwalan = $3',
-            [trainName, today, depTime]
+            'SELECT id FROM schedules WHERE service_name = $1 AND schedule_date = $2 AND scheduled_departure = $3',
+            [serviceName, today, depTime]
         );
         if (existingSched && existingSched.length > 0) continue;
 
-        // Get route_id if exists
-        const train = await getOne('SELECT id FROM train_services WHERE name = $1', [trainName]);
+        const train = await getOne('SELECT id FROM train_services WHERE name = $1', [serviceName]);
         let routeId = null;
         if (train) {
             const route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [train.id]);
@@ -592,17 +689,14 @@ export async function seedData() {
         }
 
         const res = await query(`INSERT INTO schedules (
-                route_id, train_name, ka_number, schedule_date, status,
-                stasiun_keberangkatan, kode_kota_keberangkatan, waktu_keberangkatan_penjadwalan,
-                stasiun_tujuan, kode_kota_tujuan, waktu_kedatangan_penjadwalan
+                route_id, service_name, train_number, schedule_date, status,
+                departure_station, departure_city_code, scheduled_departure,
+                arrival_station, arrival_city_code, scheduled_arrival
             ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10) RETURNING id`,
-            [routeId, trainName, num, today, dep, depCode, depTime, arr, arrCode, arrTime]);
+            [routeId, serviceName, trainNum, today, dep, depCode, depTime, arr, arrCode, arrTime]);
 
         const schedId = res.rows[0].id;
 
-        // ============================================================
-        // I. SCHEDULE_STOPS — Per stop for each schedule (from route_stations)
-        // ============================================================
         if (routeId) {
             const routeStations = await getAll(`
                 SELECT rs.id as rs_id, s.name, rs.sequence_order
@@ -612,13 +706,12 @@ export async function seedData() {
                 ORDER BY rs.sequence_order
             `, [routeId]);
 
-            // Build simple schedule times (estimate interval per stop)
             const [depH, depM] = depTime.split(':').map(Number);
             const [arrH, arrM] = arrTime.split(':').map(Number);
             let totalMinutes = (arrH * 60 + arrM) - (depH * 60 + depM);
-            if (totalMinutes <= 0) totalMinutes += 24 * 60; // overnight train
-            const intervalPerStop = routeStations.length > 1 
-                ? Math.floor(totalMinutes / (routeStations.length - 1)) 
+            if (totalMinutes <= 0) totalMinutes += 24 * 60;
+            const intervalPerStop = routeStations.length > 1
+                ? Math.floor(totalMinutes / (routeStations.length - 1))
                 : 0;
 
             for (let i = 0; i < routeStations.length; i++) {
@@ -627,63 +720,60 @@ export async function seedData() {
                 const stopH = Math.floor(stopMinutes / 60) % 24;
                 const stopM = stopMinutes % 60;
                 const timeStr = `${String(stopH).padStart(2,'0')}:${String(stopM).padStart(2,'0')}`;
-
                 const arrivalStr = i === 0 ? '' : timeStr;
                 const departureStr = i === routeStations.length - 1 ? '' : timeStr;
                 const stopStatus = i === 0 ? 'DEPARTED' : 'SCHEDULED';
-
                 await query(`INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time, departure_time, platform, stop_status)
                     VALUES ($1, $2, $3, $4, $5, $6)`,
-                    [schedId, rs.rs_id, arrivalStr, departureStr, 1, stopStatus]
-                );
+                    [schedId, rs.rs_id, arrivalStr, departureStr, 1, stopStatus]);
             }
         }
     }
     console.log('[PIDS-DB] ✓ Schedules + schedule_stops seeded');
 
     // ============================================================
-    // J. GERBONG — Coaches per train service
-    //    Format: [gerbong_id, nama_gerbong, no_urut, train_name, ip_suffix]
+    // J. COACHES — Per train service
+    //    Format: [coach_id, name, sequence_number, train_name, ip_suffix]
     // ============================================================
-    // Malabar only — 1 Lokomotif + 2 Eksekutif + 3 Ekonomi + 1 Makan + 1 Bagasi
-    const gerbongDefinitions = {
+    // Malabar only — 1 Locomotive + 2 Executive + 3 Economy + 1 Dining + 1 Baggage
+    const coachDefinitions = {
         'MALABAR': [
-            ['MB-L',  'LOKOMOTIF CC206',    1, '10'],
-            ['MB-K1', 'KERETA EKSEKUTIF 1', 2, '11'],
-            ['MB-K2', 'KERETA EKSEKUTIF 2', 3, '12'],
-            ['MB-M',  'KERETA MAKAN',       4, '13'],
-            ['MB-E1', 'KERETA EKONOMI 1',   5, '14'],
-            ['MB-E2', 'KERETA EKONOMI 2',   6, '15'],
-            ['MB-E3', 'KERETA EKONOMI 3',   7, '16'],
-            ['MB-B',  'KERETA BAGASI',      8, '17'],
+            ['MB-L',  'LOCOMOTIVE CC206',    1, '10'],
+            ['MB-K1', 'EXECUTIVE COACH 1',   2, '11'],
+            ['MB-K2', 'EXECUTIVE COACH 2',   3, '12'],
+            ['MB-M',  'DINING COACH',        4, '13'],
+            ['MB-E1', 'ECONOMY COACH 1',     5, '14'],
+            ['MB-E2', 'ECONOMY COACH 2',     6, '15'],
+            ['MB-E3', 'ECONOMY COACH 3',     7, '16'],
+            ['MB-B',  'BAGGAGE COACH',       8, '17'],
         ],
     };
 
-    for (const [trainName, gerbongs] of Object.entries(gerbongDefinitions)) {
+    for (const [trainName, coaches] of Object.entries(coachDefinitions)) {
         const train = await getOne('SELECT id FROM train_services WHERE name = $1', [trainName]);
         if (!train) continue;
 
-        for (const [gId, gNama, gNo, ipSuffix] of gerbongs) {
-            await query(`INSERT INTO gerbong (id, ip_address, nama_gerbong, no_urut_gerbong, id_kereta)
+        for (const [coachId, coachName, seqNum, ipSuffix] of coaches) {
+            await query(`INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id)
                 VALUES ($1, $2, $3, $4, $5)
                 ON CONFLICT (id) DO UPDATE SET
-                    ip_address=EXCLUDED.ip_address, nama_gerbong=EXCLUDED.nama_gerbong,
-                    no_urut_gerbong=EXCLUDED.no_urut_gerbong, id_kereta=EXCLUDED.id_kereta`,
-                [gId, `192.168.${train.id}.${ipSuffix}`, gNama, gNo, train.id]);
+                    ip_address=EXCLUDED.ip_address, name=EXCLUDED.name,
+                    sequence_number=EXCLUDED.sequence_number, train_service_id=EXCLUDED.train_service_id`,
+                [coachId, `192.168.${train.id}.${ipSuffix}`, coachName, seqNum, train.id]);
         }
-        console.log(`[PIDS-DB] ✓ Gerbong seeded for ${trainName}: ${gerbongs.length} cars`);
+        console.log(`[PIDS-DB] ✓ Coaches seeded for ${trainName}: ${coaches.length} cars`);
     }
 
     // ============================================================
-    // K. SENSOR — GPS sensor on Malabar lokomotif (is_main=1)
+    // K. SENSOR — GPS sensor on Malabar lokomotif (is_primary=1)
     // ============================================================
     const lokomotifIds = ['MB-L'];
     for (const gId of lokomotifIds) {
-        const gerbong = await getOne('SELECT id FROM gerbong WHERE id = $1', [gId]);
-        if (!gerbong) continue;
+        const coach = await getOne('SELECT id FROM coaches WHERE id = $1', [gId]);
+        if (!coach) continue;
         const sensorId = `SEN-GPS-${gId}`;
-        await query(`INSERT INTO sensor (id, ip_address, nama_device, tipe_sensor, status, is_main, id_gerbong)
-            VALUES ($1, $2, $3, 'GPS', 'Aktif', 1, $4)
+        await query(`INSERT INTO sensors (id, ip_address, device_name, sensor_type, status, is_primary, coach_id)
+            VALUES ($1, $2, $3, 'GPS', 'Active', 1, $4)
             ON CONFLICT (id) DO NOTHING`,
             [sensorId, '', `GPS Sensor ${gId}`, gId]);
     }
@@ -736,7 +826,7 @@ export async function getState() {
         volume: row.video_volume ?? 50,
         tvStandby: row.video_tv_standby ?? true,
         playbackProgress: row.video_playback_progress ?? 0,
-        jumlahKereta: row.jumlah_kereta ?? 10,
+        coachCount: row.coach_count ?? 10,
     };
 }
 
@@ -762,9 +852,9 @@ export async function updateState(updates) {
         activeRouteJson = updates.activeRoute ? JSON.stringify(updates.activeRoute) : '{}';
     }
 
-    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, jumlah_kereta) 
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, coach_count)
                  VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
-                 ON CONFLICT (id) DO UPDATE SET 
+                 ON CONFLICT (id) DO UPDATE SET
                     service_name = EXCLUDED.service_name,
                     current_station = EXCLUDED.current_station,
                     train_number = EXCLUDED.train_number,
@@ -788,12 +878,12 @@ export async function updateState(updates) {
                     video_playback_mode = EXCLUDED.video_playback_mode,
                     video_volume = EXCLUDED.video_volume,
                     video_tv_standby = EXCLUDED.video_tv_standby,
-                    jumlah_kereta = EXCLUDED.jumlah_kereta`,
+                    coach_count = EXCLUDED.coach_count`,
         [
             merged.serviceName, merged.currentStation, merged.trainNumber, merged.nextStation, merged.status, merged.ledSpeed, merged.speed, merged.altitude, merged.temperature, merged.airQuality, merged.displayMode, activeRouteJson,
             merged.geofencingInnerRadius || 250, merged.geofencingOuterRadius || 750, merged.showTrainNumber !== false, merged.ledActive !== false,
             JSON.stringify(merged.videoPlaylist || []), merged.activeVideoIndex ?? 0, merged.isPlaying ?? false, merged.playbackProgress ?? 0, merged.playbackMode || 'normal',
-            merged.volume ?? 50, merged.tvStandby ?? true, merged.jumlahKereta ?? 10
+            merged.volume ?? 50, merged.tvStandby ?? true, merged.coachCount ?? merged.jumlahKereta ?? 10
         ]);
     return await getState();
 }
@@ -802,7 +892,7 @@ export async function updateState(updates) {
 // CRUD OPERATIONS
 // ============================================================
 
-export async function getUsers() { return await getAll('SELECT id, username, role, nama FROM users'); }
+export async function getUsers() { return await getAll('SELECT id, username, role, full_name, contact, email FROM users'); }
 export async function getUsersWithPassword() { return await getAll('SELECT * FROM users'); }
 export async function findUser(username, password) {
     const user = await getOne('SELECT * FROM users WHERE username = $1', [username]);
@@ -822,15 +912,28 @@ export async function getTrainNames() {
 
 export async function addTrain(train) {
     try {
-        const { name, class: className, ka_number, gerbong_count, ip_address, nama_pic, kontak_pic, media, stasiun_awal, stasiun_akhir, keterangan } = train;
+        const {
+            name, class: className,
+            train_number,
+            coach_count,
+            ip_address,
+            pic_name,
+            pic_contact,
+            media,
+            origin_station_id,
+            destination_station_id,
+            notes
+        } = train;
         await query(
-            `INSERT INTO train_services (name, class, ka_number, gerbong_count, ip_address, nama_pic, kontak_pic, media, stasiun_awal, stasiun_akhir, keterangan)
+            `INSERT INTO train_services (name, class, train_number, coach_count, ip_address, pic_name, pic_contact, media, origin_station_id, destination_station_id, notes)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
              ON CONFLICT (name) DO UPDATE SET
-             class = EXCLUDED.class, ka_number = EXCLUDED.ka_number, gerbong_count = EXCLUDED.gerbong_count,
-             ip_address = EXCLUDED.ip_address, nama_pic = EXCLUDED.nama_pic, kontak_pic = EXCLUDED.kontak_pic, media = EXCLUDED.media,
-             stasiun_awal = EXCLUDED.stasiun_awal, stasiun_akhir = EXCLUDED.stasiun_akhir, keterangan = EXCLUDED.keterangan`,
-            [name, className || 'EKSEKUTIF', ka_number || '', gerbong_count || 10, ip_address || '', nama_pic || '', kontak_pic || '', media || '', stasiun_awal || '', stasiun_akhir || '', keterangan || '']
+             class = EXCLUDED.class, train_number = EXCLUDED.train_number, coach_count = EXCLUDED.coach_count,
+             ip_address = EXCLUDED.ip_address, pic_name = EXCLUDED.pic_name, pic_contact = EXCLUDED.pic_contact, media = EXCLUDED.media,
+             origin_station_id = EXCLUDED.origin_station_id, destination_station_id = EXCLUDED.destination_station_id, notes = EXCLUDED.notes`,
+            [name, className || 'EKSEKUTIF', train_number || '', coach_count ?? 10,
+             ip_address || '', pic_name || '', pic_contact || '', media || '',
+             origin_station_id || '', destination_station_id || '', notes || '']
         );
         return { success: true, trains: await getTrains() };
     } catch (e) {
@@ -890,17 +993,34 @@ export async function getStations(filter = {}) {
 }
 export async function addStation(data) {
     try {
-        const { id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos, poi, media } = data;
+        const {
+            id, name, city, latitude, longitude, ip_address,
+            pic_name,
+            pic_contact,
+            city_code,
+            address,
+            province,
+            regency,
+            district,
+            village,
+            postal_code,
+            poi, media
+        } = data;
         await query(
-            `INSERT INTO stations (id, name, city, latitude, longitude, ip_address, nama_pic, kontak_pic, kode_kota, alamat, provinsi, kabupaten_kota, kecamatan, kelurahan_desa, kode_pos, poi, media)
+            `INSERT INTO stations (id, name, city, latitude, longitude, ip_address, pic_name, pic_contact, city_code, address, province, regency, district, village, postal_code, poi, media)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
              ON CONFLICT (id) DO UPDATE SET
              name = EXCLUDED.name, city = EXCLUDED.city, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
-             ip_address = EXCLUDED.ip_address, nama_pic = EXCLUDED.nama_pic, kontak_pic = EXCLUDED.kontak_pic,
-             kode_kota = EXCLUDED.kode_kota, alamat = EXCLUDED.alamat, provinsi = EXCLUDED.provinsi,
-             kabupaten_kota = EXCLUDED.kabupaten_kota, kecamatan = EXCLUDED.kecamatan,
-             kelurahan_desa = EXCLUDED.kelurahan_desa, kode_pos = EXCLUDED.kode_pos, poi = EXCLUDED.poi, media = EXCLUDED.media`,
-            [id, name, city, latitude || 0, longitude || 0, ip_address || '', nama_pic || '', kontak_pic || '', kode_kota || '', alamat || '', provinsi || '', kabupaten_kota || '', kecamatan || '', kelurahan_desa || '', kode_pos || '', poi || '', media || '']
+             ip_address = EXCLUDED.ip_address, pic_name = EXCLUDED.pic_name, pic_contact = EXCLUDED.pic_contact,
+             city_code = EXCLUDED.city_code, address = EXCLUDED.address, province = EXCLUDED.province,
+             regency = EXCLUDED.regency, district = EXCLUDED.district,
+             village = EXCLUDED.village, postal_code = EXCLUDED.postal_code, poi = EXCLUDED.poi, media = EXCLUDED.media`,
+            [id, name, city, latitude || 0, longitude || 0, ip_address || '',
+             pic_name || nama_pic || '', pic_contact || kontak_pic || '',
+             city_code || kode_kota || '', address || alamat || '',
+             province || provinsi || '', regency || kabupaten_kota || '',
+             district || kecamatan || '', village || kelurahan_desa || '',
+             postal_code || kode_pos || '', poi || '', media || '']
         );
         return { success: true, station: data };
     } catch (e) { return { error: e.message }; }
@@ -1036,9 +1156,9 @@ export async function deleteRoute(name) {
 export async function getSchedules(filter = {}) {
     try {
         let sql = `
-            SELECT s.*, r.direction, 
-                   COALESCE(t.name, s.train_name) as display_train_name,
-                   COALESCE(t.ka_number, s.ka_number) as display_ka_number
+            SELECT s.*, r.direction,
+                   COALESCE(t.name, s.service_name) as display_service_name,
+                   COALESCE(t.train_number, s.train_number) as display_train_number
             FROM schedules s
             LEFT JOIN routes r ON s.route_id = r.id
             LEFT JOIN train_services t ON r.train_service_id = t.id
@@ -1049,7 +1169,7 @@ export async function getSchedules(filter = {}) {
 
         if (filter.search) {
             const search = `%${filter.search}%`;
-            const where = ` WHERE s.train_name ILIKE $${paramIdx} OR s.ka_number ILIKE $${paramIdx} OR s.stasiun_keberangkatan ILIKE $${paramIdx} OR s.stasiun_tujuan ILIKE $${paramIdx}`;
+            const where = ` WHERE s.service_name ILIKE $${paramIdx} OR s.train_number ILIKE $${paramIdx} OR s.departure_station ILIKE $${paramIdx} OR s.arrival_station ILIKE $${paramIdx}`;
             sql += where;
             countSql += where;
             params.push(search);
@@ -1099,29 +1219,44 @@ export async function addSchedule(schedule) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const { 
-            route_id, schedule_date, status, notes, stops, catatan, media, 
-            stasiun_keberangkatan, kode_kota_keberangkatan, stasiun_tujuan, kode_kota_tujuan,
-            waktu_keberangkatan_penjadwalan, waktu_keberangkatan_realisasi, selisih_waktu_keberangkatan, status_keberangkatan,
-            waktu_kedatangan_penjadwalan, waktu_kedatangan_realisasi, selisih_waktu_kedatangan, status_kedatangan,
-            train_name, ka_number
+        const {
+            route_id, schedule_date, status, notes, stops, media,
+            service_name, train_name,
+            train_number, ka_number,
+            departure_station, stasiun_keberangkatan,
+            departure_city_code, kode_kota_keberangkatan,
+            arrival_station, stasiun_tujuan,
+            arrival_city_code, kode_kota_tujuan,
+            scheduled_departure, waktu_keberangkatan_penjadwalan,
+            actual_departure, waktu_keberangkatan_realisasi,
+            departure_delay, selisih_waktu_keberangkatan,
+            departure_status, status_keberangkatan,
+            scheduled_arrival, waktu_kedatangan_penjadwalan,
+            actual_arrival, waktu_kedatangan_realisasi,
+            arrival_delay, selisih_waktu_kedatangan,
+            arrival_status, status_kedatangan,
         } = schedule;
 
         const res = await client.query(
             `INSERT INTO schedules (
-                route_id, schedule_date, status, notes, catatan, media, 
-                stasiun_keberangkatan, kode_kota_keberangkatan, stasiun_tujuan, kode_kota_tujuan,
-                waktu_keberangkatan_penjadwalan, waktu_keberangkatan_realisasi, selisih_waktu_keberangkatan, status_keberangkatan,
-                waktu_kedatangan_penjadwalan, waktu_kedatangan_realisasi, selisih_waktu_kedatangan, status_kedatangan,
-                train_name, ka_number
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+                route_id, schedule_date, status, notes, media,
+                service_name, train_number,
+                departure_station, departure_city_code, arrival_station, arrival_city_code,
+                scheduled_departure, actual_departure, departure_delay, departure_status,
+                scheduled_arrival, actual_arrival, arrival_delay, arrival_status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
              RETURNING id`,
             [
-                route_id || null, schedule_date || new Date().toISOString().split('T')[0], status || 'ON_TIME', notes || '', catatan || '', media || '', 
-                stasiun_keberangkatan || '', kode_kota_keberangkatan || '', stasiun_tujuan || '', kode_kota_tujuan || '',
-                waktu_keberangkatan_penjadwalan || '', waktu_keberangkatan_realisasi || '', selisih_waktu_keberangkatan || '0', status_keberangkatan || 'Tepat Waktu',
-                waktu_kedatangan_penjadwalan || '', waktu_kedatangan_realisasi || '', selisih_waktu_kedatangan || '0', status_kedatangan || 'Tepat Waktu',
-                train_name || '', ka_number || ''
+                route_id || null, schedule_date || new Date().toISOString().split('T')[0], status || 'ON_TIME', notes || '', media || '',
+                service_name || train_name || '', train_number || ka_number || '',
+                departure_station || stasiun_keberangkatan || '', departure_city_code || kode_kota_keberangkatan || '',
+                arrival_station || stasiun_tujuan || '', arrival_city_code || kode_kota_tujuan || '',
+                scheduled_departure || waktu_keberangkatan_penjadwalan || '',
+                actual_departure || waktu_keberangkatan_realisasi || '',
+                departure_delay || selisih_waktu_keberangkatan || '0', departure_status || status_keberangkatan || 'On Time',
+                scheduled_arrival || waktu_kedatangan_penjadwalan || '',
+                actual_arrival || waktu_kedatangan_realisasi || '',
+                arrival_delay || selisih_waktu_kedatangan || '0', arrival_status || status_kedatangan || 'On Time'
             ]
         );
         const scheduleId = res.rows[0].id;
@@ -1147,28 +1282,45 @@ export async function updateSchedule(id, schedule) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const { 
-            route_id, schedule_date, status, notes, stops, catatan, media, 
-            stasiun_keberangkatan, kode_kota_keberangkatan, stasiun_tujuan, kode_kota_tujuan,
-            waktu_keberangkatan_penjadwalan, waktu_keberangkatan_realisasi, selisih_waktu_keberangkatan, status_keberangkatan,
-            waktu_kedatangan_penjadwalan, waktu_kedatangan_realisasi, selisih_waktu_kedatangan, status_kedatangan,
-            train_name, ka_number
+        const {
+            route_id, schedule_date, status, notes, stops, media,
+            service_name, train_name,
+            train_number, ka_number,
+            departure_station, stasiun_keberangkatan,
+            departure_city_code, kode_kota_keberangkatan,
+            arrival_station, stasiun_tujuan,
+            arrival_city_code, kode_kota_tujuan,
+            scheduled_departure, waktu_keberangkatan_penjadwalan,
+            actual_departure, waktu_keberangkatan_realisasi,
+            departure_delay, selisih_waktu_keberangkatan,
+            departure_status, status_keberangkatan,
+            scheduled_arrival, waktu_kedatangan_penjadwalan,
+            actual_arrival, waktu_kedatangan_realisasi,
+            arrival_delay, selisih_waktu_kedatangan,
+            arrival_status, status_kedatangan,
         } = schedule;
 
         await client.query(
             `UPDATE schedules SET
-                route_id = $1, schedule_date = $2, status = $3, notes = $4, catatan = $5, media = $6, 
-                stasiun_keberangkatan = $7, kode_kota_keberangkatan = $8, stasiun_tujuan = $9, kode_kota_tujuan = $10,
-                waktu_keberangkatan_penjadwalan = $11, waktu_keberangkatan_realisasi = $12, selisih_waktu_keberangkatan = $13, status_keberangkatan = $14,
-                waktu_kedatangan_penjadwalan = $15, waktu_kedatangan_realisasi = $16, selisih_waktu_kedatangan = $17, status_kedatangan = $18,
-                train_name = $19, ka_number = $20, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $21`,
+                route_id = $1, schedule_date = $2, status = $3, notes = $4, media = $5,
+                service_name = $6, train_number = $7,
+                departure_station = $8, departure_city_code = $9, arrival_station = $10, arrival_city_code = $11,
+                scheduled_departure = $12, actual_departure = $13, departure_delay = $14, departure_status = $15,
+                scheduled_arrival = $16, actual_arrival = $17, arrival_delay = $18, arrival_status = $19,
+                updated_at = CURRENT_TIMESTAMP
+             WHERE id = $20`,
             [
-                route_id || null, schedule_date, status || 'ON_TIME', notes || '', catatan || '', media || '', 
-                stasiun_keberangkatan || '', kode_kota_keberangkatan || '', stasiun_tujuan || '', kode_kota_tujuan || '',
-                waktu_keberangkatan_penjadwalan || '', waktu_keberangkatan_realisasi || '', selisih_waktu_keberangkatan || '0', status_keberangkatan || 'Tepat Waktu',
-                waktu_kedatangan_penjadwalan || '', waktu_kedatangan_realisasi || '', selisih_waktu_kedatangan || '0', status_kedatangan || 'Tepat Waktu',
-                train_name || '', ka_number || '', id
+                route_id || null, schedule_date, status || 'ON_TIME', notes || '', media || '',
+                service_name || train_name || '', train_number || ka_number || '',
+                departure_station || stasiun_keberangkatan || '', departure_city_code || kode_kota_keberangkatan || '',
+                arrival_station || stasiun_tujuan || '', arrival_city_code || kode_kota_tujuan || '',
+                scheduled_departure || waktu_keberangkatan_penjadwalan || '',
+                actual_departure || waktu_keberangkatan_realisasi || '',
+                departure_delay || selisih_waktu_keberangkatan || '0', departure_status || status_keberangkatan || 'On Time',
+                scheduled_arrival || waktu_kedatangan_penjadwalan || '',
+                actual_arrival || waktu_kedatangan_realisasi || '',
+                arrival_delay || selisih_waktu_kedatangan || '0', arrival_status || status_kedatangan || 'On Time',
+                id
             ]
         );
 
@@ -1199,21 +1351,33 @@ export async function deleteSchedule(id) {
     } catch (e) { return { error: e.message }; }
 }
 
-export async function getGerbong(keretaId) {
-    return await getAll('SELECT * FROM gerbong WHERE id_kereta = $1 ORDER BY no_urut_gerbong', [keretaId]);
+// NOTE: Functions still exported as getGerbong/addGerbong for API backward compat.
+// Internally queries the 'coaches' table (renamed from 'gerbong').
+export async function getGerbong(trainServiceId) {
+    return await getAll('SELECT * FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number', [trainServiceId]);
 }
 
-export async function addGerbong(gerbong) {
+export async function addGerbong(coach) {
     try {
-        const { id, ip_address, nama_gerbong, no_urut_gerbong, id_kereta, media, log_maintenance, log_operasional } = gerbong;
+        const {
+            id, ip_address,
+            name, nama_gerbong,
+            sequence_number, no_urut_gerbong,
+            train_service_id, id_kereta,
+            media,
+            maintenance_log, log_maintenance,
+            operational_log, log_operasional
+        } = coach;
         await query(
-            `INSERT INTO gerbong (id, ip_address, nama_gerbong, no_urut_gerbong, id_kereta, media, log_maintenance, log_operasional)
+            `INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id, media, maintenance_log, operational_log)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              ON CONFLICT (id) DO UPDATE SET
-             ip_address = EXCLUDED.ip_address, nama_gerbong = EXCLUDED.nama_gerbong,
-             no_urut_gerbong = EXCLUDED.no_urut_gerbong, id_kereta = EXCLUDED.id_kereta,
-             media = EXCLUDED.media, log_maintenance = EXCLUDED.log_maintenance, log_operasional = EXCLUDED.log_operasional`,
-            [id, ip_address || '', nama_gerbong, no_urut_gerbong || 1, id_kereta, media || '', log_maintenance || '', log_operasional || '']
+             ip_address = EXCLUDED.ip_address, name = EXCLUDED.name,
+             sequence_number = EXCLUDED.sequence_number, train_service_id = EXCLUDED.train_service_id,
+             media = EXCLUDED.media, maintenance_log = EXCLUDED.maintenance_log, operational_log = EXCLUDED.operational_log`,
+            [id, ip_address || '', name || nama_gerbong, sequence_number ?? no_urut_gerbong ?? 1,
+             train_service_id ?? id_kereta, media || '',
+             maintenance_log || log_maintenance || '', operational_log || log_operasional || '']
         );
         return { success: true };
     } catch (e) { return { error: e.message }; }
@@ -1221,7 +1385,7 @@ export async function addGerbong(gerbong) {
 
 export async function deleteGerbong(id) {
     try {
-        await query('DELETE FROM gerbong WHERE id = $1', [id]);
+        await query('DELETE FROM coaches WHERE id = $1', [id]);
         return { success: true };
     } catch (e) { return { error: e.message }; }
 }
@@ -1364,7 +1528,7 @@ export async function addUser(data) {
     try {
         const id = crypto.randomUUID();
         const hashedPw = hashPassword(data.password);
-        await query('INSERT INTO users (id, username, password, role, nama) VALUES ($1, $2, $3, $4, $5)', [id, data.username, hashedPw, data.role || 'Operator', data.nama]);
+        await query('INSERT INTO users (id, username, password, role, full_name) VALUES ($1, $2, $3, $4, $5)', [id, data.username, hashedPw, data.role || 'Operator', data.full_name || data.nama || '']);
         return { success: true };
     } catch (e) { return { error: e.message }; }
 }
@@ -1378,19 +1542,20 @@ export async function updateLogMaintenance(id, data) { return { success: true };
 export async function getLogOperasional() { return []; }
 export async function addLogOperasional(data) { return { success: true }; }
 export async function getGpsFleet() {
-    return await getAll('SELECT id as kereta_id, name as kereta_name, ka_number, description, color, route_geojson_path FROM train_services ORDER BY ka_number');
+    return await getAll('SELECT id as train_service_id, name as service_name, train_number, class, coach_count FROM train_services ORDER BY train_number');
 }
-export async function getGpsGerbong(id) {
-    const units = await getAll('SELECT id, name FROM units ORDER BY name');
-    return units.map((u, i) => ({
-        gerbong_id: u.id,
-        nama_gerbong: u.name,
-        no_urut_gerbong: i + 1,
+export async function getGpsGerbong(trainServiceId) {
+    const coaches = await getAll('SELECT id, name, sequence_number, ip_address FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number', [trainServiceId]);
+    return coaches.map(c => ({
+        coach_id: c.id,
+        coach_name: c.name,
+        sequence_number: c.sequence_number,
+        ip_address: c.ip_address,
         latitude: -6.9147 + (Math.random() - 0.5) * 0.01,
         longitude: 107.6098 + (Math.random() - 0.5) * 0.01,
-        kecepatan: Math.floor(Math.random() * 100),
-        suhu: 24 + Math.random() * 4,
+        speed: Math.floor(Math.random() * 100),
+        temperature: 24 + Math.random() * 4,
         poi: 'Station Near Build',
-        sensor_status: 'Aktif'
+        sensor_status: 'Active'
     }));
 }

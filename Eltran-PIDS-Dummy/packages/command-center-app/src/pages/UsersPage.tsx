@@ -10,7 +10,7 @@ export default function UsersPage({ token }: { token: string }) {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [deleteTarget, setDeleteTarget] = useState<{ id: string; nama: string } | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string; full_name: string } | null>(null);
     const { toast, showToast, closeToast } = useToast();
 
     const [newUsername, setNewUsername] = useState('');
@@ -51,7 +51,7 @@ export default function UsersPage({ token }: { token: string }) {
         try {
             const res = await fetch(`${API}/api/admin/users/${deleteTarget.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
             const d = await res.json();
-            if (d.success) { showToast(`User "${deleteTarget.nama}" berhasil dihapus`, true); fetchUsers(); }
+            if (d.success) { showToast(`User "${deleteTarget.full_name}" berhasil dihapus`, true); fetchUsers(); }
             else { showToast(d.error || 'Gagal menghapus user', false); }
         } catch { showToast('Gagal terhubung ke server', false); }
         finally { setSaving(false); setDeleteTarget(null); }
@@ -59,7 +59,7 @@ export default function UsersPage({ token }: { token: string }) {
 
     return (
         <div className="space-y-8">
-            <ConfirmModal isOpen={!!deleteTarget} title="Hapus Pengguna" message={`Anda yakin ingin menghapus "${deleteTarget?.nama}"? Password dan data akses akan dihapus permanen.`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
+            <ConfirmModal isOpen={!!deleteTarget} title="Hapus Pengguna" message={`Anda yakin ingin menghapus "${deleteTarget?.full_name}"? Password dan data akses akan dihapus permanen.`} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
             <div className="flex items-end justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-[#1d2d6a] tracking-tight mb-1">Manajemen Pengguna</h2>
@@ -102,12 +102,12 @@ export default function UsersPage({ token }: { token: string }) {
                     <motion.div key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.06 }}
                         className="grid grid-cols-[80px_1fr_1fr_100px_60px] gap-0 px-6 py-5 border-b border-slate-100 hover:bg-slate-50 transition-colors items-center group">
                         <span className="text-slate-400 font-mono text-sm">{u.id}</span>
-                        <span className="text-[#1d2d6a] font-semibold">{u.nama}</span>
+                        <span className="text-[#1d2d6a] font-semibold">{u.full_name}</span>
                         <span className="text-slate-500 font-mono text-sm font-medium">{u.username}</span>
                         <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[11px] font-semibold w-fit ${u.role === 'Admin' ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'bg-blue-500/10 text-blue-500'}`}>
                             <Shield size={12} />{u.role}
                         </span>
-                        <button onClick={() => setDeleteTarget({ id: u.id, nama: u.nama })}
+                        <button onClick={() => setDeleteTarget({ id: u.id, full_name: u.full_name })}
                             className="opacity-0 group-hover:opacity-100 p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95 border border-transparent hover:border-red-200">
                             <Trash2 size={14} />
                         </button>

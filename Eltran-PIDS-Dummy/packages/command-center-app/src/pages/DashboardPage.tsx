@@ -88,7 +88,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({ setPage
                                     <TransportLineCard
                                         key={s.id || i}
                                         type="Train"
-                                        id={s.display_ka_number || s.ka_number || 'KA'}
+                                        id={s.display_train_number || s.train_number || s.ka_number || 'KA'}
                                         status={s.status_keberangkatan || 'Normal'}
                                         load={Math.floor(Math.random() * 40) + 20} // Simulated occupancy
                                         eta={s.waktu_keberangkatan_penjadwalan}

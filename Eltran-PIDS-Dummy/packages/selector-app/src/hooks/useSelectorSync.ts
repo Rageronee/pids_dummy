@@ -21,7 +21,7 @@ export function useSelectorSync() {
     const [masterSyncedServiceName, setMasterSyncedServiceName] = useState('');
     const [masterSyncedNumber, setMasterSyncedNumber] = useState('');
     const [masterSyncedLedSpeed, setMasterSyncedLedSpeed] = useState(60);
-    const [jumlahKereta, setJumlahKereta] = useState(10);
+    const [coachCount, setCoachCount] = useState(10);
 
     // DB State
     const [trainNames, setTrainNames] = useState<string[]>([]);
@@ -74,7 +74,7 @@ export function useSelectorSync() {
                 setData(s);
                 if (s.serviceName !== undefined) setMasterSyncedServiceName(s.serviceName);
                 if (s.trainNumber !== undefined) setMasterSyncedNumber(s.trainNumber);
-                if (s.jumlahKereta !== undefined) setJumlahKereta(s.jumlahKereta);
+                if (s.coachCount !== undefined) setCoachCount(s.coachCount);
                 if (s.ledSpeed !== undefined) setMasterSyncedLedSpeed(s.ledSpeed);
                 if (s.stations && Array.isArray(s.stations)) setStations(s.stations);
             }
@@ -89,7 +89,7 @@ export function useSelectorSync() {
             setData(parsed);
             if (parsed.serviceName !== undefined) setMasterSyncedServiceName(parsed.serviceName);
             if (parsed.trainNumber !== undefined) setMasterSyncedNumber(parsed.trainNumber);
-            if (parsed.jumlahKereta !== undefined) setJumlahKereta(parsed.jumlahKereta);
+            if (parsed.coachCount !== undefined) setCoachCount(parsed.coachCount);
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
             if (parsed.stations && Array.isArray(parsed.stations)) {
                 setStations(parsed.stations);
@@ -150,7 +150,7 @@ export function useSelectorSync() {
         data, stations, setStations,
         masterSyncedServiceName, masterSyncedNumber,
         masterSyncedLedSpeed, setMasterSyncedLedSpeed,
-        jumlahKereta,
+        coachCount,
         // DB
         trainNames, routes,
         // Telemetry

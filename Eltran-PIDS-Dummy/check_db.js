@@ -1,6 +1,6 @@
 import pg from 'pg';
 const { Pool } = pg;
-const connectionString = 'postgresql://postgres:greget371@localhost:5432/eltran_pids';
+const connectionString = 'postgresql://postgres:postgres@localhost:5432/eltran_pids';
 const pool = new Pool({ connectionString });
 
 async function check() {

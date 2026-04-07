@@ -7,7 +7,7 @@ interface ServiceConfigProps {
     onClose: () => void;
     trainNames: string[];
     routes: any;
-    jumlahKereta: number;
+    coachCount: number;
     onSetConfig: (name: string, routeData: any, newStations: string[], gerbong: number) => void;
     onSetGerbong: (gerbong: number) => void;
     initialTrainNameIndex: number;
@@ -16,7 +16,7 @@ interface ServiceConfigProps {
 }
 
 const ServiceConfigModal = React.memo(function ServiceConfigModal({
-    show, onClose, trainNames, routes, jumlahKereta, onSetConfig, onSetGerbong, initialTrainNameIndex, selectedGerbong, setSelectedGerbong
+    show, onClose, trainNames, routes, coachCount, onSetConfig, onSetGerbong, initialTrainNameIndex, selectedGerbong, setSelectedGerbong
 }: ServiceConfigProps) {
     const [trainNameIndex, setTrainNameIndex] = useState(initialTrainNameIndex);
     const [trainSearchQuery, setTrainSearchQuery] = useState('');
@@ -57,7 +57,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
         onClose();
     }, [trainNameIndex, trainNames, routes, selectedGerbong, onSetConfig, onSetGerbong, onClose]);
 
-    const maxWagons = jumlahKereta > 0 ? jumlahKereta : 10;
+    const maxWagons = coachCount > 0 ? coachCount : 10;
     const filtered = trainNames.map((name, idx) => ({ name, idx })).filter(t => t.name.toUpperCase().includes(trainSearchQuery.toUpperCase()));
 
     if (!show) return null;

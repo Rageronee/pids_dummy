@@ -7,14 +7,14 @@ import { Settings, ChevronDown } from 'lucide-react';
 interface ServiceConfigProps {
     trainNames: string[];
     routes: any;
-    jumlahKereta: number;
+    coachCount: number;
     onSetService: (name: string, routeData: any, stations: string[]) => void;
     onSetGerbong: (gerbong: number) => void;
     initialTrainNameIndex: number;
 }
 
 const ServiceConfig = React.memo(function ServiceConfig({
-    trainNames, routes, jumlahKereta, onSetService, onSetGerbong, initialTrainNameIndex
+    trainNames, routes, coachCount, onSetService, onSetGerbong, initialTrainNameIndex
 }: ServiceConfigProps) {
     const [trainNameIndex, setTrainNameIndex] = useState(initialTrainNameIndex);
     const [trainSearchQuery, setTrainSearchQuery] = useState('');
@@ -46,7 +46,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
         onSetGerbong(selectedGerbong);
     }, [selectedGerbong, onSetGerbong]);
 
-    const maxWagons = jumlahKereta > 0 ? jumlahKereta : 10;
+    const maxWagons = coachCount > 0 ? coachCount : 10;
     const filtered = trainNames.map((name, idx) => ({ name, idx })).filter(t => t.name.toUpperCase().includes(trainSearchQuery.toUpperCase()));
 
     return (

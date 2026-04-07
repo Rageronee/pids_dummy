@@ -16,8 +16,8 @@ export default function TrainsPage({ token }: { token: string }) {
     const [stations, setStations] = useState<any[]>([]);
     const [form, setForm] = useState({ 
         name: '', ka_number: '', ip_address: '', status: 'Active',
-        stasiun_awal: '', stasiun_akhir: '', keterangan: '',
-        nama_pic: '', kontak_pic: '', media: '',
+        origin_station_id: '', destination_station_id: '', notes: '',
+        pic_name: '', pic_contact: '', media: '',
         gerbongs: [] as any[],
         route_stations: [] as any[]
     });
@@ -55,11 +55,11 @@ export default function TrainsPage({ token }: { token: string }) {
                     name: form.name.trim(), 
                     ka_number: form.ka_number, 
                     ip_address: form.ip_address,
-                    stasiun_awal: form.stasiun_awal,
-                    stasiun_akhir: form.stasiun_akhir,
-                    keterangan: form.keterangan,
-                    nama_pic: form.nama_pic,
-                    kontak_pic: form.kontak_pic,
+                    origin_station_id: form.origin_station_id,
+                    destination_station_id: form.destination_station_id,
+                    notes: form.notes,
+                    pic_name: form.pic_name,
+                    pic_contact: form.pic_contact,
                     media: form.media
                 })
             });
@@ -85,8 +85,8 @@ export default function TrainsPage({ token }: { token: string }) {
                 await fetchTrains();
                 setForm({ 
                     name: '', ka_number: '', ip_address: '', status: 'Active',
-                    stasiun_awal: '', stasiun_akhir: '', keterangan: '',
-                    nama_pic: '', kontak_pic: '', media: '',
+                    origin_station_id: '', destination_station_id: '', notes: '',
+                    pic_name: '', pic_contact: '', media: '',
                     gerbongs: [],
                     route_stations: []
                 });
@@ -111,7 +111,7 @@ export default function TrainsPage({ token }: { token: string }) {
 
     const addStationToRoute = (stationName: string) => {
         if (form.route_stations.find((s: any) => s.name === stationName)) return;
-        setForm({ ...form, route_stations: [...form.route_stations, { name: stationName, keterangan: 'antara' }] });
+        setForm({ ...form, route_stations: [...form.route_stations, { name: stationName, notes: 'intermediate' }] });
         setStationSearch('');
     };
 
@@ -163,22 +163,22 @@ export default function TrainsPage({ token }: { token: string }) {
                                             <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value.toUpperCase() })} placeholder="e.g. ARGO WILIS" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Kode Kereta (KA)</label>
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Train Code (KA)</label>
                                             <input value={form.ka_number} onChange={e => setForm({ ...form, ka_number: e.target.value.toUpperCase() })} placeholder="e.g. 1A" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Stasiun Awal</label>
-                                            <select value={form.stasiun_awal} onChange={e => setForm({ ...form, stasiun_awal: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
-                                                <option value="">Pilih Stasiun</option>
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Origin Station</label>
+                                            <select value={form.origin_station_id} onChange={e => setForm({ ...form, origin_station_id: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
+                                                <option value="">Select Station</option>
                                                 {stations.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Stasiun Akhir</label>
-                                            <select value={form.stasiun_akhir} onChange={e => setForm({ ...form, stasiun_akhir: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
-                                                <option value="">Pilih Stasiun</option>
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Destination Station</label>
+                                            <select value={form.destination_station_id} onChange={e => setForm({ ...form, destination_station_id: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
+                                                <option value="">Select Station</option>
                                                 {stations.map(s => <option key={s.id} value={s.id}>{s.name} ({s.id})</option>)}
                                             </select>
                                         </div>
@@ -186,10 +186,10 @@ export default function TrainsPage({ token }: { token: string }) {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Rute Stasiun (Stasiun Antara)</h4>
+                                    <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Route Stations (Intermediate)</h4>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400"><MapPin size={16} /></div>
-                                        <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Cari stasiun antara..." className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                        <input value={stationSearch} onChange={e => setStationSearch(e.target.value)} placeholder="Search intermediate station..." className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                         {filteredSuggestions.length > 0 && (
                                             <div className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden divide-y divide-slate-100 max-h-[200px] overflow-y-auto">
                                                 {filteredSuggestions.map((s, idx) => (
@@ -203,7 +203,7 @@ export default function TrainsPage({ token }: { token: string }) {
                                     </div>
                                     <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 min-h-[100px] space-y-2">
                                         {form.route_stations.length === 0 ? (
-                                            <div className="h-full flex items-center justify-center text-slate-300 py-6 italic text-xs">Belum ada stasiun antara dipilih</div>
+                                            <div className="h-full flex items-center justify-center text-slate-300 py-6 italic text-xs">No intermediate stations selected</div>
                                         ) : (
                                             form.route_stations.map((s, idx) => (
                                                 <div key={idx} className="bg-white border border-slate-100 rounded-xl p-3 flex flex-col gap-2 shadow-xs">
@@ -227,13 +227,13 @@ export default function TrainsPage({ token }: { token: string }) {
                                                         </div>
                                                     </div>
                                                     <input 
-                                                        value={s.keterangan || ''} 
+                                                        value={s.notes || ''} 
                                                         onChange={e => {
                                                             const nr = [...form.route_stations];
-                                                            nr[idx].keterangan = e.target.value;
+                                                            nr[idx].notes = e.target.value;
                                                             setForm({ ...form, route_stations: nr });
                                                         }}
-                                                        placeholder="Keterangan stasiun (e.g. Berhenti, Melintas)" 
+                                                        placeholder="Station notes (e.g. Stop, Pass)" 
                                                         className="w-full bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[#1d2d6a] font-medium text-[10px] focus:outline-none focus:border-[#ee6f1f]" 
                                                     />
                                                 </div>
@@ -243,20 +243,20 @@ export default function TrainsPage({ token }: { token: string }) {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Operasional & PIC</h4>
+                                    <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">Operational & PIC</h4>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Nama PIC</label>
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">PIC Name</label>
                                             <div className="relative">
                                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                                                <input value={form.nama_pic} onChange={e => setForm({ ...form, nama_pic: e.target.value })} placeholder="Nama Lengkap" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                                <input value={form.pic_name} onChange={e => setForm({ ...form, pic_name: e.target.value })} placeholder="Full Name" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Kontak PIC</label>
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">PIC Contact</label>
                                             <div className="relative">
                                                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                                                <input value={form.kontak_pic} onChange={e => setForm({ ...form, kontak_pic: e.target.value })} placeholder="No. Telepon" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                                <input value={form.pic_contact} onChange={e => setForm({ ...form, pic_contact: e.target.value })} placeholder="Phone Number" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                             </div>
                                         </div>
                                         <div className="space-y-1">
@@ -267,12 +267,12 @@ export default function TrainsPage({ token }: { token: string }) {
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Keterangan</label>
-                                            <input value={form.keterangan} onChange={e => setForm({ ...form, keterangan: e.target.value })} placeholder="Catatan Operasional" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Notes</label>
+                                            <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Operational Notes" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Media / Lampiran (URL)</label>
+                                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Media / Attachment (URL)</label>
                                         <div className="relative">
                                             <Info className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
                                             <input value={form.media} onChange={e => setForm({ ...form, media: e.target.value })} placeholder="URL Gambar/Media Kereta" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />

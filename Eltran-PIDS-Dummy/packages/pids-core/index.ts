@@ -1,3 +1,27 @@
+// ---- Domain Constants ----
+export const TRAIN_STATUS = {
+    ON_TIME: 'ON_TIME',
+    LATE: 'LATE',
+    CANCELLED: 'CANCELLED',
+    STANDBY: 'STANDBY'
+} as const;
+
+export const DISPLAY_MODE = {
+    PIDS: 'pids',
+    TV: 'tv'
+} as const;
+
+export const USER_ROLE = {
+    ADMIN: 'Admin',
+    OPERATOR: 'Operator'
+} as const;
+
+export const SENSOR_TYPE = {
+    GPS: 'GPS',
+    TEMPERATURE: 'TEMPERATURE',
+    AQ: 'AQ'
+} as const;
+
 export interface PidsPacket {
     header: string; // '*'
     controllerId: string; // '01'
@@ -11,27 +35,23 @@ export interface Station {
     id: string;
     name: string;
     city?: string;
-    lat?: number;
-    lon?: number;
     latitude?: number;
     longitude?: number;
     ip_address?: string;
-    nama_pic?: string;
-    kontak_pic?: string;
-    kode_kota?: string;
-    alamat?: string;
-    provinsi?: string;
-    kabupaten_kota?: string;
-    kecamatan?: string;
-    kelurahan_desa?: string;
-    kode_pos?: string;
+    pic_name?: string;
+    pic_contact?: string;
+    city_code?: string;
+    address?: string;
+    province?: string;
+    regency?: string;
+    district?: string;
+    village?: string;
+    postal_code?: string;
     poi?: string;
     media?: string;
-    lintang?: string; // New: Display-oriented
-    bujur?: string;   // New: Display-oriented
 }
 
-export type DisplayMode = 'pids' | 'tv';
+export type DisplayMode = typeof DISPLAY_MODE[keyof typeof DISPLAY_MODE];
 
 export interface RouteData {
     name: string; // e.g. ARGO BROMO ANGGREK
@@ -69,18 +89,18 @@ export interface PidsState {
     playbackMode?: string;
     volume?: number;
     muteVideo?: boolean;
-    jumlahKereta?: number;
+    coachCount?: number;
 }
 
 // ---- Auth & Logging Types ----
 
-export type UserRole = 'Admin' | 'Operator';
+export type UserRole = typeof USER_ROLE[keyof typeof USER_ROLE];
 
 export interface AuthUser {
     id: string;
     username: string;
     role: UserRole;
-    nama: string;
+    full_name: string;
 }
 
 export interface AuthSession {
@@ -108,20 +128,21 @@ export type LogAction =
     | 'ADMIN_CRUD'
     | 'SYSTEM';
 
-// ---- SQL Entity Types (SRS-compliant) ----
+// ---- Domain Entities ----
 
 export interface TrainService {
     id: number;
     name: string;
-    class: string; // EKSEKUTIF, BISNIS, EKONOMI
-    ka_number: string; // KA 1, KA 5, etc.
+    class: string; // EXECUTIVE, BUSINESS, ECONOMY
+    train_number: string;
     ip_address?: string;
-    nama_pic?: string;
-    kontak_pic?: string;
+    pic_name?: string;
+    pic_contact?: string;
     media?: string;
-    stasiun_awal?: string; // New
-    stasiun_akhir?: string; // New
-    keterangan?: string; // New
+    origin_station_id?: string;
+    destination_station_id?: string;
+    coach_count: number;
+    notes?: string;
 }
 
 export interface Schedule {
@@ -130,11 +151,10 @@ export interface Schedule {
     schedule_date: string;
     status: 'ON_TIME' | 'LATE' | 'CANCELLED';
     notes: string;
-    catatan?: string;
     media?: string;
-    train_name?: string;
+    service_name?: string;
     train_class?: string;
-    ka_number?: string;
+    train_number?: string;
     direction?: string;
     stops?: ScheduleStop[];
 }
@@ -145,59 +165,38 @@ export interface ScheduleStop {
     route_station_id: number;
     arrival_time: string;
     departure_time: string;
-    realisasi_datang?: string;
-    realisasi_berangkat?: string;
-    selisih_datang?: number;
-    selisih_berangkat?: number;
-    status_datang?: string;
-    status_berangkat?: string;
+    actual_arrival?: string;
+    actual_departure?: string;
+    arrival_delay?: number;
+    departure_delay?: number;
+    arrival_status?: string;
+    departure_status?: string;
     platform: number;
     stop_status: 'SCHEDULED' | 'ARRIVED' | 'DEPARTED' | 'SKIPPED';
     station_name?: string;
     station_code?: string;
     sequence_order?: number;
-    lintang?: number; // New
-    bujur?: number;   // New
 }
 
-export interface Unit {
-    id: string;
-    name: string;
-    type: string;
-    active: number | boolean;
-}
-
-export interface Announcement {
-    id: number;
-    type: 'INFO' | 'WARNING' | 'EMERGENCY';
-    message: string;
-    priority: number;
-    active: number | boolean;
-    created_at: string;
-}
-
-// ---- NEW SRS Entities ----
-
-export interface Gerbong {
+export interface Coach {
     id: string;
     ip_address?: string;
-    nama_gerbong: string;
-    no_urut_gerbong: number;
-    id_kereta: number;
-    kereta_name?: string;
-    media?: string; // New
-    log_maintenance?: string; // New
-    log_operasional?: string; // New
+    name: string;
+    sequence_number: number;
+    train_service_id: number;
+    media?: string;
+    maintenance_log?: string;
+    operational_log?: string;
 }
 
 export interface Sensor {
     id: string;
     ip_address?: string;
-    nama_device: string;
-    tipe_sensor: 'GPS' | 'Suhu' | 'AQ';
-    status: 'Aktif' | 'Nonaktif';
-    is_main: number | boolean;
-    id_gerbong: string;
+    device_name: string;
+    sensor_type: 'GPS' | 'TEMPERATURE' | 'AQ';
+    status: 'ACTIVE' | 'INACTIVE';
+    is_primary: boolean;
+    coach_id: string;
 }
 
 export interface SensorData {
@@ -205,69 +204,68 @@ export interface SensorData {
     latitude: number;
     longitude: number;
     altitude: number;
-    kecepatan: number;
-    suhu: number;
+    speed: number;
+    temperature: number;
     poi?: string;
-    waktu_rekam: string;
-    id_sensor: string;
+    recorded_at: string;
+    sensor_id: string;
 }
 
 export interface LogMaintenance {
     id: string;
-    mulai: string;
-    selesai?: string;
-    status: 'Open' | 'On Going' | 'Closed';
-    prioritas: 'Low' | 'Medium' | 'High';
-    deskripsi?: string;
-    id_kereta: number;
-    kereta_name?: string;
+    started_at: string;
+    finished_at?: string;
+    status: 'OPEN' | 'ON_GOING' | 'CLOSED';
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    description?: string;
+    train_service_id: number;
 }
 
 export interface LogOperasional {
     id: string;
-    waktu: string;
-    catatan?: string;
-    id_kereta: number;
-    id_jadwal?: number;
-    kereta_name?: string;
+    timestamp: string;
+    notes?: string;
+    train_service_id: number;
+    schedule_id?: number;
 }
 
 // ---- GPS Fleet Types ----
 
 export interface GpsFleetEntry {
-    kereta_id: number;
-    kereta_name: string;
-    ka_number: string;
-    gerbong_id: string;
-    nama_gerbong: string;
+    train_service_id: number;
+    service_name: string;
+    train_number: string;
+    coach_id: string;
+    coach_name: string;
     latitude: number;
     longitude: number;
     altitude: number;
-    kecepatan: number;
-    suhu: number;
+    speed: number;
+    temperature: number;
     poi?: string;
-    waktu_rekam: string;
+    recorded_at: string;
 }
 
 export interface GpsGerbongEntry {
-    gerbong_id: string;
-    nama_gerbong: string;
-    no_urut_gerbong: number;
+    coach_id: string;
+    coach_name: string;
+    sequence_number: number;
     sensor_id: string;
-    tipe_sensor: string;
+    sensor_type: string;
     sensor_status: string;
     latitude: number;
     longitude: number;
     altitude: number;
-    kecepatan: number;
-    suhu: number;
+    speed: number;
+    temperature: number;
     poi?: string;
-    waktu_rekam: string;
+    recorded_at: string;
 }
 
 // ---- Socket.IO Event Types ----
 
 export interface SocketEvents {
     'state:update': (state: PidsState) => void;
-    'db:update': (data: { trainNames?: string[]; routes?: Record<string, RouteData> }) => void;
+    'db:update': (data: { trainNames?: string[]; routes?: any[] }) => void;
 }
+

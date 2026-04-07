@@ -23,7 +23,7 @@ export default function SchedulesPage({ token }: { token: string }) {
     const [trainOptions, setTrainOptions] = useState<any[]>([]);
     const [stationOptions, setStationOptions] = useState<any[]>([]);
     const [form, setForm] = useState({
-        train_name: '', ka_number: '',
+        train_name: '', train_number: '',
         dep_station: '', dep_city_code: '',
         arr_station: '', arr_city_code: '',
         dep_sched: '', dep_real: '', dep_diff: '0', dep_status: 'Tepat Waktu',
@@ -96,7 +96,7 @@ export default function SchedulesPage({ token }: { token: string }) {
         try {
             const payload = {
                 train_name: form.train_name,
-                ka_number: form.ka_number,
+                train_number: form.train_number,
                 stasiun_keberangkatan: form.dep_station,
                 kode_kota_keberangkatan: form.dep_city_code,
                 stasiun_tujuan: form.arr_station,
@@ -126,7 +126,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                 fetchSchedules(false);
                 setShowForm(false);
                 setForm({
-                    train_name: '', ka_number: '', dep_station: '', dep_city_code: '', arr_station: '', arr_city_code: '',
+                    train_name: '', train_number: '', dep_station: '', dep_city_code: '', arr_station: '', arr_city_code: '',
                     dep_sched: '', dep_real: '', dep_diff: '0', dep_status: 'Tepat Waktu',
                     arr_sched: '', arr_real: '', arr_diff: '0', arr_status: 'Tepat Waktu',
                     notes: '', media: ''
@@ -185,7 +185,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                                             <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Nama Kereta</label>
                                             <select value={form.train_name} onChange={e => {
                                                 const t = trainOptions.find(tx => tx.name === e.target.value);
-                                                setForm({ ...form, train_name: e.target.value, ka_number: t?.ka_number || '' });
+                                                setForm({ ...form, train_name: e.target.value, train_number: t?.train_number || t?.ka_number || '' });
                                             }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all">
                                                 <option value="">Pilih Kereta</option>
                                                 {trainOptions.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
@@ -193,7 +193,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Kode KA</label>
-                                            <input value={form.ka_number} onChange={e => setForm({ ...form, ka_number: e.target.value.toUpperCase() })} placeholder="OTOMATIS" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
+                                            <input value={form.train_number} onChange={e => setForm({ ...form, train_number: e.target.value.toUpperCase() })} placeholder="AUTOMATIC" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all" />
                                         </div>
                                     </div>
                                 </div>
@@ -321,7 +321,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                             <div className="flex items-center gap-4 px-6 py-5 cursor-pointer" onClick={() => setExpanded(expanded === sched.id ? null : sched.id)}>
                                 <div className="w-12 h-12 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm"><Train size={20} className="text-[#1d2d6a]" /></div>
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-1"><h3 className="text-[#1d2d6a] font-bold text-base">{sched.display_train_name || sched.train_name}</h3><span className="text-slate-400 text-[10px] font-bold">{sched.display_ka_number || sched.ka_number || '-'}</span></div>
+                                    <div className="flex items-center gap-3 mb-1"><h3 className="text-[#1d2d6a] font-bold text-base">{sched.display_train_name || sched.train_name}</h3><span className="text-slate-400 text-[10px] font-bold">{sched.display_train_number || sched.train_number || sched.ka_number || '-'}</span></div>
                                     <div className="flex items-center gap-3 text-xs">
                                         <span className="text-slate-500 font-medium">{sched.schedule_date}</span>
                                         <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border ${STATUS_COLOR[sched.status] || 'text-slate-400 bg-slate-50 border-slate-200'}`}>{sched.status?.replace('_', ' ')}</span>

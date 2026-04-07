@@ -21,8 +21,8 @@ interface Station {
     latitude: number;
     longitude: number;
     ip_address?: string;
-    nama_pic?: string;
-    kontak_pic?: string;
+    pic_name?: string;
+    pic_contact?: string;
     kode_kota?: string;
     alamat?: string;
     provinsi?: string;
@@ -74,7 +74,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
     const [form, setForm] = useState<Partial<Station>>({
         id: '', name: '', city: '',
         latitude: -6.9147, longitude: 107.6098,
-        nama_pic: '', kontak_pic: '', ip_address: '',
+        pic_name: '', pic_contact: '', ip_address: '',
         alamat: '', provinsi: '', kabupaten_kota: '',
         kecamatan: '', kelurahan_desa: '', kode_pos: '',
         poi: '', media: ''
@@ -381,7 +381,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                 setEditingId(null);
                 setForm({
                     id: '', name: '', city: '', latitude: -6.9147, longitude: 107.6098,
-                    nama_pic: '', kontak_pic: '', ip_address: '',
+                    pic_name: '', pic_contact: '', ip_address: '',
                     alamat: '', provinsi: '', kabupaten_kota: '',
                     kecamatan: '', kelurahan_desa: '', kode_pos: '',
                     poi: '', media: ''
@@ -534,11 +534,11 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest">PIC Name</label>
-                                                <input value={form.nama_pic} onChange={e => setForm({ ...form, nama_pic: e.target.value })} placeholder="Full name of person in charge" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                                <input value={form.pic_name} onChange={e => setForm({ ...form, pic_name: e.target.value })} placeholder="Full name of person in charge" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest">PIC Contact</label>
-                                                <input value={form.kontak_pic} onChange={e => setForm({ ...form, kontak_pic: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
+                                                <input value={form.pic_contact} onChange={e => setForm({ ...form, pic_contact: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border-2 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#1d2d6a] focus:border-[#ee6f1f] focus:ring-4 focus:ring-[#ee6f1f]/5 outline-none transition-all placeholder:text-slate-300" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Email</label>
@@ -560,7 +560,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                 <MapPin size={20} />
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight">Lokasi & Peta</h3>
+                                                <h3 className="text-lg font-black text-[#1d2d6a] tracking-tight">Location & Mapping</h3>
                                                 <p className="text-xs font-medium text-slate-400">Geographic coordinates & address</p>
                                             </div>
                                         </div>
@@ -648,7 +648,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                             className="h-14 px-8 rounded-2xl font-black text-sm bg-white border-2 border-slate-100 text-slate-500 hover:bg-slate-50 hover:border-slate-200 transition-all active:scale-95 uppercase tracking-widest flex items-center gap-3"
                                         >
                                             <X size={18} />
-                                            Batal
+                                            Cancel
                                         </button>
                                         <button
                                             onClick={async () => {
@@ -666,7 +666,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                             ) : (
                                                 <Save size={18} />
                                             )}
-                                            {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                            {saving ? 'Saving...' : 'Save Changes'}
                                         </button>
                                     </div>
                                 </motion.div>
@@ -690,7 +690,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                             <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 group transition-all hover:border-[#ee6f1f]/20 h-full">
                                                 <div className="space-y-6">
                                                     <div className="space-y-1">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Stasiun</p>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Station Name</p>
                                                         <p className="text-2xl font-black text-[#1d2d6a] leading-tight transition-colors group-hover:text-[#ee6f1f]">
                                                             {selectedStation.name} {selectedStation.kode_kota ? `(${selectedStation.kode_kota})` : ''}
                                                         </p>
@@ -698,13 +698,13 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
 
                                                     <div className="grid grid-cols-2 gap-8">
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode Kota</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">City Code</p>
                                                             <p className="text-lg font-black text-[#1d2d6a] uppercase tracking-tighter">
                                                                 {selectedStation.kode_kota || 'JKT-C'}
                                                             </p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode Pos</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Postal Code</p>
                                                             <p className="text-lg font-black text-[#1d2d6a]">
                                                                 {selectedStation.kode_pos || '10110'}
                                                             </p>
@@ -715,19 +715,19 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
 
                                                     <div className="space-y-6">
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provinsi</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Province</p>
                                                             <p className="text-lg font-bold text-slate-600">{selectedStation.provinsi || 'DKI Jakarta'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kabupaten/Kota</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">City / Regency</p>
                                                             <p className="text-lg font-bold text-slate-600">{selectedStation.city}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kecamatan</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">District</p>
                                                             <p className="text-lg font-bold text-slate-600">{selectedStation.kecamatan || 'Gambir'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kelurahan/Desa</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Village</p>
                                                             <p className="text-lg font-bold text-slate-600">{selectedStation.kelurahan || 'Gambir'}</p>
                                                         </div>
                                                     </div>
@@ -749,7 +749,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                     </div>
                                                     <div>
                                                         <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Station Manager</p>
-                                                        <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.nama_pic || 'Arya Wiguna'}</p>
+                                                        <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.pic_name || 'Arya Wiguna'}</p>
                                                     </div>
                                                 </div>
 
@@ -760,8 +760,8 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                             <Phone size={20} />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Kontak PIC</p>
-                                                            <p className="text-lg font-black text-[#1d2d6a]">{selectedStation.kontak_pic || '+62 811-2345-6789'}</p>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">PIC Contact</p>
+                                                            <p className="text-lg font-black text-[#1d2d6a]">{selectedStation.pic_contact || '+62 811-2345-6789'}</p>
                                                             <p className="text-[10px] font-medium text-slate-400">Primary Mobile Line</p>
                                                         </div>
                                                     </div>
@@ -771,7 +771,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                             <Mail size={20} />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Email Operasional</p>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Operational Email</p>
                                                             <p className="text-lg font-black text-[#1d2d6a] break-all">{selectedStation.email || `${selectedStation.name.toLowerCase().replace(/\s+/g, '.')}@kai.id`}</p>
                                                         </div>
                                                     </div>
@@ -810,17 +810,17 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                 <div className="p-8 space-y-8 flex-1">
                                                     <div className="grid grid-cols-2 gap-8">
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lintang (Lat)</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Latitude</p>
                                                             <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.latitude?.toFixed(6) || '-6.176770'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bujur (Long)</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Longitude</p>
                                                             <p className="text-xl font-black text-[#1d2d6a] tracking-tight">{selectedStation.longitude?.toFixed(6) || '106.830616'}</p>
                                                         </div>
                                                     </div>
 
                                                     <div className="space-y-1">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alamat</p>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Address</p>
                                                         <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
                                                             {selectedStation.address || `Jl. Medan Merdeka Timur No.1, RT.5/RW.2, ${selectedStation.city}, Kecamatan Gambir, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta`}
                                                         </p>
@@ -934,7 +934,7 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                     : 'bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md'
                                     }`}
                             >
-                                {showForm ? <><X size={18} /> Cancel</> : <><Plus size={18} /> Tambah Stasiun</>}
+                                {showForm ? <><X size={18} /> Cancel</> : <><Plus size={18} /> Add Station</>}
                             </button>
                         </div>
 
@@ -969,11 +969,11 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label className="text-sm font-semibold text-slate-700 ml-0.5">PIC Name</label>
-                                                        <input value={form.nama_pic} onChange={e => setForm({ ...form, nama_pic: e.target.value })} placeholder="Full name of person in charge" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
+                                                        <input value={form.pic_name} onChange={e => setForm({ ...form, pic_name: e.target.value })} placeholder="Full name of person in charge" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-sm font-semibold text-slate-700 ml-0.5">PIC Contact Number</label>
-                                                        <input value={form.kontak_pic} onChange={e => setForm({ ...form, kontak_pic: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
+                                                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">PIC Contact</label>
+                                                        <input value={form.pic_contact} onChange={e => setForm({ ...form, pic_contact: e.target.value })} placeholder="+62 8xx-xxxx-xxxx" className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all placeholder:text-slate-300" />
                                                     </div>
                                                 </div>
 
