@@ -131,12 +131,10 @@ export async function startApiServer() {
     const record = loginAttempts.get(ip);
     if (record && now < record.resetAt) {
       if (record.count >= RATE_LIMIT_MAX) {
-        return res
-          .status(429)
-          .json({
-            success: false,
-            error: "Terlalu banyak percobaan login. Coba lagi dalam 1 menit.",
-          });
+        return res.status(429).json({
+          success: false,
+          error: "Terlalu banyak percobaan login. Coba lagi dalam 1 menit.",
+        });
       }
       record.count++;
     } else {
@@ -250,12 +248,10 @@ export async function startApiServer() {
     try {
       const { username, password } = req.body || {};
       if (!username || !password) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: "Username and password are required",
-          });
+        return res.status(400).json({
+          success: false,
+          error: "Username and password are required",
+        });
       }
 
       const user = await findUser(username, password);
@@ -458,12 +454,10 @@ export async function startApiServer() {
           source: "static-fallback",
         });
       } catch {
-        res
-          .status(500)
-          .json({
-            success: false,
-            error: "Gagal mengambil data master stasiun",
-          });
+        res.status(500).json({
+          success: false,
+          error: "Gagal mengambil data master stasiun",
+        });
       }
     }
   });
@@ -1039,12 +1033,10 @@ export async function startApiServer() {
       res.json({ success: true, restore: result });
     } catch (err) {
       console.error("[API] Backup restore error:", err);
-      res
-        .status(500)
-        .json({
-          success: false,
-          error: err.message || "Failed to restore backup",
-        });
+      res.status(500).json({
+        success: false,
+        error: err.message || "Failed to restore backup",
+      });
     }
   });
 
