@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\TrainsPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { Train, Plus, Trash2, RefreshCcw, Wifi, Clock, Pencil, X, CheckCircle2, User, Phone, MapPin, Building2, Layout, FileText, Settings, Activity, Info, Save, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -424,3 +429,4 @@ export default function TrainsPage({ token }: { token: string }) {
         </div>
     );
 }
+

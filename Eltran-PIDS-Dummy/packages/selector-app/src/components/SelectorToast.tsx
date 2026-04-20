@@ -1,6 +1,11 @@
 /**
  * SelectorToast — Toast notification component for Selector (memoized for RPi5).
  */
+/**
+ * Ringkasan: selector-app\src\components\SelectorToast.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info } from 'lucide-react';
@@ -41,3 +46,4 @@ const SelectorToast = React.memo(function SelectorToast({ toast, onClose }: Sele
 });
 
 export default SelectorToast;
+

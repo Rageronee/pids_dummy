@@ -1,6 +1,11 @@
 /**
  * StationControl — Station carousel with prev/next/sync buttons (memoized for RPi5).
  */
+/**
+ * Ringkasan: selector-app\src\components\StationControl.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, ChevronLeft, ChevronRight, RefreshCcw, Clock } from 'lucide-react';
@@ -66,3 +71,4 @@ const StationControl = React.memo(function StationControl({ stations, currentInd
 });
 
 export default StationControl;
+

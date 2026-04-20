@@ -14,6 +14,11 @@
  * 
  * No other code changes needed!
  */
+/**
+ * Ringkasan: shared\src\lib\hal\PidsServiceFactory.ts
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 
 import type { IPidsService, HalConfig } from './types';
 import { DummyPidsService } from './DummyAdapter';
@@ -47,3 +52,4 @@ export function getPidsService(): IPidsService {
     }
     return _instance;
 }
+

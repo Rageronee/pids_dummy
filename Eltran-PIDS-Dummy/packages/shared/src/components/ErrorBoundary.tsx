@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: shared\src\components\ErrorBoundary.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, AlertCircle, RefreshCcw } from 'lucide-react';
 
@@ -82,3 +87,4 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.children;
     }
 }
+

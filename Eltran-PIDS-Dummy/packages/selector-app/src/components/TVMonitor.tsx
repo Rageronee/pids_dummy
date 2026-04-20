@@ -2,6 +2,11 @@
  * TVMonitor — Fullscreen TV display (PIDS standby + Video mode).
  * Wrapped in React.memo to prevent re-renders from unrelated state changes (RPi5).
  */
+/**
+ * Ringkasan: selector-app\src\components\TVMonitor.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Video, Gauge, Mountain, Thermometer } from 'lucide-react';
@@ -176,3 +181,4 @@ const TVMonitor = React.memo(function TVMonitor({
 });
 
 export default TVMonitor;
+

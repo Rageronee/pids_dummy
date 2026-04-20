@@ -7,6 +7,11 @@
  *   3. Create HardwareSensorAdapter (GPS UART / I2C sensors on RPi)
  *   4. Swap in PidsServiceFactory
  */
+/**
+ * Ringkasan: shared\src\lib\hal\DummyAdapter.ts
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 
 import type {
     IDisplayAdapter,
@@ -105,3 +110,4 @@ export class DummyPidsService implements IPidsService {
         console.log('[DummyPidsService] Disposed');
     }
 }
+

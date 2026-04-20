@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: selector-app\src\components\ServiceConfigModal.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, X, Train } from 'lucide-react';
@@ -145,3 +150,4 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
 });
 
 export default ServiceConfigModal;
+

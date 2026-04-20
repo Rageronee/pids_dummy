@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\components\MapComponent.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 
@@ -59,3 +64,4 @@ const MapComponent: React.FC = () => {
 };
 
 export default MapComponent;
+

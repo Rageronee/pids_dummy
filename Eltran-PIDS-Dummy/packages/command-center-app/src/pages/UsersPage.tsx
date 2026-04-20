@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\UsersPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Shield, CheckCircle2, X } from 'lucide-react';
@@ -119,3 +124,4 @@ export default function UsersPage({ token }: { token: string }) {
         </div>
     );
 }
+

@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\StationsPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Plus, Search, MapPin, Building2, User, Phone, Globe,
@@ -1368,4 +1373,5 @@ export default function StationsPage({ token, setHeader, setHeaderTitle }: {
         </div>
     );
 }
+
 

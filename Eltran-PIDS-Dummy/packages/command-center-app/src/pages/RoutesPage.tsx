@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\RoutesPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
@@ -1174,3 +1179,4 @@ export default function RoutesPage({ token, setHeader }: { token: string, setHea
         </div>
     );
 }
+

@@ -7,6 +7,11 @@
  * - A change in telemetry won't re-render the station carousel
  * - A change in toast won't re-render the TV monitor
  */
+/**
+ * Ringkasan: selector-app\src\App.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Train, Clock, Settings, ChevronsUp, ChevronsDown, RefreshCcw, Navigation, Route, ChevronRight, ChevronDown } from 'lucide-react';
 import { LoginScreen } from '@eltran/shared';
@@ -552,4 +557,5 @@ function App() {
 }
 
 export default App;
+
 

@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\hooks\useToast.ts
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useCallback, useRef } from 'react';
 
 /**
@@ -17,3 +22,4 @@ export function useToast() {
 
     return { toast, showToast, closeToast };
 }
+

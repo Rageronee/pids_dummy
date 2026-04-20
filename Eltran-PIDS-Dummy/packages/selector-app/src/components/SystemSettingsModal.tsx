@@ -1,6 +1,11 @@
 /**
  * SystemSettingsModal — LED & Service configuration modal (memoized for RPi5).
  */
+/**
+ * Ringkasan: selector-app\src\components\SystemSettingsModal.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap, Clock, Settings as SettingsIcon, Video, LogOut } from 'lucide-react';
@@ -146,3 +151,4 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
 });
 
 export default SystemSettingsModal;
+

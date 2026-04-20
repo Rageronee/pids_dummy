@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\App.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -164,3 +169,4 @@ export default function App() {
         </div>
     );
 }
+

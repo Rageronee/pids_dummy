@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\SchedulesPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Train, Trash2, RefreshCcw, ChevronRight, MapPinned, Plus, X, CheckCircle2, Clock, MapPin, Info, Paperclip, Activity } from 'lucide-react';
@@ -453,4 +458,5 @@ export default function SchedulesPage({ token }: { token: string }) {
         </div>
     );
 }
+
 

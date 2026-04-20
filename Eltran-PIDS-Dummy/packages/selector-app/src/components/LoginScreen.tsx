@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: selector-app\src\components\LoginScreen.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
@@ -156,3 +161,4 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </div>
     );
 }
+

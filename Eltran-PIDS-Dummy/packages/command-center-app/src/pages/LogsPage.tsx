@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\LogsPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCcw } from 'lucide-react';
@@ -129,3 +134,4 @@ export default function LogsPage({ token }: { token: string }) {
         </div>
     );
 }
+

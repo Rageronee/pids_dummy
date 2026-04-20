@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\DashboardPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React, { useState, useEffect } from 'react';
 import {
     Activity,
@@ -250,3 +255,4 @@ const TransportLineCard: React.FC<{
 };
 
 export default DashboardPage;
+

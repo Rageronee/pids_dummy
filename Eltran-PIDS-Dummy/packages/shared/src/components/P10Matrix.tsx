@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: shared\src\components\P10Matrix.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useEffect, useRef, memo } from 'react';
 
 interface P10MatrixProps {
@@ -246,3 +251,4 @@ const P10MatrixInner = ({
     );
 };
 export const P10Matrix = memo(P10MatrixInner);
+

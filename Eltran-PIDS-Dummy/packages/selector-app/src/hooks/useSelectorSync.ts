@@ -4,6 +4,11 @@
  * RPi5 Optimization: This hook centralizes all IO so that components
  * only re-render when their specific data slice changes.
  */
+/**
+ * Ringkasan: selector-app\src\hooks\useSelectorSync.ts
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { AuthUser, PidsState } from '@eltran/pids-core';
@@ -169,4 +174,5 @@ export function useSelectorSync() {
         sendData,
     };
 }
+
 

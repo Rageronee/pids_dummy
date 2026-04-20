@@ -1,6 +1,11 @@
 /**
  * ServiceConfig — Train service and unit configuration (memoized for RPi5).
  */
+/**
+ * Ringkasan: selector-app\src\components\ServiceConfig.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Settings, ChevronDown } from 'lucide-react';
 
@@ -134,3 +139,4 @@ const ServiceConfig = React.memo(function ServiceConfig({
 });
 
 export default ServiceConfig;
+

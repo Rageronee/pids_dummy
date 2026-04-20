@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\pages\LoginPage.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
@@ -61,3 +66,4 @@ export default function LoginPage({ onLogin }: { onLogin: (user: AuthUser, token
         </div>
     );
 }
+

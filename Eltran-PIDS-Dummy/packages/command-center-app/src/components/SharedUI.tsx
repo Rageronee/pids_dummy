@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: command-center-app\src\components\SharedUI.tsx
+ * Tujuan: Komponen UI untuk PIDS.
+ * Catatan: Komentar diringkas di atas; tidak mengubah logika.
+ */
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, X, Info } from 'lucide-react';
 
@@ -77,3 +82,4 @@ export function ToastNotification({ toast, onClose }: { toast: { msg: string; ok
         </AnimatePresence>
     );
 }
+
