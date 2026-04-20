@@ -1,5 +1,5 @@
 /**
- * useSelectorSync — Extracts all WebSocket, API, and state sync logic.
+ * useSelectorSync: Mengelola koneksi WebSocket, sinkronisasi state, dan komunikasi API.
  * 
  * RPi5 Optimization: This hook centralizes all IO so that components
  * only re-render when their specific data slice changes.
@@ -8,7 +8,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { AuthUser, PidsState } from '@eltran/pids-core';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+function normalizeStations(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return value.filter(Boolean);
+}
 
 export function useSelectorSync() {
     // Auth
@@ -42,8 +47,10 @@ export function useSelectorSync() {
                 headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
                 body: JSON.stringify(newData)
             });
+            return true;
         } catch (e) {
             console.error('Error posting PIDS state:', e);
+            return false;
         }
     }, [authToken]);
 
@@ -57,7 +64,12 @@ export function useSelectorSync() {
                 .then(d => {
                     if (d.success) { setAuthToken(token); setAuthUser(JSON.parse(userStr)); }
                     else { sessionStorage.removeItem('pids_token'); sessionStorage.removeItem('pids_user'); }
-                }).catch(() => { setAuthToken(token); setAuthUser(JSON.parse(userStr)); });
+                }).catch(() => {
+                    sessionStorage.removeItem('pids_token');
+                    sessionStorage.removeItem('pids_user');
+                    setAuthToken('');
+                    setAuthUser(null);
+                });
         }
     }, []);
 
@@ -66,7 +78,7 @@ export function useSelectorSync() {
         // Fetch DB
         fetch(`${API_URL}/api/db`).then(r => r.json()).then(d => {
             if (d.success && d.data?.trainNames) { setTrainNames(d.data.trainNames); setRoutes(d.data.routes || {}); }
-        }).catch(() => { });
+        }).catch((e) => { console.error('[SelectorSync] DB fetch failed:', e); });
 
         // Fetch State
         fetch(`${API_URL}/api/state`).then(r => r.json()).then(s => {
@@ -76,9 +88,9 @@ export function useSelectorSync() {
                 if (s.trainNumber !== undefined) setMasterSyncedNumber(s.trainNumber);
                 if (s.coachCount !== undefined) setCoachCount(s.coachCount);
                 if (s.ledSpeed !== undefined) setMasterSyncedLedSpeed(s.ledSpeed);
-                if (s.stations && Array.isArray(s.stations)) setStations(s.stations);
+                if (s.stations) setStations(normalizeStations(s.stations));
             }
-        }).catch(() => { });
+        }).catch((e) => { console.error('[SelectorSync] State fetch failed:', e); });
 
         // Socket.IO
         const socket = io(API_URL, { transports: ['websocket', 'polling'], reconnection: true, reconnectionDelay: 1000 });
@@ -91,9 +103,7 @@ export function useSelectorSync() {
             if (parsed.trainNumber !== undefined) setMasterSyncedNumber(parsed.trainNumber);
             if (parsed.coachCount !== undefined) setCoachCount(parsed.coachCount);
             if (parsed.ledSpeed !== undefined) setMasterSyncedLedSpeed(parsed.ledSpeed);
-            if (parsed.stations && Array.isArray(parsed.stations)) {
-                setStations(parsed.stations);
-            }
+            if (parsed.stations) setStations(normalizeStations(parsed.stations));
         });
         socket.on('db:update', (dbUpdate: any) => {
             if (dbUpdate.trainNames) setTrainNames(dbUpdate.trainNames);
@@ -159,3 +169,4 @@ export function useSelectorSync() {
         sendData,
     };
 }
+

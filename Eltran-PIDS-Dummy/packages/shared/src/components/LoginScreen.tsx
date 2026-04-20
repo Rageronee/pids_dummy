@@ -9,7 +9,7 @@ interface LoginScreenProps {
     subtitle?: string;
 }
 
-const API_URL = 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function LoginScreen({ 
     onLogin, 
@@ -53,7 +53,7 @@ export function LoginScreen({
 
     return (
         <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white font-sans">
-            {/* Background Image with blur and overlay */}
+            {/* Gambar latar buram dengan overlay */}
             <div
                 className="absolute inset-0 z-0 scale-105"
                 style={{
@@ -72,7 +72,7 @@ export function LoginScreen({
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="w-full max-w-[440px] rounded-[2rem] bg-white/95 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] flex flex-col items-center"
                 >
-                    {/* Branding */}
+                    {/* Identitas aplikasi */}
                     <div className="mb-10 flex flex-col items-center text-center">
                         <div className="relative mb-5">
                             <div className="absolute inset-0 bg-white/40 blur-2xl rounded-full scale-150" />
@@ -90,9 +90,9 @@ export function LoginScreen({
                         </p>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="flex w-full flex-col space-y-7">
-                        {/* Username Input */}
+                    {/* Form login */}
+                    <Form login onSubmit={handleSubmit} className="flex w-full flex-col space-y-7">
+                        {/* Input username */}
                         <div className="relative w-full">
                             <input
                                 type="text"
@@ -105,7 +105,7 @@ export function LoginScreen({
                             />
                         </div>
 
-                        {/* Password Input */}
+                        {/* Input password */}
                         <div className="relative w-full">
                             <input
                                 type={showPassword ? 'text' : 'password'}
@@ -126,7 +126,7 @@ export function LoginScreen({
                             </button>
                         </div>
 
-                        {/* Error Message */}
+                        {/* Pesan error */}
                         <AnimatePresence>
                             {error && (
                                 <motion.div
@@ -141,7 +141,7 @@ export function LoginScreen({
                             )}
                         </AnimatePresence>
 
-                        {/* Submit Button */}
+                        {/* Tombol masuk */}
                         <button
                             type="submit"
                             disabled={isLoading}
@@ -150,11 +150,11 @@ export function LoginScreen({
                             {isLoading ? 'Memproses...' : 'Masuk Ke Sistem'}
                         </button>
                         
-                        {/* Hint Info */}
+                        {/* Info demo */}
                         <p className="text-center w-full text-[15px] text-slate-400 font-medium mt-6">
                             Demo: operator / operator123
                         </p>
-                    </form>
+                    </Form login>
                 </motion.div>
             </div>
 
@@ -167,3 +167,4 @@ export function LoginScreen({
         </div>
     );
 }
+

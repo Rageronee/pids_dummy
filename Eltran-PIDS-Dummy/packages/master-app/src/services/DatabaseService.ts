@@ -94,14 +94,8 @@ const getFs = () => {
         const fs = window.require('fs');
         const os = window.require('os');
         const path = window.require('path');
-        // Use user's home directory or app data for persistence
-        // For simplicity and compatibility with the existing temp file usage, 
-        // we can place it in the same temp dir or a more permanent one.
-        // Given "database", let's make it more persistent if possible, 
-        // but 'temp' is safe for this demo environment.
-        // Let's us os.homedir() to simulate a real persistent "My Documents" or similar if we wanted,
-        // but let's stick to os.tmpdir() for now to avoid permission issues in this environment,
-        // OR better: use the same strategy as the shared file but with a different name.
+        // Pilih lokasi file DB: gunakan os.tmpdir() untuk menghindari masalah izin.
+        // Menyimpan di direktori sementara agar kompatibel dengan lingkungan demo.
         const filePath = path.join(os.tmpdir(), DB_FILENAME);
         return { fs, filePath };
     }
@@ -160,3 +154,4 @@ export const DatabaseService = {
 
     // Extensible for future database operations
 };
+

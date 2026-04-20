@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<Props, State> {
     };
 
     public static getDerivedStateFromError(error: Error): State {
-        // Update state so the next render will show the fallback UI.
+        // Set state agar render berikutnya menampilkan UI fallback.
         return { hasError: true, error };
     }
 
@@ -48,3 +48,4 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.children;
     }
 }
+
