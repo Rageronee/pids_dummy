@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: Entrypoint Electron (Selector).
+ * Tujuan: Membuat jendela yang sesuai untuk layar selector (mis. 800x480) dan memuat UI.
+ * Catatan: Komentar diringkas ke atas; tidak mengubah logika.
+ */
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -50,3 +55,4 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+

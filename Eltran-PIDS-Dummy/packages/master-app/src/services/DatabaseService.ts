@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: DatabaseService (mock lokal untuk UI).
+ * Tujuan: Inisialisasi file DB lokal, seed data, dan operasi penyimpanan sederhana untuk demo.
+ * Catatan: Komentar diringkas ke atas; tidak mengubah logika.
+ */
 
 const DB_FILENAME = 'eltran-pids-db.json';
 
@@ -154,4 +159,5 @@ export const DatabaseService = {
 
     // Extensible for future database operations
 };
+
 

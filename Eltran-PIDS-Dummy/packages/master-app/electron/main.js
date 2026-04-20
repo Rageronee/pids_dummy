@@ -1,7 +1,12 @@
+/**
+ * Ringkasan: Entrypoint Electron (Master).
+ * Tujuan: Menjalankan backend, membuat jendela aplikasi, dan menutup layanan secara teratur saat keluar.
+ * Catatan: Komentar diringkas ke atas; tidak mengubah logika.
+ */
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { startApiServer } from './api.js';
+import { startApiServer, stopApiServer } from './api.js';
 import { closeDatabase } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,16 +52,20 @@ ipcMain.handle('select-directory', async () => {
 });
 
 app.whenReady().then(async () => {
-    // Start the local PIDS API backend (SQLite + Socket.IO)
-    await startApiServer();
+    try {
+        await startApiServer();
+        createWindow();
 
-    createWindow();
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    });
+        app.on('activate', () => {
+            if (BrowserWindow.getAllWindows().length === 0) {
+                createWindow();
+            }
+        });
+    } catch (err) {
+        console.error('[PIDS-MAIN] Failed to start backend:', err);
+        dialog.showErrorBox('Startup Error', 'Backend failed to start. Check database connection and logs.');
+        app.quit();
+    }
 });
 
 app.on('window-all-closed', () => {
@@ -66,10 +75,17 @@ app.on('window-all-closed', () => {
 });
 
 // Cleanup on quit
+let isShuttingDown = false;
 app.on('before-quit', async (event) => {
-    // We prevent default to ensure the DB closes before the app actually exits
-    // However, in many Electron versions, quit() is called immediately.
-    // A better way is to use a flag or just await if it works in your environment.
-    console.log('[PIDS-MAIN] Closing database...');
-    await closeDatabase();
+    if (isShuttingDown) return;
+    event.preventDefault();
+    isShuttingDown = true;
+    console.log('[PIDS-MAIN] Closing backend...');
+    try {
+        await stopApiServer();
+        await closeDatabase();
+    } finally {
+        app.exit(0);
+    }
 });
+

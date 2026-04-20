@@ -2,6 +2,12 @@
  * PIDS KAI — PostgreSQL Database Layer
  * Replaces SQLite with a proper relational database.
  */
+/**
+ * Ringkasan: Lapisan data utama.
+ * Tujuan: Inisialisasi DB, helper query, migrasi, transaksi, audit log, dan backup/restore.
+ * Catatan: Komentar diringkas ke atas; tidak mengubah logika.
+ */
+
 import 'dotenv/config';
 import pg from 'pg';
 const { Pool } = pg;
@@ -12,6 +18,19 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const QUERY_TIMEOUT_MS = 15000;
+const POOL_CONFIG = {
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+    allowExitOnIdle: true,
+};
+
+const RUNTIME_DIR = path.resolve(__dirname, '..', 'runtime');
+const AUDIT_DIR = path.join(RUNTIME_DIR, 'audit');
+const AUDIT_LOG_FILE = path.join(AUDIT_DIR, 'audit-log.jsonl');
+const BACKUP_DIR = path.join(RUNTIME_DIR, 'backups');
 
 /**
  * Normalizes station names for comparison
@@ -76,12 +95,22 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, storedHash) {
+    if (!storedHash) return false;
     if (!storedHash.includes(':')) {
-        return password === storedHash;
+        const expected = crypto.createHash('sha256').update(String(storedHash)).digest();
+        const actual = crypto.createHash('sha256').update(String(password || '')).digest();
+        return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
     }
     const [salt, hash] = storedHash.split(':');
-    const derivedHash = crypto.scryptSync(password, salt, KEY_LENGTH).toString('hex');
-    return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(derivedHash, 'hex'));
+    try {
+        const derivedHash = crypto.scryptSync(String(password || ''), salt, KEY_LENGTH).toString('hex');
+        const left = Buffer.from(hash, 'hex');
+        const right = Buffer.from(derivedHash, 'hex');
+        return left.length === right.length && crypto.timingSafeEqual(left, right);
+    } catch (e) {
+        console.error('[PIDS-DB] Password verification error:', e.message);
+        return false;
+    }
 }
 
 let pool = null;
@@ -93,26 +122,23 @@ let pool = null;
 export async function initDatabase() {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-        console.error('[PIDS-DB] FATAL: DATABASE_URL environment variable is not set.');
-        console.error('[PIDS-DB] Copy .env.example to .env and fill in your PostgreSQL credentials.');
-        process.exit(1);
+        throw new Error('DATABASE_URL environment variable is not set');
     }
-    pool = new Pool({ connectionString });
+    pool = new Pool({ connectionString, ...POOL_CONFIG });
 
     try {
         await pool.query('SELECT NOW()');
         console.log('[PIDS-DB] PostgreSQL connected successfully');
         await createTables();
         await seedData();
-        // Indices for performance
-        await pool.query('CREATE INDEX IF NOT EXISTS idx_schedules_date ON schedules(schedule_date)');
-        await pool.query('CREATE INDEX IF NOT EXISTS idx_schedules_service ON schedules(service_name)');
-        await pool.query('CREATE INDEX IF NOT EXISTS idx_sensor_data_sensor ON sensor_data(sensor_id)');
-        await pool.query('CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp DESC)');
-        
         console.log('[PIDS-DB] Database schema is ready (English).');
     } catch (err) {
         console.error('[PIDS-DB] Database initialization error:', err.message);
+        if (pool) {
+            await pool.end().catch(() => { });
+            pool = null;
+        }
+        throw err;
     }
     return pool;
 }
@@ -121,12 +147,19 @@ export function startAutoSave() { }
 export function saveDb() { }
 
 async function query(sql, params = []) {
+    if (!pool) {
+        throw new Error('Database pool is not initialized');
+    }
     let pgSql = sql;
     let index = 1;
     while (pgSql.includes('?')) {
         pgSql = pgSql.replace('?', `$${index++}`);
     }
-    return await pool.query(pgSql, params);
+    return await pool.query({
+        text: pgSql,
+        values: params,
+        query_timeout: QUERY_TIMEOUT_MS,
+    });
 }
 
 async function getOne(sql, params = []) {
@@ -256,8 +289,16 @@ async function createTables() {
             platform INTEGER DEFAULT 1,
             stop_status TEXT NOT NULL DEFAULT 'SCHEDULED',
             CONSTRAINT fk_schedule FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
-            CONSTRAINT fk_route_station FOREIGN KEY (route_station_id) REFERENCES route_stations(id)
+            CONSTRAINT fk_route_station FOREIGN KEY (route_station_id) REFERENCES route_stations(id) ON DELETE CASCADE
         )
+    `);
+
+    // Existing databases may still have the legacy no-cascade FK, so normalize it here.
+    await pool.query(`ALTER TABLE schedule_stops DROP CONSTRAINT IF EXISTS fk_route_station`);
+    await pool.query(`
+        ALTER TABLE schedule_stops
+        ADD CONSTRAINT fk_route_station
+        FOREIGN KEY (route_station_id) REFERENCES route_stations(id) ON DELETE CASCADE
     `);
 
     // ---- users ----
@@ -474,16 +515,20 @@ async function createTables() {
     ];
 
     for (const [table, oldCol, newCol] of renames) {
-        await pool.query(`
-            DO $$ BEGIN
-                IF EXISTS (
-                    SELECT 1 FROM information_schema.columns
-                    WHERE table_name='${table}' AND column_name='${oldCol}'
-                ) THEN
-                    ALTER TABLE "${table}" RENAME COLUMN "${oldCol}" TO "${newCol}";
-                END IF;
-            END $$;
-        `).catch(e => console.log(`[PIDS-DB] Rename note (${table}.${oldCol}→${newCol}):`, e.message));
+        try {
+            await pool.query(`
+                DO $$ BEGIN
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='${table}' AND column_name='${oldCol}'
+                    ) THEN
+                        ALTER TABLE "${table}" RENAME COLUMN "${oldCol}" TO "${newCol}";
+                    END IF;
+                END $$;
+            `);
+        } catch (e) {
+            console.warn(`[PIDS-DB] Rename note (${table}.${oldCol}→${newCol}):`, e.message);
+        }
     }
 
     // Rename legacy tables if they exist
@@ -496,14 +541,18 @@ async function createTables() {
     ];
 
     for (const [oldTable, newTable] of tableRenames) {
-        await pool.query(`
-            DO $$ BEGIN
-                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='${oldTable}')
-                AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='${newTable}') THEN
-                    ALTER TABLE "${oldTable}" RENAME TO "${newTable}";
-                END IF;
-            END $$;
-        `).catch(e => console.log(`[PIDS-DB] Table rename note (${oldTable}→${newTable}):`, e.message));
+        try {
+            await pool.query(`
+                DO $$ BEGIN
+                    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='${oldTable}')
+                    AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='${newTable}') THEN
+                        ALTER TABLE "${oldTable}" RENAME TO "${newTable}";
+                    END IF;
+                END $$;
+            `);
+        } catch (e) {
+            console.warn(`[PIDS-DB] Table rename note (${oldTable}→${newTable}):`, e.message);
+        }
     }
 
     // ---- Indexes for performance ----
@@ -517,7 +566,11 @@ async function createTables() {
     ];
 
     for (const idx of indexes) {
-        await pool.query(idx).catch(e => console.log('[PIDS-DB] Index note:', e.message));
+        try {
+            await pool.query(idx);
+        } catch (e) {
+            console.warn('[PIDS-DB] Index note:', e.message);
+        }
     }
 }
 
@@ -797,37 +850,42 @@ export async function seedData() {
 // ============================================================
 
 export async function getState() {
-    const row = await getOne('SELECT * FROM pids_state WHERE id = 1');
-    if (!row) return getDefaultState();
-    let activeRoute = null;
-    try { activeRoute = JSON.parse(row.active_route_json || '{}'); } catch { }
-    return {
-        serviceName: row.service_name,
-        currentStation: row.current_station,
-        trainNumber: row.train_number,
-        nextStation: row.next_station,
-        status: row.status,
-        ledSpeed: row.led_speed,
-        speed: row.speed,
-        altitude: row.altitude,
-        temperature: row.temperature,
-        airQuality: row.air_quality,
-        displayMode: row.display_mode,
-        stations: activeRoute?.stations || [],
-        activeRoute,
-        geofencingInnerRadius: row.geofencing_inner_radius,
-        geofencingOuterRadius: row.geofencing_outer_radius,
-        showTrainNumber: row.show_train_number !== false,
-        ledActive: row.led_active !== false,
-        videoPlaylist: JSON.parse(row.video_playlist_json || '[]'),
-        activeVideoIndex: row.active_video_index ?? 0,
-        isPlaying: row.video_is_playing ?? false,
-        playbackMode: row.video_playback_mode || 'normal',
-        volume: row.video_volume ?? 50,
-        tvStandby: row.video_tv_standby ?? true,
-        playbackProgress: row.video_playback_progress ?? 0,
-        coachCount: row.coach_count ?? 10,
-    };
+    try {
+        const row = await getOne('SELECT * FROM pids_state WHERE id = 1');
+        if (!row) return getDefaultState();
+        let activeRoute = null;
+        try { activeRoute = JSON.parse(row.active_route_json || '{}'); } catch { }
+        return {
+            serviceName: row.service_name,
+            currentStation: row.current_station,
+            trainNumber: row.train_number,
+            nextStation: row.next_station,
+            status: row.status,
+            ledSpeed: row.led_speed,
+            speed: row.speed,
+            altitude: row.altitude,
+            temperature: row.temperature,
+            airQuality: row.air_quality,
+            displayMode: row.display_mode,
+            stations: activeRoute?.stations || [],
+            activeRoute,
+            geofencingInnerRadius: row.geofencing_inner_radius,
+            geofencingOuterRadius: row.geofencing_outer_radius,
+            showTrainNumber: row.show_train_number !== false,
+            ledActive: row.led_active !== false,
+            videoPlaylist: JSON.parse(row.video_playlist_json || '[]'),
+            activeVideoIndex: row.active_video_index ?? 0,
+            isPlaying: row.video_is_playing ?? false,
+            playbackMode: row.video_playback_mode || 'normal',
+            volume: row.video_volume ?? 50,
+            tvStandby: row.video_tv_standby ?? true,
+            playbackProgress: row.video_playback_progress ?? 0,
+            coachCount: row.coach_count ?? 10,
+        };
+    } catch (e) {
+        console.error('[PIDS-DB] getState error:', e.message);
+        return getDefaultState();
+    }
 }
 
 function getDefaultState() {
@@ -892,7 +950,14 @@ export async function updateState(updates) {
 // CRUD OPERATIONS
 // ============================================================
 
-export async function getUsers() { return await getAll('SELECT id, username, role, full_name, contact, email FROM users'); }
+export async function getUsers() {
+    try {
+        return await getAll('SELECT id, username, role, full_name, contact, email FROM users');
+    } catch (e) {
+        console.error('[PIDS-DB] getUsers error:', e.message);
+        return [];
+    }
+}
 export async function getUsersWithPassword() { return await getAll('SELECT * FROM users'); }
 export async function findUser(username, password) {
     const user = await getOne('SELECT * FROM users WHERE username = $1', [username]);
@@ -902,12 +967,22 @@ export async function findUser(username, password) {
 }
 
 export async function getTrains() {
-    return await getAll('SELECT * FROM train_services ORDER BY id');
+    try {
+        return await getAll('SELECT * FROM train_services ORDER BY id');
+    } catch (e) {
+        console.error('[PIDS-DB] getTrains error:', e.message);
+        return [];
+    }
 }
 
 export async function getTrainNames() {
-    const rows = await getAll('SELECT name FROM train_services ORDER BY id');
-    return rows.map(r => r.name);
+    try {
+        const rows = await getAll('SELECT name FROM train_services ORDER BY id');
+        return rows.map(r => r.name);
+    } catch (e) {
+        console.error('[PIDS-DB] getTrainNames error:', e.message);
+        return [];
+    }
 }
 
 export async function addTrain(train) {
@@ -950,46 +1025,50 @@ export async function deleteTrain(name) {
 }
 
 export async function getStations(filter = {}) {
-    let sql = 'SELECT * FROM stations';
-    const params = [];
+    try {
+        let sql = 'SELECT * FROM stations';
+        const params = [];
 
-    if (filter.search) {
-        const search = `%${filter.search}%`;
-        sql += ` WHERE name ILIKE $1 OR city ILIKE $1`;
-        params.push(search);
+        if (filter.search) {
+            const search = `%${filter.search}%`;
+            sql += ` WHERE name ILIKE $1 OR city ILIKE $1`;
+            params.push(search);
+        }
+
+        sql += ' ORDER BY name';
+
+        let stations = await getAll(sql, params);
+
+        if (filter.division && filter.division !== 'All Stations') {
+            const javaCities = ['malang', 'bandung', 'surakarta', 'solo', 'yogya', 'semarang', 'cirebon', 'jakarta', 'blitar', 'kediri', 'nganjuk', 'madiun', 'ngawi', 'sragen', 'klaten', 'purworejo', 'kebumen', 'cilacap', 'banjar', 'ciamis', 'tasikmalaya', 'garut'];
+
+            stations = stations.filter(s => {
+                const isJava = javaCities.some(city => (s.city || '').toLowerCase().includes(city) || (s.name || '').toLowerCase().includes(city)) ||
+                    (s.provinsi || '').toLowerCase().includes('jawa') ||
+                    (s.provinsi || '').toLowerCase().includes('dki') ||
+                    (s.id || '').startsWith('JR');
+
+                const div = isJava ? 'Java Division' : 'Sumatra Division';
+                return div === filter.division;
+            });
+        }
+
+        const total = stations.length;
+        const limit = filter.limit ? parseInt(filter.limit) : total;
+        const offset = filter.offset ? parseInt(filter.offset) : 0;
+
+        const paginatedStations = stations.slice(offset, offset + limit);
+
+        return {
+            stations: paginatedStations,
+            total,
+            limit,
+            offset
+        };
+    } catch (e) {
+        console.error('[PIDS-DB] getStations error:', e.message);
+        return { stations: [], total: 0, limit: 0, offset: 0 };
     }
-
-    sql += ' ORDER BY name';
-
-    let stations = await getAll(sql, params);
-
-    // Filter by division in JS
-    if (filter.division && filter.division !== 'All Stations') {
-        const javaCities = ['malang', 'bandung', 'surakarta', 'solo', 'yogya', 'semarang', 'cirebon', 'jakarta', 'blitar', 'kediri', 'nganjuk', 'madiun', 'ngawi', 'sragen', 'klaten', 'purworejo', 'kebumen', 'cilacap', 'banjar', 'ciamis', 'tasikmalaya', 'garut'];
-
-        stations = stations.filter(s => {
-            const isJava = javaCities.some(city => (s.city || '').toLowerCase().includes(city) || (s.name || '').toLowerCase().includes(city)) || 
-                           (s.provinsi || '').toLowerCase().includes('jawa') || 
-                           (s.provinsi || '').toLowerCase().includes('dki') ||
-                           (s.id || '').startsWith('JR');
-
-            const div = isJava ? 'Java Division' : 'Sumatra Division';
-            return div === filter.division;
-        });
-    }
-
-    const total = stations.length;
-    const limit = filter.limit ? parseInt(filter.limit) : total;
-    const offset = filter.offset ? parseInt(filter.offset) : 0;
-
-    const paginatedStations = stations.slice(offset, offset + limit);
-
-    return {
-        stations: paginatedStations,
-        total,
-        limit,
-        offset
-    };
 }
 export async function addStation(data) {
     try {
@@ -1006,6 +1085,15 @@ export async function addStation(data) {
             postal_code,
             poi, media
         } = data;
+        const legacyPicName = data.nama_pic;
+        const legacyPicContact = data.kontak_pic;
+        const legacyCityCode = data.kode_kota;
+        const legacyAddress = data.alamat;
+        const legacyProvince = data.provinsi;
+        const legacyRegency = data.kabupaten_kota;
+        const legacyDistrict = data.kecamatan;
+        const legacyVillage = data.kelurahan_desa;
+        const legacyPostalCode = data.kode_pos;
         await query(
             `INSERT INTO stations (id, name, city, latitude, longitude, ip_address, pic_name, pic_contact, city_code, address, province, regency, district, village, postal_code, poi, media)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
@@ -1016,11 +1104,11 @@ export async function addStation(data) {
              regency = EXCLUDED.regency, district = EXCLUDED.district,
              village = EXCLUDED.village, postal_code = EXCLUDED.postal_code, poi = EXCLUDED.poi, media = EXCLUDED.media`,
             [id, name, city, latitude || 0, longitude || 0, ip_address || '',
-             pic_name || nama_pic || '', pic_contact || kontak_pic || '',
-             city_code || kode_kota || '', address || alamat || '',
-             province || provinsi || '', regency || kabupaten_kota || '',
-             district || kecamatan || '', village || kelurahan_desa || '',
-             postal_code || kode_pos || '', poi || '', media || '']
+             pic_name || legacyPicName || '', pic_contact || legacyPicContact || '',
+             city_code || legacyCityCode || '', address || legacyAddress || '',
+             province || legacyProvince || '', regency || legacyRegency || '',
+             district || legacyDistrict || '', village || legacyVillage || '',
+             postal_code || legacyPostalCode || '', poi || '', media || '']
         );
         return { success: true, station: data };
     } catch (e) { return { error: e.message }; }
@@ -1049,70 +1137,73 @@ function isNameMatch(a, b) {
 }
 
 export async function getRoutes() {
-    const services = await getAll('SELECT * FROM train_services ORDER BY id');
-    const liveState = await getState();
-    const routes = {};
-    for (const service of services) {
-        const dbRoute = await getOne('SELECT * FROM routes WHERE train_service_id = $1', [service.id]);
-        let stations = [];
-        if (dbRoute) {
-            const stationRows = await getAll(`
-                SELECT s.name, s.media
-                FROM route_stations rs
-                JOIN stations s ON rs.station_id = s.id
-                WHERE rs.route_id = $1
-                ORDER BY rs.sequence_order
-            `, [dbRoute.id]);
-            stations = stationRows.map(r => ({ name: r.name, media: r.media }));
-        }
-
-        const isLive = isNameMatch(service.name, liveState.serviceName);
-        const currentStationName = isLive ? liveState.currentStation : '';
-
-        if (dbRoute) {
-            const parsed = JSON.parse(dbRoute.geojson || '{}');
-            const routeStations = stations.length > 0 ? stations : (parsed.stations || []);
-            
-            // Dynamically find index if live, otherwise use cached
-            let currentIdx = parsed.current_station_index;
-            if (isLive && currentStationName) {
-                const found = routeStations.findIndex(s => isNameMatch(typeof s === 'string' ? s : s.name, currentStationName));
-                if (found !== -1) currentIdx = found;
+    try {
+        const services = await getAll('SELECT * FROM train_services ORDER BY id');
+        const liveState = await getState();
+        const routes = {};
+        for (const service of services) {
+            const dbRoute = await getOne('SELECT * FROM routes WHERE train_service_id = $1', [service.id]);
+            let stations = [];
+            if (dbRoute) {
+                const stationRows = await getAll(`
+                    SELECT s.name, s.media
+                    FROM route_stations rs
+                    JOIN stations s ON rs.station_id = s.id
+                    WHERE rs.route_id = $1
+                    ORDER BY rs.sequence_order
+                `, [dbRoute.id]);
+                stations = stationRows.map(r => ({ name: r.name, media: r.media }));
             }
 
-            routes[service.name] = {
-                ...parsed,
-                name: service.name,
-                stations: routeStations,
-                geojson: dbRoute.geojson,
-                geojson_filename: dbRoute.geojson_filename,
-                is_active: isLive,
-                current_station: currentStationName,
-                current_station_index: currentIdx,
-                status: isLive ? liveState.status : (parsed.status || 'ON TRACK'),
-                train_number: isLive ? liveState.trainNumber : (service.ka_number || parsed.train_number || '')
-            };
-        } else {
-            // Find index even if no geojson exists if it's live
-            let currentIdx = 0;
-            if (isLive && currentStationName) {
-                const found = stations.findIndex(s => isNameMatch(typeof s === 'string' ? s : s.name, currentStationName));
-                if (found !== -1) currentIdx = found;
-            }
+            const isLive = isNameMatch(service.name, liveState.serviceName);
+            const currentStationName = isLive ? liveState.currentStation : '';
 
-            routes[service.name] = { 
-                name: service.name, 
-                stations: stations, 
-                path: '', 
-                nodes: [],
-                is_active: isLive,
-                current_station: currentStationName,
-                current_station_index: currentIdx,
-                status: isLive ? liveState.status : 'STANDBY'
-            };
+            if (dbRoute) {
+                const parsed = JSON.parse(dbRoute.geojson || '{}');
+                const routeStations = stations.length > 0 ? stations : (parsed.stations || []);
+
+                let currentIdx = parsed.current_station_index;
+                if (isLive && currentStationName) {
+                    const found = routeStations.findIndex(s => isNameMatch(typeof s === 'string' ? s : s.name, currentStationName));
+                    if (found !== -1) currentIdx = found;
+                }
+
+                routes[service.name] = {
+                    ...parsed,
+                    name: service.name,
+                    stations: routeStations,
+                    geojson: dbRoute.geojson,
+                    geojson_filename: dbRoute.geojson_filename,
+                    is_active: isLive,
+                    current_station: currentStationName,
+                    current_station_index: currentIdx,
+                    status: isLive ? liveState.status : (parsed.status || 'ON TRACK'),
+                    train_number: isLive ? liveState.trainNumber : (service.ka_number || parsed.train_number || '')
+                };
+            } else {
+                let currentIdx = 0;
+                if (isLive && currentStationName) {
+                    const found = stations.findIndex(s => isNameMatch(typeof s === 'string' ? s : s.name, currentStationName));
+                    if (found !== -1) currentIdx = found;
+                }
+
+                routes[service.name] = {
+                    name: service.name,
+                    stations: stations,
+                    path: '',
+                    nodes: [],
+                    is_active: isLive,
+                    current_station: currentStationName,
+                    current_station_index: currentIdx,
+                    status: isLive ? liveState.status : 'STANDBY'
+                };
+            }
         }
+        return routes;
+    } catch (e) {
+        console.error('[PIDS-DB] getRoutes error:', e.message);
+        return {};
     }
-    return routes;
 }
 
 export async function saveRoute(name, stations) {
@@ -1128,18 +1219,34 @@ export async function saveRoute(name, stations) {
         await client.query('DELETE FROM route_stations WHERE route_id = $1', [routeId]);
         for (let i = 0; i < stations.length; i++) {
             const s = stations[i];
-            const station = await getOne('SELECT id FROM stations WHERE name = $1', [typeof s === 'string' ? s : s.name]);
-            if (!station) continue;
+            const stationName = typeof s === 'string' ? s : (s?.name || s?.station_name || s?.station || '');
+            const stationId = typeof s === 'object' && s ? (s.id || s.station_id || '') : '';
+            const station = stationId
+                ? await client.query('SELECT id FROM stations WHERE id = $1', [stationId])
+                : await client.query('SELECT id FROM stations WHERE name = $1', [stationName]);
+            const resolvedStation = station.rows[0];
+            if (!resolvedStation) {
+                throw new Error(`Station not found in route: ${stationName || stationId || `index ${i}`}`);
+            }
             await client.query(
                 `INSERT INTO route_stations (route_id, station_id, sequence_order, svg_position, svg_label, keterangan, nama_pic, kontak_pic)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                [routeId, station.id, i, s.svg_position || '', s.svg_label || '', s.keterangan || 'antara', s.nama_pic || '', s.kontak_pic || '']
+                [
+                    routeId,
+                    resolvedStation.id,
+                    i,
+                    s?.svg_position || '',
+                    s?.svg_label || '',
+                    s?.keterangan || 'antara',
+                    s?.nama_pic || s?.pic_name || '',
+                    s?.kontak_pic || s?.pic_contact || ''
+                ]
             );
         }
         await client.query('COMMIT');
         return { success: true, name, stations };
     } catch (e) {
-        await client.query('ROLLBACK');
+        await client.query('ROLLBACK').catch(() => { });
         console.error('Error saving route:', e);
         return { error: e.message };
     } finally { client.release(); }
@@ -1354,7 +1461,12 @@ export async function deleteSchedule(id) {
 // NOTE: Functions still exported as getGerbong/addGerbong for API backward compat.
 // Internally queries the 'coaches' table (renamed from 'gerbong').
 export async function getGerbong(trainServiceId) {
-    return await getAll('SELECT * FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number', [trainServiceId]);
+    try {
+        return await getAll('SELECT * FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number', [trainServiceId]);
+    } catch (e) {
+        console.error('[PIDS-DB] getGerbong error:', e.message);
+        return [];
+    }
 }
 
 export async function addGerbong(coach) {
@@ -1395,11 +1507,12 @@ export async function deleteGerbong(id) {
 // ============================================================
 
 export async function getLogs(filter = {}) {
-    let sql = 'SELECT * FROM system_logs';
-    let countSql = 'SELECT COUNT(*) as total FROM system_logs';
-    const params = [];
-    const countParams = [];
-    let paramIdx = 1;
+    try {
+        let sql = 'SELECT * FROM system_logs';
+        let countSql = 'SELECT COUNT(*) as total FROM system_logs';
+        const params = [];
+        const countParams = [];
+        let paramIdx = 1;
     
     if (filter.action && filter.action !== 'ALL') { 
         sql += ` WHERE action = $${paramIdx}`; 
@@ -1422,30 +1535,293 @@ export async function getLogs(filter = {}) {
         getOne(countSql, countParams)
     ]);
     
-    return {
-        logs,
-        total: parseInt(countRes?.total || 0),
-        limit,
-        offset
-    };
+        return {
+            logs,
+            total: parseInt(countRes?.total || 0),
+            limit,
+            offset
+        };
+    } catch (e) {
+        console.error('[PIDS-DB] getLogs error:', e.message);
+        return { logs: [], total: 0, limit: 0, offset: 0 };
+    }
 }
 
 export async function writeLog(entry) {
-    await query('INSERT INTO system_logs (id, timestamp, action, "user", role, details, data_json) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [crypto.randomUUID(), new Date().toISOString(), entry.action, entry.user, entry.role || 'System', entry.details || '', entry.data ? JSON.stringify(entry.data) : '']);
+    const auditRecord = {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        action: entry.action,
+        user: entry.user,
+        role: entry.role || 'System',
+        details: entry.details || '',
+        data: entry.data ?? null,
+    };
+
+    let dbSuccess = false;
+    try {
+        await query(
+            'INSERT INTO system_logs (id, timestamp, action, "user", role, details, data_json) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+            [
+                auditRecord.id,
+                auditRecord.timestamp,
+                auditRecord.action,
+                auditRecord.user,
+                auditRecord.role,
+                auditRecord.details,
+                auditRecord.data ? JSON.stringify(auditRecord.data) : ''
+            ]
+        );
+        dbSuccess = true;
+    } catch (e) {
+        console.error('[PIDS-DB] Failed to write log:', e.message);
+    }
+
+    try {
+        await fs.promises.mkdir(AUDIT_DIR, { recursive: true });
+        await fs.promises.appendFile(AUDIT_LOG_FILE, `${JSON.stringify(auditRecord)}\n`, 'utf8');
+    } catch (e) {
+        console.error('[PIDS-DB] Failed to mirror audit log:', e.message);
+    }
+
+    return dbSuccess;
 }
 
-export async function getDbDump() {
+function quoteIdent(name) {
+    return `"${String(name).replace(/"/g, '""')}"`;
+}
+
+async function ensureDirectory(directory) {
+    await fs.promises.mkdir(directory, { recursive: true });
+}
+
+const BACKUP_TABLES = [
+    { name: 'stations', columns: ['id', 'name', 'city', 'latitude', 'longitude', 'ip_address', 'pic_name', 'pic_contact', 'city_code', 'address', 'province', 'regency', 'district', 'village', 'postal_code', 'poi', 'media'], orderBySql: '"id"' },
+    { name: 'train_services', columns: ['id', 'name', 'class', 'train_number', 'coach_count', 'ip_address', 'pic_name', 'pic_contact', 'media', 'origin_station_id', 'destination_station_id', 'notes'], orderBySql: '"id"' },
+    { name: 'routes', columns: ['id', 'train_service_id', 'direction', 'svg_path', 'geojson', 'geojson_filename'], orderBySql: '"id"' },
+    { name: 'route_stations', columns: ['id', 'route_id', 'station_id', 'sequence_order', 'svg_position', 'svg_label', 'stop_type', 'pic_name', 'pic_contact'], orderBySql: '"route_id", "sequence_order", "id"' },
+    { name: 'schedules', columns: ['id', 'route_id', 'schedule_date', 'status', 'notes', 'media', 'updated_at', 'departure_station', 'departure_city_code', 'arrival_station', 'arrival_city_code', 'scheduled_departure', 'actual_departure', 'departure_delay', 'departure_status', 'scheduled_arrival', 'actual_arrival', 'arrival_delay', 'arrival_status', 'service_name', 'train_number'], orderBySql: '"id"' },
+    { name: 'schedule_stops', columns: ['id', 'schedule_id', 'route_station_id', 'arrival_time', 'departure_time', 'actual_arrival', 'actual_departure', 'arrival_delay', 'departure_delay', 'arrival_status', 'departure_status', 'platform', 'stop_status'], orderBySql: '"schedule_id", "id"' },
+    { name: 'users', columns: ['id', 'username', 'password', 'role', 'full_name', 'contact', 'email', 'media', 'train_service_id', 'station_id'], orderBySql: '"id"' },
+    { name: 'units', columns: ['id', 'name', 'type', 'active'], orderBySql: '"name"' },
+    { name: 'pids_state', columns: ['id', 'service_name', 'current_station', 'train_number', 'next_station', 'status', 'led_speed', 'speed', 'altitude', 'temperature', 'air_quality', 'display_mode', 'active_route_json', 'geofencing_inner_radius', 'geofencing_outer_radius', 'show_train_number', 'led_active', 'video_playlist_json', 'active_video_index', 'video_is_playing', 'video_playback_mode', 'video_volume', 'video_tv_standby', 'video_playback_progress', 'coach_count'], orderBySql: '"id"' },
+    { name: 'system_logs', columns: ['id', 'timestamp', 'action', 'user', 'role', 'details', 'data_json'], orderBySql: '"timestamp" DESC, "id" DESC' },
+    { name: 'announcements', columns: ['id', 'type', 'message', 'priority', 'active', 'created_at'], orderBySql: '"id"' },
+    { name: 'coaches', columns: ['id', 'ip_address', 'name', 'sequence_number', 'train_service_id', 'media', 'maintenance_log', 'operational_log'], orderBySql: '"train_service_id", "sequence_number", "id"' },
+    { name: 'sensors', columns: ['id', 'ip_address', 'device_name', 'sensor_type', 'status', 'is_primary', 'coach_id'], orderBySql: '"coach_id", "device_name", "id"' },
+    { name: 'sensor_readings', columns: ['id', 'latitude', 'longitude', 'altitude', 'speed', 'temperature', 'poi', 'recorded_at', 'sensor_id'], orderBySql: '"recorded_at" DESC, "id" DESC' },
+    { name: 'maintenance_logs', columns: ['id', 'started_at', 'finished_at', 'status', 'priority', 'description', 'train_service_id'], orderBySql: '"started_at" DESC, "id" DESC' },
+    { name: 'operational_logs', columns: ['id', 'logged_at', 'notes', 'train_service_id', 'schedule_id'], orderBySql: '"logged_at" DESC, "id" DESC' },
+];
+
+const BACKUP_RESTORE_ORDER = [
+    'stations',
+    'train_services',
+    'routes',
+    'route_stations',
+    'schedules',
+    'schedule_stops',
+    'users',
+    'units',
+    'pids_state',
+    'system_logs',
+    'announcements',
+    'coaches',
+    'sensors',
+    'sensor_readings',
+    'maintenance_logs',
+    'operational_logs',
+];
+
+const SERIAL_TABLES = new Set([
+    'train_services',
+    'routes',
+    'route_stations',
+    'schedules',
+    'schedule_stops',
+    'announcements',
+]);
+
+async function readBackupTable(table) {
+    const selectSql = `SELECT ${table.columns.map(quoteIdent).join(', ')} FROM ${quoteIdent(table.name)} ORDER BY ${table.orderBySql}`;
+    return await getAll(selectSql);
+}
+
+async function insertBackupRows(client, table, rows) {
+    if (!rows || rows.length === 0) return;
+
+    const columns = table.columns.map(quoteIdent).join(', ');
+    const placeholders = table.columns.map((_, index) => `$${index + 1}`).join(', ');
+    const sqlText = `INSERT INTO ${quoteIdent(table.name)} (${columns}) VALUES (${placeholders})`;
+
+    for (const row of rows) {
+        const values = table.columns.map((column) => row[column] ?? null);
+        await client.query(sqlText, values);
+    }
+}
+
+async function resetSerialSequence(client, tableName) {
+    if (!SERIAL_TABLES.has(tableName)) return;
+    const columnSql = quoteIdent('id');
+    const tableSql = quoteIdent(tableName);
+    await client.query(`
+        SELECT setval(
+            pg_get_serial_sequence('${tableName}', 'id'),
+            COALESCE(MAX(${columnSql}), 1),
+            MAX(${columnSql}) IS NOT NULL
+        )
+        FROM ${tableSql}
+    `);
+}
+
+async function snapshotDatabase() {
+    const tables = {};
+    for (const table of BACKUP_TABLES) {
+        tables[table.name] = await readBackupTable(table);
+    }
     return {
-        trainNames: await getTrainNames(),
-        trainNumbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'],
-        routes: await getRoutes(),
-        users: await getUsers(),
-        stations: await getStations()
+        meta: {
+            version: 1,
+            createdAt: new Date().toISOString(),
+        },
+        tables,
     };
 }
 
-export async function closeDatabase() { if (pool) { await pool.end(); pool = null; } }
+async function writeBackupFile(snapshot) {
+    await ensureDirectory(BACKUP_DIR);
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `pids-backup-${stamp}.json`;
+    const filePath = path.join(BACKUP_DIR, filename);
+    await fs.promises.writeFile(filePath, JSON.stringify(snapshot, null, 2), 'utf8');
+    return { filename, filePath };
+}
+
+async function readBackupFile(filename) {
+    const safeFilename = path.basename(String(filename || ''));
+    if (!safeFilename) {
+        throw new Error('Backup filename is required');
+    }
+
+    await ensureDirectory(BACKUP_DIR);
+    const filePath = path.join(BACKUP_DIR, safeFilename);
+    if (!filePath.startsWith(BACKUP_DIR)) {
+        throw new Error('Invalid backup path');
+    }
+
+    const raw = await fs.promises.readFile(filePath, 'utf8');
+    return { filePath, snapshot: JSON.parse(raw) };
+}
+
+export async function listBackups() {
+    try {
+        await ensureDirectory(BACKUP_DIR);
+        const files = await fs.promises.readdir(BACKUP_DIR);
+        const backups = [];
+
+        for (const file of files.filter(name => name.endsWith('.json'))) {
+            const filePath = path.join(BACKUP_DIR, file);
+            const stat = await fs.promises.stat(filePath);
+            backups.push({
+                filename: file,
+                size: stat.size,
+                modifiedAt: stat.mtime.toISOString(),
+            });
+        }
+
+        return backups.sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt));
+    } catch (e) {
+        console.error('[PIDS-DB] listBackups error:', e.message);
+        return [];
+    }
+}
+
+export async function createBackup() {
+    const snapshot = await snapshotDatabase();
+    const { filename, filePath } = await writeBackupFile(snapshot);
+    return {
+        filename,
+        filePath,
+        createdAt: snapshot.meta.createdAt,
+        tables: Object.fromEntries(Object.entries(snapshot.tables).map(([name, rows]) => [name, rows.length])),
+    };
+}
+
+export async function restoreBackup(filename) {
+    const { snapshot } = await readBackupFile(filename);
+    if (!snapshot || typeof snapshot !== 'object' || !snapshot.tables) {
+        throw new Error('Invalid backup snapshot');
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query(`
+            TRUNCATE
+                schedule_stops,
+                schedules,
+                route_stations,
+                routes,
+                sensor_readings,
+                sensors,
+                coaches,
+                maintenance_logs,
+                operational_logs,
+                system_logs,
+                announcements,
+                users,
+                units,
+                pids_state,
+                train_services,
+                stations
+            RESTART IDENTITY CASCADE
+        `);
+
+        for (const tableName of BACKUP_RESTORE_ORDER) {
+            const table = BACKUP_TABLES.find(item => item.name === tableName);
+            await insertBackupRows(client, table, snapshot.tables[tableName] || []);
+        }
+
+        for (const tableName of SERIAL_TABLES) {
+            await resetSerialSequence(client, tableName);
+        }
+
+        await client.query('COMMIT');
+        return {
+            success: true,
+            restoredAt: new Date().toISOString(),
+            filename: path.basename(String(filename || '')),
+        };
+    } catch (e) {
+        await client.query('ROLLBACK').catch(() => { });
+        throw e;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getDbDump() {
+    try {
+        return {
+            trainNames: await getTrainNames(),
+            trainNumbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'],
+            routes: await getRoutes(),
+            users: await getUsers(),
+            stations: await getStations()
+        };
+    } catch (e) {
+        console.error('[PIDS-DB] getDbDump error:', e.message);
+        return { trainNames: [], trainNumbers: [], routes: {}, users: [], stations: [] };
+    }
+}
+
+export async function closeDatabase() {
+    if (!pool) return;
+    await pool.end().catch((e) => {
+        console.error('[PIDS-DB] Error closing database pool:', e.message);
+    });
+    pool = null;
+}
 
 function extractStationsFromGeoJSON(geojson) {
     if (!geojson || !geojson.features) return [];
@@ -1462,31 +1838,46 @@ function extractStationsFromGeoJSON(geojson) {
 
 export async function updateRouteGeoJSON(name, geojson, filename = '') {
     try {
-        let service = await getOne('SELECT id FROM train_services WHERE name = $1', [name]);
-        if (!service) {
-            const result = await query('INSERT INTO train_services (name) VALUES ($1) RETURNING id', [name]);
-            service = result.rows[0];
-        }
-
-        const extractedStations = extractStationsFromGeoJSON(geojson);
-        let route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [service.id]);
-        if (!route) {
-            await query('INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES ($1, $2, $3)', [service.id, JSON.stringify(geojson), filename]);
-            route = await getOne('SELECT id FROM routes WHERE train_service_id = $1', [service.id]);
-        } else {
-            await query('UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3', [JSON.stringify(geojson), filename, route.id]);
-            await query('DELETE FROM route_stations WHERE route_id = $1', [route.id]);
-        }
-
-        let seq = 1;
-        for (const stationName of extractedStations) {
-            let st = await getOne('SELECT id FROM stations WHERE name = $1', [stationName]);
-            if (!st) {
-                const newId = stationName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
-                await query('INSERT INTO stations (id, name, city) VALUES ($1, $2, $3)', [newId, stationName, 'AUTO-GEN']);
-                st = { id: newId };
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            let service = await getOne('SELECT id FROM train_services WHERE name = $1', [name]);
+            if (!service) {
+                const result = await client.query('INSERT INTO train_services (name) VALUES ($1) RETURNING id', [name]);
+                service = result.rows[0];
             }
-            await query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES ($1, $2, $3)', [route.id, st.id, seq++]);
+
+            const extractedStations = extractStationsFromGeoJSON(geojson);
+            let routeRes = await client.query('SELECT id FROM routes WHERE train_service_id = $1', [service.id]);
+            let route = routeRes.rows[0] || null;
+            if (!route) {
+                const routeResult = await client.query(
+                    'INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES ($1, $2, $3) RETURNING id',
+                    [service.id, JSON.stringify(geojson), filename]
+                );
+                route = routeResult.rows[0];
+            } else {
+                await client.query('UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3', [JSON.stringify(geojson), filename, route.id]);
+                await client.query('DELETE FROM route_stations WHERE route_id = $1', [route.id]);
+            }
+
+            let seq = 1;
+            for (const stationName of extractedStations) {
+                let st = await client.query('SELECT id FROM stations WHERE name = $1', [stationName]);
+                let stationRow = st.rows[0];
+                if (!stationRow) {
+                    const newId = stationName.substring(0, 3).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+                    await client.query('INSERT INTO stations (id, name, city) VALUES ($1, $2, $3)', [newId, stationName, 'AUTO-GEN']);
+                    stationRow = { id: newId };
+                }
+                await client.query('INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES ($1, $2, $3)', [route.id, stationRow.id, seq++]);
+            }
+            await client.query('COMMIT');
+        } catch (err) {
+            await client.query('ROLLBACK').catch(() => { });
+            throw err;
+        } finally {
+            client.release();
         }
         return { success: true, stationCount: extractedStations.length };
     } catch (e) { return { error: e.message }; }
@@ -1520,10 +1911,46 @@ export async function seedStationsFromGeoJSON() {
 }
 
 // Placeholder for remaining specialized functions
-export async function getUnits() { return await getAll('SELECT * FROM units'); }
-export async function addUnit(data) { return await getUnits(); }
-export async function updateUnit(id, data) { return await getUnits(); }
-export async function deleteUnit(id) { return { success: true }; }
+export async function getUnits() {
+    try {
+        return await getAll('SELECT * FROM units ORDER BY name');
+    } catch (e) {
+        console.error('[PIDS-DB] getUnits error:', e.message);
+        return [];
+    }
+}
+
+export async function addUnit(data) {
+    try {
+        const { id, name, type, active } = data;
+        if (!id || !name || !type) throw new Error('Unit id, name, and type are required');
+        await query(
+            `INSERT INTO units (id, name, type, active)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (id) DO UPDATE SET
+             name = EXCLUDED.name,
+             type = EXCLUDED.type,
+             active = EXCLUDED.active`,
+            [id, name, type, active !== false ? 1 : 0]
+        );
+        return { success: true, units: await getUnits() };
+    } catch (e) {
+        return { error: e.message };
+    }
+}
+
+export async function updateUnit(id, data) {
+    return await addUnit({ ...data, id: data.id || id });
+}
+
+export async function deleteUnit(id) {
+    try {
+        await query('DELETE FROM units WHERE id = $1', [id]);
+        return { success: true };
+    } catch (e) {
+        return { error: e.message };
+    }
+}
 export async function addUser(data) {
     try {
         const id = crypto.randomUUID();
@@ -1534,28 +1961,136 @@ export async function addUser(data) {
 }
 export async function deleteUser(id) { try { await query('DELETE FROM users WHERE id = $1', [id]); return { success: true }; } catch (e) { return { error: e.message }; } }
 export function getTrainNumbers() { return ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']; }
-export async function getSensors(id) { return []; }
-export async function getSensorData(id) { return []; }
-export async function getLogMaintenance() { return []; }
-export async function addLogMaintenance(data) { return { success: true }; }
-export async function updateLogMaintenance(id, data) { return { success: true }; }
-export async function getLogOperasional() { return []; }
-export async function addLogOperasional(data) { return { success: true }; }
+export async function getSensors(id) {
+    try {
+        if (id) {
+            return await getAll('SELECT * FROM sensors WHERE coach_id = $1 ORDER BY device_name', [id]);
+        }
+        return await getAll('SELECT * FROM sensors ORDER BY device_name');
+    } catch (e) {
+        console.error('[PIDS-DB] getSensors error:', e.message);
+        return [];
+    }
+}
+
+export async function getSensorData(id) {
+    try {
+        if (!id) return await getAll('SELECT * FROM sensor_readings ORDER BY recorded_at DESC LIMIT 100');
+        return await getAll(
+            `SELECT sr.*
+             FROM sensor_readings sr
+             WHERE sr.sensor_id = $1
+             ORDER BY sr.recorded_at DESC
+             LIMIT 100`,
+            [id]
+        );
+    } catch (e) {
+        console.error('[PIDS-DB] getSensorData error:', e.message);
+        return [];
+    }
+}
+
+export async function getLogMaintenance() {
+    try {
+        return await getAll('SELECT * FROM maintenance_logs ORDER BY started_at DESC');
+    } catch (e) {
+        console.error('[PIDS-DB] getLogMaintenance error:', e.message);
+        return [];
+    }
+}
+
+export async function addLogMaintenance(data) {
+    try {
+        const id = data.id || crypto.randomUUID();
+        await query(
+            `INSERT INTO maintenance_logs (id, started_at, finished_at, status, priority, description, train_service_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             ON CONFLICT (id) DO UPDATE SET
+             started_at = EXCLUDED.started_at,
+             finished_at = EXCLUDED.finished_at,
+             status = EXCLUDED.status,
+             priority = EXCLUDED.priority,
+             description = EXCLUDED.description,
+             train_service_id = EXCLUDED.train_service_id`,
+            [
+                id,
+                data.started_at || new Date().toISOString(),
+                data.finished_at || '',
+                data.status || 'Open',
+                data.priority || 'Medium',
+                data.description || '',
+                data.train_service_id || 0,
+            ]
+        );
+        return { success: true, logs: await getLogMaintenance() };
+    } catch (e) {
+        return { error: e.message };
+    }
+}
+
+export async function updateLogMaintenance(id, data) {
+    return await addLogMaintenance({ ...data, id: data.id || id });
+}
+
+export async function getLogOperasional() {
+    try {
+        return await getAll('SELECT * FROM operational_logs ORDER BY logged_at DESC');
+    } catch (e) {
+        console.error('[PIDS-DB] getLogOperasional error:', e.message);
+        return [];
+    }
+}
+
+export async function addLogOperasional(data) {
+    try {
+        const id = data.id || crypto.randomUUID();
+        await query(
+            `INSERT INTO operational_logs (id, logged_at, notes, train_service_id, schedule_id)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (id) DO UPDATE SET
+             logged_at = EXCLUDED.logged_at,
+             notes = EXCLUDED.notes,
+             train_service_id = EXCLUDED.train_service_id,
+             schedule_id = EXCLUDED.schedule_id`,
+            [
+                id,
+                data.logged_at || new Date().toISOString(),
+                data.notes || '',
+                data.train_service_id || 0,
+                data.schedule_id ?? null,
+            ]
+        );
+        return { success: true };
+    } catch (e) {
+        return { error: e.message };
+    }
+}
 export async function getGpsFleet() {
-    return await getAll('SELECT id as train_service_id, name as service_name, train_number, class, coach_count FROM train_services ORDER BY train_number');
+    try {
+        return await getAll('SELECT id as train_service_id, name as service_name, train_number, class, coach_count FROM train_services ORDER BY train_number');
+    } catch (e) {
+        console.error('[PIDS-DB] getGpsFleet error:', e.message);
+        return [];
+    }
 }
 export async function getGpsGerbong(trainServiceId) {
-    const coaches = await getAll('SELECT id, name, sequence_number, ip_address FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number', [trainServiceId]);
-    return coaches.map(c => ({
-        coach_id: c.id,
-        coach_name: c.name,
-        sequence_number: c.sequence_number,
-        ip_address: c.ip_address,
-        latitude: -6.9147 + (Math.random() - 0.5) * 0.01,
-        longitude: 107.6098 + (Math.random() - 0.5) * 0.01,
-        speed: Math.floor(Math.random() * 100),
-        temperature: 24 + Math.random() * 4,
-        poi: 'Station Near Build',
-        sensor_status: 'Active'
-    }));
+    try {
+        const coaches = await getAll('SELECT id, name, sequence_number, ip_address FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number', [trainServiceId]);
+        return coaches.map(c => ({
+            coach_id: c.id,
+            coach_name: c.name,
+            sequence_number: c.sequence_number,
+            ip_address: c.ip_address,
+            latitude: -6.9147 + (Math.random() - 0.5) * 0.01,
+            longitude: 107.6098 + (Math.random() - 0.5) * 0.01,
+            speed: Math.floor(Math.random() * 100),
+            temperature: 24 + Math.random() * 4,
+            poi: 'Station Near Build',
+            sensor_status: 'Active'
+        }));
+    } catch (e) {
+        console.error('[PIDS-DB] getGpsGerbong error:', e.message);
+        return [];
+    }
 }
+

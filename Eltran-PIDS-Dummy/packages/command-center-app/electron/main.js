@@ -1,3 +1,8 @@
+/**
+ * Ringkasan: Entrypoint Electron (Command Center).
+ * Tujuan: Membuat jendela untuk Command Center dan memuat UI baik di mode dev maupun production.
+ * Catatan: Komentar diringkas ke atas; tidak mengubah logika.
+ */
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -44,3 +49,4 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
+

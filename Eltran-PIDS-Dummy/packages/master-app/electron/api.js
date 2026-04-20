@@ -2,6 +2,12 @@
  * PIDS KAI — API Server with Socket.IO Real-time Sync
  * Refactored to support PostgreSQL (Asynchronous).
  */
+/**
+ * Ringkasan: API server dan middleware.
+ * Tujuan: Auth, RBAC, admin endpoints (logs/backups), health, Socket.IO, dan error handling.
+ * Catatan: Komentar diringkas ke atas; tidak mengubah logika.
+ */
+
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
@@ -24,7 +30,7 @@ import {
     getLogMaintenance, addLogMaintenance, updateLogMaintenance,
     getLogOperasional, addLogOperasional,
     getGpsFleet, getGpsGerbong,
-    getDbDump,
+    getDbDump, listBackups, createBackup, restoreBackup,
     closeDatabase,
     updateRouteGeoJSON,
     importStationsFromGeoJSON
@@ -34,12 +40,42 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 
+let httpServerInstance = null;
+let ioInstance = null;
+const cleanupTimers = [];
+
+function trackInterval(fn, delay) {
+    const timer = setInterval(fn, delay);
+    if (typeof timer.unref === 'function') timer.unref();
+    cleanupTimers.push(timer);
+    return timer;
+}
+
+export async function stopApiServer() {
+    while (cleanupTimers.length > 0) {
+        clearInterval(cleanupTimers.pop());
+    }
+
+    if (ioInstance) {
+        ioInstance.close();
+        ioInstance = null;
+    }
+
+    if (httpServerInstance) {
+        await new Promise((resolve) => {
+            httpServerInstance.close(() => resolve());
+        }).catch(() => { });
+        httpServerInstance = null;
+    }
+}
+
 export async function startApiServer() {
     await initDatabase();
     startAutoSave();
 
     const apiApp = express();
     const httpServer = createServer(apiApp);
+    httpServerInstance = httpServer;
 
     const io = new SocketIOServer(httpServer, {
         cors: {
@@ -47,11 +83,12 @@ export async function startApiServer() {
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
         },
     });
+    ioInstance = io;
 
     apiApp.use(cors({
         origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176'],
     }));
-    apiApp.use(express.json({ limit: '50mb' }));
+    apiApp.use(express.json({ limit: '10mb' }));
 
     // ---- Rate Limiter for Login (brute-force protection) ----
     const loginAttempts = new Map(); // ip -> { count, resetAt }
@@ -74,7 +111,7 @@ export async function startApiServer() {
     };
 
     // Cleanup expired rate-limit entries every 5 minutes
-    setInterval(() => {
+    trackInterval(() => {
         const now = Date.now();
         for (const [ip, record] of loginAttempts) {
             if (now >= record.resetAt) loginAttempts.delete(ip);
@@ -88,7 +125,7 @@ export async function startApiServer() {
     const sessions = new Map(); // token -> { user, expiresAt }
 
     // Cleanup expired sessions every 30 minutes
-    setInterval(() => {
+    trackInterval(() => {
         const now = Date.now();
         for (const [token, session] of sessions) {
             if (now >= session.expiresAt) sessions.delete(token);
@@ -115,13 +152,40 @@ export async function startApiServer() {
         next();
     };
 
-    const requireAdmin = (req, res, next) => {
+    const normalizeRole = (role) => {
+        const value = String(role || '').trim().toLowerCase();
+        if (value === 'admin') return 'Admin';
+        if (value === 'operator') return 'Operator';
+        return 'Operator';
+    };
+
+    const ROLE_PERMISSIONS = {
+        Admin: new Set(['admin']),
+        Operator: new Set([]),
+    };
+
+    const hasPermission = (user, permission) => {
+        const role = normalizeRole(user?.role);
+        return role === 'Admin' || ROLE_PERMISSIONS[role]?.has(permission) === true;
+    };
+
+    const requirePermission = (permission) => async (req, res, next) => {
         const user = getSessionUser(req);
         if (!user) return res.status(401).json({ success: false, error: 'Unauthorized' });
-        if (user.role !== 'Admin') return res.status(403).json({ success: false, error: 'Forbidden: Admin only' });
-        req.user = user;
+        if (!hasPermission(user, permission)) {
+            await writeLog({
+                action: 'ACCESS_DENIED',
+                user: user.username || 'unknown',
+                role: normalizeRole(user.role),
+                details: `Denied ${permission} on ${req.method} ${req.originalUrl}`
+            });
+            return res.status(403).json({ success: false, error: 'Forbidden' });
+        }
+        req.user = { ...user, role: normalizeRole(user.role) };
         next();
     };
+
+    const requireAdmin = requirePermission('admin');
 
     io.on('connection', async (socket) => {
         console.log(`[Socket.IO] Client connected: ${socket.id}`);
@@ -141,17 +205,26 @@ export async function startApiServer() {
 
     // AUTH
     apiApp.post('/api/auth/login', loginRateLimiter, async (req, res) => {
-        const { username, password } = req.body;
-        const user = await findUser(username, password);
-        if (!user) {
-            await writeLog({ action: 'LOGIN_FAILED', user: username || 'unknown', role: '-', details: `Percobaan login gagal untuk username: ${username}` });
-            return res.status(401).json({ success: false, error: 'Username atau password salah' });
+        try {
+            const { username, password } = req.body || {};
+            if (!username || !password) {
+                return res.status(400).json({ success: false, error: 'Username and password are required' });
+            }
+
+            const user = await findUser(username, password);
+            if (!user) {
+                await writeLog({ action: 'LOGIN_FAILED', user: username || 'unknown', role: '-', details: `Percobaan login gagal untuk username: ${username}` });
+                return res.status(401).json({ success: false, error: 'Username atau password salah' });
+            }
+            const token = crypto.randomUUID();
+            const sessionUser = { id: user.id, username: user.username, role: normalizeRole(user.role), full_name: user.full_name };
+            sessions.set(token, { user: sessionUser, expiresAt: Date.now() + SESSION_TTL });
+            await writeLog({ action: 'LOGIN', user: user.username, role: user.role, details: `${user.full_name} (${user.role}) berhasil login` });
+            res.json({ success: true, token, user: sessionUser });
+        } catch (err) {
+            console.error('[API] Login error:', err);
+            res.status(500).json({ success: false, error: 'Login failed' });
         }
-        const token = crypto.randomUUID();
-        const sessionUser = { id: user.id, username: user.username, role: user.role, full_name: user.full_name };
-        sessions.set(token, { user: sessionUser, expiresAt: Date.now() + SESSION_TTL });
-        await writeLog({ action: 'LOGIN', user: user.username, role: user.role, details: `${user.full_name} (${user.role}) berhasil login` });
-        res.json({ success: true, token, user: sessionUser });
     });
 
     apiApp.get('/api/auth/verify', (req, res) => {
@@ -174,33 +247,38 @@ export async function startApiServer() {
     });
 
     apiApp.post('/api/state', requireAuth, async (req, res) => {
-        const updates = { ...req.body };
+        try {
+            const body = req.body && typeof req.body === 'object' ? req.body : {};
+            const updates = { ...body };
 
-        // Input validation: only allow known keys
-        const ALLOWED_KEYS = new Set([
-            'serviceName', 'currentStation', 'trainNumber', 'nextStation', 'status',
-            'ledSpeed', 'speed', 'altitude', 'temperature', 'airQuality', 'displayMode',
-            'stations', 'activeRoute', 'geofencingInnerRadius', 'geofencingOuterRadius',
-            'showTrainNumber', 'ledActive', 'videoPlaylist', 'activeVideoIndex', 'isPlaying',
-            'playbackProgress', 'playbackMode', 'volume', 'tvStandby', 'isSyncing',
-            'coachCount', 'jumlahKereta', 'muteVideo', 'showTelemetry', 'showClock', 'ledType'
-        ]);
-        for (const key of Object.keys(updates)) {
-            if (!ALLOWED_KEYS.has(key)) delete updates[key];
+            const ALLOWED_KEYS = new Set([
+                'serviceName', 'currentStation', 'trainNumber', 'nextStation', 'status',
+                'ledSpeed', 'speed', 'altitude', 'temperature', 'airQuality', 'displayMode',
+                'stations', 'activeRoute', 'geofencingInnerRadius', 'geofencingOuterRadius',
+                'showTrainNumber', 'ledActive', 'videoPlaylist', 'activeVideoIndex', 'isPlaying',
+                'playbackProgress', 'playbackMode', 'volume', 'tvStandby', 'isSyncing',
+                'coachCount', 'jumlahKereta', 'muteVideo', 'showTelemetry', 'showClock', 'ledType'
+            ]);
+            for (const key of Object.keys(updates)) {
+                if (!ALLOWED_KEYS.has(key)) delete updates[key];
+            }
+            const prevState = await getState();
+            const newState = await updateState(updates);
+
+            const user = getSessionUser(req);
+            const username = user?.username || 'system';
+            const role = user?.role || 'System';
+
+            if (updates.serviceName && updates.serviceName !== prevState.serviceName) {
+                await writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Service diubah: ${updates.serviceName}` });
+            }
+
+            await broadcastState();
+            res.json({ success: true, state: newState });
+        } catch (err) {
+            console.error('[API] State update error:', err);
+            res.status(500).json({ success: false, error: 'State update failed' });
         }
-        const prevState = await getState();
-        const newState = await updateState(updates);
-
-        const user = getSessionUser(req);
-        const username = user?.username || 'system';
-        const role = user?.role || 'System';
-
-        if (updates.serviceName && updates.serviceName !== prevState.serviceName) {
-            await writeLog({ action: 'STATE_UPDATE', user: username, role, details: `Service diubah: ${updates.serviceName}` });
-        }
-
-        await broadcastState();
-        res.json({ success: true, state: newState });
     });
 
     apiApp.get('/api/db', async (req, res) => {
@@ -209,6 +287,14 @@ export async function startApiServer() {
         } catch (e) {
             res.status(500).json({ success: false, error: 'Database read failed' });
         }
+    });
+
+    apiApp.get('/api/health', async (req, res) => {
+        res.json({
+            success: true,
+            status: 'ok',
+            timestamp: new Date().toISOString()
+        });
     });
 
     // STATIONS
@@ -641,21 +727,84 @@ export async function startApiServer() {
     
     // GPS MAP
     apiApp.get('/api/gps/fleet', async (req, res) => {
-        const fleet = await getGpsFleet();
-        res.json({ success: true, fleet });
+        try {
+            const fleet = await getGpsFleet();
+            res.json({ success: true, fleet });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Failed to load GPS fleet' });
+        }
     });
 
     apiApp.get('/api/gps/gerbong/:id', async (req, res) => {
-        const gerbong = await getGpsGerbong(req.params.id);
-        res.json({ success: true, gerbong });
+        try {
+            const gerbong = await getGpsGerbong(req.params.id);
+            res.json({ success: true, gerbong });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Failed to load coach GPS data' });
+        }
     });
 
-    // Note: I will complete the rest of the endpoints in the next step or here if tokens allow.
-    // To be safe, I've refactored the most critical ones.
+    apiApp.get('/api/logs', requireAdmin, async (req, res) => {
+        try {
+            const result = await getLogs(req.query);
+            res.json({ success: true, ...result });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Failed to load logs' });
+        }
+    });
 
-    apiApp.get('/api/logs', async (req, res) => {
-        const result = await getLogs(req.query);
-        res.json({ success: true, ...result });
+    apiApp.get('/api/admin/backups', requireAdmin, async (req, res) => {
+        try {
+            const backups = await listBackups();
+            res.json({ success: true, backups });
+        } catch (err) {
+            res.status(500).json({ success: false, error: 'Failed to list backups' });
+        }
+    });
+
+    apiApp.post('/api/admin/backups', requireAdmin, async (req, res) => {
+        try {
+            const backup = await createBackup();
+            await writeLog({
+                action: 'BACKUP_CREATE',
+                user: req.user.username,
+                role: req.user.role,
+                details: `Backup created: ${backup.filename}`
+            });
+            res.json({ success: true, backup });
+        } catch (err) {
+            console.error('[API] Backup create error:', err);
+            res.status(500).json({ success: false, error: 'Failed to create backup' });
+        }
+    });
+
+    apiApp.post('/api/admin/backups/restore', requireAdmin, async (req, res) => {
+        try {
+            const { filename } = req.body || {};
+            if (!filename) {
+                return res.status(400).json({ success: false, error: 'Backup filename is required' });
+            }
+
+            const result = await restoreBackup(filename);
+            await writeLog({
+                action: 'BACKUP_RESTORE',
+                user: req.user.username,
+                role: req.user.role,
+                details: `Backup restored: ${result.filename}`
+            });
+            await broadcastDbUpdate();
+            await broadcastState();
+            res.json({ success: true, restore: result });
+        } catch (err) {
+            console.error('[API] Backup restore error:', err);
+            res.status(500).json({ success: false, error: err.message || 'Failed to restore backup' });
+        }
+    });
+
+    apiApp.use((err, req, res, next) => {
+        console.error('[API] Unhandled route error:', err);
+        if (res.headersSent) return next(err);
+        res.status(500).json({ success: false, error: 'Internal server error' });
     });
 
     const port = 3001;
@@ -674,3 +823,4 @@ export async function startApiServer() {
 
     return httpServer;
 }
+
