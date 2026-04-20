@@ -85,7 +85,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                     </div>
 
                     {/* Form login */}
-                    <Form login onSubmit={handleSubmit} className="flex w-full flex-col space-y-7">
+                    <form onSubmit={handleSubmit} className="flex w-full flex-col space-y-7">
                         {/* Input username */}
                         <div className="relative w-full">
                             <input
@@ -148,7 +148,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                         <p className="text-center w-full text-[15px] text-slate-400 font-medium mt-6">
                             Demo: operator / operator123
                         </p>
-                    </Form login>
+                    </form>
                 </motion.div>
             </div>
 
