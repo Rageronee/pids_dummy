@@ -18,6 +18,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
+import { createClient } from "redis";
 import {
   initDatabase,
   startAutoSave,
@@ -157,36 +158,100 @@ export async function startApiServer() {
   let currentAudioDir = path.join(PUBLIC_DIR, "media", "audio");
 
   const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 hours
-  const sessions = new Map(); // token -> { user, expiresAt }
-  trackInterval(
-    () => {
-      const now = Date.now();
-      for (const [token, session] of sessions) {
-        if (now >= session.expiresAt) sessions.delete(token);
-      }
-    },
-    30 * 60 * 1000,
-  );
 
-  const getSessionUser = (req) => {
+  const REDIS_URL = process.env.REDIS_URL || process.env.REDIS_URI || null;
+  let redisClient = null;
+  let usingRedis = false;
+  const redisKeyPrefix = process.env.REDIS_SESSION_PREFIX || "pids:session:";
+
+  const sessions = new Map(); // fallback in-memory
+
+  if (REDIS_URL) {
+    try {
+      redisClient = createClient({ url: REDIS_URL });
+      await redisClient.connect();
+      usingRedis = true;
+      console.log("[API] Connected to Redis for session storage");
+    } catch (err) {
+      console.error("[API] Redis connection failed, falling back to in-memory sessions", err);
+      usingRedis = false;
+    }
+  }
+
+  const setSessionAsync = async (token, session) => {
+    if (usingRedis && redisClient) {
+      try {
+        await redisClient.set(`${redisKeyPrefix}${token}`, JSON.stringify(session), { PX: SESSION_TTL });
+      } catch (e) {
+        console.error("[API] Redis set session error:", e);
+      }
+    } else {
+      sessions.set(token, session);
+    }
+  };
+
+  const getSessionAsync = async (token) => {
+    if (usingRedis && redisClient) {
+      try {
+        const raw = await redisClient.get(`${redisKeyPrefix}${token}`);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("[API] Redis get session error:", e);
+        return null;
+      }
+    } else {
+      return sessions.get(token);
+    }
+  };
+
+  const deleteSessionAsync = async (token) => {
+    if (usingRedis && redisClient) {
+      try {
+        await redisClient.del(`${redisKeyPrefix}${token}`);
+      } catch (e) {
+        console.error("[API] Redis delete session error:", e);
+      }
+    } else {
+      sessions.delete(token);
+    }
+  };
+
+  if (!usingRedis) {
+    trackInterval(
+      () => {
+        const now = Date.now();
+        for (const [token, session] of sessions) {
+          if (now >= session.expiresAt) sessions.delete(token);
+        }
+      },
+      30 * 60 * 1000,
+    );
+  }
+
+  const getSessionUser = async (req) => {
     const authHeader = req.headers["authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
     const token = authHeader.slice(7);
-    const session = sessions.get(token);
+    const session = await getSessionAsync(token);
     if (!session) return null;
     if (Date.now() >= session.expiresAt) {
-      sessions.delete(token);
+      await deleteSessionAsync(token);
       return null;
     }
     return session.user;
   };
 
-  const requireAuth = (req, res, next) => {
-    const user = getSessionUser(req);
-    if (!user)
-      return res.status(401).json({ success: false, error: "Unauthorized" });
-    req.user = user;
-    next();
+  const requireAuth = async (req, res, next) => {
+    try {
+      const user = await getSessionUser(req);
+      if (!user)
+        return res.status(401).json({ success: false, error: "Unauthorized" });
+      req.user = user;
+      next();
+    } catch (err) {
+      next(err);
+    }
   };
 
   const normalizeRole = (role) => {
@@ -209,7 +274,7 @@ export async function startApiServer() {
   };
 
   const requirePermission = (permission) => async (req, res, next) => {
-    const user = getSessionUser(req);
+    const user = await getSessionUser(req);
     if (!user)
       return res.status(401).json({ success: false, error: "Unauthorized" });
     if (!hasPermission(user, permission)) {
@@ -274,7 +339,7 @@ export async function startApiServer() {
         role: normalizeRole(user.role),
         full_name: user.full_name,
       };
-      sessions.set(token, {
+      await setSessionAsync(token, {
         user: sessionUser,
         expiresAt: Date.now() + SESSION_TTL,
       });
@@ -291,8 +356,8 @@ export async function startApiServer() {
     }
   });
 
-  apiApp.get("/api/auth/verify", (req, res) => {
-    const user = getSessionUser(req);
+  apiApp.get("/api/auth/verify", async (req, res) => {
+    const user = await getSessionUser(req);
     if (!user)
       return res
         .status(401)
@@ -309,7 +374,7 @@ export async function startApiServer() {
       role: req.user.role,
       details: `${req.user.full_name} logout`,
     });
-    sessions.delete(token);
+    await deleteSessionAsync(token);
     res.json({ success: true });
   });
   apiApp.get("/api/state", async (req, res) => {
