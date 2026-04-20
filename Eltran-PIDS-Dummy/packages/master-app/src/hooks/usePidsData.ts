@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import type { PidsState } from "@eltran/pids-core";
 
-const API_URL = "http://localhost:3001";
+import { API as API_URL } from "@eltran/shared";
 
 const INITIAL_STATE: PidsState = {
   serviceName: "",

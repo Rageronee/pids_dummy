@@ -1,3 +1,8 @@
-/** /command-center-app/src/config.ts — untuk mengubah: komponen PIDS; fungsi utama: config */
-
-export const API = "http://localhost:3001";
+/*
+ * config.ts — Command Center config
+ *
+ * Exposes API base URL for UI components.
+ * Use VITE_API_URL in .env to override in development.
+ */
+import { API as SHARED_API } from "@eltran/shared";
+export const API = SHARED_API;

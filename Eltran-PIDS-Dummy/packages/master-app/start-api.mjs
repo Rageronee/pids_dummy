@@ -1,7 +1,9 @@
-/**
- * Standalone API Server Starter
- * Start the backend API (Express + Socket.IO) without Electron
- * Usage: node start-api.mjs
+/*
+ * start-api.mjs — Start the standalone API server for development
+ *
+ * - Uses startApiServer() from electron/api.js
+ * - Logs server endpoints and keeps process alive
+ * - Use VITE_API_URL to configure frontend connections
  */
 import 'dotenv/config';
 import { startApiServer } from './electron/api.js';

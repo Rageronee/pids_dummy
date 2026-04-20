@@ -1,4 +1,18 @@
-/** /master-app/electron/database.js — untuk mengubah: lapisan data (DB, query, backup/restore); fungsi utama: database */
+/*
+ * database.js — Master App database layer
+ *
+ * Responsibilities:
+ * - Schema creation, migrations & renames
+ * - Seeding initial data
+ * - Backup/restore (JSON snapshots)
+ * - Query helpers exported for API (getState, updateState, getRoutes, etc.)
+ *
+ * Notes:
+ * - Requires DATABASE_URL environment variable.
+ * - startAutoSave(intervalMs) starts periodic backups (PIDS_AUTOSAVE_INTERVAL_MS).
+ * - saveDb() triggers immediate backup.
+ * - For production: secure pg_hba and use a central session/cache (Redis).
+ */
 
 import "dotenv/config";
 import pg from "pg";
@@ -134,8 +148,43 @@ export async function initDatabase() {
   return pool;
 }
 
-export function startAutoSave() {}
-export function saveDb() {}
+let _autoSaveTimer = null;
+export function startAutoSave(intervalMs = parseInt(process.env.PIDS_AUTOSAVE_INTERVAL_MS || process.env.AUTOSAVE_INTERVAL || "300000", 10)) {
+  try {
+    if (_autoSaveTimer) {
+      clearInterval(_autoSaveTimer);
+      _autoSaveTimer = null;
+    }
+    _autoSaveTimer = setInterval(async () => {
+      try {
+        const backup = await createBackup();
+        console.log(`[PIDS-DB] Autosave backup created: ${backup.filename}`);
+      } catch (e) {
+        console.error("[PIDS-DB] Autosave error:", e.message);
+      }
+    }, intervalMs);
+    if (typeof _autoSaveTimer.unref === "function") _autoSaveTimer.unref();
+    return () => {
+      if (_autoSaveTimer) {
+        clearInterval(_autoSaveTimer);
+        _autoSaveTimer = null;
+      }
+    };
+  } catch (e) {
+    console.error('[PIDS-DB] startAutoSave failed:', e.message);
+  }
+}
+
+export async function saveDb() {
+  try {
+    const backup = await createBackup();
+    console.log(`[PIDS-DB] Manual save created: ${backup.filename}`);
+    return backup;
+  } catch (e) {
+    console.error("[PIDS-DB] saveDb error:", e.message);
+    throw e;
+  }
+}
 
 async function query(sql, params = []) {
   if (!pool) {

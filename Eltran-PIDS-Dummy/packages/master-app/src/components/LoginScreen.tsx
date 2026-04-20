@@ -7,7 +7,7 @@ interface LoginScreenProps {
   onLogin: (user: AuthUser, token: string) => void;
 }
 
-const API_URL = "http://localhost:3001";
+import { API as API_URL } from "@eltran/shared";
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [username, setUsername] = useState("");

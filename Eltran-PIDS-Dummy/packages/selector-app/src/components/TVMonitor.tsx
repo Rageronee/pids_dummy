@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Video, Gauge, Mountain, Thermometer } from "lucide-react";
 import type { PidsState } from "@eltran/pids-core";
 
-const API_URL = "http://localhost:3001";
+import { API } from "@eltran/shared";
 
 interface TVMonitorProps {
   show: boolean;
@@ -103,8 +103,8 @@ const TVMonitor = React.memo(function TVMonitor({
                 );
                 const mediaFile = (stationObj as any)?.media || null;
                 const bgUrl = mediaFile
-                  ? `${API_URL}/media/station/${encodeURIComponent(mediaFile)}`
-                  : `${API_URL}/media/station/station_fallback.png`;
+                  ? `${API}/media/station/${encodeURIComponent(mediaFile)}`
+                  : `${API}/media/station/station_fallback.png`;
 
                 return (
                   <motion.div

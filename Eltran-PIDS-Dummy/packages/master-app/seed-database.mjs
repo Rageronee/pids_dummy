@@ -1,7 +1,9 @@
-/**
- * Standalone database seeder
- * Run this to initialize the database without starting Electron
- * Usage: node seed-database.mjs
+/*
+ * seed-database.mjs — Initialize and seed the development database
+ *
+ * - Uses initDatabase() from electron/database.js
+ * - Prints progress and exits when done
+ * - Ensure DATABASE_URL is set in .env before running
  */
 import 'dotenv/config';
 import { initDatabase } from './electron/database.js';

@@ -1,4 +1,15 @@
-/** /master-app/electron/api.js — untuk mengubah: API server dan middleware (auth, admin); fungsi utama: api */
+/*
+ * api.js — Express + Socket.IO API Gateway for PIDS
+ *
+ * Responsibilities:
+ * - Authentication (token sessions), state updates, admin CRUD, media streaming, backups.
+ * - Exports startApiServer() / stopApiServer().
+ *
+ * Important:
+ * - In-memory sessions are used for prototype (replace with Redis or JWT in prod).
+ * - CORS origins can be configured via ALLOWED_ORIGINS env (comma-separated).
+ * - Media upload endpoint (/api/media/upload) accepts base64 payloads (authenticated).
+ */
 
 import express from "express";
 import cors from "cors";
@@ -99,27 +110,17 @@ export async function startApiServer() {
   const httpServer = createServer(apiApp);
   httpServerInstance = httpServer;
 
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.VITE_ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:5174,http://localhost:5176").split(",").map((s) => s.trim()).filter(Boolean);
+
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5176",
-      ],
+      origin: allowedOrigins,
       methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });
   ioInstance = io;
 
-  apiApp.use(
-    cors({
-      origin: [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5176",
-      ],
-    }),
-  );
+  apiApp.use(cors({ origin: allowedOrigins }));
   apiApp.use(express.json({ limit: "10mb" }));
   const loginAttempts = new Map(); // ip -> { count, resetAt }
   const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
@@ -954,6 +955,33 @@ export async function startApiServer() {
       res.status(500).json({ success: false, error: e.message });
     }
   });
+
+  // New: simple base64 upload endpoint (authenticated)
+  apiApp.post("/api/media/upload", requireAuth, async (req, res) => {
+    try {
+      const { type = "station", filename, data } = req.body || {};
+      if (!filename || !data)
+        return res.status(400).json({ success: false, error: "filename & base64 data required" });
+      const safeName = String(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
+      if (!safeName) return res.status(400).json({ success: false, error: "Invalid filename" });
+      let targetDir;
+      if (type === "station") targetDir = currentStationDir;
+      else if (type === "audio") targetDir = currentAudioDir;
+      else if (type === "video") targetDir = currentVideoDir;
+      else targetDir = path.join(PUBLIC_DIR, "media", "uploads");
+      await fs.promises.mkdir(targetDir, { recursive: true });
+      const filePath = path.join(targetDir, safeName);
+      if (!filePath.startsWith(targetDir)) return res.status(403).json({ success: false, error: "Forbidden" });
+      const buffer = Buffer.from(String(data), "base64");
+      await fs.promises.writeFile(filePath, buffer);
+      await writeLog({ action: "MEDIA_UPLOAD", user: req.user.username, role: req.user.role, details: `Uploaded ${safeName} (${type})` });
+      const url = type === "video" ? `/media/video/${encodeURIComponent(safeName)}` : type === "audio" ? `/media/audio/${encodeURIComponent(safeName)}` : `/media/station/${encodeURIComponent(safeName)}`;
+      res.json({ success: true, filename: safeName, url });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   apiApp.get("/api/gps/fleet", async (req, res) => {
     try {
       const fleet = await getGpsFleet();

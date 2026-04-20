@@ -39,6 +39,7 @@ import { useVideoSystem } from "../hooks/useVideoSystem";
 import { RouteCheckpoints } from "./RouteCheckpoints";
 import { MasterToolbar } from "./MasterToolbar";
 import { MasterModals } from "./MasterModals";
+import { API } from "@eltran/shared";
 
 export function MasterConsolePanel({
   route,
@@ -183,7 +184,7 @@ export function MasterConsolePanel({
 
   // Fetch stations
   useEffect(() => {
-    fetch("http://localhost:3001/api/stations")
+    fetch(`${API}/api/stations`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.stations) {
@@ -208,12 +209,12 @@ export function MasterConsolePanel({
   // Fetch initial audio list
   const fetchAudios = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/media/audios");
+      const res = await fetch(`${API}/api/media/audios`);
       const d = await res.json();
       if (d.success) {
         const fetched = d.audios.map((a: string) => ({
           name: a,
-          url: `http://localhost:3001/media/audio/${encodeURIComponent(a)}`,
+          url: `${API}/media/audio/${encodeURIComponent(a)}`,
         }));
         setAudioList(fetched);
         if (fetched.length > 0 && !selectedAudio) {
@@ -1879,7 +1880,7 @@ export function MasterConsolePanel({
                         ref={videoRef}
                         id="master-video-preview"
                         key={activeFile}
-                        src={`http://localhost:3001/media/video/${encodeURIComponent(activeFile)}`}
+                        src={`${API}/media/video/${encodeURIComponent(activeFile)}`}
                         autoPlay={isPlaying}
                         loop={playbackMode.includes("repeat")}
                         muted={data?.muteVideo ?? false}

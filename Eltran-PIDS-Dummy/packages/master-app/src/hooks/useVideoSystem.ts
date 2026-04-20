@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { API } from "@eltran/shared";
 
 export function useVideoSystem(
   data: any,
@@ -35,7 +36,7 @@ export function useVideoSystem(
   const fetchVideos = useCallback(async () => {
     try {
       setLoadingVideos(true);
-      const res = await fetch("http://localhost:3001/api/media/videos");
+      const res = await fetch(`${API}/api/media/videos`);
       const d = await res.json();
       if (d.success) setVideoList(d.videos);
     } catch (e) {
@@ -143,7 +144,7 @@ export function useVideoSystem(
         .require("electron")
         .ipcRenderer.invoke("select-directory");
       if (selectedDir) {
-        const res = await fetch("http://localhost:3001/api/media/directory", {
+        const res = await fetch(`${API}/api/media/directory`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ directory: selectedDir }),
