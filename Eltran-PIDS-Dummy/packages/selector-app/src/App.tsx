@@ -1,4 +1,4 @@
-/** /selector-app/src/App.tsx — untuk mengubah: komponen PIDS; fungsi utama: App */
+/** /selector-app/src/App.tsx — untuk mengubah: komponen PIDS selector LED 5inch; fungsi utama: App Selector */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {

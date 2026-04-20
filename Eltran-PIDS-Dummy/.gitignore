@@ -1,0 +1,6 @@
+# Auto-generated ignore for cleanup`n
+*.bak
+*.commentbak*
+.electron/
+backups/
+*.bak2
