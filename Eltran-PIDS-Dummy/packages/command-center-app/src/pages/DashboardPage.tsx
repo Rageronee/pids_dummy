@@ -1,258 +1,309 @@
-/**
- * Ringkasan: command-center-app\src\pages\DashboardPage.tsx
- * Tujuan: Komponen UI untuk PIDS.
- * Catatan: Komentar diringkas di atas; tidak mengubah logika.
- */
-import React, { useState, useEffect } from 'react';
+/** /command-center-app/src/pages/DashboardPage.tsx — untuk mengubah: komponen PIDS; fungsi utama: DashboardPage */
+
+import React, { useState, useEffect } from "react";
 import {
-    Activity,
-    MapPin,
-    Server,
-    ShieldAlert,
-    Train,
-    Clock,
-    Zap,
-    Navigation2,
-    Cloud
-} from 'lucide-react';
-import MapComponent from '../components/MapComponent';
+  Activity,
+  MapPin,
+  Server,
+  ShieldAlert,
+  Train,
+  Clock,
+  Zap,
+  Navigation2,
+  Cloud,
+} from "lucide-react";
+import MapComponent from "../components/MapComponent";
 
-import { API } from '../config';
+import { API } from "../config";
 
-const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({ setPage }) => {
-    const [schedules, setSchedules] = useState<any[]>([]);
-    const [logs, setLogs] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
+  setPage,
+}) => {
+  const [schedules, setSchedules] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
-        try {
-            const [schedRes, logRes] = await Promise.all([
-                fetch(`${API}/api/schedules`),
-                fetch(`${API}/api/logs?limit=5`)
-            ]);
-            const [schedData, logData] = await Promise.all([
-                schedRes.json(),
-                logRes.json()
-            ]);
+  const fetchData = async () => {
+    try {
+      const [schedRes, logRes] = await Promise.all([
+        fetch(`${API}/api/schedules`),
+        fetch(`${API}/api/logs?limit=5`),
+      ]);
+      const [schedData, logData] = await Promise.all([
+        schedRes.json(),
+        logRes.json(),
+      ]);
 
-            if (schedData.success) {
-                setSchedules(schedData.schedules.slice(0, 4)); // Limit to top 4 for layout
-            }
-            if (logData.success) {
-                setLogs(logData.logs || []);
-            }
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (schedData.success) {
+        setSchedules(schedData.schedules.slice(0, 4)); // Limit to top 4 for layout
+      }
+      if (logData.success) {
+        setLogs(logData.logs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 10000); // Fast refresh for Command Center
-        return () => clearInterval(interval);
-    }, []);
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Fast refresh for Command Center
+    return () => clearInterval(interval);
+  }, []);
 
-    return (
-        <div className="flex flex-col h-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
-            {/* Main Content Area */}
-            <main className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300">
+  return (
+    <div className="flex flex-col h-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
+      <main className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300">
+        <section className="relative w-full h-[380px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
+          <div className="absolute top-4 left-4 z-20 flex gap-2">
+            <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">
+                Live Map
+              </span>
+            </div>
+            <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+              <Navigation2 size={12} className="text-blue-600" />
+              <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">
+                Live Tracking
+              </span>
+            </div>
+          </div>
+          <MapComponent />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50/50 to-transparent z-10 pointer-events-none" />
+        </section>
 
-                {/* TOP SECTION: Geolocation Situational Awareness */}
-                <section className="relative w-full h-[380px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
-                    <div className="absolute top-4 left-4 z-20 flex gap-2">
-                        <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">Live Map</span>
-                        </div>
-                        <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
-                            <Navigation2 size={12} className="text-blue-600" />
-                            <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">Live Tracking</span>
-                        </div>
-                    </div>
-                    <MapComponent />
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50/50 to-transparent z-10 pointer-events-none" />
-                </section>
-
-                {/* BOTTOM SECTION: Split view */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                    {/* Detailed Status List */}
-                    <section className="lg:col-span-2 space-y-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Fleet & Station Analytics</h2>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {loading ? (
-                                Array(4).fill(0).map((_, i) => (
-                                    <div key={i} className="h-32 bg-slate-100 animate-pulse rounded-2xl border border-slate-200" />
-                                ))
-                            ) : (
-                                schedules.map((s, i) => (
-                                    <TransportLineCard
-                                        key={s.id || i}
-                                        type="Train"
-                                        id={s.display_train_number || s.train_number || s.ka_number || 'KA'}
-                                        status={s.status_keberangkatan || 'Normal'}
-                                        load={Math.floor(Math.random() * 40) + 20} // Simulated occupancy
-                                        eta={s.waktu_keberangkatan_penjadwalan}
-                                        origin={s.stasiun_keberangkatan}
-                                        dest={s.stasiun_tujuan}
-                                    />
-                                ))
-                            )}
-                            {!loading && schedules.length === 0 && (
-                                <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                                    <p className="text-slate-400 font-medium text-sm">Tidak ada jadwal aktif terdeteksi.</p>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
-                    {/* Activity Logs / Sidebar Widgets */}
-                    <section className="space-y-6">
-                        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
-                            <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-                                <Activity size={16} className="text-blue-600" />
-                                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">System Logs</h2>
-                            </div>
-
-                            <div className="flex-grow space-y-5 overflow-y-auto pr-1">
-                                {logs.map((log, i) => (
-                                    <LogItem
-                                        key={log.id || i}
-                                        time={new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                        tag={log.role.toUpperCase()}
-                                        msg={log.action || log.details}
-                                        type={log.role === 'Admin' ? 'info' : 'success'}
-                                    />
-                                ))}
-                                {!loading && logs.length === 0 && (
-                                    <p className="text-[10px] text-slate-400 italic text-center py-8">Belum ada aktivitas baru.</p>
-                                )}
-                            </div>
-
-                            <button 
-                                onClick={() => setPage?.('logs')}
-                                className="mt-6 w-full h-10 text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
-                            >
-                                View All Logs
-                            </button>
-                        </div>
-                    </section>
-
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <section className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+                Fleet & Station Analytics
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {loading
+                ? Array(4)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-32 bg-slate-100 animate-pulse rounded-2xl border border-slate-200"
+                      />
+                    ))
+                : schedules.map((s, i) => (
+                    <TransportLineCard
+                      key={s.id || i}
+                      type="Train"
+                      id={
+                        s.display_train_number ||
+                        s.train_number ||
+                        s.ka_number ||
+                        "KA"
+                      }
+                      status={s.status_keberangkatan || "Normal"}
+                      load={Math.floor(Math.random() * 40) + 20} // Simulated occupancy
+                      eta={s.waktu_keberangkatan_penjadwalan}
+                      origin={s.stasiun_keberangkatan}
+                      dest={s.stasiun_tujuan}
+                    />
+                  ))}
+              {!loading && schedules.length === 0 && (
+                <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                  <p className="text-slate-400 font-medium text-sm">
+                    Tidak ada jadwal aktif terdeteksi.
+                  </p>
                 </div>
-            </main>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+              <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                <Activity size={16} className="text-blue-600" />
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+                  System Logs
+                </h2>
+              </div>
+
+              <div className="flex-grow space-y-5 overflow-y-auto pr-1">
+                {logs.map((log, i) => (
+                  <LogItem
+                    key={log.id || i}
+                    time={new Date(log.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                    tag={log.role.toUpperCase()}
+                    msg={log.action || log.details}
+                    type={log.role === "Admin" ? "info" : "success"}
+                  />
+                ))}
+                {!loading && logs.length === 0 && (
+                  <p className="text-[10px] text-slate-400 italic text-center py-8">
+                    Belum ada aktivitas baru.
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={() => setPage?.("logs")}
+                className="mt-6 w-full h-10 text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+              >
+                View All Logs
+              </button>
+            </div>
+          </section>
         </div>
-    );
+      </main>
+    </div>
+  );
 };
 
 const StatCard: React.FC<{
-    title: string;
-    value: string;
-    status: 'success' | 'warning' | 'error' | 'info';
-    icon: React.ReactNode;
-    trend?: string;
+  title: string;
+  value: string;
+  status: "success" | "warning" | "error" | "info";
+  icon: React.ReactNode;
+  trend?: string;
 }> = ({ title, value, status, icon, trend }) => {
-    const statusColors = {
-        success: 'text-green-600 bg-green-50',
-        warning: 'text-amber-600 bg-amber-50',
-        error: 'text-rose-600 bg-rose-50',
-        info: 'text-blue-600 bg-blue-50'
-    };
+  const statusColors = {
+    success: "text-green-600 bg-green-50",
+    warning: "text-amber-600 bg-amber-50",
+    error: "text-rose-600 bg-rose-50",
+    info: "text-blue-600 bg-blue-50",
+  };
 
-    return (
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md group relative overflow-hidden">
-            <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 rounded-2xl transition-colors duration-300 ${statusColors[status]}`}>
-                    {icon}
-                </div>
-                {trend && (
-                    <span className={`text-[9px] font-semibold px-2 py-1 rounded-lg ${statusColors[status]}`}>
-                        {trend}
-                    </span>
-                )}
-            </div>
-            <div>
-                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">{title}</p>
-                <p className="text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
-            </div>
+  return (
+    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md group relative overflow-hidden">
+      <div className="flex justify-between items-start mb-4">
+        <div
+          className={`p-3 rounded-2xl transition-colors duration-300 ${statusColors[status]}`}
+        >
+          {icon}
         </div>
-    );
+        {trend && (
+          <span
+            className={`text-[9px] font-semibold px-2 py-1 rounded-lg ${statusColors[status]}`}
+          >
+            {trend}
+          </span>
+        )}
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          {title}
+        </p>
+        <p className="text-3xl font-semibold tracking-tight text-slate-900">
+          {value}
+        </p>
+      </div>
+    </div>
+  );
 };
 
-const LogItem: React.FC<{ time: string, tag: string, msg: string, type: 'info' | 'success' | 'warning' }> = ({ time, tag, msg, type }) => {
-    const typeStyles = {
-        info: 'text-blue-600',
-        success: 'text-green-600',
-        warning: 'text-amber-600'
-    };
+const LogItem: React.FC<{
+  time: string;
+  tag: string;
+  msg: string;
+  type: "info" | "success" | "warning";
+}> = ({ time, tag, msg, type }) => {
+  const typeStyles = {
+    info: "text-blue-600",
+    success: "text-green-600",
+    warning: "text-amber-600",
+  };
 
-    return (
-        <div className="text-[11px] leading-relaxed group hover:bg-slate-50 p-1 rounded-lg transition-colors">
-            <div className="flex gap-3 items-center">
-                <span className="text-slate-400 tabular-nums shrink-0 font-medium">{time}</span>
-                <span className={`text-[10px] font-semibold tracking-wider shrink-0 uppercase ${typeStyles[type]}`}>{tag}</span>
-                <span className="text-slate-600 font-medium truncate">{msg}</span>
-            </div>
-        </div>
-    );
+  return (
+    <div className="text-[11px] leading-relaxed group hover:bg-slate-50 p-1 rounded-lg transition-colors">
+      <div className="flex gap-3 items-center">
+        <span className="text-slate-400 tabular-nums shrink-0 font-medium">
+          {time}
+        </span>
+        <span
+          className={`text-[10px] font-semibold tracking-wider shrink-0 uppercase ${typeStyles[type]}`}
+        >
+          {tag}
+        </span>
+        <span className="text-slate-600 font-medium truncate">{msg}</span>
+      </div>
+    </div>
+  );
 };
 
 const TransportLineCard: React.FC<{
-    type: 'Train' | 'Station';
-    id: string;
-    status: string;
-    load: number;
-    eta: string;
-    origin: string;
-    dest: string;
+  type: "Train" | "Station";
+  id: string;
+  status: string;
+  load: number;
+  eta: string;
+  origin: string;
+  dest: string;
 }> = ({ type, id, status, load, eta, origin, dest }) => {
-    const isWarning = load > 80 || status !== 'Normal';
+  const isWarning = load > 80 || status !== "Normal";
 
-    return (
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:border-blue-200 transition-all hover:shadow-md group">
-            <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                    {type === 'Train' ? (
-                        <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600"><Train size={14} /></div>
-                    ) : (
-                        <div className="p-1.5 bg-slate-100 rounded-lg text-slate-600"><MapPin size={14} /></div>
-                    )}
-                    <span className="text-sm font-semibold text-slate-900">{id}</span>
-                </div>
-                <div className={`px-2.5 py-0.5 rounded-lg text-[10px] font-semibold uppercase ${status === 'Normal' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
-                    {status}
-                </div>
+  return (
+    <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:border-blue-200 transition-all hover:shadow-md group">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          {type === "Train" ? (
+            <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600">
+              <Train size={14} />
             </div>
-
-            <div className="mb-4">
-                <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[9px] text-slate-400 font-semibold uppercase">Capacity</span>
-                    <span className={`text-[10px] font-semibold ${isWarning ? 'text-amber-600' : 'text-slate-900'}`}>{load}%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                        className={`h-full transition-all duration-700 rounded-full ${isWarning ? 'bg-amber-500' : 'bg-blue-600'}`}
-                        style={{ width: `${load}%` }}
-                    />
-                </div>
+          ) : (
+            <div className="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+              <MapPin size={14} />
             </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <div className="flex flex-col">
-                    <p className="text-[8px] text-slate-400 font-semibold uppercase">Route</p>
-                    <p className="text-[10px] font-semibold text-slate-700">{origin} → {dest}</p>
-                </div>
-                <div className="text-right">
-                    <p className="text-[8px] text-slate-400 font-semibold uppercase">In</p>
-                    <p className="text-sm font-semibold text-blue-600">{eta}</p>
-                </div>
-            </div>
+          )}
+          <span className="text-sm font-semibold text-slate-900">{id}</span>
         </div>
-    );
+        <div
+          className={`px-2.5 py-0.5 rounded-lg text-[10px] font-semibold uppercase ${status === "Normal" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"}`}
+        >
+          {status}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1.5">
+          <span className="text-[9px] text-slate-400 font-semibold uppercase">
+            Capacity
+          </span>
+          <span
+            className={`text-[10px] font-semibold ${isWarning ? "text-amber-600" : "text-slate-900"}`}
+          >
+            {load}%
+          </span>
+        </div>
+        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-700 rounded-full ${isWarning ? "bg-amber-500" : "bg-blue-600"}`}
+            style={{ width: `${load}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+        <div className="flex flex-col">
+          <p className="text-[8px] text-slate-400 font-semibold uppercase">
+            Route
+          </p>
+          <p className="text-[10px] font-semibold text-slate-700">
+            {origin} → {dest}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-[8px] text-slate-400 font-semibold uppercase">
+            In
+          </p>
+          <p className="text-sm font-semibold text-blue-600">{eta}</p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default DashboardPage;
-

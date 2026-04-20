@@ -1,376 +1,450 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { usePidsData } from './hooks/usePidsData';
-import { LayoutDashboard, Clock, AlertCircle, MapPin, Video, Database, Train, Cctv, ScrollText, LogOut, ChevronLeft, ChevronRight, ChevronDown, Maximize } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { LoginScreen } from '@eltran/shared';
-import { MasterConsolePanel } from './components/MasterConsolePanel';
-import type { AuthUser, LogEntry } from '@eltran/pids-core';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { usePidsData } from "./hooks/usePidsData";
+import {
+  LayoutDashboard,
+  Clock,
+  AlertCircle,
+  MapPin,
+  Video,
+  Database,
+  Train,
+  Cctv,
+  ScrollText,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Maximize,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { LoginScreen } from "@eltran/shared";
+import { MasterConsolePanel } from "./components/MasterConsolePanel";
+import type { AuthUser, LogEntry } from "@eltran/pids-core";
 
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 
-
-const API_URL = 'http://localhost:3001';
-
-
+const API_URL = "http://localhost:3001";
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {
-    const numGerbong = _data?.coachCount || 4;
-    const sampleImages = [
-        "https://img.harianjogja.com/posts/2024/03/26/1169359/kereta-api-ekonomi-generasi-baru.jpg",
-        "https://image.fortuneidn.com/post/20250821/upload_e179f189ddfbf16b0482c14a7295b474_2940c5af-a990-4232-ad05-4c52dd5d0431.jpg",
-        "https://awsimages.detik.net.id/visual/2022/12/25/kereta-panoramic-kini-bisa-dicoba-oleh-masyarakat-umum-setelah-soft-launching-yang-dilakukan-pt-kereta-api-indonesia-pada-24-d-2_169.jpeg?w=1200",
-        "https://asset.kompas.com/crops/RRMwhqmwIwdwA3xhcoXZY6wdHjE=/0x0:999x666/1200x800/data/photo/2022/07/15/62d0ce5c7389a.jpeg"
-    ];
+  const numGerbong = _data?.coachCount || 4;
+  const sampleImages = [
+    "https://img.harianjogja.com/posts/2024/03/26/1169359/kereta-api-ekonomi-generasi-baru.jpg",
+    "https://image.fortuneidn.com/post/20250821/upload_e179f189ddfbf16b0482c14a7295b474_2940c5af-a990-4232-ad05-4c52dd5d0431.jpg",
+    "https://awsimages.detik.net.id/visual/2022/12/25/kereta-panoramic-kini-bisa-dicoba-oleh-masyarakat-umum-setelah-soft-launching-yang-dilakukan-pt-kereta-api-indonesia-pada-24-d-2_169.jpeg?w=1200",
+    "https://asset.kompas.com/crops/RRMwhqmwIwdwA3xhcoXZY6wdHjE=/0x0:999x666/1200x800/data/photo/2022/07/15/62d0ce5c7389a.jpeg",
+  ];
 
-    const cameras = Array.from({ length: numGerbong }, (_, i) => ({
-        id: `CAM-${String(i + 1).padStart(2, '0')}`,
-        location: `GERBONG ${String(i + 1).padStart(2, '0')} - INTERIOR`,
-        url: sampleImages[i % sampleImages.length],
-        gerbongIndex: i + 1
-    }));
+  const cameras = Array.from({ length: numGerbong }, (_, i) => ({
+    id: `CAM-${String(i + 1).padStart(2, "0")}`,
+    location: `GERBONG ${String(i + 1).padStart(2, "0")} - INTERIOR`,
+    url: sampleImages[i % sampleImages.length],
+    gerbongIndex: i + 1,
+  }));
 
-    const [currentCamIndex, setCurrentCamIndex] = useState(0);
-    const [currentTime, setCurrentTime] = useState(new Date());
-    const [isAutoPlay, setIsAutoPlay] = useState(true);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
+  const [currentCamIndex, setCurrentCamIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!isAutoPlay) return;
-        const interval = setInterval(() => setCurrentCamIndex((prev) => (prev + 1) % cameras.length), 5000);
-        return () => clearInterval(interval);
-    }, [isAutoPlay, cameras.length]);
-
-    useEffect(() => {
-        const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(clockTimer);
-    }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handlePrevCam = () => {
-        setCurrentCamIndex((prev) => (prev - 1 + cameras.length) % cameras.length);
-        setIsAutoPlay(false);
-    };
-
-    const handleNextCam = () => {
-        setCurrentCamIndex((prev) => (prev + 1) % cameras.length);
-        setIsAutoPlay(false);
-    };
-
-    const handleSelectGerbong = (idx: number) => {
-        setCurrentCamIndex(idx);
-        setIsAutoPlay(false);
-    };
-
-    const toggleFullscreen = () => {
-        if (!containerRef.current) return;
-        if (!document.fullscreenElement) {
-            containerRef.current.requestFullscreen().catch(err => {
-                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    };
-
-    return (
-        <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black group">
-            <AnimatePresence mode="wait">
-                <motion.div key={currentCamIndex} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${cameras[currentCamIndex].url})` }}>
-                    <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
-                </motion.div>
-            </AnimatePresence>
-            <motion.div animate={{ y: ["0%", "100%", "0%"] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} className="absolute inset-0 bg-white/10 h-px z-10 pointer-events-none shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-            <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
-                <div className="px-4 py-2 flex flex-col items-start drop-shadow-2xl">
-                    <div className="text-3xl font-bold text-white font-mono tracking-tighter tabular-nums leading-none mb-1 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</div>
-                    <div className="text-[10px] font-semibold text-white/90 [text-shadow:0_1px_5px_rgba(0,0,0,0.8)]">{currentTime.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                </div>
-
-                {/* Top Right Fullscreen Button */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button onClick={toggleFullscreen} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg" title="Fullscreen">
-                        <Maximize size={24} />
-                    </button>
-                </div>
-            </div>
-            {/* Main Bottom Left Overlay Text (Extreme Corner) */}
-            <div className="absolute bottom-8 left-10 z-20 pointer-events-none">
-                <div className="text-white/40 font-mono text-[40px] font-bold leading-none select-none drop-shadow-2xl">
-                    {cameras[currentCamIndex].id}
-                </div>
-            </div>
-
-
-
-            {/* Manual Navigation Overlay (appears on hover) */}
-            <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button onClick={handlePrevCam} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110">
-                    <ChevronLeft size={36} />
-                </button>
-            </div>
-            <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button onClick={handleNextCam} className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110">
-                    <ChevronRight size={36} />
-                </button>
-            </div>
-
-            <div className="absolute bottom-8 left-8 right-8 flex justify-end items-end z-40" ref={dropdownRef}>
-                <div className="relative">
-                    <AnimatePresence>
-                        {isDropdownOpen && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="absolute bottom-full right-0 mb-4 w-[400px] bg-black/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
-                            >
-                                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
-                                    Pilih Lokasi Kamera
-                                </div>
-                                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-                                    {cameras.map((cam, idx) => (
-                                        <motion.button
-                                            key={cam.id}
-                                            onClick={() => {
-                                                handleSelectGerbong(idx);
-                                                setIsDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${currentCamIndex === idx
-                                                ? 'bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]'
-                                                : 'text-white/70 hover:bg-white/5 hover:text-white'
-                                                }`}
-                                        >
-                                            <div className={`p-1.5 rounded-lg ${currentCamIndex === idx ? 'bg-white/20' : 'bg-white/5'}`}>
-                                                <Cctv size={14} />
-                                            </div>
-                                            <span className="text-sm font-semibold truncate">{cam.location}</span>
-                                        </motion.button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <motion.button
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${isDropdownOpen ? 'border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20' : 'border-white/10 hover:border-[#ee6f1f]/40'
-                            }`}
-                    >
-                        <div className={`p-2.5 rounded-xl transition-colors ${isDropdownOpen ? 'bg-[#ee6f1f] text-white' : 'bg-[#ee6f1f]/20 text-[#ee6f1f]'}`}>
-                            <Cctv size={20} />
-                        </div>
-
-                        <div className="flex items-center gap-6 min-w-[300px]">
-                            <span className="text-xl font-semibold text-white truncate px-2">
-                                {cameras[currentCamIndex].location}
-                            </span>
-                            <motion.div
-                                animate={{ rotate: isDropdownOpen ? 180 : 0 }}
-                                className="text-[#ee6f1f]/60"
-                            >
-                                <ChevronDown size={22} />
-                            </motion.div>
-                        </div>
-                    </motion.button>
-                </div>
-            </div>
-            <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
-        </div>
+  useEffect(() => {
+    if (!isAutoPlay) return;
+    const interval = setInterval(
+      () => setCurrentCamIndex((prev) => (prev + 1) % cameras.length),
+      5000,
     );
+    return () => clearInterval(interval);
+  }, [isAutoPlay, cameras.length]);
+
+  useEffect(() => {
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(clockTimer);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handlePrevCam = () => {
+    setCurrentCamIndex((prev) => (prev - 1 + cameras.length) % cameras.length);
+    setIsAutoPlay(false);
+  };
+
+  const handleNextCam = () => {
+    setCurrentCamIndex((prev) => (prev + 1) % cameras.length);
+    setIsAutoPlay(false);
+  };
+
+  const handleSelectGerbong = (idx: number) => {
+    setCurrentCamIndex(idx);
+    setIsAutoPlay(false);
+  };
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch((err) => {
+        console.error(
+          `Error attempting to enable full-screen mode: ${err.message}`,
+        );
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black group"
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentCamIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${cameras[currentCamIndex].url})` }}
+        >
+          <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
+        </motion.div>
+      </AnimatePresence>
+      <motion.div
+        animate={{ y: ["0%", "100%", "0%"] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0 bg-white/10 h-px z-10 pointer-events-none shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+      />
+      <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
+        <div className="px-4 py-2 flex flex-col items-start drop-shadow-2xl">
+          <div className="text-3xl font-bold text-white font-mono tracking-tighter tabular-nums leading-none mb-1 [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
+            {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
+          </div>
+          <div className="text-[10px] font-semibold text-white/90 [text-shadow:0_1px_5px_rgba(0,0,0,0.8)]">
+            {currentTime.toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </div>
+        </div>
+
+        {/* Top Right Fullscreen Button */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button
+            onClick={toggleFullscreen}
+            className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg"
+            title="Fullscreen"
+          >
+            <Maximize size={24} />
+          </button>
+        </div>
+      </div>
+      {/* Main Bottom Left Overlay Text (Extreme Corner) */}
+      <div className="absolute bottom-8 left-10 z-20 pointer-events-none">
+        <div className="text-white/40 font-mono text-[40px] font-bold leading-none select-none drop-shadow-2xl">
+          {cameras[currentCamIndex].id}
+        </div>
+      </div>
+
+      {/* Manual Navigation Overlay (appears on hover) */}
+      <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button
+          onClick={handlePrevCam}
+          className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
+        >
+          <ChevronLeft size={36} />
+        </button>
+      </div>
+      <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button
+          onClick={handleNextCam}
+          className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
+        >
+          <ChevronRight size={36} />
+        </button>
+      </div>
+
+      <div
+        className="absolute bottom-8 left-8 right-8 flex justify-end items-end z-40"
+        ref={dropdownRef}
+      >
+        <div className="relative">
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="absolute bottom-full right-0 mb-4 w-[400px] bg-black/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
+              >
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
+                  Pilih Lokasi Kamera
+                </div>
+                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                  {cameras.map((cam, idx) => (
+                    <motion.button
+                      key={cam.id}
+                      onClick={() => {
+                        handleSelectGerbong(idx);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                        currentCamIndex === idx
+                          ? "bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      <div
+                        className={`p-1.5 rounded-lg ${currentCamIndex === idx ? "bg-white/20" : "bg-white/5"}`}
+                      >
+                        <Cctv size={14} />
+                      </div>
+                      <span className="text-sm font-semibold truncate">
+                        {cam.location}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.button
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${
+              isDropdownOpen
+                ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20"
+                : "border-white/10 hover:border-[#ee6f1f]/40"
+            }`}
+          >
+            <div
+              className={`p-2.5 rounded-xl transition-colors ${isDropdownOpen ? "bg-[#ee6f1f] text-white" : "bg-[#ee6f1f]/20 text-[#ee6f1f]"}`}
+            >
+              <Cctv size={20} />
+            </div>
+
+            <div className="flex items-center gap-6 min-w-[300px]">
+              <span className="text-xl font-semibold text-white truncate px-2">
+                {cameras[currentCamIndex].location}
+              </span>
+              <motion.div
+                animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+                className="text-[#ee6f1f]/60"
+              >
+                <ChevronDown size={22} />
+              </motion.div>
+            </div>
+          </motion.button>
+        </div>
+      </div>
+      <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
+    </div>
+  );
 };
 
 const MonitorGPS = ({ route }: { route: any }) => {
-    const [gerbongData, setGerbongData] = useState<any[]>([]);
-    const [selectedKereta, setSelectedKereta] = useState<number | null>(null);
-    const [trains, setTrains] = useState<any[]>([]);
-    const mapRef = useRef<maplibregl.Map | null>(null);
-    const markersRef = useRef<Record<number, maplibregl.Marker>>({});
-    const lastZoomedRouteId = useRef<string | null>(null);
+  const [gerbongData, setGerbongData] = useState<any[]>([]);
+  const [selectedKereta, setSelectedKereta] = useState<number | null>(null);
+  const [trains, setTrains] = useState<any[]>([]);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<Record<number, maplibregl.Marker>>({});
+  const lastZoomedRouteId = useRef<string | null>(null);
 
-    const [mapIsReady, setMapIsReady] = useState(false);
+  const [mapIsReady, setMapIsReady] = useState(false);
 
-    // Fetch trains list for selector
-    useEffect(() => {
-        const fetchTrains = async () => {
-            try {
-                const res = await fetch(`${API_URL}/api/gps/fleet`);
-                const d = await res.json();
-                if (d.success && d.fleet?.length > 0) {
-                    setTrains(d.fleet);
-                    if (!selectedKereta) setSelectedKereta(d.fleet[0].kereta_id);
-                }
-            } catch { }
-        };
-        fetchTrains();
-    }, []);
-
-    // Fetch per-gerbong GPS when selectedKereta changes
-    useEffect(() => {
-        if (!selectedKereta) return;
-        const fetchGerbong = async () => {
-            try {
-                const res = await fetch(`${API_URL}/api/gps/gerbong/${selectedKereta}`);
-                const d = await res.json();
-                if (d.success) setGerbongData(d.gerbong);
-            } catch { }
-        };
-        fetchGerbong();
-        const interval = setInterval(fetchGerbong, 10000);
-        return () => clearInterval(interval);
-    }, [selectedKereta]);
-
-    // Use a Callback Ref to guarantee initialization EXACTLY when the div exists
-    const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
-        if (!node) {
-            if (mapRef.current) {
-                mapRef.current.remove();
-                mapRef.current = null;
-                setMapIsReady(false);
-            }
-            return;
+  // Fetch trains list for selector
+  useEffect(() => {
+    const fetchTrains = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/gps/fleet`);
+        const d = await res.json();
+        if (d.success && d.fleet?.length > 0) {
+          setTrains(d.fleet);
+          if (!selectedKereta) setSelectedKereta(d.fleet[0].kereta_id);
         }
+      } catch {}
+    };
+    fetchTrains();
+  }, []);
 
-        if (mapRef.current) return;
+  // Fetch per-gerbong GPS when selectedKereta changes
+  useEffect(() => {
+    if (!selectedKereta) return;
+    const fetchGerbong = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/gps/gerbong/${selectedKereta}`);
+        const d = await res.json();
+        if (d.success) setGerbongData(d.gerbong);
+      } catch {}
+    };
+    fetchGerbong();
+    const interval = setInterval(fetchGerbong, 10000);
+    return () => clearInterval(interval);
+  }, [selectedKereta]);
 
-        try {
-            const map = new maplibregl.Map({
-                container: node,
-                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-                center: [106.8272, -6.1751],
-                zoom: 12,
-                pitch: 45,
-                attributionControl: false,
-                trackResize: true,
-                antialias: true
-            });
+  // Use a Callback Ref to guarantee initialization EXACTLY when the div exists
+  const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        setMapIsReady(false);
+      }
+      return;
+    }
 
-            mapRef.current = map;
+    if (mapRef.current) return;
 
-            map.on('load', () => {
-                setMapIsReady(true);
-                setTimeout(() => map.resize(), 50);
-            });
+    try {
+      const map = new maplibregl.Map({
+        container: node,
+        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        center: [106.8272, -6.1751],
+        zoom: 12,
+        pitch: 45,
+        attributionControl: false,
+        trackResize: true,
+        antialias: true,
+      });
 
-            // Handle resizes
-            const ro = new ResizeObserver(() => {
-                if (mapRef.current) mapRef.current.resize();
-            });
-            ro.observe(node);
+      mapRef.current = map;
 
-            const originalRemove = map.remove.bind(map);
-            map.remove = () => {
-                ro.disconnect();
-                originalRemove();
-            };
+      map.on("load", () => {
+        setMapIsReady(true);
+        setTimeout(() => map.resize(), 50);
+      });
 
-        } catch (e) {
-            console.error('[Map] Init error:', e);
-        }
-    }, []);
+      // Handle resizes
+      const ro = new ResizeObserver(() => {
+        if (mapRef.current) mapRef.current.resize();
+      });
+      ro.observe(node);
 
-    // Sync GeoJSON layers with route data
-    useEffect(() => {
-        const map = mapRef.current;
-        if (!map || !mapIsReady || !route?.geojson) return;
+      const originalRemove = map.remove.bind(map);
+      map.remove = () => {
+        ro.disconnect();
+        originalRemove();
+      };
+    } catch (e) {
+      console.error("[Map] Init error:", e);
+    }
+  }, []);
 
-        try {
-            const geojson = typeof route.geojson === 'string' ? JSON.parse(route.geojson) : route.geojson;
+  // Sync GeoJSON layers with route data
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapIsReady || !route?.geojson) return;
 
-            // Route Path Sources & Layers
-            if (!map.getSource('route-path')) {
-                map.addSource('route-path', { type: 'geojson', data: geojson });
-                
-                // Outer Glow Layer
-                map.addLayer({
-                    id: 'route-line-glow',
-                    type: 'line',
-                    source: 'route-path',
-                    paint: {
-                        'line-color': '#ee6f1f',
-                        'line-width': 8,
-                        'line-opacity': 0.15,
-                        'line-blur': 4
-                    },
-                    filter: ['==', '$type', 'LineString']
-                });
+    try {
+      const geojson =
+        typeof route.geojson === "string"
+          ? JSON.parse(route.geojson)
+          : route.geojson;
 
-                // Main Route Line
-                map.addLayer({
-                    id: 'route-line',
-                    type: 'line',
-                    source: 'route-path',
-                    layout: { 'line-join': 'round', 'line-cap': 'round' },
-                    paint: { 'line-color': '#ee6f1f', 'line-width': 4 },
-                    filter: ['==', '$type', 'LineString']
-                });
+      // Route Path Sources & Layers
+      if (!map.getSource("route-path")) {
+        map.addSource("route-path", { type: "geojson", data: geojson });
 
-                // Station Dots
-                map.addLayer({
-                    id: 'station-points',
-                    type: 'circle',
-                    source: 'route-path',
-                    paint: {
-                        'circle-radius': 5,
-                        'circle-color': '#ffffff',
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ee6f1f'
-                    },
-                    filter: ['==', '$type', 'Point']
-                });
-            } else {
-                (map.getSource('route-path') as maplibregl.GeoJSONSource).setData(geojson);
-            }
-
-            // Sync Bounds
-            const features = geojson.features || [];
-            const lineFeature = features.find((f: any) => f.geometry?.type === 'LineString');
-            if (lineFeature?.geometry?.coordinates?.length > 0 && lastZoomedRouteId.current !== route.name) {
-                const bounds = new maplibregl.LngLatBounds();
-                lineFeature.geometry.coordinates.forEach((c: any) => bounds.extend(c));
-                map.fitBounds(bounds, { padding: 80, duration: 2000 });
-                lastZoomedRouteId.current = route.name;
-            }
-        } catch (e) {
-            console.error("[Map] Layer sync error:", e);
-        }
-    }, [route?.geojson, mapIsReady]);
-
-    // Update markers based on gerbongData
-    useEffect(() => {
-        const map = mapRef.current;
-        if (!map || !mapIsReady) return;
-
-        const currentIds = gerbongData.map(g => g.gerbong_id);
-        Object.keys(markersRef.current).forEach(id => {
-            const numId = parseInt(id);
-            if (!currentIds.includes(numId)) {
-                markersRef.current[numId].remove();
-                delete markersRef.current[numId];
-            }
+        // Outer Glow Layer
+        map.addLayer({
+          id: "route-line-glow",
+          type: "line",
+          source: "route-path",
+          paint: {
+            "line-color": "#ee6f1f",
+            "line-width": 8,
+            "line-opacity": 0.15,
+            "line-blur": 4,
+          },
+          filter: ["==", "$type", "LineString"],
         });
 
-        gerbongData.forEach(g => {
-            if (g.longitude && g.latitude) {
-                if (!markersRef.current[g.gerbong_id]) {
-                    const el = document.createElement('div');
-                    el.className = 'marker-train-pids relative flex items-center justify-center';
-                    el.innerHTML = `
+        // Main Route Line
+        map.addLayer({
+          id: "route-line",
+          type: "line",
+          source: "route-path",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: { "line-color": "#ee6f1f", "line-width": 4 },
+          filter: ["==", "$type", "LineString"],
+        });
+
+        // Station Dots
+        map.addLayer({
+          id: "station-points",
+          type: "circle",
+          source: "route-path",
+          paint: {
+            "circle-radius": 5,
+            "circle-color": "#ffffff",
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#ee6f1f",
+          },
+          filter: ["==", "$type", "Point"],
+        });
+      } else {
+        (map.getSource("route-path") as maplibregl.GeoJSONSource).setData(
+          geojson,
+        );
+      }
+
+      // Sync Bounds
+      const features = geojson.features || [];
+      const lineFeature = features.find(
+        (f: any) => f.geometry?.type === "LineString",
+      );
+      if (
+        lineFeature?.geometry?.coordinates?.length > 0 &&
+        lastZoomedRouteId.current !== route.name
+      ) {
+        const bounds = new maplibregl.LngLatBounds();
+        lineFeature.geometry.coordinates.forEach((c: any) => bounds.extend(c));
+        map.fitBounds(bounds, { padding: 80, duration: 2000 });
+        lastZoomedRouteId.current = route.name;
+      }
+    } catch (e) {
+      console.error("[Map] Layer sync error:", e);
+    }
+  }, [route?.geojson, mapIsReady]);
+
+  // Update markers based on gerbongData
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapIsReady) return;
+
+    const currentIds = gerbongData.map((g) => g.gerbong_id);
+    Object.keys(markersRef.current).forEach((id) => {
+      const numId = parseInt(id);
+      if (!currentIds.includes(numId)) {
+        markersRef.current[numId].remove();
+        delete markersRef.current[numId];
+      }
+    });
+
+    gerbongData.forEach((g) => {
+      if (g.longitude && g.latitude) {
+        if (!markersRef.current[g.gerbong_id]) {
+          const el = document.createElement("div");
+          el.className =
+            "marker-train-pids relative flex items-center justify-center";
+          el.innerHTML = `
                         <div class="absolute w-12 h-12 bg-orange-500/20 rounded-full animate-ping-large"></div>
                         <div class="relative w-7 h-7 bg-white rounded-full p-1 shadow-[0_0_15px_rgba(238,111,31,0.5)] border border-orange-500/30 flex items-center justify-center">
                             <div class="w-full h-full bg-[#ee6f1f] rounded-full flex items-center justify-center">
@@ -379,435 +453,678 @@ const MonitorGPS = ({ route }: { route: any }) => {
                         </div>
                     `;
 
-                    markersRef.current[g.gerbong_id] = new maplibregl.Marker({ element: el })
-                        .setLngLat([g.longitude, g.latitude])
-                        .addTo(map);
-                } else {
-                    markersRef.current[g.gerbong_id].setLngLat([g.longitude, g.latitude]);
-                }
-            }
-        });
-    }, [gerbongData, mapIsReady]);
+          markersRef.current[g.gerbong_id] = new maplibregl.Marker({
+            element: el,
+          })
+            .setLngLat([g.longitude, g.latitude])
+            .addTo(map);
+        } else {
+          markersRef.current[g.gerbong_id].setLngLat([g.longitude, g.latitude]);
+        }
+      }
+    });
+  }, [gerbongData, mapIsReady]);
 
-    return (
-        <div className="space-y-6 h-full flex flex-col">
-            {/* Map Container Box */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
-                {/* Header Information Overlay */}
-                <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
-                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 shadow-lg flex items-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                        <span className="text-xs font-bold text-[#1d2d6a] uppercase tracking-wide">Peta Lokasi Armada</span>
-                    </div>
-                </div>
-
-                {/* Map Implementation */}
-                <div ref={mapContainerRef} className="absolute inset-0 z-0 bg-slate-50" />
-
-                {/* Legend / Info Overlay */}
-                <div className="absolute bottom-6 right-6 z-10">
-                    <div className="bg-[#1d2d6a] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 transition-all hover:scale-105">
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">Active Units</span>
-                            <span className="text-sm font-bold">{gerbongData.length} Rangkaian</span>
-                        </div>
-                        <div className="w-px h-8 bg-white/10" />
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">Service</span>
-                            <span className="text-sm font-bold truncate max-w-[120px]">{route?.name || '-'}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Per-Gerbong GPS Tracking Panel */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200 shrink-0">
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-orange-50 p-2.5 rounded-2xl text-[#ee6f1f]">
-                            <MapPin size={24} />
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight">Detail State per Gerbong</h2>
-                            <p className="text-xs text-slate-400 font-medium mt-0.5">Monitoring real-time telemetri rangkaian</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        {trains.map(t => (
-                            <button key={t.kereta_id} onClick={() => setSelectedKereta(t.kereta_id)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedKereta === t.kereta_id ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
-                                KA {t.kereta_id}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                
-                {gerbongData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-slate-300 gap-4">
-                        <MapPin size={40} className="opacity-20" />
-                        <span className="text-sm font-bold uppercase tracking-widest opacity-40">Tidak ada data gerbong terdeteksi</span>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-                        {gerbongData.map((g, i) => (
-                            <motion.div key={g.gerbong_id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                                className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 hover:shadow-xl hover:bg-white hover:border-orange-100 transition-all group">
-                                <div className="flex items-center gap-3 mb-5">
-                                    <div className={`w-3 h-3 rounded-full ${g.sensor_status === 'Aktif' ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-slate-300'}`} />
-                                    <div className="flex-1">
-                                        <div className="text-[#1d2d6a] font-bold text-base leading-none mb-1 group-hover:text-[#ee6f1f]">{g.nama_gerbong}</div>
-                                        <div className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">ID {String(g.no_urut_gerbong).padStart(2, '0')}</div>
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
-                                            <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">Speed</div>
-                                            <div className="text-sm font-black text-[#ee6f1f]">{g.kecepatan?.toFixed(1) || '0'} <span className="text-[10px] font-bold opacity-50">km/h</span></div>
-                                        </div>
-                                        <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
-                                            <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">Temp</div>
-                                            <div className="text-sm font-black text-[#1d2d6a]">{g.suhu?.toFixed(1) || '-'} <span className="text-[10px] font-bold opacity-50">°C</span></div>
-                                        </div>
-                                    </div>
-                                    <div className="bg-white/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase">Status Sensor</span>
-                                        <span className={`text-[11px] font-black ${g.sensor_status === 'Aktif' ? 'text-green-600' : 'text-red-400'}`}>{g.sensor_status}</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="space-y-6 h-full flex flex-col">
+      {/* Map Container Box */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
+        {/* Header Information Overlay */}
+        <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
+          <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 shadow-lg flex items-center gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-xs font-bold text-[#1d2d6a] uppercase tracking-wide">
+              Peta Lokasi Armada
+            </span>
+          </div>
         </div>
-    );
-};
 
+        {/* Map Implementation */}
+        <div
+          ref={mapContainerRef}
+          className="absolute inset-0 z-0 bg-slate-50"
+        />
+
+        {/* Legend / Info Overlay */}
+        <div className="absolute bottom-6 right-6 z-10">
+          <div className="bg-[#1d2d6a] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 transition-all hover:scale-105">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">
+                Active Units
+              </span>
+              <span className="text-sm font-bold">
+                {gerbongData.length} Rangkaian
+              </span>
+            </div>
+            <div className="w-px h-8 bg-white/10" />
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">
+                Service
+              </span>
+              <span className="text-sm font-bold truncate max-w-[120px]">
+                {route?.name || "-"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Per-Gerbong GPS Tracking Panel */}
+      <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200 shrink-0">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-orange-50 p-2.5 rounded-2xl text-[#ee6f1f]">
+              <MapPin size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight">
+                Detail State per Gerbong
+              </h2>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
+                Monitoring real-time telemetri rangkaian
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {trains.map((t) => (
+              <button
+                key={t.kereta_id}
+                onClick={() => setSelectedKereta(t.kereta_id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedKereta === t.kereta_id ? "bg-[#1d2d6a] text-white border-[#1d2d6a]" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300"}`}
+              >
+                KA {t.kereta_id}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {gerbongData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-slate-300 gap-4">
+            <MapPin size={40} className="opacity-20" />
+            <span className="text-sm font-bold uppercase tracking-widest opacity-40">
+              Tidak ada data gerbong terdeteksi
+            </span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {gerbongData.map((g, i) => (
+              <motion.div
+                key={g.gerbong_id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 hover:shadow-xl hover:bg-white hover:border-orange-100 transition-all group"
+              >
+                <div className="flex items-center gap-3 mb-5">
+                  <div
+                    className={`w-3 h-3 rounded-full ${g.sensor_status === "Aktif" ? "bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" : "bg-slate-300"}`}
+                  />
+                  <div className="flex-1">
+                    <div className="text-[#1d2d6a] font-bold text-base leading-none mb-1 group-hover:text-[#ee6f1f]">
+                      {g.nama_gerbong}
+                    </div>
+                    <div className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">
+                      ID {String(g.no_urut_gerbong).padStart(2, "0")}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
+                      <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">
+                        Speed
+                      </div>
+                      <div className="text-sm font-black text-[#ee6f1f]">
+                        {g.kecepatan?.toFixed(1) || "0"}{" "}
+                        <span className="text-[10px] font-bold opacity-50">
+                          km/h
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
+                      <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">
+                        Temp
+                      </div>
+                      <div className="text-sm font-black text-[#1d2d6a]">
+                        {g.suhu?.toFixed(1) || "-"}{" "}
+                        <span className="text-[10px] font-bold opacity-50">
+                          °C
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">
+                      Status Sensor
+                    </span>
+                    <span
+                      className={`text-[11px] font-black ${g.sensor_status === "Aktif" ? "text-green-600" : "text-red-400"}`}
+                    >
+                      {g.sensor_status}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // --- Log Viewer Component ---
 const LogViewer = ({ token }: { token: string }) => {
-    const [logs, setLogs] = useState<LogEntry[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('ALL');
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("ALL");
 
-    const ACTION_LABELS: Record<string, { label: string; color: string }> = {
-        LOGIN: { label: 'Login', color: 'text-green-600 bg-green-50 border-green-100' },
-        LOGIN_FAILED: { label: 'Login Gagal', color: 'text-red-600 bg-red-50 border-red-100' },
-        LOGOUT: { label: 'Logout', color: 'text-slate-600 bg-slate-50 border-slate-200' },
-        STATE_UPDATE: { label: 'Update State', color: 'text-blue-600 bg-blue-50 border-blue-100' },
-        DISPLAY_MODE: { label: 'Mode Display', color: 'text-purple-600 bg-purple-50 border-purple-100' },
-        LED_CONFIG: { label: 'LED Config', color: 'text-orange-600 bg-orange-50 border-orange-100' },
-        ADMIN_CRUD: { label: 'Admin CRUD', color: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
-        SYSTEM: { label: 'Sistem', color: 'text-slate-500 bg-slate-50 border-slate-200' },
-    };
+  const ACTION_LABELS: Record<string, { label: string; color: string }> = {
+    LOGIN: {
+      label: "Login",
+      color: "text-green-600 bg-green-50 border-green-100",
+    },
+    LOGIN_FAILED: {
+      label: "Login Gagal",
+      color: "text-red-600 bg-red-50 border-red-100",
+    },
+    LOGOUT: {
+      label: "Logout",
+      color: "text-slate-600 bg-slate-50 border-slate-200",
+    },
+    STATE_UPDATE: {
+      label: "Update State",
+      color: "text-blue-600 bg-blue-50 border-blue-100",
+    },
+    DISPLAY_MODE: {
+      label: "Mode Display",
+      color: "text-purple-600 bg-purple-50 border-purple-100",
+    },
+    LED_CONFIG: {
+      label: "LED Config",
+      color: "text-orange-600 bg-orange-50 border-orange-100",
+    },
+    ADMIN_CRUD: {
+      label: "Admin CRUD",
+      color: "text-indigo-600 bg-indigo-50 border-indigo-100",
+    },
+    SYSTEM: {
+      label: "Sistem",
+      color: "text-slate-500 bg-slate-50 border-slate-200",
+    },
+  };
 
-    const fetchLogs = async () => {
-        try {
-            const res = await fetch(`${API_URL}/api/logs`, { headers: { Authorization: `Bearer ${token}` } });
-            const data = await res.json();
-            if (data.success) setLogs(data.logs);
-        } catch { } finally { setLoading(false); }
-    };
+  const fetchLogs = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/logs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) setLogs(data.logs);
+    } catch {
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchLogs();
-        const interval = setInterval(fetchLogs, 5000);
-        return () => clearInterval(interval);
-    }, []);
+  useEffect(() => {
+    fetchLogs();
+    const interval = setInterval(fetchLogs, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-    const filtered = filter === 'ALL' ? logs : logs.filter(l => l.action === filter);
-    const filterOptions = ['ALL', 'LOGIN', 'LOGIN_FAILED', 'STATE_UPDATE', 'LED_CONFIG', 'ADMIN_CRUD', 'SYSTEM'];
+  const filtered =
+    filter === "ALL" ? logs : logs.filter((l) => l.action === filter);
+  const filterOptions = [
+    "ALL",
+    "LOGIN",
+    "LOGIN_FAILED",
+    "STATE_UPDATE",
+    "LED_CONFIG",
+    "ADMIN_CRUD",
+    "SYSTEM",
+  ];
 
-    return (
-        <div className="max-w-6xl mx-auto space-y-6">
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
-                        <ScrollText className="text-[#ee6f1f]" />Log Aktivitas Sistem
-                    </h2>
-                    <div className="flex gap-2 flex-wrap">
-                        {filterOptions.map(opt => (
-                            <button key={opt} onClick={() => setFilter(opt)}
-                                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? 'bg-[#1d2d6a] text-white border-[#1d2d6a]' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'}`}>
-                                {opt === 'ALL' ? 'Semua' : ACTION_LABELS[opt]?.label || opt}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                {loading ? (
-                    <div className="text-center py-16 text-slate-400 font-normal">Memuat log...</div>
-                ) : filtered.length === 0 ? (
-                    <div className="text-center py-16 text-slate-400 font-normal">Belum ada log yang tercatat.</div>
-                ) : (
-                    <div className="overflow-hidden rounded-2xl border border-slate-200">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 text-[#1d2d6a] font-semibold text-[11px]">
-                                <tr>
-                                    <th className="p-4 border-b border-slate-200">Waktu</th>
-                                    <th className="p-4 border-b border-slate-200">Aksi</th>
-                                    <th className="p-4 border-b border-slate-200">Pengguna</th>
-                                    <th className="p-4 border-b border-slate-200">Role</th>
-                                    <th className="p-4 border-b border-slate-200">Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filtered.slice(0, 100).map(log => {
-                                    const meta = ACTION_LABELS[log.action] || { label: log.action, color: 'text-slate-600 bg-slate-50 border-slate-200' };
-                                    const dt = new Date(log.timestamp);
-                                    return (
-                                        <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="p-4 font-mono text-slate-500 text-[11px] whitespace-nowrap">
-                                                <div>{dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                                                <div className="font-semibold text-slate-700">{dt.toLocaleTimeString('id-ID', { hour12: false })}</div>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-semibold border ${meta.color}`}>{meta.label}</span>
-                                            </td>
-                                            <td className="p-4 font-semibold text-[#1d2d6a]">{log.user}</td>
-                                            <td className="p-4 text-slate-500 text-xs font-normal">{log.role}</td>
-                                            <td className="p-4 text-slate-600 text-xs">{log.details}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                        {filtered.length > 100 && <div className="p-4 text-center text-slate-400 text-xs font-normal border-t border-slate-100">Menampilkan 100 dari {filtered.length} entri log. Gunakan Command Center untuk melihat semua.</div>}
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
+            <ScrollText className="text-[#ee6f1f]" />
+            Log Aktivitas Sistem
+          </h2>
+          <div className="flex gap-2 flex-wrap">
+            {filterOptions.map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setFilter(opt)}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? "bg-[#1d2d6a] text-white border-[#1d2d6a]" : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"}`}
+              >
+                {opt === "ALL" ? "Semua" : ACTION_LABELS[opt]?.label || opt}
+              </button>
+            ))}
+          </div>
         </div>
-    );
+        {loading ? (
+          <div className="text-center py-16 text-slate-400 font-normal">
+            Memuat log...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-slate-400 font-normal">
+            Belum ada log yang tercatat.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-[#1d2d6a] font-semibold text-[11px]">
+                <tr>
+                  <th className="p-4 border-b border-slate-200">Waktu</th>
+                  <th className="p-4 border-b border-slate-200">Aksi</th>
+                  <th className="p-4 border-b border-slate-200">Pengguna</th>
+                  <th className="p-4 border-b border-slate-200">Role</th>
+                  <th className="p-4 border-b border-slate-200">Keterangan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.slice(0, 100).map((log) => {
+                  const meta = ACTION_LABELS[log.action] || {
+                    label: log.action,
+                    color: "text-slate-600 bg-slate-50 border-slate-200",
+                  };
+                  const dt = new Date(log.timestamp);
+                  return (
+                    <tr
+                      key={log.id}
+                      className="hover:bg-slate-50/50 transition-colors"
+                    >
+                      <td className="p-4 font-mono text-slate-500 text-[11px] whitespace-nowrap">
+                        <div>
+                          {dt.toLocaleDateString("id-ID", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </div>
+                        <div className="font-semibold text-slate-700">
+                          {dt.toLocaleTimeString("id-ID", { hour12: false })}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-semibold border ${meta.color}`}
+                        >
+                          {meta.label}
+                        </span>
+                      </td>
+                      <td className="p-4 font-semibold text-[#1d2d6a]">
+                        {log.user}
+                      </td>
+                      <td className="p-4 text-slate-500 text-xs font-normal">
+                        {log.role}
+                      </td>
+                      <td className="p-4 text-slate-600 text-xs">
+                        {log.details}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {filtered.length > 100 && (
+              <div className="p-4 text-center text-slate-400 text-xs font-normal border-t border-slate-100">
+                Menampilkan 100 dari {filtered.length} entri log. Gunakan
+                Command Center untuk melihat semua.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 function App() {
-    const [activeTab, setActiveTab] = useState('pids');
-    const [currentTime, setCurrentTime] = useState(new Date());
-    const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-    const [authToken, setAuthToken] = useState<string>('');
+  const [activeTab, setActiveTab] = useState("pids");
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authToken, setAuthToken] = useState<string>("");
 
-    const { data, sendData } = usePidsData();
-    const activeTrainName = data.serviceName || 'Belum Dikonfigurasi';
-    const activeTrainNumber = data.trainNumber || '-';
-    const activeRoute = data.activeRoute || {
-        name: data.serviceName || '-',
-        stations: data.stations || [],
-        path: '',
-        nodes: [],
-    };
+  const { data, sendData } = usePidsData();
+  const activeTrainName = data.serviceName || "Belum Dikonfigurasi";
+  const activeTrainNumber = data.trainNumber || "-";
+  const activeRoute = data.activeRoute || {
+    name: data.serviceName || "-",
+    stations: data.stations || [],
+    path: "",
+    nodes: [],
+  };
 
-    // Check persisted session on mount
-    useEffect(() => {
-        const token = sessionStorage.getItem('pids_token');
-        const userStr = sessionStorage.getItem('pids_user');
-        if (token && userStr) {
-            try {
-                // Verify token with server
-                fetch(`${API_URL}/api/auth/verify`, { headers: { Authorization: `Bearer ${token}` } })
-                    .then(r => r.json())
-                    .then(d => {
-                        if (d.success) {
-                            setAuthToken(token);
-                            setAuthUser(JSON.parse(userStr));
-                        } else {
-                            sessionStorage.removeItem('pids_token');
-                            sessionStorage.removeItem('pids_user');
-                        }
-                    }).catch(() => {
-                        // Server not yet up, trust local session
-                        setAuthToken(token);
-                        setAuthUser(JSON.parse(userStr));
-                    });
-            } catch { }
-        }
-    }, []);
-
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-
-    const handleLogin = (user: AuthUser, token: string) => {
-        setAuthUser(user);
-        setAuthToken(token);
-    };
-
-    const handleLogout = async () => {
-        try {
-            await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${authToken}` } });
-        } catch { }
-        sessionStorage.removeItem('pids_token');
-        sessionStorage.removeItem('pids_user');
-        setAuthUser(null);
-                        setAuthToken('');
-        setActiveTab('pids');
-    };
-
-    // Auth guard
-    if (!authUser) {
-        return <LoginScreen onLogin={handleLogin} title="PIDS Master Controller" />;
+  // Check persisted session on mount
+  useEffect(() => {
+    const token = sessionStorage.getItem("pids_token");
+    const userStr = sessionStorage.getItem("pids_user");
+    if (token && userStr) {
+      try {
+        // Verify token with server
+        fetch(`${API_URL}/api/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) {
+              setAuthToken(token);
+              setAuthUser(JSON.parse(userStr));
+            } else {
+              sessionStorage.removeItem("pids_token");
+              sessionStorage.removeItem("pids_user");
+            }
+          })
+          .catch(() => {
+            // Server not yet up, trust local session
+            setAuthToken(token);
+            setAuthUser(JSON.parse(userStr));
+          });
+      } catch {}
     }
+  }, []);
 
-    const NAV_ITEMS = [
-        { id: 'pids', icon: LayoutDashboard, label: 'PIDS' },
-        { id: 'stampformasi', icon: Database, label: 'STAMPFORMASI' },
-        { id: 'tv', icon: Video, label: 'CCTV' },
-        { id: 'gps', icon: MapPin, label: 'GPS MAP' },
-        { id: 'logs', icon: ScrollText, label: 'Log Aktivitas' },
-    ];
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-    return (
-        <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden">
-            {/* Sidebar */}
-            <aside className="w-80 bg-[#1d2d6a] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
-                <div className="p-10 pb-6">
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
-                        alt="KAI Logo"
-                        className="h-12 w-auto mb-6 brightness-0 invert"
-                    />
-                    <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">PIDS Master</h1>
-                    <p className="text-[15px] font-bold text-blue-200/40 mt-1">Kereta Makan</p>
-                </div>
+  const handleLogin = (user: AuthUser, token: string) => {
+    setAuthUser(user);
+    setAuthToken(token);
+  };
 
-                <nav className="flex-1 px-4 space-y-2">
-                    <ul className="space-y-2">
-                        {NAV_ITEMS.map((item) => (
-                            <li key={item.id}>
-                                <button onClick={() => setActiveTab(item.id)}
-                                    className={`w-full flex items-center gap-5 px-8 py-5 rounded-2xl transition-all duration-300 font-bold text-lg ${activeTab === item.id ? 'bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
-                                    <item.icon size={28} strokeWidth={2.5} />
-                                    <span>{item.label}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+    } catch {}
+    sessionStorage.removeItem("pids_token");
+    sessionStorage.removeItem("pids_user");
+    setAuthUser(null);
+    setAuthToken("");
+    setActiveTab("pids");
+  };
 
-                <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-black/5">
-                    <button onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 active:scale-95 group">
-                        <LogOut size={16} className="text-white/20 group-hover:text-red-400 transition-colors" />
-                        <span>Logout dari Sistem</span>
-                    </button>
-                </div>
-            </aside>
+  // Auth guard
+  if (!authUser) {
+    return <LoginScreen onLogin={handleLogin} title="PIDS Master Controller" />;
+  }
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden relative">
-                <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
-                    <div className="flex items-center gap-5">
-                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm">
-                            {(() => {
-                                const Icon = NAV_ITEMS.find(n => n.id === activeTab)?.icon || Train;
-                                return <Icon className="text-[#1d2d6a]" size={22} strokeWidth={2.5} />;
-                            })()}
-                        </div>
-                        <div>
-                            <span className="text-xl font-bold text-[#1d2d6a] uppercase tracking-normal">
-                                {NAV_ITEMS.find(n => n.id === activeTab)?.label}
-                            </span>
-                        </div>
-                    </div>
+  const NAV_ITEMS = [
+    { id: "pids", icon: LayoutDashboard, label: "PIDS" },
+    { id: "stampformasi", icon: Database, label: "STAMPFORMASI" },
+    { id: "tv", icon: Video, label: "CCTV" },
+    { id: "gps", icon: MapPin, label: "GPS MAP" },
+    { id: "logs", icon: ScrollText, label: "Log Aktivitas" },
+  ];
 
-                    <div className="flex items-center gap-10">
-                        {/* Active Unit Badge Style */}
-                        <div className="flex items-center gap-4 border-r border-slate-100 pr-10">
-                            <div className="text-right">
-                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Active Unit</div>
-                                <div className="text-base font-bold text-[#1d2d6a] tracking-tight">
-                                    {activeTrainName} <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-md border border-orange-100">KA {activeTrainNumber?.split(' Gerbong')[0]}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Clock Style */}
-                        <div className="flex items-center gap-3 text-[#1d2d6a]">
-                            <div className="bg-slate-50 p-2 rounded-xl text-slate-400 border border-slate-100">
-                                <Clock size={18} />
-                            </div>
-                            <span className="text-3xl font-bold font-mono tracking-tighter opacity-90">
-                                {currentTime.toLocaleTimeString('id-ID', { hour12: false })}
-                            </span>
-                        </div>
-                    </div>
-                </header>
-
-                <div className="flex-1 overflow-auto p-10 bg-[#f8fafc]">
-                    <AnimatePresence mode="wait">
-                        {activeTab === 'pids' ? (
-                            <motion.div key="pids" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-7xl mx-auto">
-                                <MasterConsolePanel route={activeRoute} data={data} sendData={sendData} />
-                            </motion.div>
-                        ) : activeTab === 'stampformasi' ? (
-                            <motion.div key="stampformasi" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto space-y-10">
-                                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                                    <h2 className="text-xl font-bold text-[#1d2d6a] mb-8 tracking-tight flex items-center gap-3">
-                                        <Database className="text-[#ee6f1f]" />Stampformasi
-                                    </h2>
-                                    <div className="overflow-hidden rounded-2xl border border-slate-200">
-                                        <table className="w-full text-left text-sm">
-                                            <thead className="bg-slate-50 text-[#1d2d6a] font-bold">
-                                                <tr>
-                                                    <th className="p-4 border-b border-slate-200">No Rangkaian</th>
-                                                    <th className="p-4 border-b border-slate-200">No Aset</th>
-                                                    <th className="p-4 border-b border-slate-200">Nama Layanan (Service)</th>
-                                                    <th className="p-4 border-b border-slate-200">IP Address</th>
-                                                    <th className="p-4 border-b border-slate-200">Last Report</th>
-                                                    <th className="p-4 border-b border-slate-200 text-center">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-100">
-                                                {Array.from({ length: data.coachCount || 10 }).map((_, idx) => (
-                                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                                        <td className="p-4 font-bold text-slate-700">K1-{String(idx + 1).padStart(2, '0')}</td>
-                                                        <td className="p-4 font-mono text-slate-500">K1{String(idx + 1).padStart(2, '0')}{String(800 + idx)}</td>
-                                                        <td className="p-4 font-bold text-[#1d2d6a]">{activeTrainName}</td>
-                                                        <td className="p-4 font-mono text-slate-500">192.168.1.{100 + idx}</td>
-                                                        <td className="p-4 font-mono text-slate-500">{currentTime.toLocaleTimeString('id-ID', { hour12: false })}</td>
-                                                        <td className="p-4 text-center">
-                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                                                Active
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ) : activeTab === 'tv' ? (
-                            <motion.div key="tv" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.3 }} className="h-full w-full max-w-6xl mx-auto">
-                                <MonitorCCTV data={data} />
-                            </motion.div>
-                        ) : activeTab === 'gps' ? (
-                            <motion.div key="gps" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.3 }} className="h-full w-full max-w-6xl mx-auto">
-                                <MonitorGPS route={activeRoute} />
-                            </motion.div>
-                        ) : activeTab === 'logs' ? (
-                            <motion.div key="logs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-                                <LogViewer token={authToken} />
-                            </motion.div>
-                        ) : (
-                            <motion.div key="under-construction" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="h-full flex flex-col items-center justify-center text-slate-400 gap-6">
-                                <div className="bg-white p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 max-w-md w-full">
-                                    <div className="bg-orange-50 p-6 rounded-3xl text-[#ee6f1f]"><AlertCircle size={48} /></div>
-                                    <div className="text-center">
-                                        <h2 className="text-xl font-bold text-[#1d2d6a] mb-2 tracking-tight">Access Restricted</h2>
-                                        <p className="text-sm font-medium text-slate-400 leading-relaxed">Module <span className="text-[#1d2d6a]">{activeTab}</span> sedang dalam pemeliharaan.</p>
-                                    </div>
-                                    <button onClick={() => setActiveTab('pids')} className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow-lg transition-all active:scale-95">Return to Dashboard</button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </main>
+  return (
+    <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-80 bg-[#1d2d6a] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+        <div className="p-10 pb-6">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+            alt="KAI Logo"
+            className="h-12 w-auto mb-6 brightness-0 invert"
+          />
+          <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">
+            PIDS Master
+          </h1>
+          <p className="text-[15px] font-bold text-blue-200/40 mt-1">
+            Kereta Makan
+          </p>
         </div>
-    );
+
+        <nav className="flex-1 px-4 space-y-2">
+          <ul className="space-y-2">
+            {NAV_ITEMS.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-5 px-8 py-5 rounded-2xl transition-all duration-300 font-bold text-lg ${activeTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+                >
+                  <item.icon size={28} strokeWidth={2.5} />
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-black/5">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 active:scale-95 group"
+          >
+            <LogOut
+              size={16}
+              className="text-white/20 group-hover:text-red-400 transition-colors"
+            />
+            <span>Logout dari Sistem</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+          <div className="flex items-center gap-5">
+            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm">
+              {(() => {
+                const Icon =
+                  NAV_ITEMS.find((n) => n.id === activeTab)?.icon || Train;
+                return (
+                  <Icon
+                    className="text-[#1d2d6a]"
+                    size={22}
+                    strokeWidth={2.5}
+                  />
+                );
+              })()}
+            </div>
+            <div>
+              <span className="text-xl font-bold text-[#1d2d6a] uppercase tracking-normal">
+                {NAV_ITEMS.find((n) => n.id === activeTab)?.label}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-10">
+            {/* Active Unit Badge Style */}
+            <div className="flex items-center gap-4 border-r border-slate-100 pr-10">
+              <div className="text-right">
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">
+                  Active Unit
+                </div>
+                <div className="text-base font-bold text-[#1d2d6a] tracking-tight">
+                  {activeTrainName}{" "}
+                  <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-md border border-orange-100">
+                    KA {activeTrainNumber?.split(" Gerbong")[0]}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Clock Style */}
+            <div className="flex items-center gap-3 text-[#1d2d6a]">
+              <div className="bg-slate-50 p-2 rounded-xl text-slate-400 border border-slate-100">
+                <Clock size={18} />
+              </div>
+              <span className="text-3xl font-bold font-mono tracking-tighter opacity-90">
+                {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-auto p-10 bg-[#f8fafc]">
+          <AnimatePresence mode="wait">
+            {activeTab === "pids" ? (
+              <motion.div
+                key="pids"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="max-w-7xl mx-auto"
+              >
+                <MasterConsolePanel
+                  route={activeRoute}
+                  data={data}
+                  sendData={sendData}
+                />
+              </motion.div>
+            ) : activeTab === "stampformasi" ? (
+              <motion.div
+                key="stampformasi"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="max-w-6xl mx-auto space-y-10"
+              >
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                  <h2 className="text-xl font-bold text-[#1d2d6a] mb-8 tracking-tight flex items-center gap-3">
+                    <Database className="text-[#ee6f1f]" />
+                    Stampformasi
+                  </h2>
+                  <div className="overflow-hidden rounded-2xl border border-slate-200">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 text-[#1d2d6a] font-bold">
+                        <tr>
+                          <th className="p-4 border-b border-slate-200">
+                            No Rangkaian
+                          </th>
+                          <th className="p-4 border-b border-slate-200">
+                            No Aset
+                          </th>
+                          <th className="p-4 border-b border-slate-200">
+                            Nama Layanan (Service)
+                          </th>
+                          <th className="p-4 border-b border-slate-200">
+                            IP Address
+                          </th>
+                          <th className="p-4 border-b border-slate-200">
+                            Last Report
+                          </th>
+                          <th className="p-4 border-b border-slate-200 text-center">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {Array.from({ length: data.coachCount || 10 }).map(
+                          (_, idx) => (
+                            <tr
+                              key={idx}
+                              className="hover:bg-slate-50/50 transition-colors"
+                            >
+                              <td className="p-4 font-bold text-slate-700">
+                                K1-{String(idx + 1).padStart(2, "0")}
+                              </td>
+                              <td className="p-4 font-mono text-slate-500">
+                                K1{String(idx + 1).padStart(2, "0")}
+                                {String(800 + idx)}
+                              </td>
+                              <td className="p-4 font-bold text-[#1d2d6a]">
+                                {activeTrainName}
+                              </td>
+                              <td className="p-4 font-mono text-slate-500">
+                                192.168.1.{100 + idx}
+                              </td>
+                              <td className="p-4 font-mono text-slate-500">
+                                {currentTime.toLocaleTimeString("id-ID", {
+                                  hour12: false,
+                                })}
+                              </td>
+                              <td className="p-4 text-center">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                  Active
+                                </span>
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </motion.div>
+            ) : activeTab === "tv" ? (
+              <motion.div
+                key="tv"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3 }}
+                className="h-full w-full max-w-6xl mx-auto"
+              >
+                <MonitorCCTV data={data} />
+              </motion.div>
+            ) : activeTab === "gps" ? (
+              <motion.div
+                key="gps"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3 }}
+                className="h-full w-full max-w-6xl mx-auto"
+              >
+                <MonitorGPS route={activeRoute} />
+              </motion.div>
+            ) : activeTab === "logs" ? (
+              <motion.div
+                key="logs"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <LogViewer token={authToken} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="under-construction"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="h-full flex flex-col items-center justify-center text-slate-400 gap-6"
+              >
+                <div className="bg-white p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 max-w-md w-full">
+                  <div className="bg-orange-50 p-6 rounded-3xl text-[#ee6f1f]">
+                    <AlertCircle size={48} />
+                  </div>
+                  <div className="text-center">
+                    <h2 className="text-xl font-bold text-[#1d2d6a] mb-2 tracking-tight">
+                      Access Restricted
+                    </h2>
+                    <p className="text-sm font-medium text-slate-400 leading-relaxed">
+                      Module <span className="text-[#1d2d6a]">{activeTab}</span>{" "}
+                      sedang dalam pemeliharaan.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("pids")}
+                    className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow-lg transition-all active:scale-95"
+                  >
+                    Return to Dashboard
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default App;

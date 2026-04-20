@@ -43,6 +43,19 @@ Untuk menjalankan semua aplikasi sekaligus (Master, Selector, Command Center):
 npm run dev:all
 ```
 
+### 5. Operasional & Keamanan
+
+- Login memakai session berbasis role `Admin` dan `Operator`.
+- Endpoint audit dan backup dilindungi admin-only:
+  - `GET /api/logs`
+  - `GET /api/admin/backups`
+  - `POST /api/admin/backups`
+  - `POST /api/admin/backups/restore`
+- Audit trail ditulis ke database dan dimirror ke `Eltran-PIDS-Dummy/packages/master-app/runtime/audit/`.
+- Backup snapshot disimpan ke `Eltran-PIDS-Dummy/packages/master-app/runtime/backups/`.
+- Health check tersedia di `GET /api/health`.
+- Jika backend tidak berjalan di `localhost:3001`, set `VITE_API_URL` pada environment aplikasi frontend.
+
 ## 🏗️ Arsitektur Proyek
 
 - `packages/master-app`: Hub sentral dan API Gateway (Port 3001).
