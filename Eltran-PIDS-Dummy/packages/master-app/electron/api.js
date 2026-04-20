@@ -285,15 +285,22 @@ export async function startApiServer() {
     if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
     const token = authHeader.slice(7);
 
-    // If token looks like JWT, verify and return payload-based user
-    if (token.split('.').length === 3) {
+    // If token looks like JWT, verify and ensure server-side session exists (allows logout invalidation)
+    if (token.split('.') .length === 3) {
       try {
         const payload = jwt.verify(token, ACCESS_TOKEN_SECRET);
-        return {
+        const storedSession = await getSessionAsync(token);
+        if (!storedSession) return null;
+        if (Date.now() >= storedSession.expiresAt) {
+          await deleteSessionAsync(token);
+          return null;
+        }
+        // Prefer authoritative stored user object when available
+        return storedSession.user || {
           id: payload.sub,
           username: payload.username,
-          role: payload.role || payload.role,
-          full_name: payload.full_name || payload.full_name,
+          role: payload.role,
+          full_name: payload.full_name,
         };
       } catch (e) {
         // invalid JWT, fall back to legacy session lookup
@@ -412,7 +419,7 @@ export async function startApiServer() {
 
       // Create refresh token (opaque) and store it server-side
       const refreshToken = crypto.randomUUID();
-      await setRefreshTokenAsync(refreshToken, { userId: sessionUser.id, username: sessionUser.username }, REFRESH_TOKEN_TTL_MS);
+      await setRefreshTokenAsync(refreshToken, { userId: sessionUser.id, username: sessionUser.username, role: sessionUser.role, full_name: sessionUser.full_name }, REFRESH_TOKEN_TTL_MS);
 
       // For backward compatibility, also store a session keyed by accessToken (optional)
       await setSessionAsync(accessToken, { user: sessionUser, expiresAt: Date.now() + SESSION_TTL });
