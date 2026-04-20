@@ -28,7 +28,8 @@
         "socket.io-client": "^4.8.3",
         "sql.js": "^1.14.0",
         "tailwind-merge": "^2.2.1",
-        "redis": "^4.6.7"
+        "redis": "^4.6.7",
+        "jsonwebtoken": "^9.0.0"
     },
     "devDependencies": {
         "@turf/turf": "^7.3.4",

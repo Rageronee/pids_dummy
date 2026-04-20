@@ -19,6 +19,7 @@ import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { createClient } from "redis";
+import jwt from "jsonwebtoken";
 import {
   initDatabase,
   startAutoSave,
@@ -166,6 +167,13 @@ export async function startApiServer() {
 
   const sessions = new Map(); // fallback in-memory
 
+  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || crypto.randomBytes(64).toString('hex');
+  const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15m';
+  const REFRESH_TOKEN_TTL_DAYS = parseInt(process.env.REFRESH_TOKEN_TTL_DAYS || '7', 10);
+  const REFRESH_TOKEN_TTL_MS = REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;
+  const redisRefreshPrefix = process.env.REDIS_REFRESH_PREFIX || 'pids:refresh:';
+  const refreshTokens = new Map(); // fallback for refresh tokens
+
   if (REDIS_URL) {
     try {
       redisClient = createClient({ url: REDIS_URL });
@@ -217,6 +225,49 @@ export async function startApiServer() {
     }
   };
 
+  // Refresh token helpers
+  const setRefreshTokenAsync = async (token, payload, ttlMs) => {
+    if (usingRedis && redisClient) {
+      try {
+        await redisClient.set(`${redisRefreshPrefix}${token}`, JSON.stringify(payload), { PX: ttlMs });
+      } catch (e) {
+        console.error('[API] Redis set refresh token error:', e);
+      }
+    } else {
+      refreshTokens.set(token, { payload, expiresAt: Date.now() + ttlMs });
+    }
+  };
+
+  const getRefreshTokenAsync = async (token) => {
+    if (usingRedis && redisClient) {
+      try {
+        const raw = await redisClient.get(`${redisRefreshPrefix}${token}`);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error('[API] Redis get refresh token error:', e);
+        return null;
+      }
+    } else {
+      const v = refreshTokens.get(token);
+      if (!v) return null;
+      if (Date.now() >= v.expiresAt) { refreshTokens.delete(token); return null; }
+      return v.payload;
+    }
+  };
+
+  const deleteRefreshTokenAsync = async (token) => {
+    if (usingRedis && redisClient) {
+      try {
+        await redisClient.del(`${redisRefreshPrefix}${token}`);
+      } catch (e) {
+        console.error('[API] Redis delete refresh token error:', e);
+      }
+    } else {
+      refreshTokens.delete(token);
+    }
+  };
+
   if (!usingRedis) {
     trackInterval(
       () => {
@@ -233,6 +284,23 @@ export async function startApiServer() {
     const authHeader = req.headers["authorization"];
     if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
     const token = authHeader.slice(7);
+
+    // If token looks like JWT, verify and return payload-based user
+    if (token.split('.').length === 3) {
+      try {
+        const payload = jwt.verify(token, ACCESS_TOKEN_SECRET);
+        return {
+          id: payload.sub,
+          username: payload.username,
+          role: payload.role || payload.role,
+          full_name: payload.full_name || payload.full_name,
+        };
+      } catch (e) {
+        // invalid JWT, fall back to legacy session lookup
+      }
+    }
+
+    // Legacy token fallback (redis or in-memory session store)
     const session = await getSessionAsync(token);
     if (!session) return null;
     if (Date.now() >= session.expiresAt) {
@@ -332,24 +400,31 @@ export async function startApiServer() {
           .status(401)
           .json({ success: false, error: "Username atau password salah" });
       }
-      const token = crypto.randomUUID();
       const sessionUser = {
         id: user.id,
         username: user.username,
         role: normalizeRole(user.role),
         full_name: user.full_name,
       };
-      await setSessionAsync(token, {
-        user: sessionUser,
-        expiresAt: Date.now() + SESSION_TTL,
-      });
+
+      // Create JWT access token
+      const accessToken = jwt.sign({ sub: sessionUser.id, username: sessionUser.username, role: sessionUser.role, full_name: sessionUser.full_name }, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+
+      // Create refresh token (opaque) and store it server-side
+      const refreshToken = crypto.randomUUID();
+      await setRefreshTokenAsync(refreshToken, { userId: sessionUser.id, username: sessionUser.username }, REFRESH_TOKEN_TTL_MS);
+
+      // For backward compatibility, also store a session keyed by accessToken (optional)
+      await setSessionAsync(accessToken, { user: sessionUser, expiresAt: Date.now() + SESSION_TTL });
+
       await writeLog({
         action: "LOGIN",
         user: user.username,
         role: user.role,
         details: `${user.full_name} (${user.role}) berhasil login`,
       });
-      res.json({ success: true, token, user: sessionUser });
+
+      res.json({ success: true, token: accessToken, refreshToken, user: sessionUser });
     } catch (err) {
       console.error("[API] Login error:", err);
       res.status(500).json({ success: false, error: "Login failed" });
@@ -365,17 +440,51 @@ export async function startApiServer() {
     res.json({ success: true, user });
   });
 
+  apiApp.post("/api/auth/refresh", async (req, res) => {
+    try {
+      const { refreshToken } = req.body || {};
+      if (!refreshToken)
+        return res.status(400).json({ success: false, error: "refreshToken required" });
+
+      const stored = await getRefreshTokenAsync(refreshToken);
+      if (!stored) return res.status(401).json({ success: false, error: "Invalid refresh token" });
+
+      // rotate refresh token
+      await deleteRefreshTokenAsync(refreshToken);
+      const userId = stored.userId || stored.user_id || stored.id;
+      const username = stored.username || stored.user || "";
+      // You may fetch full user details from DB if needed. Here we reconstruct minimal claims.
+      const payload = { sub: userId, username, role: stored.role || "Operator", full_name: stored.full_name || "" };
+      const newAccessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+      const newRefreshToken = crypto.randomUUID();
+      await setRefreshTokenAsync(newRefreshToken, { userId, username, role: payload.role, full_name: payload.full_name }, REFRESH_TOKEN_TTL_MS);
+      await setSessionAsync(newAccessToken, { user: { id: payload.sub, username: payload.username, role: payload.role, full_name: payload.full_name }, expiresAt: Date.now() + SESSION_TTL });
+      res.json({ success: true, token: newAccessToken, refreshToken: newRefreshToken });
+    } catch (e) {
+      console.error('[API] Refresh token error:', e);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   apiApp.post("/api/auth/logout", requireAuth, async (req, res) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader.slice(7);
-    await writeLog({
-      action: "LOGOUT",
-      user: req.user.username,
-      role: req.user.role,
-      details: `${req.user.full_name} logout`,
-    });
-    await deleteSessionAsync(token);
-    res.json({ success: true });
+    try {
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+      const { refreshToken } = req.body || {};
+
+      await writeLog({
+        action: "LOGOUT",
+        user: req.user.username,
+        role: req.user.role,
+        details: `${req.user.full_name} logout`,
+      });
+
+      if (token) await deleteSessionAsync(token);
+      if (refreshToken) await deleteRefreshTokenAsync(refreshToken);
+      res.json({ success: true });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
   });
   apiApp.get("/api/state", async (req, res) => {
     res.json(await getState());
