@@ -1,3 +1,22 @@
 {"id":"be9126d2-40b9-4141-a029-0d860dea1429","timestamp":"2026-04-20T07:21:57.154Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"517028fb-9c11-4605-891e-59d26ceaaf37","timestamp":"2026-04-20T07:28:38.023Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"69024627-2b6a-476b-8ffe-901037a414a1","timestamp":"2026-04-20T07:34:51.058Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"f902e548-e972-411b-9079-d61d20c4de98","timestamp":"2026-04-20T08:44:34.101Z","action":"LOGIN","user":"operator","role":"Operator","details":"Operator PIDS (Operator) berhasil login","data":null}
+{"id":"53dffd35-7627-471e-9794-9d152a5fce33","timestamp":"2026-04-20T09:38:11.877Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"38cbebac-ff36-46a8-bdcd-f6aedca4f40e","timestamp":"2026-04-20T09:45:31.522Z","action":"LOGIN","user":"operator","role":"Operator","details":"Operator PIDS (Operator) berhasil login","data":null}
+{"id":"48a5e4cb-47b7-4e4c-89c5-91b263f74cf1","timestamp":"2026-04-20T09:47:41.186Z","action":"LOGIN","user":"operator","role":"Operator","details":"Operator PIDS (Operator) berhasil login","data":null}
+{"id":"4dc6fe29-8298-405c-8f66-cb1e4435a50d","timestamp":"2026-04-20T09:47:41.229Z","action":"LOGOUT","user":"operator","role":"Operator","details":" logout","data":null}
+{"id":"c0233b94-a31f-4e7f-a806-7668f5ef8d6b","timestamp":"2026-04-21T07:41:44.633Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"528b74ac-94f5-40a8-a358-c3c9119a57a1","timestamp":"2026-04-21T07:43:43.970Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"849946e6-4ee5-445f-a77d-4b31590e7c61","timestamp":"2026-04-21T07:44:04.338Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"2736551a-5e4e-42f3-8a19-45d5448a3c2e","timestamp":"2026-04-21T08:31:46.543Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"a4d5e7d0-46b7-4cbb-b581-3a830b0ee6fb","timestamp":"2026-04-21T08:31:51.226Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"6182b011-6efe-4c76-9856-600bebe7a225","timestamp":"2026-04-21T08:37:47.975Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"325bb7f1-63e4-4863-ae82-2aadc4ab0d1e","timestamp":"2026-04-21T08:38:36.698Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 4","data":null}
+{"id":"696a769f-23e1-4fee-9e96-dc3775015174","timestamp":"2026-04-21T08:38:41.334Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 39","data":null}
+{"id":"d516aed6-a09e-4135-873d-92129bb492ac","timestamp":"2026-04-21T08:38:43.453Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 38","data":null}
+{"id":"24476a56-86ae-464c-9118-9778c0beb803","timestamp":"2026-04-21T08:38:45.385Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 37","data":null}
+{"id":"785ce08c-1121-4004-9b99-6ae0eb51344f","timestamp":"2026-04-21T08:38:47.777Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 29","data":null}
+{"id":"5ce35bce-c4cf-4eff-8662-05e4d2bc7427","timestamp":"2026-04-21T08:38:49.658Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 30","data":null}
+{"id":"07d5c074-7fe3-43f1-97f2-1247f4e4bef2","timestamp":"2026-04-21T08:38:51.244Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 31","data":null}
+{"id":"fea5ddc8-a4c6-4bc7-9d21-66a27cb52f83","timestamp":"2026-04-21T08:38:52.986Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 32","data":null}

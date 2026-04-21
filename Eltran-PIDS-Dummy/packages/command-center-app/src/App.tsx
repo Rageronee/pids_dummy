@@ -13,6 +13,14 @@ import {
   Shield,
   Building2,
   Calendar,
+  Bell,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  AlertTriangle,
+  Info,
+  Settings,
 } from "lucide-react";
 import { API } from "./config";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -22,7 +30,8 @@ const RoutesPage = lazy(() => import("./pages/RoutesPage"));
 const SchedulesPage = lazy(() => import("./pages/SchedulesPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
 const LogsPage = lazy(() => import("./pages/LogsPage"));
-const LoginPage = lazy(() => import("./pages/LoginPage")); // Login system page
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 
 interface AuthUser {
   id: string;
@@ -39,6 +48,7 @@ const NAV = [
   { id: "schedules", label: "Jadwal Kereta", icon: Calendar },
   { id: "users", label: "Akun Operator", icon: Users },
   { id: "logs", label: "System Logs", icon: ScrollText },
+  { id: "settings", label: "Pengaturan", icon: Settings },
 ];
 
 function PageLoader() {
@@ -56,6 +66,33 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [headerActions, setHeaderActions] = useState<React.ReactNode>(null);
   const [headerTitle, setHeaderTitle] = useState<React.ReactNode>(null);
+
+  const [isDark, setIsDark] = useState(() => localStorage.getItem("cc_theme") === "dark");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: "warning", msg: "Koneksi GPS KA Malabar tidak stabil", time: "15 menit lalu" },
+    { id: 2, type: "info", msg: "Update jadwal KA Parahyangan berhasil", time: "1 jam lalu" },
+  ]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setNotifications(prev => [
+        { id: Date.now(), type: "danger", msg: "DARURAT: KA Argo Wilis Terdeteksi Berhenti di Luar Stasiun (KM 102)", time: "Baru saja" },
+        ...prev
+      ]);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("cc_theme", isDark ? "dark" : "light");
+  }, [isDark]);
   useEffect(() => {
     const token = sessionStorage.getItem("cc_token");
     const userStr = sessionStorage.getItem("cc_user");
@@ -117,31 +154,60 @@ export default function App() {
     schedules: SchedulesPage,
     users: UsersPage,
     logs: LogsPage,
+    settings: SettingsPage,
   };
 
   const ActivePageComponent = pageComponents[activePage];
 
+  const visibleNav = NAV.filter(item => {
+    if (authUser?.role === "Operator") {
+      return !["users", "logs"].includes(item.id);
+    }
+    return true;
+  });
+
   return (
-    <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 font-sans overflow-hidden">
-      <aside className="w-80 bg-[#1d2d6a] border-r border-blue-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] relative z-10">
-        <div className="p-8 pb-10">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
-            alt="KAI Logo"
-            className="h-10 w-auto mb-6 brightness-0 invert"
+    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-black text-slate-800 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[40]"
           />
-          <h1 className="text-2xl font-black text-white tracking-tight leading-tight">
-            Command Center
-          </h1>
-          <p className="text-l font-bold text-blue-200/40 mt-1 font-mono">
-            Control Panel
-          </p>
+        )}
+      </AnimatePresence>
+
+      <aside className={`fixed lg:relative inset-y-0 left-0 w-80 bg-[#1d2d6a] dark:bg-[#020617] border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-[50] transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+        <div className="p-8 pb-10 flex justify-between items-start">
+          <div>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+              alt="KAI Logo"
+              className="h-10 w-auto mb-6 brightness-0 invert"
+            />
+            <h1 className="text-2xl font-black text-white tracking-tight leading-tight">
+              Command Center
+            </h1>
+            <p className="text-l font-bold text-blue-200/40 mt-1 font-mono">
+              Control Panel
+            </p>
+          </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-white/40 hover:text-white">
+            <X size={24} />
+          </button>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          {NAV.map((item) => (
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          {visibleNav.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActivePage(item.id)}
+              onClick={() => {
+                setActivePage(item.id);
+                setIsSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-bold text-base ${activePage === item.id ? "bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
             >
               <item.icon size={22} strokeWidth={2.5} />
@@ -163,16 +229,19 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto flex flex-col relative bg-slate-50/50">
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
+      <main className="flex-1 overflow-auto flex flex-col relative bg-[#f8fafc] dark:bg-black">
+        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
           <div className="flex items-center gap-4">
-            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-[#1d2d6a] dark:text-slate-300">
+              <Menu size={24} />
+            </button>
+            <div className="hidden sm:flex bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
               {(() => {
                 const Icon =
                   NAV.find((n) => n.id === activePage)?.icon || Shield;
                 return (
                   <Icon
-                    className="text-[#1d2d6a]"
+                    className="text-[#1d2d6a] dark:text-slate-300"
                     size={20}
                     strokeWidth={2.5}
                   />
@@ -184,31 +253,69 @@ export default function App() {
                 {headerTitle ? (
                   <div className="flex items-center gap-2">{headerTitle}</div>
                 ) : (
-                  <span className="text-xl font-black text-[#1d2d6a] uppercase tracking-normal">
+                  <span className="text-lg lg:text-xl font-black text-[#1d2d6a] dark:text-white uppercase tracking-normal">
                     {NAV.find((n) => n.id === activePage)?.label}
                   </span>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            {headerActions && (
-              <div className="flex items-center gap-4 border-r border-slate-200 pr-6 mr-2">
-                {headerActions}
+          <div className="flex items-center gap-2 lg:gap-6">
+            <div className="flex items-center gap-2 border-r border-slate-200 dark:border-slate-800 pr-2 lg:pr-6">
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all relative"
+                >
+                  <Bell size={20} />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+                </button>
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-4 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden"
+                    >
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span className="font-bold text-sm dark:text-white">Notifications</span>
+                        <span className="text-[10px] font-black text-blue-500 uppercase cursor-pointer">Mark all as read</span>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifications.map((n) => (
+                          <div key={n.id} className="p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors flex gap-3">
+                            <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${n.type === 'danger' ? 'bg-red-50 text-red-500' : n.type === 'warning' ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-500'}`}>
+                              {n.type === 'danger' ? <AlertTriangle size={16} /> : <Info size={16} />}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-tight mb-1">{n.msg}</p>
+                              <p className="text-[10px] font-medium text-slate-400">{n.time}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button className="w-full py-3 text-[10px] font-black uppercase text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors">
+                        View History
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            )}
-            <div className="flex items-center gap-3 text-[#1d2d6a]">
-              <div className="bg-slate-50 p-2.5 rounded-xl text-slate-400">
+            </div>
+
+            <div className="hidden sm:flex items-center gap-3 text-[#1d2d6a] dark:text-white">
+              <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl text-slate-400">
                 <Clock size={20} />
               </div>
-              <span className="text-3xl font-black font-mono tracking-tighter opacity-90">
+              <span className="text-xl lg:text-3xl font-black font-mono tracking-tighter opacity-90">
                 {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
               </span>
             </div>
           </div>
         </header>
         <div
-          className={`flex-1 overflow-auto ${activePage === "routes" ? "p-0" : "p-10"}`}
+          className={`flex-1 overflow-auto ${activePage === "routes" ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-black`}
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -225,6 +332,8 @@ export default function App() {
                   setHeader={setHeaderActions}
                   setHeaderTitle={setHeaderTitle}
                   setPage={setActivePage}
+                  isDark={isDark}
+                  setIsDark={setIsDark}
                 />
               </Suspense>
             </motion.div>

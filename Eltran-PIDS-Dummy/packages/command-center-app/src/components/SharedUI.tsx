@@ -32,13 +32,13 @@ export function ConfirmModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-10 shadow-[0_32px_80px_-20px_rgba(0,0,0,0.3)] ring-1 ring-black/[0.05] text-center"
+            className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 shadow-[0_32px_80px_-20px_rgba(0,0,0,0.3)] ring-1 ring-black/[0.05] text-center"
           >
-            <div className="mx-auto w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-6 border border-red-100 shadow-sm">
+            <div className="mx-auto w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-2xl flex items-center justify-center text-red-500 mb-6 border border-red-100 dark:border-red-900/50 shadow-sm">
               <Trash2 size={32} />
             </div>
-            <h3 className="text-xl font-bold text-[#1d2d6a] mb-2">{title}</h3>
-            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+            <h3 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-2">{title}</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
               {message}
             </p>
             <div className="flex flex-col gap-3">
@@ -52,7 +52,7 @@ export function ConfirmModal({
               <button
                 onClick={onCancel}
                 disabled={loading}
-                className="w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-500 font-semibold rounded-2xl text-sm transition-all"
+                className="w-full h-12 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold rounded-2xl text-sm transition-all"
               >
                 Batal
               </button>
@@ -78,7 +78,7 @@ export function ToastNotification({
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
-          className="fixed bottom-10 right-10 z-[100] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 min-w-[350px] max-w-[420px]"
+          className="fixed bottom-10 right-10 z-[100] bg-white dark:bg-slate-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800 min-w-[350px] max-w-[420px]"
         >
           <div
             className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? "bg-[#1d2d6a]" : "bg-red-500"}`}
@@ -86,13 +86,13 @@ export function ToastNotification({
           <div className="relative p-5 pl-7 pb-6">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               <X size={18} strokeWidth={2.5} />
             </button>
             <div className="flex gap-4">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${toast.ok ? "bg-[#ee6f1f]" : "bg-red-50"}`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${toast.ok ? "bg-[#ee6f1f]" : "bg-red-50 dark:bg-red-900/30"}`}
               >
                 {toast.ok ? (
                   <Info size={24} className="text-white" />
@@ -102,17 +102,17 @@ export function ToastNotification({
               </div>
               <div className="flex flex-col pr-6">
                 <span
-                  className={`font-semibold text-lg leading-tight mb-2 ${toast.ok ? "text-[#1d2d6a]" : "text-red-600"}`}
+                  className={`font-semibold text-lg leading-tight mb-2 ${toast.ok ? "text-[#1d2d6a] dark:text-white" : "text-red-600 dark:text-red-400"}`}
                 >
                   {toast.ok ? "Informasi Sistem" : "Peringatan Sistem"}
                 </span>
-                <span className="text-slate-600 font-medium text-[15px] leading-relaxed mb-5">
+                <span className="text-slate-600 dark:text-slate-400 font-medium text-[15px] leading-relaxed mb-5">
                   {toast.msg}
                 </span>
                 <div className="flex justify-end gap-5 items-center mt-2">
                   <button
                     onClick={onClose}
-                    className="text-slate-500 font-semibold text-sm hover:text-slate-700 transition-colors"
+                    className="text-slate-500 dark:text-slate-400 font-semibold text-sm hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                   >
                     Tutup
                   </button>

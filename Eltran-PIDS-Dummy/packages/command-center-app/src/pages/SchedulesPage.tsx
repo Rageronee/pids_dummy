@@ -31,10 +31,11 @@ export default function SchedulesPage({ token }: { token: string }) {
   const [schedules, setSchedules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const { toast, showToast, closeToast } = useToast();
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
 
   const [trainOptions, setTrainOptions] = useState<any[]>([]);
   const [stationOptions, setStationOptions] = useState<any[]>([]);
@@ -56,6 +57,31 @@ export default function SchedulesPage({ token }: { token: string }) {
     notes: "",
     media: "",
   });
+
+  const handleEdit = (sched: any) => {
+    setEditingId(sched.id);
+    setForm({
+      train_name: sched.train_name,
+      train_number: sched.train_number || sched.ka_number || "",
+      dep_station: sched.stasiun_keberangkatan,
+      dep_city_code: sched.kode_kota_keberangkatan,
+      arr_station: sched.stasiun_tujuan,
+      arr_city_code: sched.kode_kota_tujuan,
+      dep_sched: sched.waktu_keberangkatan_penjadwalan || "",
+      dep_real: sched.waktu_keberangkatan_realisasi || "",
+      dep_diff: String(sched.selisih_waktu_keberangkatan || "0"),
+      dep_status: sched.status_keberangkatan || "Tepat Waktu",
+      arr_sched: sched.waktu_kedatangan_penjadwalan || "",
+      arr_real: sched.waktu_kedatangan_realisasi || "",
+      arr_diff: String(sched.selisih_waktu_kedatangan || "0"),
+      arr_status: sched.status_kedatangan || "Tepat Waktu",
+      notes: sched.catatan || "",
+      media: sched.media || "",
+    });
+    setSelectedSchedule(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -152,8 +178,12 @@ export default function SchedulesPage({ token }: { token: string }) {
         stops: [],
       };
 
-      const res = await fetch(`${API}/api/admin/schedules`, {
-        method: "POST",
+      const url = editingId
+        ? `${API}/api/admin/schedules/${editingId}`
+        : `${API}/api/admin/schedules`;
+
+      const res = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -162,9 +192,10 @@ export default function SchedulesPage({ token }: { token: string }) {
       });
       const d = await res.json();
       if (d.success) {
-        showToast("Jadwal berhasil disimpan", true);
+        showToast(editingId ? "Jadwal berhasil diperbarui" : "Jadwal berhasil disimpan", true);
         fetchSchedules(false);
         setShowForm(false);
+        setEditingId(null);
         setForm({
           train_name: "",
           train_number: "",
@@ -212,8 +243,137 @@ export default function SchedulesPage({ token }: { token: string }) {
     }
   };
 
+  if (selectedSchedule) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="space-y-8 pb-20"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSelectedSchedule(null)}
+              className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all shadow-sm active:scale-95"
+            >
+              <X size={20} />
+            </button>
+            <div>
+              <h2 className="text-3xl font-black text-[#1d2d6a] dark:text-white tracking-tight leading-none uppercase">
+                {selectedSchedule.display_train_name || selectedSchedule.train_name}
+              </h2>
+              <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-widest">
+                Service Number: {selectedSchedule.display_train_number || selectedSchedule.train_number || "-"}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleEdit(selectedSchedule)}
+              className="px-6 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold rounded-2xl border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 transition-all flex items-center gap-2"
+            >
+              <Clock size={18} /> Edit Jadwal
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h3 className="font-black text-[#1d2d6a] dark:text-white uppercase tracking-wider text-sm">Route Checkpoints</h3>
+                <span className="px-3 py-1 bg-white dark:bg-slate-900 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-800">
+                  {selectedSchedule.stops?.length || 0} Stations
+                </span>
+              </div>
+              <div className="divide-y divide-slate-50 dark:divide-slate-800">
+                {selectedSchedule.stops && selectedSchedule.stops.length > 0 ? (
+                  selectedSchedule.stops.map((stop: any, idx: number) => (
+                    <div key={idx} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <div className="flex items-center gap-5">
+                        <span className="text-slate-300 dark:text-slate-700 font-mono font-black text-xl">
+                          {String(stop.sequence_order).padStart(2, "0")}
+                        </span>
+                        <div>
+                          <p className="font-black text-[#1d2d6a] dark:text-white uppercase text-base leading-tight">{stop.station_name}</p>
+                          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">{stop.station_code}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-8 items-center">
+                        <div className="text-right">
+                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Arrival</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-300 font-mono">{stop.arrival_time || "--:--"}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Departure</p>
+                          <p className="text-sm font-black text-[#ee6f1f] font-mono">{stop.departure_time || "--:--"}</p>
+                        </div>
+                        <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-black border ${
+                          stop.stop_status === "ARRIVED" ? "bg-green-50 dark:bg-green-900/30 text-green-600 border-green-100 dark:border-green-900/50" :
+                          stop.stop_status === "SCHEDULED" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 border-blue-100 dark:border-blue-900/50" :
+                          "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700"
+                        }`}>
+                          {stop.stop_status}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-20 text-center space-y-4">
+                    <MapPin size={48} className="mx-auto text-slate-200" />
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Direct Point-to-Point Route</p>
+                    <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Origin</p>
+                        <p className="font-bold dark:text-white">{selectedSchedule.stasiun_keberangkatan}</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Destination</p>
+                        <p className="font-bold dark:text-white">{selectedSchedule.stasiun_tujuan}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+              <h3 className="font-black text-[#1d2d6a] dark:text-white uppercase tracking-wider text-sm border-b dark:border-slate-800 pb-4 flex items-center gap-2">
+                <Info size={16} className="text-[#ee6f1f]" /> operational Info
+              </h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Perjalanan</span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black border ${STATUS_COLOR[selectedSchedule.status] || "text-slate-400"}`}>
+                    {selectedSchedule.status?.replace("_", " ")}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-t dark:border-slate-800/50">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waktu Keberangkatan</span>
+                  <span className="text-sm font-black dark:text-white font-mono">{selectedSchedule.waktu_keberangkatan_penjadwalan}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-t dark:border-slate-800/50">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waktu Kedatangan</span>
+                  <span className="text-sm font-black text-[#ee6f1f] font-mono">{selectedSchedule.waktu_kedatangan_penjadwalan}</span>
+                </div>
+              </div>
+              {selectedSchedule.catatan && (
+                <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border border-orange-100 dark:border-orange-900/30">
+                  <p className="text-[8px] font-black text-[#ee6f1f] uppercase tracking-[0.2em] mb-1">Internal Notes</p>
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300 italic leading-relaxed">"{selectedSchedule.catatan}"</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-20">
       <ConfirmModal
         isOpen={!!deleteTarget}
         title="Hapus Jadwal"
@@ -245,7 +405,10 @@ export default function SchedulesPage({ token }: { token: string }) {
             />
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              if (showForm) setEditingId(null);
+              setShowForm(!showForm);
+            }}
             className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 text-slate-500 border border-slate-200" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
           >
             {showForm ? (
@@ -277,6 +440,12 @@ export default function SchedulesPage({ token }: { token: string }) {
             exit={{ opacity: 0, height: 0 }}
             className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden"
           >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-[#1d2d6a] font-bold text-lg flex items-center gap-2">
+                {editingId ? <Clock size={20} className="text-[#ee6f1f]" /> : <Plus size={20} className="text-[#ee6f1f]" />}
+                {editingId ? "Update Jadwal Kereta" : "Tambah Jadwal Kereta"}
+              </h3>
+            </div>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
@@ -610,20 +779,18 @@ export default function SchedulesPage({ token }: { token: string }) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl overflow-hidden hover:shadow-md hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all group"
             >
               <div
                 className="flex items-center gap-4 px-6 py-5 cursor-pointer"
-                onClick={() =>
-                  setExpanded(expanded === sched.id ? null : sched.id)
-                }
+                onClick={() => setSelectedSchedule(sched)}
               >
-                <div className="w-12 h-12 bg-[#f8fafc] border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm">
-                  <Train size={20} className="text-[#1d2d6a]" />
+                <div className="w-12 h-12 bg-[#f8fafc] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center shadow-sm">
+                  <Train size={20} className="text-[#1d2d6a] dark:text-blue-400" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-[#1d2d6a] font-bold text-base">
+                    <h3 className="text-[#1d2d6a] dark:text-white font-bold text-base uppercase">
                       {sched.display_train_name || sched.train_name}
                     </h3>
                     <span className="text-slate-400 text-[10px] font-bold">
@@ -634,221 +801,44 @@ export default function SchedulesPage({ token }: { token: string }) {
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-xs">
-                    <span className="text-slate-500 font-medium">
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">
                       {sched.schedule_date}
                     </span>
                     <span
-                      className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border ${STATUS_COLOR[sched.status] || "text-slate-400 bg-slate-50 border-slate-200"}`}
+                      className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border ${STATUS_COLOR[sched.status] || "text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}`}
                     >
                       {sched.status?.replace("_", " ")}
                     </span>
-                    <span className="text-slate-400 font-bold">
-                      {sched.stops?.length || 0} pemberhentian
+                    <span className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">
+                      {sched.stops?.length || 0} Points
                     </span>
                   </div>
                 </div>
                 <ChevronRight
                   size={20}
-                  className={`text-slate-300 transition-transform ${expanded === sched.id ? "rotate-90" : ""}`}
+                  className="text-slate-300 transition-transform group-hover:translate-x-1"
                 />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteTarget(sched);
-                  }}
-                  className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              <AnimatePresence>
-                {expanded === sched.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="border-t border-slate-100 overflow-hidden"
+                <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(sched);
+                    }}
+                    className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 hover:bg-blue-100 transition-all active:scale-95"
                   >
-                    {sched.stops && sched.stops.length > 0 ? (
-                      <>
-                        <div className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 bg-slate-50/50 text-slate-400 text-[9px] font-semibold">
-                          <span>#</span>
-                          <span>Stasiun</span>
-                          <span>Datang</span>
-                          <span>Berangkat</span>
-                          <span>Peron</span>
-                          <span>Status</span>
-                        </div>
-                        {sched.stops.map((stop: any, j: number) => (
-                          <div
-                            key={j}
-                            className="grid grid-cols-[40px_1fr_100px_100px_50px_130px] gap-0 px-6 py-3 border-t border-slate-50 hover:bg-slate-50/50 items-center text-sm"
-                          >
-                            <span className="text-slate-300 font-mono font-bold text-xs">
-                              {String(stop.sequence_order).padStart(2, "0")}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <MapPinned size={14} className="text-[#ee6f1f]" />
-                              <span className="text-[#1d2d6a] font-semibold text-sm">
-                                {stop.station_name}
-                              </span>
-                              <span className="text-slate-400 font-mono text-[10px]">
-                                {stop.station_code}
-                              </span>
-                            </div>
-                            <span className="text-slate-600 font-mono font-medium">
-                              {stop.arrival_time || "-"}
-                            </span>
-                            <span className="text-slate-600 font-mono font-medium">
-                              {stop.departure_time || "-"}
-                            </span>
-                            <span className="text-slate-400 font-mono text-xs text-center">
-                              {stop.platform}
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold ${stop.stop_status === "SCHEDULED" ? "text-blue-500" : stop.stop_status === "ARRIVED" ? "text-green-500" : "text-slate-400"}`}
-                            >
-                              {stop.stop_status}
-                            </span>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <div className="p-8 space-y-6">
-                        <div className="grid grid-cols-2 gap-8">
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-[#ee6f1f] text-[10px] font-semibold uppercase tracking-widest">
-                              <Clock size={12} /> Keberangkatan
-                            </div>
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center justify-between">
-                              <div className="space-y-1">
-                                <p className="text-[10px] text-slate-400 font-bold">
-                                  STASIUN
-                                </p>
-                                <p className="text-[#1d2d6a] font-semibold text-sm">
-                                  {sched.stasiun_keberangkatan || "-"} (
-                                  {sched.kode_kota_keberangkatan || "-"})
-                                </p>
-                              </div>
-                              <div className="text-right space-y-1">
-                                <p className="text-[10px] text-slate-400 font-bold">
-                                  PENJADWALAN
-                                </p>
-                                <p className="text-[#ee6f1f] font-semibold text-lg">
-                                  {sched.waktu_keberangkatan_penjadwalan ||
-                                    "--:--"}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                <p className="text-[9px] text-slate-400 font-bold pb-1">
-                                  REALISASI
-                                </p>
-                                <p className="text-[#1d2d6a] font-bold text-sm">
-                                  {sched.waktu_keberangkatan_realisasi || "-"}
-                                </p>
-                              </div>
-                              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                <p className="text-[9px] text-slate-400 font-bold pb-1">
-                                  SELISIH / STATUS
-                                </p>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[#1d2d6a] font-bold text-xs">
-                                    {sched.selisih_waktu_keberangkatan}m
-                                  </span>
-                                  <span className="text-green-500 font-semibold text-[9px] px-1.5 py-0.5 bg-green-50 rounded border border-green-100">
-                                    {sched.status_keberangkatan}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-[#ee6f1f] text-[10px] font-semibold uppercase tracking-widest">
-                              <MapPinned size={12} /> Kedatangan
-                            </div>
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center justify-between">
-                              <div className="space-y-1">
-                                <p className="text-[10px] text-slate-400 font-bold">
-                                  STASIUN
-                                </p>
-                                <p className="text-[#1d2d6a] font-semibold text-sm">
-                                  {sched.stasiun_tujuan || "-"} (
-                                  {sched.kode_kota_tujuan || "-"})
-                                </p>
-                              </div>
-                              <div className="text-right space-y-1">
-                                <p className="text-[10px] text-slate-400 font-bold">
-                                  PENJADWALAN
-                                </p>
-                                <p className="text-[#ee6f1f] font-semibold text-lg">
-                                  {sched.waktu_kedatangan_penjadwalan ||
-                                    "--:--"}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                <p className="text-[9px] text-slate-400 font-bold pb-1">
-                                  REALISASI
-                                </p>
-                                <p className="text-[#1d2d6a] font-bold text-sm">
-                                  {sched.waktu_kedatangan_realisasi || "-"}
-                                </p>
-                              </div>
-                              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                <p className="text-[9px] text-slate-400 font-bold pb-1">
-                                  SELISIH / STATUS
-                                </p>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[#1d2d6a] font-bold text-xs">
-                                    {sched.selisih_waktu_kedatangan}m
-                                  </span>
-                                  <span className="text-green-500 font-semibold text-[9px] px-1.5 py-0.5 bg-green-50 rounded border border-green-100">
-                                    {sched.status_kedatangan}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {(sched.catatan || sched.media) && (
-                          <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-8">
-                            {sched.catatan && (
-                              <div className="space-y-1">
-                                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">
-                                  Catatan
-                                </p>
-                                <p className="text-slate-600 text-sm font-medium leading-relaxed italic">
-                                  "{sched.catatan}"
-                                </p>
-                              </div>
-                            )}
-                            {sched.media && (
-                              <div className="space-y-1">
-                                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">
-                                  Media / Lampiran
-                                </p>
-                                <a
-                                  href={sched.media}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-2 text-[#ee6f1f] text-xs font-semibold hover:underline"
-                                >
-                                  <Paperclip size={12} /> Lihat Lampiran
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <Clock size={14} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(sched);
+                    }}
+                    className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 transition-all active:scale-95"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>

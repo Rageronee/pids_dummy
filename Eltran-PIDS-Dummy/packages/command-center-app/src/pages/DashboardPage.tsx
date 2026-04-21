@@ -20,25 +20,22 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
   setPage,
 }) => {
   const [schedules, setSchedules] = useState<any[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Simulated live train data for the map
+  const [liveTrains] = useState<any[]>([
+    { id: "KA123", name: "ARGO WILIS", location: [106.8272, -6.1751], status: "Normal", speed: 85, eta: "10:30" },
+    { id: "KA456", name: "MALABAR", location: [107.6098, -6.9175], status: "Delay", speed: 45, eta: "11:15" },
+    { id: "KA789", name: "PARAHYANGAN", location: [107.1234, -6.4567], status: "Normal", speed: 95, eta: "10:45" },
+  ]);
 
   const fetchData = async () => {
     try {
-      const [schedRes, logRes] = await Promise.all([
-        fetch(`${API}/api/schedules`),
-        fetch(`${API}/api/logs?limit=5`),
-      ]);
-      const [schedData, logData] = await Promise.all([
-        schedRes.json(),
-        logRes.json(),
-      ]);
+      const schedRes = await fetch(`${API}/api/schedules`);
+      const schedData = await schedRes.json();
 
       if (schedData.success) {
-        setSchedules(schedData.schedules.slice(0, 4)); // Limit to top 4 for layout
-      }
-      if (logData.success) {
-        setLogs(logData.logs || []);
+        setSchedules(schedData.schedules.slice(0, 8));
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -49,115 +46,64 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // Fast refresh for Command Center
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 text-slate-900 overflow-hidden font-sans">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black text-slate-900 dark:text-slate-200 overflow-hidden font-sans">
       <main className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300">
-        <section className="relative w-full h-[380px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
+        <section className="relative w-full h-[450px] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm group">
           <div className="absolute top-4 left-4 z-20 flex gap-2">
-            <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+            <div className="px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">
-                Live Map
-              </span>
-            </div>
-            <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
-              <Navigation2 size={12} className="text-blue-600" />
-              <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">
-                Live Tracking
+              <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Live Fleet Tracking
               </span>
             </div>
           </div>
-          <MapComponent />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50/50 to-transparent z-10 pointer-events-none" />
+          <MapComponent trains={liveTrains} />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f8fafc] dark:from-black to-transparent z-10 pointer-events-none" />
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                Fleet & Station Analytics
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {loading
-                ? Array(4)
-                    .fill(0)
-                    .map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-32 bg-slate-100 animate-pulse rounded-2xl border border-slate-200"
-                      />
-                    ))
-                : schedules.map((s, i) => (
-                    <TransportLineCard
-                      key={s.id || i}
-                      type="Train"
-                      id={
-                        s.display_train_number ||
-                        s.train_number ||
-                        s.ka_number ||
-                        "KA"
-                      }
-                      status={s.status_keberangkatan || "Normal"}
-                      load={Math.floor(Math.random() * 40) + 20} // Simulated occupancy
-                      eta={s.waktu_keberangkatan_penjadwalan}
-                      origin={s.stasiun_keberangkatan}
-                      dest={s.stasiun_tujuan}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Active Fleet Status & ETA
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {loading
+              ? Array(4)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-32 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-800"
                     />
-                  ))}
-              {!loading && schedules.length === 0 && (
-                <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                  <p className="text-slate-400 font-medium text-sm">
-                    Tidak ada jadwal aktif terdeteksi.
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
-              <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-                <Activity size={16} className="text-blue-600" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                  System Logs
-                </h2>
-              </div>
-
-              <div className="flex-grow space-y-5 overflow-y-auto pr-1">
-                {logs.map((log, i) => (
-                  <LogItem
-                    key={log.id || i}
-                    time={new Date(log.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    })}
-                    tag={log.role.toUpperCase()}
-                    msg={log.action || log.details}
-                    type={log.role === "Admin" ? "info" : "success"}
+                  ))
+              : schedules.map((s, i) => (
+                  <TransportLineCard
+                    key={s.id || i}
+                    trainName={s.display_train_name || s.train_name || "KERETA"}
+                    serviceNumber={s.display_train_number || s.train_number || s.ka_number || "-"}
+                    status={s.status_keberangkatan || "Normal"}
+                    progress={Math.floor(Math.random() * 60) + 20}
+                    nextStation={s.stasiun_tujuan || "---"}
+                    depTime={s.waktu_keberangkatan_penjadwalan || "--:--"}
+                    arrTime={s.waktu_kedatangan_penjadwalan || "--:--"}
+                    onClick={() => setPage?.("schedules")}
                   />
                 ))}
-                {!loading && logs.length === 0 && (
-                  <p className="text-[10px] text-slate-400 italic text-center py-8">
-                    Belum ada aktivitas baru.
-                  </p>
-                )}
+            {!loading && schedules.length === 0 && (
+              <div className="col-span-full p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
+                <p className="text-slate-400 font-medium text-sm">
+                  Tidak ada jadwal aktif terdeteksi.
+                </p>
               </div>
-
-              <button
-                onClick={() => setPage?.("logs")}
-                className="mt-6 w-full h-10 text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
-              >
-                View All Logs
-              </button>
-            </div>
-          </section>
-        </div>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   );
@@ -235,74 +181,66 @@ const LogItem: React.FC<{
 };
 
 const TransportLineCard: React.FC<{
-  type: "Train" | "Station";
-  id: string;
+  trainName: string;
+  serviceNumber: string;
   status: string;
-  load: number;
-  eta: string;
-  origin: string;
-  dest: string;
-}> = ({ type, id, status, load, eta, origin, dest }) => {
-  const isWarning = load > 80 || status !== "Normal";
+  progress: number;
+  nextStation: string;
+  depTime: string;
+  arrTime: string;
+  onClick: () => void;
+}> = ({ trainName, serviceNumber, status, progress, nextStation, depTime, arrTime, onClick }) => {
+  const isDelay = status?.toLowerCase().includes("lambat") || status?.toLowerCase().includes("delay");
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:border-blue-200 transition-all hover:shadow-md group">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          {type === "Train" ? (
-            <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600">
-              <Train size={14} />
-            </div>
-          ) : (
-            <div className="p-1.5 bg-slate-100 rounded-lg text-slate-600">
-              <MapPin size={14} />
-            </div>
-          )}
-          <span className="text-sm font-semibold text-slate-900">{id}</span>
+    <button
+      onClick={onClick}
+      className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all hover:shadow-md group text-left w-full"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-[#1d2d6a] dark:text-blue-400">
+            <Train size={18} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight">{trainName}</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{serviceNumber}</span>
+          </div>
         </div>
         <div
-          className={`px-2.5 py-0.5 rounded-lg text-[10px] font-semibold uppercase ${status === "Normal" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"}`}
+          className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${!isDelay ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400" : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"}`}
         >
-          {status}
+          {status || "NORMAL"}
         </div>
       </div>
 
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-[9px] text-slate-400 font-semibold uppercase">
-            Capacity
-          </span>
-          <span
-            className={`text-[10px] font-semibold ${isWarning ? "text-amber-600" : "text-slate-900"}`}
-          >
-            {load}%
-          </span>
+      <div className="mb-4 space-y-2">
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Next Point</span>
+            <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase">{nextStation}</span>
+          </div>
+          <span className="text-[10px] font-black text-[#ee6f1f]">{progress}%</span>
         </div>
-        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <div
-            className={`h-full transition-all duration-700 rounded-full ${isWarning ? "bg-amber-500" : "bg-blue-600"}`}
-            style={{ width: `${load}%` }}
+            className={`h-full transition-all duration-700 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`}
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+      <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
         <div className="flex flex-col">
-          <p className="text-[8px] text-slate-400 font-semibold uppercase">
-            Route
-          </p>
-          <p className="text-[10px] font-semibold text-slate-700">
-            {origin} → {dest}
-          </p>
+          <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest">DEPARTURE</p>
+          <p className="text-sm font-black text-slate-700 dark:text-slate-300 font-mono tracking-tight">{depTime}</p>
         </div>
-        <div className="text-right">
-          <p className="text-[8px] text-slate-400 font-semibold uppercase">
-            In
-          </p>
-          <p className="text-sm font-semibold text-blue-600">{eta}</p>
+        <div className="flex flex-col text-right">
+          <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest">ARRIVAL</p>
+          <p className="text-sm font-black text-[#ee6f1f] font-mono tracking-tight">{arrTime}</p>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

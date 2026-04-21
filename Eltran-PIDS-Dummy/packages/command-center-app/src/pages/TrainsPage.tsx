@@ -34,6 +34,7 @@ export default function TrainsPage({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const { toast, showToast, closeToast } = useToast();
 
@@ -82,12 +83,36 @@ export default function TrainsPage({ token }: { token: string }) {
     fetchStations();
   }, [fetchTrains, fetchStations]);
 
+  const handleEdit = (train: any) => {
+    setEditingId(train.name);
+    setForm({
+      name: train.name,
+      ka_number: train.ka_number || "",
+      ip_address: train.ip_address || "",
+      status: train.status || "Active",
+      origin_station_id: train.origin_station_id || "",
+      destination_station_id: train.destination_station_id || "",
+      notes: train.notes || "",
+      pic_name: train.pic_name || "",
+      pic_contact: train.pic_contact || "",
+      media: train.media || "",
+      gerbongs: train.gerbongs || [],
+      route_stations: train.route_stations || [],
+    });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleAdd = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`${API}/api/admin/trains`, {
-        method: "POST",
+      const url = editingId
+        ? `${API}/api/admin/trains/${encodeURIComponent(editingId)}`
+        : `${API}/api/admin/trains`;
+
+      const res = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -106,6 +131,9 @@ export default function TrainsPage({ token }: { token: string }) {
       });
       const d = await res.json();
       if (d.success) {
+        // If editing, the name might have changed (though usually name is ID)
+        const targetName = form.name.trim();
+
         if (form.route_stations.length > 0) {
           await fetch(`${API}/api/admin/routes`, {
             method: "POST",
@@ -114,14 +142,14 @@ export default function TrainsPage({ token }: { token: string }) {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              name: form.name.trim(),
+              name: targetName,
               stations: form.route_stations,
             }),
           });
         }
         if (form.gerbongs.length > 0) {
           await fetch(
-            `${API}/api/admin/trains/${encodeURIComponent(form.name.trim())}/gerbongs`,
+            `${API}/api/admin/trains/${encodeURIComponent(targetName)}/gerbongs`,
             {
               method: "POST",
               headers: {
@@ -148,8 +176,9 @@ export default function TrainsPage({ token }: { token: string }) {
           route_stations: [],
         });
         setShowForm(false);
-        showToast("Kereta, Rute & Gerbong berhasil dikonfigurasi", true);
-      } else showToast(d.error || "Gagal menambahkan", false);
+        setEditingId(null);
+        showToast(editingId ? "Kereta berhasil diperbarui" : "Kereta berhasil ditambahkan", true);
+      } else showToast(d.error || "Gagal menyimpan", false);
     } catch {
       showToast("Koneksi gagal", false);
     } finally {
@@ -818,6 +847,12 @@ export default function TrainsPage({ token }: { token: string }) {
                     : "-"}
                 </div>
                 <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => handleEdit(train)}
+                    className="opacity-0 group-hover:opacity-100 p-2.5 rounded-xl bg-blue-50 text-blue-500 hover:bg-blue-100 transition-all active:scale-95 border border-transparent hover:border-blue-200"
+                  >
+                    <Pencil size={18} />
+                  </button>
                   <button
                     onClick={() => setDeleteTarget(train)}
                     className="opacity-0 group-hover:opacity-100 p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95 border border-transparent hover:border-red-200"

@@ -41,6 +41,17 @@ function App() {
     temp,
     sendData,
   } = sync;
+
+  const [isDark, setIsDark] = useState(() => localStorage.getItem("selector_theme") === "dark");
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("selector_theme", isDark ? "dark" : "light");
+  }, [isDark]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTVPreview, setShowTVPreview] = useState(false);
@@ -373,8 +384,8 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full bg-[#f4f7f9] text-slate-900 font-sans overflow-hidden select-none">
-      <header className="h-[90px] bg-[#1d2d6a] text-white flex items-center px-6 shadow-md shrink-0 justify-between">
+    <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-black text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
+      <header className="h-[90px] bg-[#1d2d6a] dark:bg-[#020617] text-white flex items-center px-6 shadow-md shrink-0 justify-between">
         <div className="flex items-center gap-6">
           <button
             onClick={() => setShowServiceModal(true)}
@@ -540,25 +551,25 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[24px] shadow-sm py-5 px-6 border border-slate-200 flex-1 flex flex-col min-h-0 overflow-hidden">
-            <div className="flex items-center gap-3 text-slate-400 font-bold text-sm tracking-widest uppercase mb-3 shrink-0">
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] shadow-sm py-5 px-6 border border-slate-200 dark:border-slate-800 flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex items-center gap-3 text-slate-400 dark:text-slate-500 font-bold text-sm tracking-widest uppercase mb-3 shrink-0">
               <Route size={18} /> DETAILED ROUTES
             </div>
 
             <div className="relative pl-0 pr-2 mt-2 flex-1 flex flex-col justify-start overflow-y-auto scrollbar-hide">
               <div className="relative w-full">
-                <div className="absolute left-[22px] top-[40px] bottom-[20px] w-[4px] bg-slate-100 rounded-full z-0" />
+                <div className="absolute left-[22px] top-[40px] bottom-[20px] w-[4px] bg-slate-100 dark:bg-slate-800 rounded-full z-0" />
 
                 <div className="flex items-center gap-4 mb-4 relative z-10 w-full shrink-0">
                   <div className="w-[48px] flex justify-center relative z-10">
-                    <div className="w-[24px] h-[24px] bg-[#cbd5e1] rounded-full border-[6px] border-white shadow-sm" />
+                    <div className="w-[24px] h-[24px] bg-[#cbd5e1] dark:bg-slate-700 rounded-full border-[6px] border-white dark:border-slate-900 shadow-sm" />
                   </div>
-                  <div className="flex-1 bg-[white] rounded-3xl p-5 border-[2px] border-slate-100 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                  <div className="flex-1 bg-[white] dark:bg-slate-800 rounded-3xl p-5 border-[2px] border-slate-100 dark:border-slate-700 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                     <div className="flex flex-col relative z-10 text-slate-400">
-                      <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
+                      <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
                         Next Station
                       </span>
-                      <span className="text-3xl text-slate-700 font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">
+                      <span className="text-3xl text-slate-700 dark:text-white font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">
                         {nextStation}
                       </span>
                     </div>
@@ -639,25 +650,25 @@ function App() {
           <div className="flex gap-3 h-[80px] shrink-0">
             <button
               onClick={() => setShowSystemSettings(true)}
-              className="w-[80px] h-[80px] bg-white border border-slate-200 text-[#1d2d6a] hover:bg-slate-50 rounded-[24px] shadow-sm flex items-center justify-center transition-all active:scale-95 group shrink-0"
+              className="w-[80px] h-[80px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[#1d2d6a] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 rounded-[24px] shadow-sm flex items-center justify-center transition-all active:scale-95 group shrink-0"
             >
               <Settings
                 size={32}
-                className="text-[#1d2d6a] group-hover:text-[#1d2d6a] group-hover:rotate-90 transition-all duration-500"
+                className="text-[#1d2d6a] dark:text-white group-hover:text-[#1d2d6a] dark:group-hover:text-white group-hover:rotate-90 transition-all duration-500"
               />
             </button>
 
-            <div className="flex-1 bg-white rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200 gap-4">
-              <div className="w-12 h-12 rounded-full bg-orange-50 text-[#ee6f1f] flex items-center justify-center shrink-0">
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200 dark:border-slate-800 gap-4">
+              <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/30 text-[#ee6f1f] flex items-center justify-center shrink-0">
                 <Clock size={26} strokeWidth={2.5} />
               </div>
-              <div className="flex flex-col border-r border-slate-100 pr-6">
-                <span className="text-[#1d2d6a] font-bold text-3xl tracking-tighter leading-none">
+              <div className="flex flex-col border-r border-slate-100 dark:border-slate-800 pr-6">
+                <span className="text-[#1d2d6a] dark:text-white font-bold text-3xl tracking-tighter leading-none">
                   {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
                 </span>
               </div>
               <div className="flex flex-col flex-1 justify-center text-right">
-                <span className="text-[#1d2d6a] font-semibold text-3xl tracking-tighter uppercase leading-none">
+                <span className="text-[#1d2d6a] dark:text-white font-semibold text-3xl tracking-tighter uppercase leading-none">
                   {currentTime.toLocaleDateString("id-ID", {
                     weekday: "long",
                     day: "2-digit",
@@ -739,6 +750,8 @@ function App() {
           showTVPreview={showTVPreview}
           handleToggleTV={handleToggleTV}
           handleLogout={handleLogout}
+          isDark={isDark}
+          setIsDark={setIsDark}
         />
 
         <TVMonitor

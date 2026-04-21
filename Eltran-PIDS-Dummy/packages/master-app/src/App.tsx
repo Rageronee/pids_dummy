@@ -15,10 +15,14 @@ import {
   ChevronRight,
   ChevronDown,
   Maximize,
+  Sun,
+  Moon,
+  Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginScreen } from "@eltran/shared";
 import { MasterConsolePanel } from "./components/MasterConsolePanel";
+import SettingsPage from "./pages/SettingsPage";
 import type { AuthUser, LogEntry } from "@eltran/pids-core";
 
 import maplibregl from "maplibre-gl";
@@ -789,6 +793,17 @@ function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authToken, setAuthToken] = useState<string>("");
 
+  const [isDark, setIsDark] = useState(() => localStorage.getItem("master_theme") === "dark");
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("master_theme", isDark ? "dark" : "light");
+  }, [isDark]);
+
   const { data, sendData } = usePidsData();
   const activeTrainName = data.serviceName || "Belum Dikonfigurasi";
   const activeTrainNumber = data.trainNumber || "-";
@@ -863,12 +878,14 @@ function App() {
     { id: "tv", icon: Video, label: "CCTV" },
     { id: "gps", icon: MapPin, label: "GPS MAP" },
     { id: "logs", icon: ScrollText, label: "Log Aktivitas" },
+    { id: "settings", icon: Settings, label: "Settings" },
   ];
 
   return (
-    <div className="flex h-screen w-full bg-[#f8fafc] text-slate-900 font-sans overflow-hidden">
+    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-black text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Sidebar */}
-      <aside className="w-80 bg-[#1d2d6a] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+      <aside className="w-80 bg-[#1d2d6a] dark:bg-[#020617] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+
         <div className="p-10 pb-6">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
@@ -915,15 +932,15 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
           <div className="flex items-center gap-5">
-            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
               {(() => {
                 const Icon =
                   NAV_ITEMS.find((n) => n.id === activeTab)?.icon || Train;
                 return (
                   <Icon
-                    className="text-[#1d2d6a]"
+                    className="text-[#1d2d6a] dark:text-slate-300"
                     size={22}
                     strokeWidth={2.5}
                   />
@@ -931,7 +948,7 @@ function App() {
               })()}
             </div>
             <div>
-              <span className="text-xl font-bold text-[#1d2d6a] uppercase tracking-normal">
+              <span className="text-xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-normal">
                 {NAV_ITEMS.find((n) => n.id === activeTab)?.label}
               </span>
             </div>
@@ -939,7 +956,8 @@ function App() {
 
           <div className="flex items-center gap-10">
             {/* Active Unit Badge Style */}
-            <div className="flex items-center gap-4 border-r border-slate-100 pr-10">
+
+            <div className="flex items-center gap-4 border-r border-slate-100 dark:border-slate-800 pr-10">
               <div className="text-right">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">
                   Active Unit
@@ -965,7 +983,7 @@ function App() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-10 bg-[#f8fafc]">
+        <div className="flex-1 overflow-auto p-10 bg-[#f8fafc] dark:bg-black">
           <AnimatePresence mode="wait">
             {activeTab === "pids" ? (
               <motion.div
@@ -991,62 +1009,62 @@ function App() {
                 transition={{ duration: 0.2 }}
                 className="max-w-6xl mx-auto space-y-10"
               >
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                  <h2 className="text-xl font-bold text-[#1d2d6a] mb-8 tracking-tight flex items-center gap-3">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                  <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-8 tracking-tight flex items-center gap-3">
                     <Database className="text-[#ee6f1f]" />
                     Stampformasi
                   </h2>
-                  <div className="overflow-hidden rounded-2xl border border-slate-200">
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
                     <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-[#1d2d6a] font-bold">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-[#1d2d6a] dark:text-slate-300 font-bold">
                         <tr>
-                          <th className="p-4 border-b border-slate-200">
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
                             No Rangkaian
                           </th>
-                          <th className="p-4 border-b border-slate-200">
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
                             No Aset
                           </th>
-                          <th className="p-4 border-b border-slate-200">
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
                             Nama Layanan (Service)
                           </th>
-                          <th className="p-4 border-b border-slate-200">
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
                             IP Address
                           </th>
-                          <th className="p-4 border-b border-slate-200">
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
                             Last Report
                           </th>
-                          <th className="p-4 border-b border-slate-200 text-center">
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-center">
                             Status
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {Array.from({ length: data.coachCount || 10 }).map(
                           (_, idx) => (
                             <tr
                               key={idx}
-                              className="hover:bg-slate-50/50 transition-colors"
+                              className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
                             >
-                              <td className="p-4 font-bold text-slate-700">
+                              <td className="p-4 font-bold text-slate-700 dark:text-slate-300">
                                 K1-{String(idx + 1).padStart(2, "0")}
                               </td>
-                              <td className="p-4 font-mono text-slate-500">
+                              <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
                                 K1{String(idx + 1).padStart(2, "0")}
                                 {String(800 + idx)}
                               </td>
-                              <td className="p-4 font-bold text-[#1d2d6a]">
+                              <td className="p-4 font-bold text-[#1d2d6a] dark:text-white">
                                 {activeTrainName}
                               </td>
-                              <td className="p-4 font-mono text-slate-500">
+                              <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
                                 192.168.1.{100 + idx}
                               </td>
-                              <td className="p-4 font-mono text-slate-500">
+                              <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
                                 {currentTime.toLocaleTimeString("id-ID", {
                                   hour12: false,
                                 })}
                               </td>
                               <td className="p-4 text-center">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-bold border border-green-100 dark:border-green-900/50">
                                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                   Active
                                 </span>
@@ -1091,6 +1109,16 @@ function App() {
               >
                 <LogViewer token={authToken} />
               </motion.div>
+            ) : activeTab === "settings" ? (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SettingsPage isDark={isDark} setIsDark={setIsDark} />
+              </motion.div>
             ) : (
               <motion.div
                 key="under-construction"
@@ -1098,7 +1126,7 @@ function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="h-full flex flex-col items-center justify-center text-slate-400 gap-6"
               >
-                <div className="bg-white p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 max-w-md w-full">
+                <div className="bg-white dark:bg-slate-900 p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 dark:border-slate-800 max-w-md w-full">
                   <div className="bg-orange-50 p-6 rounded-3xl text-[#ee6f1f]">
                     <AlertCircle size={48} />
                   </div>
