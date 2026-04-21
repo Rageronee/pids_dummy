@@ -56,20 +56,20 @@ export function RouteCheckpoints({
       }
     >
       {!route?.name || route.name === "-" ? (
-        <div className="flex flex-col items-center justify-center py-20 px-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] mt-6">
-          <div className="bg-white p-6 rounded-3xl shadow-sm mb-6">
-            <MapPin size={48} className="text-slate-300" />
+        <div className="flex flex-col items-center justify-center py-20 px-10 bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] mt-6 transition-colors">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm mb-6 transition-colors">
+            <MapPin size={48} className="text-slate-300 dark:text-slate-600" />
           </div>
-          <h4 className="text-xl font-bold text-[#1d2d6a] mb-2 tracking-tight">
+          <h4 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-2 tracking-tight">
             Rute Belum Dipilih
           </h4>
-          <p className="text-base font-bold text-slate-400 text-center max-w-sm tracking-tight mb-8">
+          <p className="text-base font-bold text-slate-400 dark:text-slate-500 text-center max-w-sm tracking-tight mb-8">
             Silakan pilih rute perjalanan pada aplikasi Selector atau unggah
             GeoJSON baru untuk membuat rute.
           </p>
           <div className="flex items-center gap-4">
             <label
-              className={`text-sm font-bold text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-md px-10 py-4 rounded-2xl flex items-center gap-3 transition-colors cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+              className={`text-sm font-bold text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 dark:border-slate-800 shadow-md px-10 py-4 rounded-2xl flex items-center gap-3 transition-colors cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}
             >
               <Upload
                 size={22}
@@ -89,11 +89,11 @@ export function RouteCheckpoints({
       ) : (
         <>
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
-            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 rounded-2xl border border-slate-200">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 transition-colors">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 File Aktif:
               </span>
-              <span className="text-base font-bold text-[#1d2d6a]">
+              <span className="text-base font-bold text-[#1d2d6a] dark:text-white">
                 {route?.geojson
                   ? route.geojson_filename ||
                     `${route.name.replace(/\s+/g, "_")}.geojson`
@@ -109,12 +109,12 @@ export function RouteCheckpoints({
               <button
                 onClick={onDeleteClick}
                 disabled={uploading}
-                className={`text-sm font-bold text-red-500 bg-white hover:bg-red-50 border border-slate-200 shadow-sm px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors ${uploading ? "opacity-50 grayscale pointer-events-none" : ""}`}
+                className={`text-sm font-bold text-red-500 dark:text-red-400 bg-white dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-950 border border-slate-200 dark:border-slate-800 shadow-sm px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors ${uploading ? "opacity-50 grayscale pointer-events-none" : ""}`}
               >
                 <Trash2 size={20} /> {uploading ? "..." : "Hapus"}
               </button>
               <label
-                className={`text-sm font-bold text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 shadow-md px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+                className={`text-sm font-bold text-white bg-[#ee6f1f] hover:bg-[#ee6f1f]/70 border border-slate-200 dark:border-slate-800 shadow-md px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors cursor-pointer ${uploading ? "opacity-50 pointer-events-none" : ""}`}
               >
                 <Upload
                   size={20}
@@ -133,15 +133,15 @@ export function RouteCheckpoints({
           </div>
 
           {!route?.geojson || navData.length === 0 ? (
-            <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-100 to-transparent" />
-              <div className="bg-slate-50 p-5 rounded-[2rem] border border-slate-100 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                <Info size={40} className="text-slate-300" />
+            <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300 dark:hover:border-slate-700">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent" />
+              <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                <Info size={40} className="text-slate-300 dark:text-slate-600" />
               </div>
-              <h4 className="text-sm font-bold text-[#1d2d6a] mb-2">
+              <h4 className="text-sm font-bold text-[#1d2d6a] dark:text-white mb-2">
                 Data Navigasi Kosong
               </h4>
-              <p className="text-[11px] font-bold text-slate-400 text-center max-w-[280px] tracking-tight leading-relaxed">
+              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 text-center max-w-[280px] tracking-tight leading-relaxed">
                 Silakan <span className="text-[#ee6f1f]">Impor GeoJSON</span>{" "}
                 untuk memuat daftar stasiun, koordinat GPS, dan estimasi waktu
                 kedatangan.
@@ -149,9 +149,9 @@ export function RouteCheckpoints({
             </div>
           ) : (
             <>
-              <div className="mt-8 border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-md bg-white flex flex-col">
+              <div className="mt-8 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] overflow-hidden shadow-md bg-white dark:bg-slate-900 flex flex-col transition-colors">
                 {/* Header Container - NON-Scrolling vertically */}
-                <div className="flex-shrink-0 bg-[#1d2d6a] text-white border-b border-[#152355]">
+                <div className="flex-shrink-0 bg-[#1d2d6a] dark:bg-[#020617] text-white border-b border-[#152355] dark:border-slate-800 transition-colors">
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
                     <colgroup>
                       <col className="w-[22%]" />
@@ -193,7 +193,7 @@ export function RouteCheckpoints({
                 {/* Body Container - Scrolling vertically dengan radius bawah yang selaras */}
                 <div
                   ref={navTableRef}
-                  className="flex-grow overflow-x-hidden max-h-[600px] overflow-y-auto relative custom-scrollbar bg-white rounded-b-[2.5rem] pb-10"
+                  className="flex-grow overflow-x-hidden max-h-[600px] overflow-y-auto relative custom-scrollbar bg-white dark:bg-slate-900 rounded-b-[2.5rem] pb-10 transition-colors"
                 >
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
                     <colgroup>
@@ -205,18 +205,18 @@ export function RouteCheckpoints({
                       <col className="w-[12%]" />
                       <col className="w-[28%]" />
                     </colgroup>
-                    <tbody className="divide-y divide-slate-100 text-base">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-base">
                       {navData.map((item: any, idx: number) => {
                         const isBerhenti = item.status === "BERHENTI";
                         return (
                           <tr
                             key={idx}
                             data-active={isBerhenti}
-                            className={`hover:bg-slate-50 transition-colors ${isBerhenti ? "bg-orange-50/100" : "bg-white"}`}
+                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50/100 dark:bg-orange-500/10" : "bg-white dark:bg-slate-900"}`}
                             style={{ scrollMarginTop: "64px" }}
                           >
                             <td
-                              className={`py-6 px-6 font-bold flex items-center gap-4 ${isBerhenti ? "text-[#ee6f1f]" : "text-slate-700"}`}
+                              className={`py-6 px-6 font-bold flex items-center gap-4 ${isBerhenti ? "text-[#ee6f1f]" : "text-slate-700 dark:text-slate-300"}`}
                             >
                               {isBerhenti && (
                                 <ChevronRight
@@ -229,35 +229,35 @@ export function RouteCheckpoints({
                               </div>
                             </td>
                             <td
-                              className="py-6 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider truncate"
+                              className="py-6 px-4 font-bold text-slate-500 dark:text-slate-500 text-xs uppercase tracking-wider truncate"
                               title={item.type}
                             >
                               {item.type}
                             </td>
-                            <td className="py-6 px-4 font-mono font-bold text-slate-600 text-sm text-right">
+                            <td className="py-6 px-4 font-mono font-bold text-slate-600 dark:text-slate-400 text-sm text-right">
                               {item.lng}
                             </td>
-                            <td className="py-6 px-4 font-mono font-bold text-slate-600 text-sm text-right">
+                            <td className="py-6 px-4 font-mono font-bold text-slate-600 dark:text-slate-400 text-sm text-right">
                               {item.lat}
                             </td>
-                            <td className="py-6 px-4 font-mono font-bold text-[#1d2d6a] text-center text-base">
+                            <td className="py-6 px-4 font-mono font-bold text-[#1d2d6a] dark:text-[#ee6f1f] text-center text-base">
                               {item.eta}
                             </td>
                             <td className="py-6 px-4 text-center">
                               {item.status ? (
                                 <span
-                                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm uppercase tracking-widest ${isBerhenti ? "bg-[#1d2d6a] text-white" : "bg-slate-200 text-slate-500"}`}
+                                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm uppercase tracking-widest ${isBerhenti ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"}`}
                                 >
                                   {item.status}
                                 </span>
                               ) : (
-                                <span className="text-slate-300 text-sm">
+                                <span className="text-slate-300 dark:text-slate-700 text-sm">
                                   -
                                 </span>
                               )}
                             </td>
                             <td
-                              className="py-6 px-6 font-bold text-slate-500 text-xs italic truncate"
+                              className="py-6 px-6 font-bold text-slate-500 dark:text-slate-500 text-xs italic truncate"
                               title={item.next}
                             >
                               {item.next}

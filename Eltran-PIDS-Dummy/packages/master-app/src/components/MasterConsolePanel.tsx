@@ -1300,21 +1300,21 @@ export function MasterConsolePanel({
             <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-6 flex-1">
               {/* Posisi Terkini */}
               <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl border border-slate-200 flex items-center justify-center shadow-sm text-[#1d2d6a]">
+                <div className="w-11 h-11 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm text-[#1d2d6a] dark:text-white">
                   <MapPin size={22} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-0.5">
                     Posisi Terkini
                   </span>
-                  <span className="text-base font-bold text-[#1d2d6a] uppercase tracking-tight">
+                  <span className="text-base font-bold text-[#1d2d6a] dark:text-slate-200 uppercase tracking-tight">
                     {getStationName(data?.currentStation) ||
                       getStationName(firstStation)}
                   </span>
                 </div>
               </div>
 
-              <div className="h-px bg-slate-100/60" />
+              <div className="h-px bg-slate-100/60 dark:bg-slate-800" />
 
               {/* Tujuan Berikutnya */}
               <div className="flex flex-col gap-4">
@@ -1424,42 +1424,42 @@ export function MasterConsolePanel({
             <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1 relative overflow-hidden">
               {/* Longitude */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                  Longitude <Info size={12} className="text-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                  Longitude <Info size={12} className="text-slate-300 dark:text-slate-600" />
                 </span>
-                <div className="text-2xl font-mono font-bold text-[#1d2d6a] transition-all group-hover:text-[#ee6f1f]">
+                <div className="text-2xl font-mono font-bold text-[#1d2d6a] dark:text-white transition-all group-hover:text-[#ee6f1f]">
                   {simGps.lng.toFixed(6)}
                 </div>
               </div>
 
               {/* Latitude */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                  Latitude <Info size={12} className="text-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                  Latitude <Info size={12} className="text-slate-300 dark:text-slate-600" />
                 </span>
-                <div className="text-2xl font-mono font-bold text-[#1d2d6a] transition-all group-hover:text-[#ee6f1f]">
+                <div className="text-2xl font-mono font-bold text-[#1d2d6a] dark:text-white transition-all group-hover:text-[#ee6f1f]">
                   {simGps.lat.toFixed(6)}
                 </div>
               </div>
 
               {/* Haluan */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                  Haluan (Dir) <Info size={12} className="text-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                  Haluan (Dir) <Info size={12} className="text-slate-300 dark:text-slate-600" />
                 </span>
-                <div className="text-2xl font-mono font-bold text-[#1d2d6a] transition-all group-hover:text-[#ee6f1f]">
+                <div className="text-2xl font-mono font-bold text-[#1d2d6a] dark:text-white transition-all group-hover:text-[#ee6f1f]">
                   {simGps.heading.toFixed(2)}&deg;
                 </div>
               </div>
 
               {/* Elevasi */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                  Elevasi <Info size={12} className="text-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                  Elevasi <Info size={12} className="text-slate-300 dark:text-slate-600" />
                 </span>
-                <div className="text-2xl font-mono font-bold text-[#1d2d6a] flex items-baseline gap-2 transition-all group-hover:text-[#ee6f1f]">
+                <div className="text-2xl font-mono font-bold text-[#1d2d6a] dark:text-white flex items-baseline gap-2 transition-all group-hover:text-[#ee6f1f]">
                   {data?.altitude || 0}{" "}
-                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-widest">
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-widest">
                     MDPL
                   </span>
                 </div>
@@ -1467,17 +1467,17 @@ export function MasterConsolePanel({
 
               {/* Radius Luar */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                  Rad Luar <Info size={12} className="text-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                  Rad Luar <Info size={12} className="text-slate-300 dark:text-slate-600" />
                 </span>
                 <div className="flex items-center justify-center gap-2">
                   <input
                     type="number"
                     value={outerRadius}
                     onChange={(e) => setOuterRadius(Number(e.target.value))}
-                    className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f] text-center"
+                    className="w-full max-w-[6rem] bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f] text-center"
                   />
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">
                     Meter
                   </span>
                 </div>
@@ -1485,17 +1485,17 @@ export function MasterConsolePanel({
 
               {/* Radius Dalam */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                  Rad Dalam <Info size={12} className="text-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+                  Rad Dalam <Info size={12} className="text-slate-300 dark:text-slate-600" />
                 </span>
                 <div className="flex items-center justify-center gap-2">
                   <input
                     type="number"
                     value={innerRadius}
                     onChange={(e) => setInnerRadius(Number(e.target.value))}
-                    className="w-full max-w-[6rem] bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f] text-center"
+                    className="w-full max-w-[6rem] bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-2.5 py-1 text-2xl font-mono font-bold text-[#ee6f1f] transition-all focus:outline-none focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-[#ee6f1f]/20 focus:border-[#ee6f1f] text-center"
                   />
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">
                     Meter
                   </span>
                 </div>
@@ -1503,14 +1503,14 @@ export function MasterConsolePanel({
 
               {/* Dividers (Premium Aesthetic) */}
               {/* Desktop (3 Cols x 2 Rows) */}
-              <div className="absolute top-12 bottom-12 left-1/3 w-px bg-gradient-to-b from-transparent via-slate-100 to-transparent hidden lg:block" />
-              <div className="absolute top-12 bottom-12 left-2/3 w-px bg-gradient-to-b from-transparent via-slate-100 to-transparent hidden lg:block" />
-              <div className="absolute left-10 right-10 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent hidden lg:block" />
+              <div className="absolute top-12 bottom-12 left-1/3 w-px bg-gradient-to-b from-transparent via-slate-100 dark:via-slate-800 to-transparent hidden lg:block" />
+              <div className="absolute top-12 bottom-12 left-2/3 w-px bg-gradient-to-b from-transparent via-slate-100 dark:via-slate-800 to-transparent hidden lg:block" />
+              <div className="absolute left-10 right-10 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent hidden lg:block" />
 
               {/* Mobile (2 Cols x 3 Rows) */}
-              <div className="absolute top-10 bottom-10 left-1/2 w-px bg-gradient-to-b from-transparent via-slate-100 to-transparent lg:hidden" />
-              <div className="absolute left-10 right-10 top-1/3 h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent lg:hidden" />
-              <div className="absolute left-10 right-10 top-2/3 h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent lg:hidden" />
+              <div className="absolute top-10 bottom-10 left-1/2 w-px bg-gradient-to-b from-transparent via-slate-100 dark:via-slate-800 to-transparent lg:hidden" />
+              <div className="absolute left-10 right-10 top-1/3 h-px bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent lg:hidden" />
+              <div className="absolute left-10 right-10 top-2/3 h-px bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent lg:hidden" />
             </div>
           </div>
         </div>
@@ -1522,56 +1522,56 @@ export function MasterConsolePanel({
         defaultOpen={true}
         summary={`${jumlahKereta} Kereta Tersambung • IP Global: 192.168.1.48`}
       >
-        <div className="bg-white dark:bg-slate-900 p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-6">
+        <div className="bg-white dark:bg-slate-900 p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-6 transition-colors">
           {/* Header Controls: Global IP & Controls */}
-          <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+          <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
             {/* Global IP & Settings */}
             <div className="flex flex-wrap items-center gap-4 flex-1">
               <div className="flex flex-col">
-                <span className="text-[13px] font-bold text-slate-500 mb-1">
+                <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                   Network Global IP
                 </span>
-                <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-2 py-1.5 shadow-sm">
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1.5 shadow-sm">
                   <input
                     type="text"
                     defaultValue="192"
-                    className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                    className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                   />
-                  <span className="text-slate-300">.</span>
+                  <span className="text-slate-300 dark:text-slate-600">.</span>
                   <input
                     type="text"
                     defaultValue="168"
-                    className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                    className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                   />
-                  <span className="text-slate-300">.</span>
+                  <span className="text-slate-300 dark:text-slate-600">.</span>
                   <input
                     type="text"
                     defaultValue="1"
-                    className="w-[20px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                    className="w-[20px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                   />
-                  <span className="text-slate-300">.</span>
+                  <span className="text-slate-300 dark:text-slate-600">.</span>
                   <input
                     type="text"
                     defaultValue="48"
-                    className="w-[24px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                    className="w-[24px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                   />
-                  <div className="w-px h-4 bg-slate-200 mx-1" />
+                  <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
                   <StateToggle value="auto" />
                 </div>
               </div>
 
-              <div className="h-10 w-px bg-slate-200 hidden sm:block" />
+              <div className="h-10 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
               {/* Toggles */}
               <div className="flex flex-col">
-                <span className="text-[13px] font-bold text-slate-500 mb-1 text-center sm:text-left">
+                <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1 text-center sm:text-left">
                   Tampilkan
                 </span>
-                <div className="flex items-center gap-3 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                <div className="flex items-center gap-3 p-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded accent-[#1d2d6a] border-slate-300"
+                      className="w-4 h-4 rounded accent-[#1d2d6a] dark:accent-[#ee6f1f] border-slate-300 dark:border-slate-600"
                       checked={!!data.showTrainNumber}
                       onChange={(e) =>
                         sendData({ showTrainNumber: e.target.checked })
@@ -1579,11 +1579,11 @@ export function MasterConsolePanel({
                     />{" "}
                     No. KA
                   </label>
-                  <div className="w-px h-5 bg-slate-200" />
-                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 cursor-pointer px-3 py-1.5 hover:bg-slate-50 rounded-md transition-colors">
+                  <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded accent-[#1d2d6a] border-slate-300"
+                      className="w-4 h-4 rounded accent-[#1d2d6a] dark:accent-[#ee6f1f] border-slate-300 dark:border-slate-600"
                       checked={data.ledActive !== false}
                       onChange={(e) =>
                         sendData({ ledActive: e.target.checked })
@@ -1595,13 +1595,13 @@ export function MasterConsolePanel({
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-slate-500 mb-1">
+              <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                 Jumlah Kereta
               </span>
-              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-sm">
-                <Train size={14} className="text-slate-400" />
+              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 shadow-sm">
+                <Train size={14} className="text-slate-400 dark:text-slate-500" />
                 <select
-                  className="text-xs font-bold text-[#1d2d6a] bg-transparent cursor-pointer focus:outline-none min-w-[150px]"
+                  className="text-xs font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent cursor-pointer focus:outline-none min-w-[150px]"
                   value={jumlahKereta}
                   onChange={(e) => setJumlahKereta(Number(e.target.value))}
                 >
@@ -1610,7 +1610,7 @@ export function MasterConsolePanel({
                       Math.min(gerbongCounts[activeTrainName] || 15, 15),
                     ),
                   ].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
+                    <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-900">
                       {i + 1} Gerbong
                     </option>
                   ))}
@@ -1620,59 +1620,59 @@ export function MasterConsolePanel({
           </div>
 
           {/* Visualizer */}
-          <div className="flex items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent snap-x">
+          <div className="flex items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent snap-x">
             {[
               ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1)),
             ].map((item, i) => (
               <div key={item} className="flex shrink-0 snap-start w-[220px]">
-                <div className="flex flex-col w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 hover:shadow-md transition-all relative">
-                  <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] text-white border-b border-[#152355]">
+                <div className="flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 dark:hover:border-[#ee6f1f]/40 hover:shadow-md transition-all relative">
+                  <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] dark:bg-[#020617] text-white border-b border-[#152355] dark:border-slate-800">
                     <span className="text-[10px] font-bold tracking-wider">
                       GERBONG {item}
                     </span>
                   </div>
-                  <div className="p-4 bg-white flex flex-col gap-4 flex-1">
+                  <div className="p-4 bg-white dark:bg-slate-900 flex flex-col gap-4 flex-1">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-semibold text-slate-400 mb-1">
+                      <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 mb-1">
                         ID Kereta
                       </span>
                       <input
                         type="text"
                         defaultValue={`K1016${i + 1}`}
-                        className="text-xs font-bold text-[#1d2d6a] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full text-center transition-all shadow-sm"
+                        className="text-xs font-bold text-[#1d2d6a] dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 dark:focus:border-[#ee6f1f] focus:ring-2 focus:ring-blue-100 dark:focus:ring-orange-500/10 w-full text-center transition-all shadow-sm"
                       />
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[9px] font-bold text-slate-400">
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">
                           IP Node
                         </span>
                         <TextToggle value="auto" />
                       </div>
-                      <div className="flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 shadow-sm transition-all h-[34px]">
+                      <div className="flex items-center justify-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus-within:border-blue-400 dark:focus-within:border-[#ee6f1f] focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-orange-500/10 shadow-sm transition-all h-[34px]">
                         <div className="flex items-center gap-0.5 w-full justify-center">
                           <input
                             type="text"
                             defaultValue="192"
-                            className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                            className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                           />
-                          <span className="text-slate-300 text-[13px]">.</span>
+                          <span className="text-slate-300 dark:text-slate-600 text-[13px]">.</span>
                           <input
                             type="text"
                             defaultValue="168"
-                            className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                            className="w-[28px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                           />
-                          <span className="text-slate-300 text-[13px]">.</span>
+                          <span className="text-slate-300 dark:text-slate-600 text-[13px]">.</span>
                           <input
                             type="text"
                             defaultValue="1"
-                            className="w-[18px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                            className="w-[18px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                           />
-                          <span className="text-slate-300 text-[13px]">.</span>
+                          <span className="text-slate-300 dark:text-slate-600 text-[13px]">.</span>
                           <input
                             type="text"
                             defaultValue={51 + i}
-                            className="w-[24px] text-[13px] font-mono font-bold text-[#1d2d6a] bg-transparent text-center focus:outline-none"
+                            className="w-[24px] text-[13px] font-mono font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent text-center focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1705,15 +1705,15 @@ export function MasterConsolePanel({
       >
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
           {/* Audio Broadcast */}
-          <div className="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col">
-            <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-2">
-              <h4 className="flex items-center gap-2 text-xs font-bold text-slate-400">
+          <div className="space-y-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-full flex flex-col transition-colors">
+            <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <h4 className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500">
                 <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
               </h4>
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setShowAudioSettings(!showAudioSettings)}
-                  className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showAudioSettings ? "bg-slate-200 border-slate-300 text-slate-700" : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+                  className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showAudioSettings ? "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-white" : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
                 >
                   <Settings size={14} /> Pengaturan
                 </button>
@@ -1727,7 +1727,7 @@ export function MasterConsolePanel({
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                  className="flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm"
                 >
                   <FolderOpen size={14} /> Load File Audio
                 </button>
@@ -1735,43 +1735,43 @@ export function MasterConsolePanel({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
+              <div className="space-y-1.5 focus-within:text-[#ee6f1f] text-slate-400 dark:text-slate-500 transition-colors">
                 <label className="text-[10px] font-semibold">
                   Sumber Output
                 </label>
                 <select
                   value={mediaSource}
                   onChange={(e) => setMediaSource(e.target.value)}
-                  className="w-full text-sm font-semibold text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all cursor-pointer"
+                  className="w-full text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white dark:focus:bg-slate-700 transition-all cursor-pointer"
                 >
-                  <option value="Line In">Line In / Default Audio</option>
-                  <option value="Internal">Internal Storage</option>
+                  <option value="Line In" className="bg-white dark:bg-slate-900">Line In / Default Audio</option>
+                  <option value="Internal" className="bg-white dark:bg-slate-900">Internal Storage</option>
                 </select>
               </div>
 
               <div className="flex items-end pb-[1px]">
-                <label className="flex items-center justify-center gap-3 text-sm font-bold text-slate-600 cursor-pointer bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 w-full transition-colors">
+                <label className="flex items-center justify-center gap-3 text-sm font-bold text-slate-600 dark:text-slate-300 cursor-pointer bg-slate-50 dark:bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 w-full transition-colors">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded text-[#1d2d6a] focus:ring-[#1d2d6a]"
+                    className="w-4 h-4 rounded text-[#1d2d6a] dark:text-[#ee6f1f] focus:ring-[#1d2d6a] dark:focus:ring-[#ee6f1f] bg-transparent border-slate-300 dark:border-slate-600"
                   />{" "}
                   Enable Broadcast
                 </label>
               </div>
             </div>
 
-            <div className="space-y-1.5 flex-1 flex flex-col focus-within:text-[#ee6f1f] text-slate-400 transition-colors">
+            <div className="space-y-1.5 flex-1 flex flex-col focus-within:text-[#ee6f1f] text-slate-400 dark:text-slate-500 transition-colors">
               <label className="text-[10px] font-bold">
                 Teks Informasi Darurat/Manual
               </label>
               <textarea
-                className="w-full h-full min-h-[80px] text-sm font-medium text-slate-700 bg-slate-50 border-2 border-slate-200 rounded-xl p-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white transition-all resize-none"
+                className="w-full h-full min-h-[80px] text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white dark:focus:bg-slate-700 transition-all resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600"
                 placeholder="Ketik pesan darurat/info..."
               />
             </div>
-            <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 rounded-xl overflow-hidden shadow-inner bg-slate-50">
-              <div className="flex justify-between items-center bg-slate-100 px-3 py-2 border-b border-slate-200">
-                <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+            <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-inner bg-slate-50 dark:bg-slate-950 transition-colors">
+              <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 px-3 py-2 border-b border-slate-200 dark:border-slate-800 transition-colors">
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <ListVideo size={12} /> Audio Playlist ({audioList.length})
                 </span>
                 {audioList.length > 0 && (
@@ -1781,7 +1781,7 @@ export function MasterConsolePanel({
                       setSelectedAudio("");
                       handleStopAudio();
                     }}
-                    className="text-[9px] font-bold text-red-500 hover:text-red-700 transition-colors px-2 py-0.5 bg-red-50 rounded border border-red-100"
+                    className="text-[9px] font-bold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors px-2 py-0.5 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-900/30"
                   >
                     Bersihkan
                   </button>
@@ -1789,7 +1789,7 @@ export function MasterConsolePanel({
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar max-h-[160px]">
                 {audioList.length === 0 ? (
-                  <div className="text-center text-[10px] font-bold text-slate-400 py-8">
+                  <div className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-600 py-8">
                     Playlist masih kosong. Silakan muat file audio.
                   </div>
                 ) : (
@@ -1800,9 +1800,9 @@ export function MasterConsolePanel({
                         setSelectedAudio(audio.url);
                         handlePlayAudio(audio.url);
                       }}
-                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer text-xs transition-all border ${selectedAudio === audio.url ? "bg-[#1d2d6a] text-white border-[#1d2d6a] shadow-md relative overflow-hidden" : "bg-white text-slate-600 border-slate-200 hover:border-[#1d2d6a]/30 hover:bg-blue-50/50"}`}
+                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer text-xs transition-all border ${selectedAudio === audio.url ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white border-[#1d2d6a] dark:border-[#ee6f1f] shadow-md relative overflow-hidden" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-[#1d2d6a]/30 dark:hover:border-[#ee6f1f]/30 hover:bg-blue-50/50 dark:hover:bg-slate-800"}`}
                     >
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-black/10">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-black/10 dark:bg-white/10">
                         {selectedAudio === audio.url ? (
                           <Volume2 size={12} className="animate-pulse" />
                         ) : (
@@ -1820,13 +1820,13 @@ export function MasterConsolePanel({
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={handleStopAudio}
-                className="text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-xl transition-all shadow-sm"
+                className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 py-2.5 px-6 rounded-xl transition-all shadow-sm"
               >
                 Stop
               </button>
               <button
                 onClick={handlePlayAudio}
-                className="text-xs font-bold text-white bg-[#1d2d6a] hover:bg-[#152355] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all"
+                className="text-xs font-bold text-white bg-[#1d2d6a] dark:bg-[#ee6f1f] hover:bg-[#152355] dark:hover:bg-[#d45d15] py-2.5 px-6 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all"
               >
                 <Volume2 size={14} /> Mainkan
               </button>
@@ -1834,28 +1834,28 @@ export function MasterConsolePanel({
           </div>
 
           {/* Video Layar */}
-          <div className="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col relative group">
-            <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-3">
-              <h4 className="flex items-center gap-2 text-xs font-bold text-[#1d2d6a]">
-                <Video size={16} className="text-[#1d2d6a]" /> Manajemen TV /
+          <div className="space-y-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-full flex flex-col relative group transition-colors">
+            <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h4 className="flex items-center gap-2 text-xs font-bold text-[#1d2d6a] dark:text-white">
+                <Video size={16} className="text-[#1d2d6a] dark:text-[#ee6f1f]" /> Manajemen TV /
                 Video
               </h4>
               <div className="flex flex-wrap items-center gap-2 lg:gap-3">
                 <button
                   onClick={() => setShowVideoSettings(!showVideoSettings)}
-                  className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showVideoSettings ? "bg-slate-200 border-slate-300 text-slate-700" : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+                  className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showVideoSettings ? "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-white" : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
                 >
                   <Settings size={14} /> Pengaturan
                 </button>
                 <button
                   onClick={handleSelectDirectory}
-                  className="flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                  className="flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm"
                 >
                   <FolderOpen size={14} /> Pilih Direktori
                 </button>
                 <button
                   onClick={fetchVideos}
-                  className={`text-slate-400 hover:text-[#1d2d6a] p-2 rounded-lg transition-colors ${loadingVideos ? "animate-spin" : ""}`}
+                  className={`text-slate-400 dark:text-slate-500 hover:text-[#1d2d6a] dark:hover:text-[#ee6f1f] p-2 rounded-lg transition-colors ${loadingVideos ? "animate-spin" : ""}`}
                 >
                   <RefreshCw size={14} />
                 </button>
@@ -1960,7 +1960,7 @@ export function MasterConsolePanel({
 
             {/* Playback Progress Slider */}
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono font-bold text-[#1d2d6a] w-8 text-right">
+              <span className="text-[10px] font-mono font-bold text-[#1d2d6a] dark:text-slate-300 w-8 text-right">
                 {Math.floor((data?.playbackProgress || 0) / 20)}:
                 {(Math.floor(data?.playbackProgress || 0) % 20)
                   .toString()
@@ -1977,9 +1977,9 @@ export function MasterConsolePanel({
                     playbackProgress: parseInt(e.target.value),
                   })
                 }
-                className={`flex-1 h-2 bg-slate-200 rounded-lg appearance-none accent-[#1d2d6a] focus:outline-none ${playlist.length === 0 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none accent-[#1d2d6a] dark:accent-[#ee6f1f] focus:outline-none ${playlist.length === 0 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               />
-              <span className="text-[10px] font-mono font-bold text-slate-400 w-8 text-left">
+              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 w-8 text-left">
                 -{Math.floor((100 - (data?.playbackProgress || 0)) / 20)}:
                 {(Math.floor(100 - (data?.playbackProgress || 0)) % 20)
                   .toString()
@@ -1990,16 +1990,16 @@ export function MasterConsolePanel({
             {/* Playback Controls Row */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-1">
               {/* Left Side: Modes */}
-              <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl p-1 transition-colors">
                 <button
                   onClick={toggleRepeat}
                   title="Repeat"
-                  className={`p-2 rounded-lg transition-all ${playbackMode.includes("repeat") ? "text-[#1d2d6a] bg-blue-100 shadow-sm" : "text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-200"}`}
+                  className={`p-2 rounded-lg transition-all ${playbackMode.includes("repeat") ? "text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-100 dark:bg-orange-500/20 shadow-sm" : "text-slate-400 hover:text-[#1d2d6a] dark:hover:text-[#ee6f1f] hover:bg-slate-200 dark:hover:bg-slate-700"}`}
                 >
                   <div className="relative">
                     <Repeat size={16} />
                     {playbackMode === "repeat-one" && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-[#1d2d6a] text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-bold">
+                      <span className="absolute -top-1.5 -right-1.5 bg-[#1d2d6a] dark:bg-[#ee6f1f] text-[6px] text-white w-3 h-3 rounded-full flex items-center justify-center font-bold">
                         1
                       </span>
                     )}
@@ -2008,7 +2008,7 @@ export function MasterConsolePanel({
                 <button
                   onClick={toggleShuffle}
                   title="Shuffle"
-                  className={`p-2 rounded-lg transition-all ${playbackMode === "shuffle" ? "text-[#1d2d6a] bg-blue-100 shadow-sm" : "text-slate-400 hover:text-[#1d2d6a] hover:bg-slate-200"}`}
+                  className={`p-2 rounded-lg transition-all ${playbackMode === "shuffle" ? "text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-100 dark:bg-orange-500/20 shadow-sm" : "text-slate-400 hover:text-[#1d2d6a] dark:hover:text-[#ee6f1f] hover:bg-slate-200 dark:hover:bg-slate-700"}`}
                 >
                   <Shuffle size={16} />
                 </button>
@@ -2018,13 +2018,13 @@ export function MasterConsolePanel({
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={prevVideo}
-                  className="text-slate-500 hover:text-[#1d2d6a] hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"
+                  className="text-slate-500 dark:text-slate-400 hover:text-[#1d2d6a] dark:hover:text-[#ee6f1f] hover:bg-blue-50 dark:hover:bg-slate-800 p-2.5 rounded-full transition-colors active:scale-95"
                 >
                   <ChevronDown size={22} className="rotate-90" />
                 </button>
                 <button
                   onClick={togglePlay}
-                  className="text-white bg-[#1d2d6a] hover:bg-[#152355] w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 transform hover:scale-105 border-2 border-white focus:outline-none ring-2 ring-transparent focus:ring-blue-200"
+                  className="text-white bg-[#1d2d6a] dark:bg-[#ee6f1f] hover:bg-[#152355] dark:hover:bg-[#d45d15] w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95 transform hover:scale-105 border-2 border-white dark:border-slate-800 focus:outline-none ring-2 ring-transparent focus:ring-blue-200 dark:focus:ring-orange-500/20"
                 >
                   {isPlaying ? (
                     <Pause size={20} fill="currentColor" />
@@ -2034,22 +2034,22 @@ export function MasterConsolePanel({
                 </button>
                 <button
                   onClick={nextVideo}
-                  className="text-slate-500 hover:text-[#1d2d6a] hover:bg-blue-50 p-2.5 rounded-full transition-colors active:scale-95"
+                  className="text-slate-500 dark:text-slate-400 hover:text-[#1d2d6a] dark:hover:text-[#ee6f1f] hover:bg-blue-50 dark:hover:bg-slate-800 p-2.5 rounded-full transition-colors active:scale-95"
                 >
                   <ChevronDown size={22} className="-rotate-90" />
                 </button>
               </div>
 
               {/* Right Side: Volume */}
-              <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 w-full sm:w-auto mt-2 sm:mt-0">
+              <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-100 dark:border-slate-700 w-full sm:w-auto mt-2 sm:mt-0 transition-colors">
                 <button
                   onClick={toggleMute}
                   className="flex-shrink-0 focus:outline-none transition-transform hover:scale-110 active:scale-95"
                 >
                   {data?.volume === 0 ? (
-                    <VolumeX size={16} className="text-slate-400" />
+                    <VolumeX size={16} className="text-slate-400 dark:text-slate-500" />
                   ) : (
-                    <Volume2 size={16} className="text-[#1d2d6a]" />
+                    <Volume2 size={16} className="text-[#1d2d6a] dark:text-[#ee6f1f]" />
                   )}
                 </button>
                 <input
@@ -2060,26 +2060,26 @@ export function MasterConsolePanel({
                   onChange={(e) =>
                     handleVideoAction({ volume: parseInt(e.target.value) })
                   }
-                  className="w-20 sm:w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#1d2d6a] focus:outline-none"
+                  className="w-20 sm:w-24 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#1d2d6a] dark:accent-[#ee6f1f] focus:outline-none"
                 />
-                <span className="text-[10px] font-mono font-bold text-slate-500 w-7 text-right">
+                <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 w-7 text-right">
                   {data?.volume ?? 50}%
                 </span>
               </div>
             </div>
 
             {/* Tab Switcher for Lists */}
-            <div className="flex justify-between items-center border-b border-slate-100 pt-2 pb-2 pr-2">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pt-2 pb-2 pr-2">
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setVideoViewMode("playlist")}
-                  className={`flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-t-lg transition-all ${videoViewMode === "playlist" ? "bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}
+                  className={`flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-t-lg transition-all ${videoViewMode === "playlist" ? "bg-slate-50 dark:bg-slate-800 text-[#1d2d6a] dark:text-[#ee6f1f] border-b-2 border-[#1d2d6a] dark:border-[#ee6f1f]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                 >
                   <ListVideo size={14} /> Playlist ({playlist.length})
                 </button>
                 <button
                   onClick={() => setVideoViewMode("files")}
-                  className={`flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-t-lg transition-all ${videoViewMode === "files" ? "bg-slate-50 text-[#1d2d6a] border-b-2 border-[#1d2d6a]" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}
+                  className={`flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-t-lg transition-all ${videoViewMode === "files" ? "bg-slate-50 dark:bg-slate-800 text-[#1d2d6a] dark:text-[#ee6f1f] border-b-2 border-[#1d2d6a] dark:border-[#ee6f1f]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                 >
                   <Video size={14} /> Tersedia ({videoList.length})
                 </button>
@@ -2087,7 +2087,7 @@ export function MasterConsolePanel({
               {videoViewMode === "playlist" && playlist.length > 0 && (
                 <button
                   onClick={() => setShowClearPlaylistConfirm(true)}
-                  className="text-[9px] font-bold text-red-500 hover:text-red-700 transition-colors"
+                  className="text-[9px] font-bold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                 >
                   Bersihkan
                 </button>
@@ -2095,11 +2095,11 @@ export function MasterConsolePanel({
             </div>
 
             {/* List Area */}
-            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2 overflow-y-auto space-y-1 shadow-inner max-h-[142px] min-h-[60px]">
+            <div className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2 overflow-y-auto space-y-1 shadow-inner max-h-[142px] min-h-[60px] transition-colors">
               {videoViewMode === "playlist" ? (
                 <>
                   {playlist.length === 0 ? (
-                    <div className="py-8 text-center text-slate-400 text-[10px] font-semibold">
+                    <div className="py-8 text-center text-slate-400 dark:text-slate-600 text-[10px] font-semibold">
                       Playlist Kosong
                     </div>
                   ) : (
@@ -2111,13 +2111,13 @@ export function MasterConsolePanel({
                           onClick={() => playVideoAt(i)}
                           className={`text-[11px] font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${
                             isActive
-                              ? "text-[#1d2d6a] bg-blue-100/70 border-blue-200 shadow-sm"
-                              : "text-slate-600 bg-transparent border-transparent hover:bg-white hover:border-slate-200"
+                              ? "text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-100/70 dark:bg-orange-500/10 border-blue-200 dark:border-orange-500/20 shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
                           }`}
                         >
                           <div className="flex items-center gap-3 w-full overflow-hidden">
                             <div
-                              className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? "bg-[#1d2d6a] text-white border-[#152355]" : "bg-slate-200 text-slate-400 border-slate-300"}`}
+                              className={`rounded-full p-1 border shadow-sm shrink-0 ${isActive ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white border-[#152355] dark:border-slate-800" : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-300 dark:border-slate-700"}`}
                             >
                               {isActive && isPlaying ? (
                                 <div className="bg-white w-1 h-2.5 animate-pulse rounded-full mx-auto" />
@@ -2137,7 +2137,7 @@ export function MasterConsolePanel({
                           </div>
                           <div className="flex items-center gap-2">
                             <span
-                              className={`text-[9px] font-bold shrink-0 ${isActive ? "text-[#1d2d6a]" : "text-slate-400 hidden group-hover/plitem:block"}`}
+                              className={`text-[9px] font-bold shrink-0 ${isActive ? "text-[#1d2d6a] dark:text-[#ee6f1f]" : "text-slate-400 dark:text-slate-500 hidden group-hover/plitem:block"}`}
                             >
                               {isActive ? "Active" : ""}
                             </span>
@@ -2146,7 +2146,7 @@ export function MasterConsolePanel({
                                 e.stopPropagation();
                                 removeFromPlaylist(i);
                               }}
-                              className="opacity-0 group-hover/plitem:opacity-100 p-1.5 text-red-500 hover:bg-red-100 hover:text-red-700 rounded transition-all"
+                              className="opacity-0 group-hover/plitem:opacity-100 p-1.5 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-300 rounded transition-all"
                               title="Hapus dari playlist"
                             >
                               <Trash2 size={14} />
@@ -2159,26 +2159,26 @@ export function MasterConsolePanel({
                 </>
               ) : (
                 <div className="space-y-1">
-                  <div className="px-3 py-1.5 mb-2 bg-slate-100 border border-slate-200 rounded-lg flex justify-between items-center">
+                  <div className="px-3 py-1.5 mb-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg flex justify-between items-center">
                     <span
-                      className="text-[9px] font-bold text-slate-500 truncate max-w-[200px]"
+                      className="text-[9px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[200px]"
                       title="/public/videos"
                     >
                       Dir: /public/videos
                     </span>
                   </div>
                   {videoList.length === 0 ? (
-                    <div className="py-8 text-center text-slate-400 text-[10px] font-semibold">
+                    <div className="py-8 text-center text-slate-400 dark:text-slate-600 text-[10px] font-semibold">
                       Video tidak ditemukan
                     </div>
                   ) : (
                     videoList.map((file, i) => (
                       <div
                         key={i}
-                        className="text-[11px] font-bold text-slate-600 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white border border-transparent hover:border-slate-200 cursor-pointer transition-all group/vitem bg-slate-50/50"
+                        className="text-[11px] font-bold text-slate-600 dark:text-slate-400 p-2.5 rounded-lg flex items-center justify-between gap-3 hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 cursor-pointer transition-all group/vitem bg-slate-50/50 dark:bg-slate-900/50"
                       >
                         <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="p-1.5 bg-slate-200 text-slate-400 rounded shrink-0 group-hover/vitem:bg-blue-100 group-hover/vitem:text-[#1d2d6a] transition-colors">
+                          <div className="p-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded shrink-0 group-hover/vitem:bg-blue-100 dark:group-hover/vitem:bg-orange-500/20 group-hover/vitem:text-[#1d2d6a] dark:group-hover/vitem:text-[#ee6f1f] transition-colors">
                             <Video size={12} />
                           </div>
                           <span className="truncate">{file}</span>
@@ -2188,7 +2188,7 @@ export function MasterConsolePanel({
                             e.stopPropagation();
                             addToPlaylist(file);
                           }}
-                          className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-[#1d2d6a] bg-blue-50 hover:bg-[#1d2d6a] hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
+                          className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-50 dark:bg-orange-500/10 hover:bg-[#1d2d6a] dark:hover:bg-[#ee6f1f] hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
                           title="Tambahkan ke Playlist"
                         >
                           <Plus size={12} />

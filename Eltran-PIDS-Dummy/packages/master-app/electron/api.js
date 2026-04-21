@@ -1256,26 +1256,36 @@ export async function startApiServer() {
   });
 
   const port = 3001;
-  httpServer
-    .listen(port, () => {
-      console.log(
-        `[PIDS-CORE] PostgreSQL API Gateway running on http://localhost:${port}`,
-      );
-    })
-    .on("error", (err) => {
-      if (err.code === "EADDRINUSE") {
-        console.error(`\x1b[31m[ERROR] Port ${port} is already in use!\x1b[0m`);
-        console.error(
-          `\x1b[33m[TIP] This usually happens because a previous 'npm run dev:all' is still running in the background.\x1b[0m`,
+  return new Promise((resolve, reject) => {
+    httpServer
+      .listen(port, () => {
+        console.log(
+          `[PIDS-CORE] PostgreSQL API Gateway running on http://localhost:${port}`,
         );
-        console.error(
-          `\x1b[33m[FIX] Run 'npm run stop:all' to kill background processes before restarting.\x1b[0m`,
-        );
-        process.exit(1);
-      } else {
-        console.error(`[ERROR] Server failed to start:`, err);
-      }
-    });
-
-  return httpServer;
+        resolve(httpServer);
+      })
+      .on("error", (err) => {
+        if (err.code === "EADDRINUSE") {
+          console.log(
+            `[PIDS-CORE] Port ${port} is already in use. Checking if it is our API...`,
+          );
+          fetch(`http://localhost:${port}/api/health`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (data && data.status === "ok") {
+                console.log(`[PIDS-CORE] API is already running and healthy.`);
+                resolve(null); // Signal that it's already running
+              } else {
+                reject(new Error(`Port ${port} is occupied by another process.`));
+              }
+            })
+            .catch(() => {
+              reject(new Error(`Port ${port} is occupied and not responding to health check.`));
+            });
+        } else {
+          console.error(`[ERROR] Server failed to start:`, err);
+          reject(err);
+        }
+      });
+  });
 }

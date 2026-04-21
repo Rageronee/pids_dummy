@@ -54,7 +54,7 @@ export function LoginScreen({
   };
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white font-sans">
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white dark:bg-[#020617] font-sans">
       <div
         className="absolute inset-0 z-0 scale-105"
         style={{
@@ -65,28 +65,28 @@ export function LoginScreen({
           filter: "blur(3px) brightness(1.1)",
         }}
       />
-      <div className="absolute inset-0 z-0 bg-white/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 z-0 bg-white/60 dark:bg-black/70 backdrop-blur-sm" />
 
       <div className="relative z-10 flex w-full items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="w-full max-w-[440px] rounded-[2rem] bg-white/95 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] flex flex-col items-center"
+          className="w-full max-w-[440px] rounded-[2rem] bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl p-10 py-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-black/[0.03] dark:ring-white/[0.05] flex flex-col items-center border border-white/20 dark:border-slate-800"
         >
           <div className="mb-10 flex flex-col items-center text-center">
             <div className="relative mb-5">
-              <div className="absolute inset-0 bg-white/40 blur-2xl rounded-full scale-150" />
+              <div className="absolute inset-0 bg-white/40 dark:bg-[#ee6f1f]/20 blur-2xl rounded-full scale-150" />
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
                 alt="KAI Logo"
                 className="relative h-16 drop-shadow-xl"
               />
             </div>
-            <h1 className="text-3xl leading-tight font-bold tracking-tight text-[#1d2d6a] drop-shadow-sm">
+            <h1 className="text-3xl leading-tight font-bold tracking-tight text-[#1d2d6a] dark:text-white drop-shadow-sm">
               {title}
             </h1>
-            <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] opacity-90">
+            <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] dark:text-slate-300 opacity-90">
               {subtitle}
             </p>
           </div>
@@ -101,7 +101,7 @@ export function LoginScreen({
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
                 disabled={isLoading}
                 autoComplete="username"
               />
@@ -113,14 +113,14 @@ export function LoginScreen({
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-b-[1.5px] border-slate-200 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
                 disabled={isLoading}
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-[10px] text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-0 top-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -133,7 +133,7 @@ export function LoginScreen({
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex w-full items-center gap-2 text-red-500 text-xs font-semibold pt-1"
+                  className="flex w-full items-center gap-2 text-red-500 dark:text-red-400 text-xs font-semibold pt-1"
                 >
                   <AlertCircle size={14} className="shrink-0" />
                   <span>{error}</span>
@@ -149,7 +149,7 @@ export function LoginScreen({
               {isLoading ? "Memproses..." : "Masuk Ke Sistem"}
             </button>
 
-            <p className="text-center w-full text-[15px] text-slate-400 font-medium mt-6">
+            <p className="text-center w-full text-[15px] text-slate-400 dark:text-slate-500 font-medium mt-6">
               Demo: operator / operator123
             </p>
           </form>
@@ -157,7 +157,7 @@ export function LoginScreen({
       </div>
 
       <div className="absolute bottom-6 w-full text-center z-10">
-        <p className="text-[10px] font-bold text-slate-500/70">
+        <p className="text-[10px] font-bold text-slate-500/70 dark:text-slate-600">
           © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
         </p>
       </div>

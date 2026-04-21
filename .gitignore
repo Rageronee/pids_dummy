@@ -76,6 +76,8 @@ components.txt
 
 # AI Tool Configs
 .qwen/
+.serena/
+GEMINI.md
 
 # Environment
 .env

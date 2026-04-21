@@ -384,24 +384,24 @@ export default function SchedulesPage({ token }: { token: string }) {
       />
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex-1">
-          <h2 className="text-3xl font-black text-[#1d2d6a] tracking-tight mb-2">
+          <h2 className="text-3xl font-black text-[#1d2d6a] dark:text-white tracking-tight mb-2">
             Penjadwalan Kereta
           </h2>
-          <p className="text-slate-500 text-sm font-medium">
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
             Monitoring & Manajemen {total} Jadwal Aktif
           </p>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
             <Activity
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
               size={18}
             />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari KA / Rute..."
-              className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-6 py-3 text-sm font-semibold focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-12 pr-6 py-3 text-sm font-semibold text-[#1d2d6a] dark:text-white focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
             />
           </div>
           <button
@@ -409,7 +409,7 @@ export default function SchedulesPage({ token }: { token: string }) {
               if (showForm) setEditingId(null);
               setShowForm(!showForm);
             }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 text-slate-500 border border-slate-200" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
+            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
           >
             {showForm ? (
               <>
@@ -425,7 +425,7 @@ export default function SchedulesPage({ token }: { token: string }) {
           </button>
           <button
             onClick={() => fetchSchedules(false)}
-            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1d2d6a] hover:border-[#1d2d6a] transition-all"
+            className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-[#1d2d6a] dark:hover:text-white hover:border-[#1d2d6a] dark:hover:border-slate-700 transition-all"
           >
             <RefreshCcw size={18} />
           </button>
@@ -438,10 +438,10 @@ export default function SchedulesPage({ token }: { token: string }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden transition-colors"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-[#1d2d6a] font-bold text-lg flex items-center gap-2">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <h3 className="text-[#1d2d6a] dark:text-white font-bold text-lg flex items-center gap-2">
                 {editingId ? <Clock size={20} className="text-[#ee6f1f]" /> : <Plus size={20} className="text-[#ee6f1f]" />}
                 {editingId ? "Update Jadwal Kereta" : "Tambah Jadwal Kereta"}
               </h3>
@@ -449,12 +449,12 @@ export default function SchedulesPage({ token }: { token: string }) {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
                     Pilih Armada
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Nama Kereta
                       </label>
                       <select
@@ -469,18 +469,18 @@ export default function SchedulesPage({ token }: { token: string }) {
                             train_number: t?.train_number || t?.ka_number || "",
                           });
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                       >
-                        <option value="">Pilih Kereta</option>
+                        <option value="" className="dark:bg-slate-900">Pilih Kereta</option>
                         {trainOptions.map((t) => (
-                          <option key={t.name} value={t.name}>
+                          <option key={t.name} value={t.name} className="dark:bg-slate-900">
                             {t.name}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Kode KA
                       </label>
                       <input
@@ -492,23 +492,23 @@ export default function SchedulesPage({ token }: { token: string }) {
                           })
                         }
                         placeholder="AUTOMATIC"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
                     Waktu & Media
                   </h4>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                       Media / Lampiran (URL)
                     </label>
                     <div className="relative">
                       <Paperclip
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600"
                         size={14}
                       />
                       <input
@@ -517,7 +517,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                           setForm({ ...form, media: e.target.value })
                         }
                         placeholder="URL Gambar/Dokumen"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                       />
                     </div>
                   </div>
@@ -527,16 +527,16 @@ export default function SchedulesPage({ token }: { token: string }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                    <h4 className="font-semibold text-[#1d2d6a] text-sm uppercase tracking-wider">
+                    <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-wider">
                       Keberangkatan
                     </h4>
-                    <span className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded">
+                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded">
                       Departure
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Stasiun
                       </label>
                       <select
@@ -551,28 +551,28 @@ export default function SchedulesPage({ token }: { token: string }) {
                             dep_city_code: s?.kode_kota || "",
                           });
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                       >
-                        <option value="">Pilih Stasiun</option>
+                        <option value="" className="dark:bg-slate-900">Pilih Stasiun</option>
                         {stationOptions.map((s) => (
-                          <option key={s.id} value={s.id}>
+                          <option key={s.id} value={s.id} className="dark:bg-slate-900">
                             {s.name}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Kode Kota
                       </label>
                       <input
                         value={form.dep_city_code}
                         readOnly
-                        className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm opacity-70 cursor-not-allowed"
+                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-slate-300 font-semibold text-sm opacity-70 cursor-not-allowed"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] p-4 rounded-2xl border border-slate-100">
+                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1">
                         <Clock size={10} /> Penjadwalan
@@ -583,11 +583,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_sched: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
                         <Activity size={10} /> Realisasi
                       </label>
                       <input
@@ -596,11 +596,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_real: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Selisih Waktu (Mnt)
                       </label>
                       <input
@@ -609,11 +609,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_diff: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Status
                       </label>
                       <select
@@ -621,11 +621,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_status: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       >
-                        <option>Tepat Waktu</option>
-                        <option>Terlambat</option>
-                        <option>Dibatalkan</option>
+                        <option className="dark:bg-slate-900">Tepat Waktu</option>
+                        <option className="dark:bg-slate-900">Terlambat</option>
+                        <option className="dark:bg-slate-900">Dibatalkan</option>
                       </select>
                     </div>
                   </div>
@@ -633,16 +633,16 @@ export default function SchedulesPage({ token }: { token: string }) {
 
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                    <h4 className="font-semibold text-[#1d2d6a] text-sm uppercase tracking-wider">
+                    <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-wider">
                       Kedatangan
                     </h4>
-                    <span className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded">
+                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded">
                       Arrival
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Stasiun
                       </label>
                       <select
@@ -657,28 +657,28 @@ export default function SchedulesPage({ token }: { token: string }) {
                             arr_city_code: s?.kode_kota || "",
                           });
                         }}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                       >
-                        <option value="">Pilih Stasiun</option>
+                        <option value="" className="dark:bg-slate-900">Pilih Stasiun</option>
                         {stationOptions.map((s) => (
-                          <option key={s.id} value={s.id}>
+                          <option key={s.id} value={s.id} className="dark:bg-slate-900">
                             {s.name}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Kode Kota
                       </label>
                       <input
                         value={form.arr_city_code}
                         readOnly
-                        className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm opacity-70 cursor-not-allowed"
+                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-slate-300 font-semibold text-sm opacity-70 cursor-not-allowed"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] p-4 rounded-2xl border border-slate-100">
+                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1">
                         <Clock size={10} /> Penjadwalan
@@ -689,11 +689,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_sched: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
                         <Activity size={10} /> Realisasi
                       </label>
                       <input
@@ -702,11 +702,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_real: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Selisih Waktu (Mnt)
                       </label>
                       <input
@@ -715,11 +715,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_diff: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Status
                       </label>
                       <select
@@ -727,19 +727,19 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_status: e.target.value })
                         }
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1d2d6a] font-semibold text-sm"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       >
-                        <option>Tepat Waktu</option>
-                        <option>Terlambat</option>
-                        <option>Dibatalkan</option>
+                        <option className="dark:bg-slate-900">Tepat Waktu</option>
+                        <option className="dark:bg-slate-900">Terlambat</option>
+                        <option className="dark:bg-slate-900">Dibatalkan</option>
                       </select>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                <h4 className="font-semibold text-[#1d2d6a] text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800 transition-colors">
+                <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
                   Catatan
                 </h4>
                 <textarea
@@ -747,14 +747,14 @@ export default function SchedulesPage({ token }: { token: string }) {
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="Masukkan catatan tambahan..."
                   rows={3}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-[#1d2d6a] font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                 />
               </div>
             </div>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="h-12 px-10 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 text-white font-semibold rounded-2xl text-sm transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]"
+              className="h-12 px-10 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-semibold rounded-2xl text-sm transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]"
             >
               {saving ? (
                 "Menyimpan..."

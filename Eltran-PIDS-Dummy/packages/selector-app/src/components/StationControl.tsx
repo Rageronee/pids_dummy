@@ -33,21 +33,21 @@ const StationControl = React.memo(function StationControl({
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight mb-6 flex items-center gap-3">
+      <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-6 flex items-center gap-3 transition-colors">
         <MapPin className="text-[#ee6f1f]" size={24} /> Station Control
       </h2>
       <div className="flex gap-6 h-[400px]">
-        <div className="flex-[2] bg-white rounded-3xl border border-slate-200 flex flex-col p-8 relative overflow-hidden group">
+        <div className="flex-[2] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col p-8 relative overflow-hidden group transition-colors">
           <div className="flex justify-between items-start mb-6 relative z-10">
-            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
               Current Station
             </span>
-            <div className="bg-[#1d2d6a]/5 text-[#1d2d6a] rounded-xl p-3 shadow-sm">
+            <div className="bg-[#1d2d6a]/5 dark:bg-white/5 text-[#1d2d6a] dark:text-slate-300 rounded-xl p-3 shadow-sm">
               <MapPin size={24} />
             </div>
           </div>
           <div className="flex flex-col flex-1 justify-center relative z-10 pl-2">
-            <p className="text-[11px] font-bold text-slate-400 mb-2">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mb-2">
               Departing From
             </p>
             <div className="h-24">
@@ -57,7 +57,7 @@ const StationControl = React.memo(function StationControl({
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -10, opacity: 0 }}
-                  className="text-6xl font-bold text-[#1d2d6a] tracking-tighter"
+                  className="text-6xl font-bold text-[#1d2d6a] dark:text-white tracking-tighter"
                 >
                   {currentStation}
                 </motion.h3>
@@ -86,8 +86,8 @@ const StationControl = React.memo(function StationControl({
           </div>
         </div>
 
-        <div className="flex-1 bg-white rounded-3xl border border-slate-200 flex flex-col items-center justify-center p-8 relative overflow-hidden group">
-          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 mb-4">
+        <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-8 relative overflow-hidden group transition-colors">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 mb-4">
             Upcoming Stop
           </span>
           <div className="flex flex-col items-center justify-center relative z-10">
@@ -98,14 +98,14 @@ const StationControl = React.memo(function StationControl({
                   initial={{ y: 5, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -5, opacity: 0 }}
-                  className="text-4xl font-bold text-[#1d2d6a] tracking-tighter truncate text-center"
+                  className="text-4xl font-bold text-[#1d2d6a] dark:text-white tracking-tighter truncate text-center"
                   title={nextStation}
                 >
                   {nextStation}
                 </motion.h4>
               </AnimatePresence>
             </div>
-            <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl text-slate-500 font-bold text-sm border border-slate-200 w-max">
+            <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400 font-bold text-sm border border-slate-200 dark:border-slate-700 w-max transition-colors">
               <Clock size={16} />
               <span>Status: {data?.status || "STANDBY"}</span>
             </div>

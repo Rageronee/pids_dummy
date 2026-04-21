@@ -60,16 +60,16 @@ const ServiceConfig = React.memo(function ServiceConfig({
     );
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm flex flex-col gap-10 h-full">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-sm dark:shadow-none flex flex-col gap-10 h-full transition-colors">
       <div className="flex flex-col gap-3">
-        <h2 className="text-3xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-4">
+        <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight flex items-center gap-4">
           <Settings
             className="text-[#ee6f1f] animate-[spin_10s_linear_infinite]"
             size={36}
           />{" "}
           Service Configuration
         </h2>
-        <p className="text-sm font-bold text-slate-400">
+        <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
           Configure train service route and carriage number for the master
           display
         </p>
@@ -77,13 +77,13 @@ const ServiceConfig = React.memo(function ServiceConfig({
 
       <div className="flex flex-col gap-10 flex-1">
         <div className="flex flex-col gap-5">
-          <label className="text-sm font-bold text-[#1d2d6a]/60 pl-1 uppercase tracking-[0.2em]">
+          <label className="text-sm font-bold text-[#1d2d6a]/60 dark:text-slate-400 pl-1 uppercase tracking-[0.2em]">
             Select Route / Train Name
           </label>
           <div className="flex gap-6">
             <div className="relative flex-1" ref={serviceDropdownRef}>
               <div
-                className={`w-full bg-slate-50 border-4 rounded-[2rem] px-8 py-6 shadow-sm transition-all cursor-pointer flex items-center group relative overflow-hidden ${serviceDropdownOpen ? "border-[#ee6f1f] bg-white ring-8 ring-orange-500/10" : "border-slate-100 hover:border-[#1d2d6a]/20 hover:bg-white hover:shadow-md"}`}
+                className={`w-full bg-slate-50 dark:bg-slate-950 border-4 rounded-[2rem] px-8 py-6 shadow-sm transition-all cursor-pointer flex items-center group relative overflow-hidden ${serviceDropdownOpen ? "border-[#ee6f1f] bg-white dark:bg-slate-900 ring-8 ring-orange-500/10" : "border-slate-100 dark:border-slate-800 hover:border-[#1d2d6a]/20 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md"}`}
                 onClick={() => setServiceDropdownOpen(!serviceDropdownOpen)}
               >
                 {!serviceDropdownOpen && (
@@ -103,19 +103,19 @@ const ServiceConfig = React.memo(function ServiceConfig({
                     if (!serviceDropdownOpen) setServiceDropdownOpen(true);
                   }}
                   onFocus={() => setServiceDropdownOpen(true)}
-                  className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-2xl font-bold text-[#1d2d6a] placeholder-[#1d2d6a]/30 p-0 uppercase"
+                  className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-2xl font-bold text-[#1d2d6a] dark:text-white placeholder-[#1d2d6a]/30 dark:placeholder-white/20 p-0 uppercase"
                 />
                 <div
-                  className={`p-3 rounded-2xl transition-all ${serviceDropdownOpen ? "bg-[#ee6f1f] text-white rotate-180" : "bg-slate-100 text-[#1d2d6a] group-hover:bg-[#1d2d6a] group-hover:text-white"}`}
+                  className={`p-3 rounded-2xl transition-all ${serviceDropdownOpen ? "bg-[#ee6f1f] text-white rotate-180" : "bg-slate-100 dark:bg-slate-800 text-[#1d2d6a] dark:text-slate-300 group-hover:bg-[#1d2d6a] dark:group-hover:bg-slate-700 group-hover:text-white"}`}
                 >
                   <ChevronDown size={28} strokeWidth={3} />
                 </div>
               </div>
 
               {serviceDropdownOpen && (
-                <div className="absolute z-[100] top-full left-0 right-0 mt-3 bg-white border-4 border-[#1d2d6a]/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-h-[350px] overflow-y-auto custom-scrollbar overflow-hidden">
+                <div className="absolute z-[100] top-full left-0 right-0 mt-3 bg-white dark:bg-slate-900 border-4 border-[#1d2d6a]/10 dark:border-slate-700 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-h-[350px] overflow-y-auto custom-scrollbar overflow-hidden">
                   {filtered.length === 0 ? (
-                    <div className="px-8 py-6 text-lg font-bold text-slate-400 text-center">
+                    <div className="px-8 py-6 text-lg font-bold text-slate-400 dark:text-slate-500 text-center">
                       Tidak ada layanan ditemukan
                     </div>
                   ) : (
@@ -127,7 +127,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
                           setTrainSearchQuery("");
                           setServiceDropdownOpen(false);
                         }}
-                        className={`px-8 py-6 text-xl font-bold cursor-pointer transition-all flex items-center justify-between border-b border-slate-50 last:border-none ${trainNameIndex === t.idx ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] hover:bg-slate-50"}`}
+                        className={`px-8 py-6 text-xl font-bold cursor-pointer transition-all flex items-center justify-between border-b border-slate-50 dark:border-slate-800 last:border-none ${trainNameIndex === t.idx ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                       >
                         {t.name}
                         {trainNameIndex === t.idx && (
@@ -141,7 +141,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
             </div>
             <button
               onClick={handleSetName}
-              className="h-auto px-10 bg-[#1d2d6a] hover:bg-[#152353] text-white rounded-[2rem] font-bold text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-blue-900"
+              className="h-auto px-10 bg-[#1d2d6a] dark:bg-slate-800 hover:bg-[#152353] dark:hover:bg-slate-700 text-white rounded-[2rem] font-bold text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-blue-900 dark:border-slate-950"
             >
               Apply Route
             </button>
@@ -149,7 +149,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
         </div>
 
         <div className="flex flex-col gap-5 mt-auto">
-          <label className="text-sm font-bold text-[#1d2d6a]/60 pl-1 uppercase tracking-[0.2em]">
+          <label className="text-sm font-bold text-[#1d2d6a]/60 dark:text-slate-400 pl-1 uppercase tracking-[0.2em]">
             Select Carriage Number
           </label>
           <div className="flex gap-6">
@@ -157,23 +157,23 @@ const ServiceConfig = React.memo(function ServiceConfig({
               <select
                 value={selectedGerbong}
                 onChange={(e) => setSelectedGerbong(parseInt(e.target.value))}
-                className="w-full appearance-none bg-slate-50 border-4 border-slate-100 rounded-[2rem] px-8 py-6 text-2xl font-bold text-[#1d2d6a] shadow-sm hover:border-[#1d2d6a]/20 focus:border-[#ee6f1f] focus:ring-8 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-20 uppercase"
+                className="w-full appearance-none bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-[2rem] px-8 py-6 text-2xl font-bold text-[#1d2d6a] dark:text-white shadow-sm hover:border-[#1d2d6a]/20 dark:hover:border-slate-700 focus:border-[#ee6f1f] focus:ring-8 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-20 uppercase"
               >
                 {[...Array(maxWagons)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
+                  <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-900">
                     Gerbong {i + 1}
                   </option>
                 ))}
               </select>
               <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none transition-all">
-                <div className="p-3 bg-slate-100 rounded-2xl text-[#1d2d6a] group-hover:bg-[#1d2d6a] group-hover:text-white transition-colors">
+                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-[#1d2d6a] dark:text-slate-300 group-hover:bg-[#1d2d6a] dark:group-hover:bg-slate-700 group-hover:text-white transition-colors">
                   <ChevronDown size={28} strokeWidth={3} />
                 </div>
               </div>
             </div>
             <button
               onClick={handleSetNumber}
-              className="h-auto px-10 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-[2rem] font-bold text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-orange-700"
+              className="h-auto px-10 bg-[#ee6f1f] hover:bg-[#d86116] text-white rounded-[2rem] font-bold text-xl shadow-lg transition-all active:scale-95 shrink-0 uppercase tracking-tight border-b-4 border-orange-700 dark:border-orange-900"
             >
               Set Unit
             </button>

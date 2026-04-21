@@ -117,14 +117,14 @@ const StatCard: React.FC<{
   trend?: string;
 }> = ({ title, value, status, icon, trend }) => {
   const statusColors = {
-    success: "text-green-600 bg-green-50",
-    warning: "text-amber-600 bg-amber-50",
-    error: "text-rose-600 bg-rose-50",
-    info: "text-blue-600 bg-blue-50",
+    success: "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30",
+    warning: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30",
+    error: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30",
+    info: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30",
   };
 
   return (
-    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md group relative overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-md group relative overflow-hidden transition-colors">
       <div className="flex justify-between items-start mb-4">
         <div
           className={`p-3 rounded-2xl transition-colors duration-300 ${statusColors[status]}`}
@@ -140,10 +140,10 @@ const StatCard: React.FC<{
         )}
       </div>
       <div>
-        <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
           {title}
         </p>
-        <p className="text-3xl font-semibold tracking-tight text-slate-900">
+        <p className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
           {value}
         </p>
       </div>
@@ -158,13 +158,13 @@ const LogItem: React.FC<{
   type: "info" | "success" | "warning";
 }> = ({ time, tag, msg, type }) => {
   const typeStyles = {
-    info: "text-blue-600",
-    success: "text-green-600",
-    warning: "text-amber-600",
+    info: "text-blue-600 dark:text-blue-400",
+    success: "text-green-600 dark:text-green-400",
+    warning: "text-amber-600 dark:text-amber-400",
   };
 
   return (
-    <div className="text-[11px] leading-relaxed group hover:bg-slate-50 p-1 rounded-lg transition-colors">
+    <div className="text-[11px] leading-relaxed group hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded-lg transition-colors">
       <div className="flex gap-3 items-center">
         <span className="text-slate-400 tabular-nums shrink-0 font-medium">
           {time}
@@ -174,7 +174,7 @@ const LogItem: React.FC<{
         >
           {tag}
         </span>
-        <span className="text-slate-600 font-medium truncate">{msg}</span>
+        <span className="text-slate-600 dark:text-slate-300 font-medium truncate">{msg}</span>
       </div>
     </div>
   );
