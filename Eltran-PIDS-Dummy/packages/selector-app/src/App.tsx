@@ -564,7 +564,7 @@ function App() {
                   <div className="w-[48px] flex justify-center relative z-10">
                     <div className="w-[24px] h-[24px] bg-[#cbd5e1] dark:bg-slate-700 rounded-full border-[6px] border-white dark:border-slate-900 shadow-sm" />
                   </div>
-                  <div className="flex-1 bg-[white] dark:bg-slate-800 rounded-3xl p-5 border-[2px] border-slate-100 dark:border-slate-700 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                  <div className="flex-1 bg-white dark:bg-slate-800 rounded-3xl p-5 border-[2px] border-slate-100 dark:border-slate-700 flex justify-between items-center relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                     <div className="flex flex-col relative z-10 text-slate-400">
                       <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
                         Next Station
@@ -609,22 +609,22 @@ function App() {
                           className="flex items-center gap-4 relative z-10 w-full mb-3 shrink-0"
                         >
                           <div className="w-[48px] flex justify-center relative z-10">
-                            <div className="w-[20px] h-[20px] bg-slate-300 rounded-full border-[5px] border-white shadow-sm mt-3" />
+                            <div className="w-[20px] h-[20px] bg-slate-300 dark:bg-slate-700 rounded-full border-[5px] border-white dark:border-slate-900 shadow-sm mt-3" />
                           </div>
-                          <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 hover:scale-[1.01] hover:shadow-md">
+                          <div className="flex-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl p-3 shadow-sm flex justify-between items-center transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:scale-[1.01] hover:shadow-md">
                             <div className="flex flex-col">
-                              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">
+                              <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">
                                 UPCOMING STATION
                               </span>
-                              <span className="text-lg font-semibold text-slate-700 uppercase tracking-tight">
+                              <span className="text-lg font-semibold text-slate-700 dark:text-white uppercase tracking-tight">
                                 {upcomingStationName}
                               </span>
                             </div>
                             <div className="text-right">
-                              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">
+                              <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">
                                 ETA
                               </span>
-                              <span className="text-xl font-semibold text-slate-600">
+                              <span className="text-xl font-semibold text-slate-600 dark:text-slate-400">
                                 {getScheduledTime(upcomingStationName) ||
                                   new Date(
                                     currentTime.getTime() + 15 * i * 60000,
@@ -654,7 +654,7 @@ function App() {
             >
               <Settings
                 size={32}
-                className="text-[#1d2d6a] dark:text-white group-hover:text-[#1d2d6a] dark:group-hover:text-white group-hover:rotate-90 transition-all duration-500"
+                className="text-[#1d2d6a] dark:text-white group-hover:rotate-90 transition-all duration-500"
               />
             </button>
 

@@ -87,7 +87,15 @@ body {
 
 /* For Firefox */
 * {
-    @apply scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent;
+    scrollbar-width: thin;
+}
+
+.dark * {
+    scrollbar-color: #1e293b transparent; /* slate-800 */
+}
+
+* {
+    scrollbar-color: #e2e8f0 transparent; /* slate-200 */
 }
 
 /* Fleet Map Markers */
