@@ -906,7 +906,7 @@ function App() {
               <li key={item.id}>
                 <button
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-5 px-8 py-5 rounded-2xl transition-all duration-300 font-bold text-lg ${activeTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+                  className={`w-full flex items-center gap-5 px-8 py-5 rounded-2xl transition-all duration-300 font-bold text-lg ${activeTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]" : "text-white/60 dark:text-slate-500 hover:text-white dark:hover:text-slate-300 hover:bg-white/5 dark:hover:bg-white/5"}`}
                 >
                   <item.icon size={28} strokeWidth={2.5} />
                   <span>{item.label}</span>
@@ -932,7 +932,8 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+        <header className="h-20 bg-white dark:bg-[#020617] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+
           <div className="flex items-center gap-5">
             <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
               {(() => {
@@ -962,9 +963,9 @@ function App() {
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">
                   Active Unit
                 </div>
-                <div className="text-base font-bold text-[#1d2d6a] tracking-tight">
+                <div className="text-base font-bold text-[#1d2d6a] dark:text-white tracking-tight">
                   {activeTrainName}{" "}
-                  <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 rounded font-mono text-md border border-orange-100">
+                  <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 rounded font-mono text-md border border-orange-100 dark:border-orange-900/30">
                     KA {activeTrainNumber?.split(" Gerbong")[0]}
                   </span>
                 </div>
@@ -972,8 +973,8 @@ function App() {
             </div>
 
             {/* Clock Style */}
-            <div className="flex items-center gap-3 text-[#1d2d6a]">
-              <div className="bg-slate-50 p-2 rounded-xl text-slate-400 border border-slate-100">
+            <div className="flex items-center gap-3 text-[#1d2d6a] dark:text-white">
+              <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded-xl text-slate-400 border border-slate-100 dark:border-slate-700">
                 <Clock size={18} />
               </div>
               <span className="text-3xl font-bold font-mono tracking-tighter opacity-90">

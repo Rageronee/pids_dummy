@@ -1257,13 +1257,13 @@ export function MasterConsolePanel({
   return (
     <div className="flex flex-col gap-6 w-full max-w-full pb-32">
       {/* INFO RANGKAIAN & TELEMETRI HEADER */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col xl:flex-row">
-        <div className="p-8 xl:w-[38%] bg-white border-b xl:border-b-0 xl:border-r border-slate-200 flex flex-col">
-          <div className="flex items-center gap-3 mb-6 shrink-0">
+      <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden flex flex-col xl:flex-row">
+        <div className="p-8 xl:w-[38%] bg-white dark:bg-[#020617] border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800 flex flex-col">
+          <div className="flex items-center gap-3 mb-6 shrink-0 text-[#1d2d6a] dark:text-white">
             <div className="text-[#ee6f1f]">
               <Train size={24} />
             </div>
-            <h3 className="font-bold text-[#1d2d6a] text-xs uppercase tracking-wider">
+            <h3 className="font-bold text-xs uppercase tracking-wider">
               Status Perjalanan
             </h3>
           </div>
@@ -1297,7 +1297,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* Box 2: Navigasi & Tujuan (Bento White) */}
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-6 flex-1">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-6 flex-1">
               {/* Posisi Terkini */}
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-xl border border-slate-200 flex items-center justify-center shadow-sm text-[#1d2d6a]">
@@ -1350,7 +1350,7 @@ export function MasterConsolePanel({
           </div>
         </div>
 
-        <div className="p-8 xl:w-[62%] bg-white flex flex-col">
+        <div className="p-8 xl:w-[62%] bg-white dark:bg-[#020617] flex flex-col">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div className="flex items-center gap-3">
               <div className="text-[#ee6f1f]">
@@ -1421,7 +1421,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* Unified Telemetry Bento Container */}
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1 relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1 relative overflow-hidden">
               {/* Longitude */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] flex items-center gap-1.5">
@@ -1516,14 +1516,13 @@ export function MasterConsolePanel({
         </div>
       </div>
 
-      {/* 1. KONFIGURASI ASET & JARINGAN */}
       <SectionAccordion
         title="1. Konfigurasi Aset & Jaringan"
         icon={Settings}
         defaultOpen={true}
         summary={`${jumlahKereta} Kereta Tersambung • IP Global: 192.168.1.48`}
       >
-        <div className="bg-white p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-6">
+        <div className="bg-white dark:bg-slate-900 p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-6">
           {/* Header Controls: Global IP & Controls */}
           <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
             {/* Global IP & Settings */}

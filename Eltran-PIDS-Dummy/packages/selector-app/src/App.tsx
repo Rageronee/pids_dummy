@@ -385,27 +385,27 @@ function App() {
 
   return (
     <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-black text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
-      <header className="h-[90px] bg-[#1d2d6a] dark:bg-[#020617] text-white flex items-center px-6 shadow-md shrink-0 justify-between">
+      <header className="h-[90px] bg-white dark:bg-[#020617] text-[#1d2d6a] dark:text-white flex items-center px-6 shadow-sm dark:shadow-none border-b border-slate-200 dark:border-slate-800 shrink-0 justify-between">
         <div className="flex items-center gap-6">
           <button
             onClick={() => setShowServiceModal(true)}
             className="flex items-center gap-4 text-left group transition-all active:scale-95"
           >
-            <div className="w-[56px] h-[56px] bg-white rounded-[14px] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
-              <Train className="text-[#1d2d6a]" size={32} />
+            <div className="w-[56px] h-[56px] bg-slate-50 dark:bg-white/10 rounded-[14px] flex items-center justify-center shadow-sm border border-slate-200 dark:border-white/10 group-hover:scale-110 transition-transform duration-500">
+              <Train className="text-[#1d2d6a] dark:text-blue-400" size={32} />
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-blue-200/80 tracking-[0.25em] uppercase">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-blue-200/80 tracking-[0.25em] uppercase">
                   Service Config
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold uppercase tracking-tight group-hover:text-blue-100 transition-colors truncate">
+                <h1 className="text-2xl font-bold uppercase tracking-tight group-hover:text-[#ee6f1f] dark:group-hover:text-blue-100 transition-colors truncate">
                   {masterSyncedServiceName || "NOT SET"}
                 </h1>
                 <ChevronRight
-                  className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all"
+                  className="text-slate-300 dark:text-white/40 group-hover:text-[#1d2d6a] dark:group-hover:text-white group-hover:translate-x-1 transition-all"
                   size={24}
                 />
               </div>
@@ -419,21 +419,21 @@ function App() {
                 className={`flex items-center gap-4 text-left group transition-all active:scale-95 ${kaDropdownOpen ? "opacity-90" : ""}`}
               >
                 <div
-                  className={`w-[56px] h-[56px] rounded-[14px] flex items-center justify-center shadow-lg transition-all duration-500 ${kaDropdownOpen ? "bg-[#ee6f1f] scale-110" : "bg-white/10 group-hover:bg-white/20"}`}
+                  className={`w-[56px] h-[56px] rounded-[14px] flex items-center justify-center shadow-sm transition-all duration-500 ${kaDropdownOpen ? "bg-[#ee6f1f] text-white scale-110" : "bg-slate-50 dark:bg-white/10 border border-slate-200 dark:border-white/10 group-hover:bg-slate-100 dark:group-hover:bg-white/20"}`}
                 >
                   <Route
-                    className={`${kaDropdownOpen ? "text-white" : "text-blue-200"}`}
+                    className={`${kaDropdownOpen ? "text-white" : "text-[#1d2d6a] dark:text-blue-200"}`}
                     size={32}
                   />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-blue-200/60 tracking-[0.25em] uppercase">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-blue-200/60 tracking-[0.25em] uppercase">
                       Select Direction
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-white uppercase tracking-tight truncate">
+                    <span className="text-2xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-tight truncate">
                       {availableDirections.length > 0
                         ? formatDirLabel(
                             availableDirections.find(
@@ -445,7 +445,7 @@ function App() {
                     <ChevronDown
                       size={24}
                       strokeWidth={2.5}
-                      className={`text-white/40 group-hover:text-white transition-transform ${kaDropdownOpen ? "rotate-180 text-[#ee6f1f]" : ""}`}
+                      className={`text-slate-300 dark:text-white/40 group-hover:text-[#1d2d6a] dark:group-hover:text-white transition-transform ${kaDropdownOpen ? "rotate-180 text-[#ee6f1f]" : ""}`}
                     />
                   </div>
                 </div>
@@ -534,18 +534,18 @@ function App() {
 
       <div className="flex gap-4 p-4 flex-1 min-h-0">
         <div className="flex-[0.65] flex flex-col gap-6">
-          <div className="bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] rounded-[24px] shadow-sm p-6 border border-slate-200 flex flex-col">
-            <div className="flex items-center gap-3 text-[#ffffff] font-bold text-xl tracking-widest uppercase mb-3">
+          <div className="bg-white dark:bg-gradient-to-r dark:from-[#1d2d6a] dark:to-[#2a3f8c] rounded-[24px] shadow-sm p-6 border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
+            <div className="flex items-center gap-3 text-[#1d2d6a] dark:text-white font-bold text-xl tracking-widest uppercase mb-3">
               <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT
               POSITION
             </div>
             <div className="flex items-center gap-6">
               <Train
-                className="text-white/100 shrink-0"
+                className="text-[#1d2d6a] dark:text-white/100 shrink-0"
                 size={64}
                 strokeWidth={1.5}
               />
-              <h2 className="text-5xl font-bold text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">
+              <h2 className="text-5xl font-bold text-[#1d2d6a] dark:text-white tracking-tight uppercase leading-[1.1] line-clamp-2 break-words">
                 {currentStation}
               </h2>
             </div>
