@@ -1,6 +1,6 @@
 /** /command-center-app/src/pages/DashboardPage.tsx — untuk mengubah: komponen PIDS; fungsi utama: DashboardPage */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Activity,
   MapPin,
@@ -11,31 +11,55 @@ import {
   Zap,
   Navigation2,
   Cloud,
+  ArrowRight,
 } from "lucide-react";
 import MapComponent from "../components/MapComponent";
+import { usePidsData } from "../hooks/usePidsData";
 
 import { API } from "../config";
 
 const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
   setPage,
 }) => {
+  const { data: pidsState } = usePidsData();
   const [schedules, setSchedules] = useState<any[]>([]);
+  const [stations, setStations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [focusLocation, setFocusLocation] = useState<[number, number] | null>(null);
 
-  // Simulated live train data for the map
-  const [liveTrains] = useState<any[]>([
-    { id: "KA123", name: "ARGO WILIS", location: [106.8272, -6.1751], status: "Normal", speed: 85, eta: "10:30" },
-    { id: "KA456", name: "MALABAR", location: [107.6098, -6.9175], status: "Delay", speed: 45, eta: "11:15" },
-    { id: "KA789", name: "PARAHYANGAN", location: [107.1234, -6.4567], status: "Normal", speed: 95, eta: "10:45" },
-  ]);
+  // Helper to robustly extract station name from string, JSON string, or object
+  const getStationName = (s: any): string => {
+    if (!s || s === "-") return "-";
+    if (typeof s === "string") {
+      const trimmed = s.trim();
+      try {
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+          const parsed = JSON.parse(trimmed);
+          return parsed.name || parsed.NAME || parsed.station_name || parsed.station || s;
+        }
+      } catch (e) {}
+      return s;
+    }
+    if (typeof s === "object") {
+      return s.name || s.NAME || s.station_name || s.station || s.id || "-";
+    }
+    return String(s);
+  };
 
   const fetchData = async () => {
     try {
-      const schedRes = await fetch(`${API}/api/schedules`);
+      const [schedRes, stnRes] = await Promise.all([
+        fetch(`${API}/api/schedules`),
+        fetch(`${API}/api/stations`)
+      ]);
       const schedData = await schedRes.json();
+      const stnData = await stnRes.json();
 
       if (schedData.success) {
-        setSchedules(schedData.schedules.slice(0, 8));
+        setSchedules(schedData.schedules);
+      }
+      if (stnData.success) {
+        setStations(stnData.stations);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -46,9 +70,71 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Filter to show only the currently active train being simulated
+  const activeFleet = useMemo(() => {
+    if (!pidsState.serviceName || pidsState.serviceName === "Belum Dikonfigurasi") {
+      return [];
+    }
+
+    const currentServiceName = pidsState.serviceName.toUpperCase();
+    const currentTrainNumber = (pidsState.trainNumber || "").toUpperCase().replace("KA ", "").trim();
+
+    // Smart matching: filter schedules to find the one matching both service name and train number
+    const activeSched = schedules.find(s => {
+      const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
+      const sNum = (s.display_train_number || s.train_number || s.ka_number || "").toUpperCase().trim();
+
+      const nameMatch = sName === currentServiceName || currentServiceName.includes(sName) || sName.includes(currentServiceName);
+      const numMatch = currentTrainNumber && sNum ? (sNum === currentTrainNumber || currentTrainNumber.includes(sNum) || sNum.includes(currentTrainNumber)) : true;
+
+      return nameMatch && numMatch;
+    }) || schedules.find(s => {
+      // Fallback to name only if no specific number match
+      const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
+      return sName === currentServiceName || currentServiceName.includes(sName) || sName.includes(currentServiceName);
+    });
+
+    const currentStnName = getStationName(pidsState.currentStation).toUpperCase();
+    const stnInfo = stations.find(s => s.name.toUpperCase() === currentStnName || s.id.toUpperCase() === currentStnName);
+    const location: [number, number] = stnInfo ? [Number(stnInfo.longitude), Number(stnInfo.latitude)] : [106.8272, -6.1751];
+
+    let progress = 0;
+    const totalStations = pidsState.stations?.length || 0;
+    if (totalStations > 1) {
+      const normalizedCurrent = getStationName(pidsState.currentStation).toUpperCase();
+      const currentIndex = pidsState.stations.findIndex(s => getStationName(s).toUpperCase() === normalizedCurrent);
+      if (currentIndex !== -1) {
+        progress = Math.round((currentIndex / (totalStations - 1)) * 100);
+      }
+    }
+
+    const origin = getStationName(pidsState.stations?.[0]) || activeSched?.departure_station || "---";
+    const destination = getStationName(pidsState.stations?.[totalStations - 1]) || activeSched?.arrival_station || "---";
+
+    return [{
+      id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
+      name: pidsState.serviceName,
+      status: pidsState.status || "Normal",
+      progress: progress,
+      nextStation: getStationName(pidsState.nextStation),
+      currentStation: getStationName(pidsState.currentStation),
+      depTime: activeSched?.scheduled_departure || activeSched?.waktu_keberangkatan_penjadwalan || "--:--",
+      arrTime: activeSched?.scheduled_arrival || activeSched?.waktu_kedatangan_penjadwalan || "--:--",
+      origin: origin,
+      destination: destination,
+      speed: pidsState.speed || 0,
+      location: location,
+      eta: activeSched?.scheduled_arrival || activeSched?.waktu_kedatangan_penjadwalan || "--:--",
+    }];
+  }, [pidsState, schedules, stations]);
+
+  const handleCardClick = (location: [number, number]) => {
+    setFocusLocation([...location]);
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black text-slate-900 dark:text-slate-200 overflow-hidden font-sans">
@@ -62,7 +148,11 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
               </span>
             </div>
           </div>
-          <MapComponent trains={liveTrains} />
+          <MapComponent
+            trains={activeFleet}
+            focusCoord={focusLocation}
+            onAnalyze={() => setPage?.("schedules")}
+          />
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f8fafc] dark:from-black to-transparent z-10 pointer-events-none" />
         </section>
 
@@ -74,108 +164,36 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {loading
-              ? Array(4)
-                  .fill(0)
-                  .map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-32 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-800"
-                    />
-                  ))
-              : schedules.map((s, i) => (
+              ? Array(1).fill(0).map((_, i) => (
+                  <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-800" />
+                ))
+              : activeFleet.map((s, i) => (
                   <TransportLineCard
-                    key={s.id || i}
-                    trainName={s.display_train_name || s.train_name || "KERETA"}
-                    serviceNumber={s.display_train_number || s.train_number || s.ka_number || "-"}
-                    status={s.status_keberangkatan || "Normal"}
-                    progress={Math.floor(Math.random() * 60) + 20}
-                    nextStation={s.stasiun_tujuan || "---"}
-                    depTime={s.waktu_keberangkatan_penjadwalan || "--:--"}
-                    arrTime={s.waktu_kedatangan_penjadwalan || "--:--"}
-                    onClick={() => setPage?.("schedules")}
+                    key={i}
+                    trainName={s.name}
+                    serviceNumber={s.id}
+                    status={s.status}
+                    progress={s.progress}
+                    nextStation={s.nextStation}
+                    depTime={s.depTime}
+                    arrTime={s.arrTime}
+                    origin={s.origin}
+                    destination={s.destination}
+                    onClick={() => handleCardClick(s.location)}
                   />
                 ))}
-            {!loading && schedules.length === 0 && (
+            {!loading && activeFleet.length === 0 && (
               <div className="col-span-full p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
-                <p className="text-slate-400 font-medium text-sm">
-                  Tidak ada jadwal aktif terdeteksi.
-                </p>
+                <div className="bg-orange-50 dark:bg-orange-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                   <Train size={32} className="text-[#ee6f1f]" />
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 font-bold text-base">Tidak ada armada aktif.</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Aktifkan servis melalui aplikasi Selector.</p>
               </div>
             )}
           </div>
         </section>
       </main>
-    </div>
-  );
-};
-
-const StatCard: React.FC<{
-  title: string;
-  value: string;
-  status: "success" | "warning" | "error" | "info";
-  icon: React.ReactNode;
-  trend?: string;
-}> = ({ title, value, status, icon, trend }) => {
-  const statusColors = {
-    success: "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30",
-    warning: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30",
-    error: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30",
-    info: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30",
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-md group relative overflow-hidden transition-colors">
-      <div className="flex justify-between items-start mb-4">
-        <div
-          className={`p-3 rounded-2xl transition-colors duration-300 ${statusColors[status]}`}
-        >
-          {icon}
-        </div>
-        {trend && (
-          <span
-            className={`text-[9px] font-semibold px-2 py-1 rounded-lg ${statusColors[status]}`}
-          >
-            {trend}
-          </span>
-        )}
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-          {title}
-        </p>
-        <p className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const LogItem: React.FC<{
-  time: string;
-  tag: string;
-  msg: string;
-  type: "info" | "success" | "warning";
-}> = ({ time, tag, msg, type }) => {
-  const typeStyles = {
-    info: "text-blue-600 dark:text-blue-400",
-    success: "text-green-600 dark:text-green-400",
-    warning: "text-amber-600 dark:text-amber-400",
-  };
-
-  return (
-    <div className="text-[11px] leading-relaxed group hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded-lg transition-colors">
-      <div className="flex gap-3 items-center">
-        <span className="text-slate-400 tabular-nums shrink-0 font-medium">
-          {time}
-        </span>
-        <span
-          className={`text-[10px] font-semibold tracking-wider shrink-0 uppercase ${typeStyles[type]}`}
-        >
-          {tag}
-        </span>
-        <span className="text-slate-600 dark:text-slate-300 font-medium truncate">{msg}</span>
-      </div>
     </div>
   );
 };
@@ -188,9 +206,11 @@ const TransportLineCard: React.FC<{
   nextStation: string;
   depTime: string;
   arrTime: string;
+  origin: string;
+  destination: string;
   onClick: () => void;
-}> = ({ trainName, serviceNumber, status, progress, nextStation, depTime, arrTime, onClick }) => {
-  const isDelay = status?.toLowerCase().includes("lambat") || status?.toLowerCase().includes("delay");
+}> = ({ trainName, serviceNumber, status, progress, nextStation, depTime, arrTime, origin, destination, onClick }) => {
+  const isDelay = status?.toLowerCase().includes("lambat") || status?.toLowerCase().includes("delay") || status?.toLowerCase().includes("late");
 
   return (
     <button
@@ -202,15 +222,25 @@ const TransportLineCard: React.FC<{
           <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-[#1d2d6a] dark:text-blue-400">
             <Train size={18} />
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight">{trainName}</span>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight truncate">{trainName}</span>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{serviceNumber}</span>
           </div>
         </div>
-        <div
-          className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${!isDelay ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400" : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"}`}
-        >
+        <div className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${!isDelay ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400" : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"}`}>
           {status || "NORMAL"}
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between gap-2 px-1">
+        <div className="flex flex-col">
+          <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.15em]">Origin</span>
+          <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-slate-300 truncate max-w-[80px]">{origin}</span>
+        </div>
+        <ArrowRight size={10} className="text-slate-300" />
+        <div className="flex flex-col text-right">
+          <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.15em]">Destination</span>
+          <span className="text-[10px] font-bold text-[#ee6f1f] truncate max-w-[80px]">{destination}</span>
         </div>
       </div>
 
@@ -218,15 +248,12 @@ const TransportLineCard: React.FC<{
         <div className="flex justify-between items-end">
           <div className="flex flex-col">
             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Next Point</span>
-            <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase">{nextStation}</span>
+            <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase truncate max-w-[120px]">{nextStation}</span>
           </div>
           <span className="text-[10px] font-black text-[#ee6f1f]">{progress}%</span>
         </div>
         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className={`h-full transition-all duration-700 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`}
-            style={{ width: `${progress}%` }}
-          />
+          <div className={`h-full transition-all duration-700 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`} style={{ width: `${progress}%` }} />
         </div>
       </div>
 

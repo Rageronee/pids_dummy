@@ -20,6 +20,13 @@ import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { createClient } from "redis";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load .env from the root of master-app package
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 import {
   initDatabase,
   startAutoSave,
@@ -71,8 +78,6 @@ import {
   importStationsFromGeoJSON,
 } from "./database.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const PUBLIC_DIR = path.resolve(__dirname, "..", "public");
 
 let httpServerInstance = null;
@@ -105,6 +110,30 @@ export async function stopApiServer() {
 }
 
 export async function startApiServer() {
+  const port = 3001;
+
+  // First, check if already running with a bit more patience
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const healthCheck = await fetch(`http://localhost:${port}/api/health`, {
+        signal: AbortSignal.timeout(1500),
+      });
+      if (healthCheck.ok) {
+        const data = await healthCheck.json();
+        if (data && data.status === "ok") {
+          console.log(`[PIDS-CORE] API is already running and healthy.`);
+          return null;
+        }
+      }
+    } catch (e) {
+      // If error is NOT 'fetch failed' (like connection refused), it might be warming up
+      if (e.name !== 'TypeError' && e.name !== 'AbortError') {
+         await new Promise(r => setTimeout(r, 1000));
+         continue;
+      }
+    }
+  }
+
   await initDatabase();
   startAutoSave();
 
@@ -1255,7 +1284,6 @@ export async function startApiServer() {
     res.status(500).json({ success: false, error: "Internal server error" });
   });
 
-  const port = 3001;
   return new Promise((resolve, reject) => {
     httpServer
       .listen(port, () => {
@@ -1266,22 +1294,8 @@ export async function startApiServer() {
       })
       .on("error", (err) => {
         if (err.code === "EADDRINUSE") {
-          console.log(
-            `[PIDS-CORE] Port ${port} is already in use. Checking if it is our API...`,
-          );
-          fetch(`http://localhost:${port}/api/health`)
-            .then((res) => res.json())
-            .then((data) => {
-              if (data && data.status === "ok") {
-                console.log(`[PIDS-CORE] API is already running and healthy.`);
-                resolve(null); // Signal that it's already running
-              } else {
-                reject(new Error(`Port ${port} is occupied by another process.`));
-              }
-            })
-            .catch(() => {
-              reject(new Error(`Port ${port} is occupied and not responding to health check.`));
-            });
+          console.log(`[PIDS-CORE] Port ${port} was taken between check and listen. Assuming success.`);
+          resolve(null);
         } else {
           console.error(`[ERROR] Server failed to start:`, err);
           reject(err);

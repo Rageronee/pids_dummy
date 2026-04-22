@@ -43,6 +43,8 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   try {
+    // Small random delay to prevent simultaneous DB init
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
     await startApiServer();
     createWindow();
     app.on("activate", () => {

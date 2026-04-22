@@ -14,16 +14,20 @@
  * - For production: secure pg_hba and use a central session/cache (Redis).
  */
 
-import "dotenv/config";
+import { fileURLToPath } from "url";
+import path from "path";
+import dotenv from "dotenv";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load .env from the root of master-app package
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
+
 import pg from "pg";
 const { Pool } = pg;
 import crypto from "crypto";
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const QUERY_TIMEOUT_MS = 15000;
 const POOL_CONFIG = {
@@ -124,26 +128,31 @@ function verifyPassword(password, storedHash) {
 
 let pool = null;
 
-export async function initDatabase() {
+export async function initDatabase(retries = 5) {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  pool = new Pool({ connectionString, ...POOL_CONFIG });
 
-  try {
-    await pool.query("SELECT NOW()");
-    console.log("[PIDS-DB] PostgreSQL connected successfully");
-    await createTables();
-    await seedData();
-    console.log("[PIDS-DB] Database schema is ready (English).");
-  } catch (err) {
-    console.error("[PIDS-DB] Database initialization error:", err.message);
-    if (pool) {
-      await pool.end().catch(() => {});
-      pool = null;
+  while (retries > 0) {
+    pool = new Pool({ connectionString, ...POOL_CONFIG });
+    try {
+      await pool.query("SELECT NOW()");
+      console.log("[PIDS-DB] PostgreSQL connected successfully");
+      await createTables();
+      await seedData();
+      console.log("[PIDS-DB] Database schema is ready (English).");
+      return pool;
+    } catch (err) {
+      console.error(`[PIDS-DB] Connection failed. Retries left: ${retries - 1}. Error: ${err.message}`);
+      if (pool) {
+        await pool.end().catch(() => {});
+        pool = null;
+      }
+      retries--;
+      if (retries === 0) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
-    throw err;
   }
   return pool;
 }
@@ -299,7 +308,8 @@ async function createTables() {
             arrival_status TEXT DEFAULT 'On Time',
             service_name TEXT DEFAULT '',
             train_number TEXT DEFAULT '',
-            CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE
+            CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
+            CONSTRAINT uq_schedule_trip UNIQUE (service_name, train_number, schedule_date, scheduled_departure)
         )
     `);
   await pool.query(`
@@ -571,6 +581,21 @@ async function createTables() {
       console.warn("[PIDS-DB] Index note:", e.message);
     }
   }
+
+  // Ensure unique constraint for schedules exists (Migration)
+  try {
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'uq_schedule_trip'
+        ) THEN
+          ALTER TABLE schedules ADD CONSTRAINT uq_schedule_trip UNIQUE (service_name, train_number, schedule_date, scheduled_departure);
+        END IF;
+      END $$;
+    `);
+  } catch (e) {
+    console.warn("[PIDS-DB] Migration note (schedules constraint):", e.message);
+  }
 }
 
 export async function seedData() {
@@ -837,7 +862,10 @@ export async function seedData() {
                 route_id, service_name, train_number, schedule_date, status,
                 departure_station, departure_city_code, scheduled_departure,
                 arrival_station, arrival_city_code, scheduled_arrival
-            ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10) RETURNING id`,
+            ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10)
+            ON CONFLICT (service_name, train_number, schedule_date, scheduled_departure)
+            DO UPDATE SET route_id = EXCLUDED.route_id
+            RETURNING id`,
       [
         routeId,
         serviceName,

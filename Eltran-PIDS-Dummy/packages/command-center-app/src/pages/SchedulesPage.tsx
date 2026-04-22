@@ -20,6 +20,7 @@ import {
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
 import { ConfirmModal, ToastNotification } from "../components/SharedUI";
+import { usePidsData } from "../hooks/usePidsData";
 
 const STATUS_COLOR: Record<string, string> = {
   ON_TIME: "text-green-600 bg-green-500/10 border-green-500/20",
@@ -28,6 +29,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function SchedulesPage({ token }: { token: string }) {
+  const { data: pidsState } = usePidsData();
   const [schedules, setSchedules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -773,34 +775,41 @@ export default function SchedulesPage({ token }: { token: string }) {
         <div className="p-8 text-center text-slate-500">Memuat jadwal...</div>
       ) : (
         <div className="space-y-4">
-          {schedules.map((sched, i) => (
-            <motion.div
-              key={sched.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl overflow-hidden hover:shadow-md hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all group"
-            >
-              <div
-                className="flex items-center gap-4 px-6 py-5 cursor-pointer"
-                onClick={() => setSelectedSchedule(sched)}
+          {schedules.map((sched, i) => {
+            const isActive = pidsState.serviceName === (sched.display_train_name || sched.train_name || sched.service_name);
+            return (
+              <motion.div
+                key={sched.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className={`bg-white dark:bg-slate-900 border ${isActive ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
               >
-                <div className="w-12 h-12 bg-[#f8fafc] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center shadow-sm">
-                  <Train size={20} className="text-[#1d2d6a] dark:text-blue-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-[#1d2d6a] dark:text-white font-bold text-base uppercase">
-                      {sched.display_train_name || sched.train_name}
-                    </h3>
-                    <span className="text-slate-400 text-[10px] font-bold">
-                      {sched.display_train_number ||
-                        sched.train_number ||
-                        sched.ka_number ||
-                        "-"}
-                    </span>
+                <div
+                  className="flex items-center gap-4 px-6 py-5 cursor-pointer"
+                  onClick={() => setSelectedSchedule(sched)}
+                >
+                  <div className={`w-12 h-12 ${isActive ? "bg-orange-50 dark:bg-orange-950/30" : "bg-[#f8fafc] dark:bg-slate-800"} border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center shadow-sm`}>
+                    <Train size={20} className={isActive ? "text-[#ee6f1f]" : "text-[#1d2d6a] dark:text-blue-400"} />
                   </div>
-                  <div className="flex items-center gap-3 text-xs">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="text-[#1d2d6a] dark:text-white font-bold text-base uppercase">
+                        {sched.display_train_name || sched.train_name}
+                      </h3>
+                      {isActive && (
+                        <span className="bg-[#ee6f1f] text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse">
+                          LIVE ACTIVE
+                        </span>
+                      )}
+                      <span className="text-slate-400 text-[10px] font-bold">
+                        {sched.display_train_number ||
+                          sched.train_number ||
+                          sched.ka_number ||
+                          "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
                     <span className="text-slate-500 dark:text-slate-400 font-medium">
                       {sched.schedule_date}
                     </span>
@@ -840,7 +849,8 @@ export default function SchedulesPage({ token }: { token: string }) {
                 </div>
               </div>
             </motion.div>
-          ))}
+          );
+        })}
         </div>
       )}
 
