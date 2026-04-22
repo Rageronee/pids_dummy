@@ -317,7 +317,9 @@ const MonitorGPS = ({ route }: { route: any }) => {
     try {
       const map = new maplibregl.Map({
         container: node,
-        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        style: document.documentElement.classList.contains("dark") 
+          ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
         center: [106.8272, -6.1751],
         zoom: 12,
         pitch: 45,
@@ -470,12 +472,12 @@ const MonitorGPS = ({ route }: { route: any }) => {
   return (
     <div className="space-y-6 h-full flex flex-col">
       {/* Map Container Box */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
         {/* Header Information Overlay */}
         <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
-          <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 shadow-lg flex items-center gap-3">
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-xs font-bold text-[#1d2d6a] uppercase tracking-wide">
+            <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase tracking-wide">
               Peta Lokasi Armada
             </span>
           </div>
@@ -484,7 +486,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
         {/* Map Implementation */}
         <div
           ref={mapContainerRef}
-          className="absolute inset-0 z-0 bg-slate-50"
+          className="absolute inset-0 z-0 bg-slate-50 dark:bg-slate-900"
         />
 
         {/* Legend / Info Overlay */}
@@ -512,14 +514,14 @@ const MonitorGPS = ({ route }: { route: any }) => {
       </div>
 
       {/* Per-Gerbong GPS Tracking Panel */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-200 shrink-0">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-sm border border-slate-200 dark:border-slate-800 shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="bg-orange-50 p-2.5 rounded-2xl text-[#ee6f1f]">
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-2xl text-[#ee6f1f]">
               <MapPin size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight">
+              <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight">
                 Detail State per Gerbong
               </h2>
               <p className="text-xs text-slate-400 font-medium mt-0.5">
@@ -532,7 +534,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
               <button
                 key={t.kereta_id}
                 onClick={() => setSelectedKereta(t.kereta_id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedKereta === t.kereta_id ? "bg-[#1d2d6a] text-white border-[#1d2d6a]" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300"}`}
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedKereta === t.kereta_id ? "bg-[#1d2d6a] dark:bg-slate-800 text-white border-[#1d2d6a] dark:border-slate-700" : "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`}
               >
                 KA {t.kereta_id}
               </button>
@@ -555,7 +557,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-slate-50/50 border border-slate-100 rounded-3xl p-6 hover:shadow-xl hover:bg-white hover:border-orange-100 transition-all group"
+                className="bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 hover:shadow-xl hover:bg-white dark:hover:bg-slate-800 hover:border-orange-100 dark:hover:border-orange-900/30 transition-all group"
               >
                 <div className="flex items-center gap-3 mb-5">
                   <div
@@ -572,7 +574,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
                 </div>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
+                    <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
                       <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">
                         Speed
                       </div>
@@ -583,7 +585,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
                         </span>
                       </div>
                     </div>
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-100 text-center">
+                    <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
                       <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">
                         Temp
                       </div>
@@ -595,7 +597,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                  <div className="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center justify-between">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">
                       Status Sensor
                     </span>
@@ -624,35 +626,35 @@ const LogViewer = ({ token }: { token: string }) => {
   const ACTION_LABELS: Record<string, { label: string; color: string }> = {
     LOGIN: {
       label: "Login",
-      color: "text-green-600 bg-green-50 border-green-100",
+      color: "text-green-600 bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30",
     },
     LOGIN_FAILED: {
       label: "Login Gagal",
-      color: "text-red-600 bg-red-50 border-red-100",
+      color: "text-red-600 bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30",
     },
     LOGOUT: {
       label: "Logout",
-      color: "text-slate-600 bg-slate-50 border-slate-200",
+      color: "text-slate-600 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800",
     },
     STATE_UPDATE: {
       label: "Update State",
-      color: "text-blue-600 bg-blue-50 border-blue-100",
+      color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30",
     },
     DISPLAY_MODE: {
       label: "Mode Display",
-      color: "text-purple-600 bg-purple-50 border-purple-100",
+      color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-900/30",
     },
     LED_CONFIG: {
       label: "LED Config",
-      color: "text-orange-600 bg-orange-50 border-orange-100",
+      color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-900/30",
     },
     ADMIN_CRUD: {
       label: "Admin CRUD",
-      color: "text-indigo-600 bg-indigo-50 border-indigo-100",
+      color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/30",
     },
     SYSTEM: {
       label: "Sistem",
-      color: "text-slate-500 bg-slate-50 border-slate-200",
+      color: "text-slate-500 bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/50",
     },
   };
 
@@ -689,9 +691,9 @@ const LogViewer = ({ token }: { token: string }) => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-[#1d2d6a] tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight flex items-center gap-3">
             <ScrollText className="text-[#ee6f1f]" />
             Log Aktivitas Sistem
           </h2>
@@ -700,7 +702,7 @@ const LogViewer = ({ token }: { token: string }) => {
               <button
                 key={opt}
                 onClick={() => setFilter(opt)}
-                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? "bg-[#1d2d6a] text-white border-[#1d2d6a]" : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"}`}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? "bg-[#1d2d6a] dark:bg-slate-950 text-white border-[#1d2d6a] dark:border-slate-800" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
               >
                 {opt === "ALL" ? "Semua" : ACTION_LABELS[opt]?.label || opt}
               </button>
@@ -716,18 +718,18 @@ const LogViewer = ({ token }: { token: string }) => {
             Belum ada log yang tercatat.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-[#1d2d6a] font-semibold text-[11px]">
+              <thead className="bg-slate-50 dark:bg-slate-800/50 text-[#1d2d6a] dark:text-slate-200 font-semibold text-[11px]">
                 <tr>
-                  <th className="p-4 border-b border-slate-200">Waktu</th>
-                  <th className="p-4 border-b border-slate-200">Aksi</th>
-                  <th className="p-4 border-b border-slate-200">Pengguna</th>
-                  <th className="p-4 border-b border-slate-200">Role</th>
-                  <th className="p-4 border-b border-slate-200">Keterangan</th>
+                   <th className="p-4 border-b border-slate-200 dark:border-slate-800">Waktu</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Aksi</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Pengguna</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Role</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Keterangan</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filtered.slice(0, 100).map((log) => {
                   const meta = ACTION_LABELS[log.action] || {
                     label: log.action,
@@ -737,9 +739,9 @@ const LogViewer = ({ token }: { token: string }) => {
                   return (
                     <tr
                       key={log.id}
-                      className="hover:bg-slate-50/50 transition-colors"
+                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                     >
-                      <td className="p-4 font-mono text-slate-500 text-[11px] whitespace-nowrap">
+                      <td className="p-4 font-mono text-slate-500 dark:text-slate-400 text-[11px] whitespace-nowrap">
                         <div>
                           {dt.toLocaleDateString("id-ID", {
                             day: "2-digit",
@@ -747,7 +749,7 @@ const LogViewer = ({ token }: { token: string }) => {
                             year: "numeric",
                           })}
                         </div>
-                        <div className="font-semibold text-slate-700">
+                        <div className="font-semibold text-slate-700 dark:text-slate-300">
                           {dt.toLocaleTimeString("id-ID", { hour12: false })}
                         </div>
                       </td>
@@ -758,13 +760,13 @@ const LogViewer = ({ token }: { token: string }) => {
                           {meta.label}
                         </span>
                       </td>
-                      <td className="p-4 font-semibold text-[#1d2d6a]">
+                      <td className="p-4 font-semibold text-[#1d2d6a] dark:text-slate-200">
                         {log.user}
                       </td>
-                      <td className="p-4 text-slate-500 text-xs font-normal">
+                      <td className="p-4 text-slate-500 dark:text-slate-400 text-xs font-normal">
                         {log.role}
                       </td>
-                      <td className="p-4 text-slate-600 text-xs">
+                      <td className="p-4 text-slate-600 dark:text-slate-400 text-xs max-w-xs">
                         {log.details}
                       </td>
                     </tr>
@@ -791,7 +793,10 @@ function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authToken, setAuthToken] = useState<string>("");
 
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("master_theme") === "dark");
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("master_theme");
+    return saved ? saved === "dark" : true;
+  });
 
   useEffect(() => {
     if (isDark) {
@@ -884,7 +889,7 @@ function App() {
   ];
 
   return (
-    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
+    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Sidebar */}
       <aside className="w-80 bg-slate-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
 
@@ -1048,7 +1053,7 @@ function App() {
                               key={idx}
                               className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
                             >
-                              <td className="p-4 font-bold text-slate-700 dark:text-slate-300">
+                              <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">
                                 K1-{String(idx + 1).padStart(2, "0")}
                               </td>
                               <td className="p-4 font-mono text-slate-500 dark:text-slate-400">

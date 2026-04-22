@@ -42,7 +42,10 @@ function App() {
     sendData,
   } = sync;
 
-  const [isDark, setIsDark] = useState(() => localStorage.getItem("selector_theme") === "dark");
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("selector_theme");
+    return saved ? saved === "dark" : true;
+  });
 
   useEffect(() => {
     if (isDark) {
@@ -388,7 +391,7 @@ function App() {
   }
 
   return (
-    <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
+    <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
       <header className="h-[90px] bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] text-white flex items-center px-6 shadow-lg border-b border-white/10 shrink-0 justify-between">
         <div className="flex items-center gap-6">
           <button

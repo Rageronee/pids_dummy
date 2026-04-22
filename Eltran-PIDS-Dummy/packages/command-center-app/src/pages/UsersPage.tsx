@@ -144,7 +144,7 @@ export default function UsersPage({ token }: { token: string }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden mb-8 transition-colors"
+            className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden mb-8 transition-colors"
           >
             <h3 className="text-slate-500 dark:text-slate-400 font-semibold text-sm uppercase tracking-wider">
               User Baru
@@ -198,7 +198,7 @@ export default function UsersPage({ token }: { token: string }) {
         )}
       </AnimatePresence>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
+      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
         <div className="grid grid-cols-[80px_1fr_1fr_100px_60px] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-wider transition-colors">
           <span>ID</span>
           <span>Nama</span>

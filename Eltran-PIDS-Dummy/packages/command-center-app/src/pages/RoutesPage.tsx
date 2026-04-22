@@ -774,7 +774,7 @@ export default function RoutesPage({
       : [];
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 transition-colors">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-950 transition-colors">
       <ConfirmModal
         isOpen={!!deleteTarget}
         title={`Hapus Rute`}
@@ -1125,7 +1125,7 @@ export default function RoutesPage({
                   <motion.div
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 z-[1100] flex items-center justify-between gap-10"
+                    className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 z-[1100] flex items-center justify-between gap-10"
                   >
                     <div className="flex items-center gap-5 border-r border-slate-100 dark:border-slate-800 pr-10 shrink-0">
                       <div className="p-4 bg-orange-50 dark:bg-slate-800 text-[#ee6f1f] rounded-3xl shadow-inner">
@@ -1303,7 +1303,7 @@ export default function RoutesPage({
                   </h4>
                   <div className="flex items-center gap-2">
                     {selectedRoute.is_active && (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg text-[10px] font-semibold border border-amber-100 dark:border-amber-900">
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 rounded-lg text-[10px] font-semibold border border-amber-100 dark:border-amber-900/30">
                         <AlertCircle size={12} /> Modifikasi Terkunci
                       </span>
                     )}
@@ -1353,10 +1353,10 @@ export default function RoutesPage({
                             )}
 
                             <div
-                              className={`relative z-10 flex items-center p-5 bg-white rounded-[24px] border transition-all duration-300 shadow-sm ${
+                              className={`relative z-10 flex items-center p-5 bg-white dark:bg-slate-900 rounded-[24px] border transition-all duration-300 shadow-sm ${
                                 isCurrent
-                                  ? "border-orange-200 shadow-orange-500/10 ring-1 ring-orange-200/50"
-                                  : "border-slate-100 hover:border-slate-200"
+                                  ? "border-orange-200 dark:border-[#ee6f1f]/50 shadow-orange-500/10 ring-1 ring-orange-200/50 dark:ring-[#ee6f1f]/20"
+                                  : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
                               }`}
                             >
                               <div className="mr-5 flex flex-col items-center justify-center shrink-0">
@@ -1365,8 +1365,8 @@ export default function RoutesPage({
                                     isCurrent
                                       ? "bg-[#ee6f1f] border-[#ee6f1f] shadow-[0_0_12px_rgba(238,111,31,0.4)] scale-110"
                                       : isPassed
-                                        ? "bg-white border-slate-300"
-                                        : "bg-white border-slate-200"
+                                        ? "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                                   }`}
                                 >
                                   {isPassed && (
@@ -1400,7 +1400,7 @@ export default function RoutesPage({
                                     )}
                                   </div>
                                   <h5
-                                    className={`text-base font-bold leading-tight truncate ${isPassed ? "text-slate-400" : "text-[#1d2d6a]"}`}
+                                    className={`text-base font-bold leading-tight truncate ${isPassed ? "text-slate-400 dark:text-slate-600" : "text-[#1d2d6a] dark:text-white"}`}
                                   >
                                     {sName}
                                   </h5>
@@ -1410,8 +1410,8 @@ export default function RoutesPage({
                                       <span
                                         className={`text-[8px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded ${
                                           isPassed
-                                            ? "bg-slate-50 text-slate-300"
-                                            : "bg-orange-50 text-[#ee6f1f]"
+                                            ? "bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600"
+                                          : "bg-orange-50 dark:bg-[#ee6f1f]/10 text-[#ee6f1f]"
                                         }`}
                                       >
                                         {isPassed
@@ -1424,7 +1424,7 @@ export default function RoutesPage({
 
                                 <div className="flex flex-col items-end shrink-0 ml-4">
                                   <div
-                                    className={`text-sm font-bold tracking-tight ${isCurrent ? "text-[#ee6f1f]" : isPassed ? "text-slate-400" : "text-[#1d2d6a]"}`}
+                                    className={`text-sm font-bold tracking-tight ${isCurrent ? "text-[#ee6f1f]" : isPassed ? "text-slate-400 dark:text-slate-600" : "text-[#1d2d6a] dark:text-slate-200"}`}
                                   >
                                     {sTime}
                                   </div>
@@ -1448,7 +1448,7 @@ export default function RoutesPage({
 
                   {selectedRoute.stations &&
                     selectedRoute.stations.length > 0 && (
-                      <div className="mt-6 pt-6 border-t border-slate-100 shrink-0 pr-8 pb-8">
+                      <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 shrink-0 pr-8 pb-8">
                         {(() => {
                           const totalStations = selectedRoute.stations.length;
                           const currentIdx =
@@ -1465,11 +1465,11 @@ export default function RoutesPage({
                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                   Trip Progress
                                 </div>
-                                <div className="text-xs font-bold text-[#1d2d6a]">
+                                <div className="text-xs font-bold text-[#1d2d6a] dark:text-white">
                                   {progressPercent}% Completed
                                 </div>
                               </div>
-                              <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fcd34d] rounded-full transition-all duration-1000"
                                   style={{ width: `${progressPercent}%` }}

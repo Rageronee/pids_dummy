@@ -26,19 +26,24 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
   useEffect(() => {
     if (!mapContainer.current) return;
+    
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    
     const style: maplibregl.StyleSpecification = {
       version: 8,
       sources: {
-        "carto-voyager": {
+        "carto-tiles": {
           type: "raster",
           tiles: [
-            "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+            isDarkMode 
+              ? "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png"
+              : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
           ],
           tileSize: 256,
           attribution: '&copy; CARTO',
         },
       },
-      layers: [{ id: "carto-voyager-layer", type: "raster", source: "carto-voyager" }],
+      layers: [{ id: "carto-tiles-layer", type: "raster", source: "carto-tiles" }],
     };
 
     map.current = new maplibregl.Map({
@@ -50,7 +55,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       attributionControl: false,
     });
 
+    // Observer for theme changes
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains("dark");
+      if (map.current) {
+        const newTiles = isDark 
+          ? "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png"
+          : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png";
+        
+        // @ts-ignore
+        map.current.getSource("carto-tiles")?.setTiles([newTiles]);
+      }
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
     return () => {
+      observer.disconnect();
       map.current?.remove();
       map.current = null;
     };
@@ -97,7 +118,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
           <div class="w-6 h-6 bg-blue-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center z-10 transition-transform group-hover:scale-125">
             <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
           </div>
-          <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-black px-2 py-0.5 rounded border border-white/10 text-[8px] font-black text-white whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 uppercase tracking-widest">
+          <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-2 py-0.5 rounded border border-white/10 text-[8px] font-black text-white whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 uppercase tracking-widest">
             ${train.name}
           </div>
         </div>

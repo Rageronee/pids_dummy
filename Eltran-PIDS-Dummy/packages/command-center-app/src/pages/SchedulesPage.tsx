@@ -281,7 +281,7 @@ export default function SchedulesPage({ token }: { token: string }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <h3 className="font-black text-[#1d2d6a] dark:text-white uppercase tracking-wider text-sm">Route Checkpoints</h3>
                 <span className="px-3 py-1 bg-white dark:bg-slate-900 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-800">
@@ -440,7 +440,7 @@ export default function SchedulesPage({ token }: { token: string }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden transition-colors"
+            className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden transition-colors"
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <h3 className="text-[#1d2d6a] dark:text-white font-bold text-lg flex items-center gap-2">
@@ -783,7 +783,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`bg-white dark:bg-slate-900 border ${isActive ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
+                className={`bg-white dark:bg-slate-950 border ${isActive ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
               >
                 <div
                   className="flex items-center gap-4 px-6 py-5 cursor-pointer"

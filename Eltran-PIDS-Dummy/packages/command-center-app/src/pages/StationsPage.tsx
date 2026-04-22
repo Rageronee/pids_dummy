@@ -87,7 +87,9 @@ export default function StationsPage({
       const lon = Number(selectedStation?.longitude) || 106.8272;
       mapRef.current = new maplibregl.Map({
         container: node,
-        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        style: document.documentElement.classList.contains("dark")
+          ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
         center: [lon, lat],
         zoom: 15,
         attributionControl: false,
@@ -169,10 +171,10 @@ export default function StationsPage({
   const filterOptions = ["All Stations", "Java Division", "Sumatra Division"];
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 transition-colors">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-950 transition-colors">
       <AnimatePresence mode="wait">
         {selectedStation ? (
-          <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col bg-white dark:bg-slate-900 overflow-y-auto">
+          <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col bg-white dark:bg-slate-950 overflow-y-auto">
             {/* 1. Hero Image Section - Sharp & Scrolls with content */}
             <div className="relative w-full h-[400px] shrink-0 bg-slate-900 overflow-hidden">
                <img
@@ -236,7 +238,7 @@ export default function StationsPage({
                      <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><User size={16}/> Station Authority</h4>
                      <div className="space-y-6">
                         <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned PIC</span><span className="text-base font-black text-[#1d2d6a] dark:text-white uppercase">{selectedStation.pic_name || "NOT ASSIGNED"}</span></div>
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Line</span><span className="text-base font-black text-blue-600 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
+                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Line</span><span className="text-base font-black text-blue-600 dark:text-blue-400 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
                         <button className="text-[9px] font-black uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
                      </div>
                   </div>
@@ -251,7 +253,7 @@ export default function StationsPage({
                        <span>LNG: {selectedStation.longitude?.toFixed(6)}</span>
                     </div>
                   </div>
-                  <div className="h-96 border dark:border-slate-800 relative grayscale hover:grayscale-0 transition-all duration-700 rounded-3xl overflow-hidden">
+                  <div className="h-96 border dark:border-slate-800 relative transition-all duration-700 rounded-3xl overflow-hidden">
                      <div ref={mapDetailContainerRef} className="absolute inset-0" />
                   </div>
                </div>
@@ -262,7 +264,7 @@ export default function StationsPage({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
               <div><h1 className="text-4xl font-black text-[#1d2d6a] dark:text-white tracking-tighter leading-none">STATIONS</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-2">Network Infrastructure Nodes</p></div>
               <div className="flex gap-4">
-                 <div className="relative group w-80 shadow-sm rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800"><Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f]" size={18}/><input value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} placeholder="Find node by name..." className="w-full bg-white dark:bg-slate-900 px-14 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none transition-all"/></div>
+                 <div className="relative group w-80 shadow-sm rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800"><Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f]" size={18}/><input value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} placeholder="Find node by name..." className="w-full bg-white dark:bg-slate-950 px-14 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none transition-all"/></div>
                  <button onClick={()=>setShowForm(true)} className="px-8 bg-[#ee6f1f] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 flex items-center gap-3 transition-all"><Plus size={16} strokeWidth={4}/> Add Node</button>
               </div>
             </div>

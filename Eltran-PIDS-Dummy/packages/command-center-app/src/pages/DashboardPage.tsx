@@ -125,7 +125,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black text-slate-900 dark:text-slate-200 overflow-hidden font-sans">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 overflow-hidden font-sans">
       <main className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300">
         <section className="relative w-full h-[450px] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm group">
           <div className="absolute top-4 left-4 z-20 flex gap-2">
@@ -141,7 +141,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
             focusCoord={focusLocation}
             onAnalyze={() => setPage?.("schedules")}
           />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f8fafc] dark:from-black to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 to-transparent z-10 pointer-events-none" />
         </section>
 
         <section className="space-y-4">
