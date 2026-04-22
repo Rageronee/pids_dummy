@@ -56,9 +56,9 @@ export function RouteCheckpoints({
       }
     >
       {!route?.name || route.name === "-" ? (
-        <div className="flex flex-col items-center justify-center py-20 px-10 bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] mt-6 transition-colors">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm mb-6 transition-colors">
-            <MapPin size={48} className="text-slate-300 dark:text-slate-600" />
+        <div className="flex flex-col items-center justify-center py-20 px-10 bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] mt-6 transition-colors">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm mb-6 transition-colors">
+            <MapPin size={48} className="text-slate-300 dark:text-slate-500" />
           </div>
           <h4 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-2 tracking-tight">
             Rute Belum Dipilih
@@ -89,7 +89,7 @@ export function RouteCheckpoints({
       ) : (
         <>
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
-            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 transition-colors">
+            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 File Aktif:
               </span>
@@ -109,7 +109,7 @@ export function RouteCheckpoints({
               <button
                 onClick={onDeleteClick}
                 disabled={uploading}
-                className={`text-sm font-bold text-red-500 dark:text-red-400 bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-red-950/40 border border-slate-200 dark:border-slate-800 shadow-sm px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors ${uploading ? "opacity-50 grayscale pointer-events-none" : ""}`}
+                className={`text-sm font-bold text-red-500 dark:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/40 border border-slate-200 dark:border-slate-700 shadow-sm px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors ${uploading ? "opacity-50 grayscale pointer-events-none" : ""}`}
               >
                 <Trash2 size={20} /> {uploading ? "..." : "Hapus"}
               </button>
