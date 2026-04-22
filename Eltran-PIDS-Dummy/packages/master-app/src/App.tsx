@@ -872,11 +872,7 @@ function App() {
 
   // Auth guard
   if (!authUser) {
-    return (
-      <div className={isDark ? "dark" : ""}>
-        <LoginScreen onLogin={handleLogin} title="PIDS Master Controller" />
-      </div>
-    );
+    return <LoginScreen onLogin={handleLogin} isDark={isDark} />;
   }
 
   const NAV_ITEMS = [

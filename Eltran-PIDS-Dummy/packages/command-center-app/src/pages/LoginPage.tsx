@@ -57,7 +57,7 @@ export default function LoginPage({
   };
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white dark:bg-slate-950 font-sans transition-colors">
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white dark:bg-slate-900 font-sans transition-colors">
       <div
         className="absolute inset-0 z-0 scale-105"
         style={{
@@ -68,7 +68,7 @@ export default function LoginPage({
           filter: "blur(3px) brightness(1.1)",
         }}
       />
-      <div className="absolute inset-0 z-0 bg-white/60 dark:bg-slate-950/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 z-0 bg-white/60 dark:bg-slate-900/80 backdrop-blur-sm" />
       <div className="relative z-10 flex w-full items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}

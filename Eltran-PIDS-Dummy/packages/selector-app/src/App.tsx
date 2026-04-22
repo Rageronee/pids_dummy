@@ -383,11 +383,7 @@ function App() {
     ],
   );
   if (!authUser) {
-    return (
-      <div className={isDark ? "dark" : ""}>
-        <LoginScreen onLogin={handleLogin} title="PIDS Selector App" />
-      </div>
-    );
+    return <LoginScreen onLogin={handleLogin} title="PIDS Selector App" isDark={isDark} />;
   }
 
   return (

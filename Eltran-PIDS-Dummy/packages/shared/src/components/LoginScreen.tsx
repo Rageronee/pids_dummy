@@ -9,6 +9,7 @@ interface LoginScreenProps {
   onLogin: (user: AuthUser, token: string) => void;
   title?: string;
   subtitle?: string;
+  isDark?: boolean;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -17,6 +18,7 @@ export function LoginScreen({
   onLogin,
   title = "PIDS System Controller",
   subtitle = "Passenger Information Display System",
+  isDark = true,
 }: LoginScreenProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +56,8 @@ export function LoginScreen({
   };
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white dark:bg-slate-900 font-sans transition-colors">
+    <div className={isDark ? "dark" : ""}>
+      <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white dark:bg-slate-900 font-sans transition-colors">
       <div
         className="absolute inset-0 z-0 scale-105"
         style={{
@@ -161,6 +164,7 @@ export function LoginScreen({
           © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
         </p>
       </div>
+    </div>
     </div>
   );
 }
