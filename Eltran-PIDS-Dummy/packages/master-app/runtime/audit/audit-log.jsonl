@@ -38,3 +38,4 @@
 {"id":"ab5d201f-3ea2-4b7f-bb35-946a5f24a142","timestamp":"2026-04-22T02:23:16.371Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 70","data":null}
 {"id":"3fcbf215-a160-491e-b956-83d8a6f1c348","timestamp":"2026-04-22T02:27:54.615Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"3d00ba88-ae2e-41cb-b042-0fc80c8087a8","timestamp":"2026-04-22T02:28:07.511Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"329c672c-4e19-434f-b641-1752087bab8c","timestamp":"2026-04-22T02:41:17.153Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}

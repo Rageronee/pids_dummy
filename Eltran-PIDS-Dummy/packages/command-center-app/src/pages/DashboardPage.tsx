@@ -12,6 +12,7 @@ import {
   Navigation2,
   Cloud,
   ArrowRight,
+  LocateFixed,
 } from "lucide-react";
 import MapComponent from "../components/MapComponent";
 import { usePidsData } from "../hooks/usePidsData";
@@ -27,7 +28,6 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
   const [loading, setLoading] = useState(true);
   const [focusLocation, setFocusLocation] = useState<[number, number] | null>(null);
 
-  // Helper to robustly extract station name from string, JSON string, or object
   const getStationName = (s: any): string => {
     if (!s || s === "-") return "-";
     if (typeof s === "string") {
@@ -74,7 +74,6 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Filter to show only the currently active train being simulated
   const activeFleet = useMemo(() => {
     if (!pidsState.serviceName || pidsState.serviceName === "Belum Dikonfigurasi") {
       return [];
@@ -83,19 +82,11 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     const currentServiceName = pidsState.serviceName.toUpperCase();
     const currentTrainNumber = (pidsState.trainNumber || "").toUpperCase().replace("KA ", "").trim();
 
-    // Smart matching: filter schedules to find the one matching both service name and train number
     const activeSched = schedules.find(s => {
       const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
       const sNum = (s.display_train_number || s.train_number || s.ka_number || "").toUpperCase().trim();
-
-      const nameMatch = sName === currentServiceName || currentServiceName.includes(sName) || sName.includes(currentServiceName);
-      const numMatch = currentTrainNumber && sNum ? (sNum === currentTrainNumber || currentTrainNumber.includes(sNum) || sNum.includes(currentTrainNumber)) : true;
-
-      return nameMatch && numMatch;
-    }) || schedules.find(s => {
-      // Fallback to name only if no specific number match
-      const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
-      return sName === currentServiceName || currentServiceName.includes(sName) || sName.includes(currentServiceName);
+      return (sName === currentServiceName || currentServiceName.includes(sName)) &&
+             (currentTrainNumber ? sNum.includes(currentTrainNumber) : true);
     });
 
     const currentStnName = getStationName(pidsState.currentStation).toUpperCase();
@@ -112,9 +103,6 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       }
     }
 
-    const origin = getStationName(pidsState.stations?.[0]) || activeSched?.departure_station || "---";
-    const destination = getStationName(pidsState.stations?.[totalStations - 1]) || activeSched?.arrival_station || "---";
-
     return [{
       id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
       name: pidsState.serviceName,
@@ -124,8 +112,8 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       currentStation: getStationName(pidsState.currentStation),
       depTime: activeSched?.scheduled_departure || activeSched?.waktu_keberangkatan_penjadwalan || "--:--",
       arrTime: activeSched?.scheduled_arrival || activeSched?.waktu_kedatangan_penjadwalan || "--:--",
-      origin: origin,
-      destination: destination,
+      origin: getStationName(pidsState.stations?.[0]) || activeSched?.departure_station || "---",
+      destination: getStationName(pidsState.stations?.[totalStations - 1]) || activeSched?.arrival_station || "---",
       speed: pidsState.speed || 0,
       location: location,
       eta: activeSched?.scheduled_arrival || activeSched?.waktu_kedatangan_penjadwalan || "--:--",
@@ -157,15 +145,15 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Active Fleet Status & ETA
+          <div className="flex items-center justify-between mb-2 px-2">
+            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+              Active Fleet Status & Real-time ETA
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {loading
               ? Array(1).fill(0).map((_, i) => (
-                  <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-800" />
+                  <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-[2rem] border border-slate-200 dark:border-slate-800" />
                 ))
               : activeFleet.map((s, i) => (
                   <TransportLineCard
@@ -175,6 +163,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
                     status={s.status}
                     progress={s.progress}
                     nextStation={s.nextStation}
+                    currentStation={s.currentStation}
                     depTime={s.depTime}
                     arrTime={s.arrTime}
                     origin={s.origin}
@@ -183,7 +172,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
                   />
                 ))}
             {!loading && activeFleet.length === 0 && (
-              <div className="col-span-full p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
+              <div className="col-span-full p-12 text-center bg-white dark:bg-slate-900 rounded-[2.5rem] border border-dashed border-slate-300 dark:border-slate-800">
                 <div className="bg-orange-50 dark:bg-orange-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                    <Train size={32} className="text-[#ee6f1f]" />
                 </div>
@@ -204,67 +193,82 @@ const TransportLineCard: React.FC<{
   status: string;
   progress: number;
   nextStation: string;
+  currentStation: string;
   depTime: string;
   arrTime: string;
   origin: string;
   destination: string;
   onClick: () => void;
-}> = ({ trainName, serviceNumber, status, progress, nextStation, depTime, arrTime, origin, destination, onClick }) => {
+}> = ({ trainName, serviceNumber, status, progress, nextStation, currentStation, depTime, arrTime, origin, destination, onClick }) => {
   const isDelay = status?.toLowerCase().includes("lambat") || status?.toLowerCase().includes("delay") || status?.toLowerCase().includes("late");
 
   return (
     <button
       onClick={onClick}
-      className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all hover:shadow-md group text-left w-full"
+      className="bg-white dark:bg-slate-900 rounded-[2.25rem] p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all hover:shadow-xl group text-left w-full relative overflow-hidden"
     >
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-[#1d2d6a] dark:text-blue-400">
-            <Train size={18} />
+          <div className="p-2.5 bg-[#1d2d6a] dark:bg-[#020617] rounded-xl text-white shadow-lg shadow-blue-900/20 transition-transform group-hover:scale-110">
+            <Train size={20} />
           </div>
           <div className="flex flex-col overflow-hidden">
             <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight truncate">{trainName}</span>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{serviceNumber}</span>
           </div>
         </div>
-        <div className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${!isDelay ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400" : "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"}`}>
+        <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase shadow-sm ${!isDelay ? "bg-green-500 text-white" : "bg-amber-500 text-white"}`}>
           {status || "NORMAL"}
         </div>
       </div>
 
-      <div className="mb-4 flex items-center justify-between gap-2 px-1">
+      <div className="mb-4 grid grid-cols-[1fr_20px_1fr] items-center gap-2 px-1 opacity-80">
         <div className="flex flex-col">
-          <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.15em]">Origin</span>
-          <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-slate-300 truncate max-w-[80px]">{origin}</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Asal</span>
+          <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-slate-300 truncate" title={origin}>{origin}</span>
         </div>
         <ArrowRight size={10} className="text-slate-300" />
         <div className="flex flex-col text-right">
-          <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.15em]">Destination</span>
-          <span className="text-[10px] font-bold text-[#ee6f1f] truncate max-w-[80px]">{destination}</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Tujuan</span>
+          <span className="text-[10px] font-bold text-[#ee6f1f] truncate" title={destination}>{destination}</span>
         </div>
       </div>
 
-      <div className="mb-4 space-y-2">
-        <div className="flex justify-between items-end">
-          <div className="flex flex-col">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Next Point</span>
-            <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase truncate max-w-[120px]">{nextStation}</span>
+      <div className="h-px bg-slate-50 dark:bg-slate-800 mb-5" />
+
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 transition-colors">
+           <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-[#ee6f1f] shadow-sm border border-slate-100 dark:border-slate-800">
+              <LocateFixed size={16} />
+           </div>
+           <div>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Posisi Sekarang</p>
+              <p className="text-xs font-black text-[#1d2d6a] dark:text-white uppercase truncate max-w-[140px]">{currentStation}</p>
+           </div>
+        </div>
+
+        <div className="space-y-2 px-1">
+          <div className="flex justify-between items-end">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Berhenti Berikutnya</span>
+              <span className="text-xs font-black text-[#1d2d6a] dark:text-slate-300 uppercase truncate max-w-[150px]">{nextStation}</span>
+            </div>
+            <span className="text-[10px] font-black text-[#ee6f1f]">{progress}%</span>
           </div>
-          <span className="text-[10px] font-black text-[#ee6f1f]">{progress}%</span>
-        </div>
-        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div className={`h-full transition-all duration-700 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`} style={{ width: `${progress}%` }} />
+          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+            <div className={`h-full transition-all duration-1000 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`} style={{ width: `${progress}%` }} />
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+      <div className="flex items-center justify-between pt-5 border-t border-slate-100 dark:border-slate-800">
         <div className="flex flex-col">
-          <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest">DEPARTURE</p>
-          <p className="text-sm font-black text-slate-700 dark:text-slate-300 font-mono tracking-tight">{depTime}</p>
+          <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest mb-1">Departure</p>
+          <p className="text-sm font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter">{depTime}</p>
         </div>
         <div className="flex flex-col text-right">
-          <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest">ARRIVAL</p>
-          <p className="text-sm font-black text-[#ee6f1f] font-mono tracking-tight">{arrTime}</p>
+          <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest mb-1">Arrival</p>
+          <p className="text-sm font-black text-[#ee6f1f] font-mono tracking-tighter">{arrTime}</p>
         </div>
       </div>
     </button>

@@ -315,7 +315,7 @@ export default function App() {
           </div>
         </header>
         <div
-          className={`flex-1 overflow-auto ${activePage === "routes" ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-black`}
+          className={`flex-1 overflow-auto ${(activePage === "routes" || activePage === "stations") ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-black`}
         >
           <AnimatePresence mode="wait">
             <motion.div
