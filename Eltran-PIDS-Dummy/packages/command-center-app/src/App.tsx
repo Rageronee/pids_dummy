@@ -167,7 +167,7 @@ export default function App() {
   });
 
   return (
-    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-black text-slate-800 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
+    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -181,7 +181,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <aside className={`fixed lg:relative inset-y-0 left-0 w-80 bg-[#1d2d6a] dark:bg-[#020617] border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-[50] transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <aside className={`fixed lg:relative inset-y-0 left-0 w-80 bg-[#1d2d6a] dark:bg-slate-900 border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-[50] transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="p-8 pb-10 flex justify-between items-start">
           <div>
             <img
@@ -229,7 +229,7 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto flex flex-col relative bg-[#f8fafc] dark:bg-black">
+      <main className="flex-1 overflow-auto flex flex-col relative bg-[#f8fafc] dark:bg-slate-900">
         <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-[#1d2d6a] dark:text-slate-300">
@@ -315,7 +315,7 @@ export default function App() {
           </div>
         </header>
         <div
-          className={`flex-1 overflow-auto ${(activePage === "routes" || activePage === "stations") ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-black`}
+          className={`flex-1 overflow-auto ${(activePage === "routes" || activePage === "stations") ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-slate-900`}
         >
           <AnimatePresence mode="wait">
             <motion.div

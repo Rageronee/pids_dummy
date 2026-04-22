@@ -121,7 +121,7 @@ export function ToastNotification({
             </div>
           </div>
           <div
-            className={`h-1.5 w-full absolute bottom-0 left-0 ${toast.ok ? "bg-orange-100" : "bg-red-100"}`}
+            className={`h-1.5 w-full absolute bottom-0 left-0 ${toast.ok ? "bg-orange-100 dark:bg-orange-950/30" : "bg-red-100 dark:bg-red-950/30"}`}
           >
             <motion.div
               initial={{ width: "100%" }}

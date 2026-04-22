@@ -62,11 +62,11 @@ const TVMonitor = React.memo(function TVMonitor({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed inset-0 z-50 bg-black flex flex-col overflow-hidden font-sans select-none"
+        className="fixed inset-0 z-50 bg-slate-900 flex flex-col overflow-hidden font-sans select-none"
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-3 bg-black/30 hover:bg-black/60 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
+          className="absolute top-6 right-6 p-3 bg-slate-900/30 hover:bg-slate-900/60 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
           title="Close Monitor"
         >
           <X
@@ -115,12 +115,12 @@ const TVMonitor = React.memo(function TVMonitor({
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url('${bgUrl}')` }}
                   >
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+                    <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px]" />
                   </motion.div>
                 );
               })()}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/40 pointer-events-none" />
 
               <div className="relative z-20 flex justify-between items-start pt-10 px-14">
                 <div className="flex flex-col text-white drop-shadow-md">
@@ -191,7 +191,7 @@ const TVMonitor = React.memo(function TVMonitor({
                 </motion.div>
               </div>
 
-              <div className="h-[200px] bg-gradient-to-b from-transparent via-black/60 to-black relative z-20 flex items-end justify-between px-24 pb-12">
+              <div className="h-[200px] bg-gradient-to-b from-transparent via-slate-900/60 to-slate-900 relative z-20 flex items-end justify-between px-24 pb-12">
                 <div className="flex items-center gap-6 w-1/3 justify-start">
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
                     <Gauge
@@ -267,14 +267,14 @@ const TVMonitor = React.memo(function TVMonitor({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.5 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-black"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900"
             >
               {(() => {
                 const playlist = data?.videoPlaylist || [];
                 const activeIdx = data?.activeVideoIndex ?? 0;
                 const activeFile = playlist[activeIdx];
                 const videoUrl = activeFile
-                  ? `${API_URL}/media/video/${encodeURIComponent(activeFile)}`
+                  ? `${API}/media/video/${encodeURIComponent(activeFile)}`
                   : null;
                 if (!videoUrl || playlist.length === 0) {
                   return (
@@ -294,7 +294,7 @@ const TVMonitor = React.memo(function TVMonitor({
                   );
                 }
                 return (
-                  <div className="flex-1 flex items-center justify-center w-full h-full bg-black">
+                  <div className="flex-1 flex items-center justify-center w-full h-full bg-slate-900">
                     <video
                       key={videoUrl}
                       src={videoUrl}
@@ -313,7 +313,7 @@ const TVMonitor = React.memo(function TVMonitor({
                         }
                       }}
                     />
-                    <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
+                    <div className="absolute bottom-6 left-6 bg-slate-900/50 backdrop-blur-md text-white px-5 py-3 rounded-2xl flex items-center gap-3 z-30">
                       <div
                         className={`w-2 h-2 rounded-full ${data?.isPlaying ? "bg-green-400 animate-pulse" : "bg-yellow-400"}`}
                       />

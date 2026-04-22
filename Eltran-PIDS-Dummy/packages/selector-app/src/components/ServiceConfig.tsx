@@ -113,7 +113,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
               </div>
 
               {serviceDropdownOpen && (
-                <div className="absolute z-[100] top-full left-0 right-0 mt-3 bg-white dark:bg-slate-900 border-4 border-[#1d2d6a]/10 dark:border-slate-700 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-h-[350px] overflow-y-auto custom-scrollbar overflow-hidden">
+                <div className="absolute z-[100] top-full left-0 right-0 mt-3 bg-white dark:bg-slate-900 border-4 border-[#1d2d6a]/10 dark:border-slate-800 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-h-[350px] overflow-y-auto custom-scrollbar overflow-hidden">
                   {filtered.length === 0 ? (
                     <div className="px-8 py-6 text-lg font-bold text-slate-400 dark:text-slate-500 text-center">
                       Tidak ada layanan ditemukan

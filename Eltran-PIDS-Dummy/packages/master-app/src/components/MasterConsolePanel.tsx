@@ -1257,8 +1257,8 @@ export function MasterConsolePanel({
   return (
     <div className="flex flex-col gap-6 w-full max-w-full pb-32">
       {/* INFO RANGKAIAN & TELEMETRI HEADER */}
-      <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden flex flex-col xl:flex-row">
-        <div className="p-8 xl:w-[38%] bg-white dark:bg-[#020617] border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800 flex flex-col">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden flex flex-col xl:flex-row">
+        <div className="p-8 xl:w-[38%] bg-white dark:bg-slate-900 border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800 flex flex-col">
           <div className="flex items-center gap-3 mb-6 shrink-0 text-[#1d2d6a] dark:text-white">
             <div className="text-[#ee6f1f]">
               <Train size={24} />
@@ -1350,7 +1350,7 @@ export function MasterConsolePanel({
           </div>
         </div>
 
-        <div className="p-8 xl:w-[62%] bg-white dark:bg-[#020617] flex flex-col">
+        <div className="p-8 xl:w-[62%] bg-white dark:bg-slate-900 flex flex-col">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div className="flex items-center gap-3">
               <div className="text-[#ee6f1f]">
@@ -1360,7 +1360,7 @@ export function MasterConsolePanel({
                 Telemetri Satelit (GPS)
               </h3>
             </div>
-            <span className="text-[12px] font-bold bg-slate-100 text-slate-700 px-3.5 py-1.5 rounded-lg border border-slate-200 shadow-sm hidden sm:flex items-center gap-2 uppercase tracking-widest">
+            <span className="text-[12px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hidden sm:flex items-center gap-2 uppercase tracking-widest">
               TANGGAL:{" "}
               {new Date().toLocaleDateString("id-ID", {
                 day: "2-digit",
@@ -1524,7 +1524,7 @@ export function MasterConsolePanel({
       >
         <div className="bg-white dark:bg-slate-900 p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-6 transition-colors">
           {/* Header Controls: Global IP & Controls */}
-          <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
             {/* Global IP & Settings */}
             <div className="flex flex-wrap items-center gap-4 flex-1">
               <div className="flex flex-col">
@@ -1626,7 +1626,7 @@ export function MasterConsolePanel({
             ].map((item, i) => (
               <div key={item} className="flex shrink-0 snap-start w-[220px]">
                 <div className="flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 dark:hover:border-[#ee6f1f]/40 hover:shadow-md transition-all relative">
-                  <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] dark:bg-[#020617] text-white border-b border-[#152355] dark:border-slate-800">
+                  <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] dark:bg-slate-900 text-white border-b border-[#152355] dark:border-slate-800">
                     <span className="text-[10px] font-bold tracking-wider">
                       GERBONG {item}
                     </span>
@@ -1769,7 +1769,7 @@ export function MasterConsolePanel({
                 placeholder="Ketik pesan darurat/info..."
               />
             </div>
-            <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-inner bg-slate-50 dark:bg-slate-950 transition-colors">
+            <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-inner bg-slate-50 dark:bg-slate-900 transition-colors">
               <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 px-3 py-2 border-b border-slate-200 dark:border-slate-800 transition-colors">
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <ListVideo size={12} /> Audio Playlist ({audioList.length})
@@ -1863,7 +1863,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* Video Preview Block */}
-            <div className="bg-black rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
+            <div className="bg-slate-900 rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center bg-slate-100/10 backdrop-blur-[2px] rounded-2xl overflow-hidden border border-slate-200/50">
                 <AnimatePresence mode="wait">
                   {activeFile ? (
@@ -1873,7 +1873,7 @@ export function MasterConsolePanel({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 1.05 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="relative w-full h-full flex items-center justify-center bg-black"
+                      className="relative w-full h-full flex items-center justify-center bg-slate-900"
                     >
                       <video
                         ref={videoRef}
@@ -1905,7 +1905,7 @@ export function MasterConsolePanel({
                         }}
                       />
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
-                        <div className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
+                        <div className="bg-slate-900/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
                           <div
                             className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? "bg-green-400 animate-pulse" : "bg-yellow-400"}`}
                           />
@@ -1921,7 +1921,7 @@ export function MasterConsolePanel({
                             if (vid && vid.requestFullscreen)
                               vid.requestFullscreen().catch(() => {});
                           }}
-                          className="bg-black/60 backdrop-blur-sm text-white p-1.5 rounded-lg hover:bg-white/20 transition-colors pointer-events-auto"
+                          className="bg-slate-900/60 backdrop-blur-sm text-white p-1.5 rounded-lg hover:bg-white/20 transition-colors pointer-events-auto"
                           title="Full Screen"
                         >
                           <Maximize size={14} />
@@ -2095,7 +2095,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* List Area */}
-            <div className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2 overflow-y-auto space-y-1 shadow-inner max-h-[142px] min-h-[60px] transition-colors">
+            <div className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 overflow-y-auto space-y-1 shadow-inner max-h-[142px] min-h-[60px] transition-colors">
               {videoViewMode === "playlist" ? (
                 <>
                   {playlist.length === 0 ? (

@@ -109,7 +109,7 @@ export function RouteCheckpoints({
               <button
                 onClick={onDeleteClick}
                 disabled={uploading}
-                className={`text-sm font-bold text-red-500 dark:text-red-400 bg-white dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-950 border border-slate-200 dark:border-slate-800 shadow-sm px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors ${uploading ? "opacity-50 grayscale pointer-events-none" : ""}`}
+                className={`text-sm font-bold text-red-500 dark:text-red-400 bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-red-950/40 border border-slate-200 dark:border-slate-800 shadow-sm px-6 py-3 rounded-2xl flex items-center gap-3 transition-colors ${uploading ? "opacity-50 grayscale pointer-events-none" : ""}`}
               >
                 <Trash2 size={20} /> {uploading ? "..." : "Hapus"}
               </button>
@@ -151,7 +151,7 @@ export function RouteCheckpoints({
             <>
               <div className="mt-8 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] overflow-hidden shadow-md bg-white dark:bg-slate-900 flex flex-col transition-colors">
                 {/* Header Container - NON-Scrolling vertically */}
-                <div className="flex-shrink-0 bg-[#1d2d6a] dark:bg-[#020617] text-white border-b border-[#152355] dark:border-slate-800 transition-colors">
+                <div className="flex-shrink-0 bg-[#1d2d6a] dark:bg-slate-800 text-white border-b border-[#152355] dark:border-slate-700 transition-colors">
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
                     <colgroup>
                       <col className="w-[22%]" />
@@ -212,7 +212,7 @@ export function RouteCheckpoints({
                           <tr
                             key={idx}
                             data-active={isBerhenti}
-                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50/100 dark:bg-orange-500/10" : "bg-white dark:bg-slate-900"}`}
+                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50/100 dark:bg-[#ee6f1f]/10" : "bg-white dark:bg-slate-900"}`}
                             style={{ scrollMarginTop: "64px" }}
                           >
                             <td

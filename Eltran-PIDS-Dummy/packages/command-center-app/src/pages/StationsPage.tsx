@@ -169,10 +169,10 @@ export default function StationsPage({
   const filterOptions = ["All Stations", "Java Division", "Sumatra Division"];
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-black transition-colors">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 transition-colors">
       <AnimatePresence mode="wait">
         {selectedStation ? (
-          <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col bg-white dark:bg-black overflow-y-auto">
+          <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col bg-white dark:bg-slate-900 overflow-y-auto">
             {/* 1. Hero Image Section - Sharp & Scrolls with content */}
             <div className="relative w-full h-[400px] shrink-0 bg-slate-900 overflow-hidden">
                <img
@@ -182,7 +182,7 @@ export default function StationsPage({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
               <div className="absolute top-6 left-6">
-                <button onClick={() => setSelectedStation(null)} className="p-3 bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-[#ee6f1f] transition-all"><X size={20}/></button>
+                <button onClick={() => setSelectedStation(null)} className="p-3 bg-slate-900/40 backdrop-blur-md border border-white/20 text-white hover:bg-[#ee6f1f] transition-all rounded-xl"><X size={20}/></button>
               </div>
               <div className="absolute bottom-10 left-10 right-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4">
@@ -251,7 +251,7 @@ export default function StationsPage({
                        <span>LNG: {selectedStation.longitude?.toFixed(6)}</span>
                     </div>
                   </div>
-                  <div className="h-96 border dark:border-slate-800 relative grayscale hover:grayscale-0 transition-all duration-700">
+                  <div className="h-96 border dark:border-slate-800 relative grayscale hover:grayscale-0 transition-all duration-700 rounded-3xl overflow-hidden">
                      <div ref={mapDetailContainerRef} className="absolute inset-0" />
                   </div>
                </div>
@@ -274,9 +274,9 @@ export default function StationsPage({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-2">
               {stations.map((s,i)=>(
                 <motion.div key={s.id} layout initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.02}} onClick={()=>setSelectedStation(s)} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-2 shadow-xl hover:border-[#ee6f1f]/30 transition-all cursor-pointer group flex flex-col hover:-translate-y-1">
-                  <div className="relative h-48 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-950">
+                  <div className="relative h-48 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
                     <img src={s.media?`${API}/media/station/${s.media}`:`${API}/media/station/station_fallback.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={s.name}/>
-                    <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-[8px] font-black text-white uppercase tracking-widest">{s.division}</div>
+                    <div className="absolute top-3 left-3 bg-slate-900/40 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-[8px] font-black text-white uppercase tracking-widest">{s.division}</div>
                     <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-slate-900/95 px-3 py-1 rounded-lg text-[9px] font-black text-[#1d2d6a] dark:text-[#ee6f1f] shadow-2xl border dark:border-slate-800 uppercase tracking-tighter">{s.id}</div>
                   </div>
                   <div className="p-6 space-y-2 flex-1 flex flex-col">

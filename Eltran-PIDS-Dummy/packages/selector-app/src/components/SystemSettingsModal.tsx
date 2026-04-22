@@ -60,15 +60,15 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xl"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-xl"
       >
         <motion.div
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}
-          className={`w-full h-full flex flex-col overflow-hidden ${isDark ? "bg-black text-white" : "bg-[#f4f7f9] text-slate-900"}`}
+          className={`w-full h-full flex flex-col overflow-hidden ${isDark ? "bg-slate-950 text-white" : "bg-[#f4f7f9] text-slate-900"}`}
         >
-          <div className="bg-[#1d2d6a] dark:bg-[#020617] px-8 py-5 text-white flex justify-between items-center shrink-0 shadow-lg relative z-20">
+          <div className="bg-[#1d2d6a] dark:bg-slate-900 px-8 py-5 text-white flex justify-between items-center shrink-0 shadow-lg relative z-20">
             <div className="flex items-center gap-6">
               <div className="p-4 rounded-[22px]">
                 <SettingsIcon className="text-[#ee6f1f]" size={40} />
@@ -115,7 +115,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar w-full">
-            <div className={`w-full min-h-full flex flex-col gap-10 p-12 shadow-sm border-t ${isDark ? "bg-black border-slate-800" : "bg-white border-slate-100"}`}>
+            <div className={`w-full min-h-full flex flex-col gap-10 p-12 shadow-sm border-t ${isDark ? "bg-slate-950 border-slate-900" : "bg-white border-slate-100"}`}>
               <div className="flex items-end justify-between gap-6">
                 <div className="flex flex-col gap-2">
                   <h2 className={`text-3xl font-bold tracking-tight flex items-center gap-4 ${isDark ? "text-white" : "text-[#1d2d6a]"}`}>
@@ -127,7 +127,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                   </p>
                 </div>
 
-                <div className={`flex items-center gap-4 text-sm px-6 py-3 rounded-2xl border ${isDark ? "bg-slate-900 border-slate-800 text-slate-400" : "bg-slate-50 border-slate-100 text-slate-400"}`}>
+                <div className={`flex items-center gap-4 text-sm px-6 py-3 rounded-2xl border ${isDark ? "bg-slate-800/50 border-slate-700 text-slate-400" : "bg-slate-50 border-slate-100 text-slate-400"}`}>
                   <Clock size={20} className="text-blue-500" />
                   <p className="font-bold">
                     Broadcasted in real-time to all units.
@@ -136,7 +136,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
               </div>
 
               <div className="space-y-4">
-                <div className={`flex justify-center scale-100 h-40 items-center bg-[#0a0a0a] rounded-[1rem] border-4 overflow-hidden shadow-inner w-full ${isDark ? 'border-slate-800' : 'border-[#1d2d6a]/20'}`}>
+                <div className={`flex justify-center scale-100 h-40 items-center bg-slate-950 rounded-[1rem] border-4 overflow-hidden shadow-inner w-full ${isDark ? 'border-slate-800' : 'border-[#1d2d6a]/20'}`}>
                   {data?.ledActive !== false ? (
                     <P10Matrix
                       text={`~ POSISI SAAT INI: ${currentStation} ~ TUJUAN AKHIR STASIUN ${stations.length > 0 ? (typeof stations[stations.length - 1] === "object" ? (stations[stations.length - 1] as any).name : stations[stations.length - 1]) : "---"} ~ BERHENTI DI: ${stations.map((s: any) => (typeof s === "object" ? s.name : s)).join(", ")}`}
@@ -209,13 +209,13 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                         Adjust text movement speed on display
                       </p>
                     </div>
-                    <div className={`text-3xl font-bold text-[#ee6f1f] px-6 py-3 rounded-2xl border font-mono shadow-sm ${isDark ? "bg-orange-950/20 border-orange-900/50" : "bg-orange-50 border-orange-100"}`}>
+                    <div className={`text-3xl font-bold text-[#ee6f1f] px-6 py-3 rounded-2xl border font-mono shadow-sm ${isDark ? "bg-orange-950/40 border-orange-900/50" : "bg-orange-50 border-orange-100"}`}>
                       {masterSyncedLedSpeed}
                       <span className="text-sm ml-1 opacity-60">MS</span>
                     </div>
                   </div>
 
-                  <div className={`flex-1 flex flex-col justify-center rounded-[2.5rem] p-8 border ${isDark ? "bg-slate-900 border-slate-800" : "bg-slate-50 border-slate-100"}`}>
+                  <div className={`flex-1 flex flex-col justify-center rounded-[2.5rem] p-8 border ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-100"}`}>
                     <div className="relative py-4">
                       <input
                         type="range"
@@ -226,7 +226,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                         onChange={(e) =>
                           onSetLedSpeed(parseInt(e.target.value))
                         }
-                        className="w-full h-6 bg-slate-200 dark:bg-slate-700 rounded-3xl appearance-none cursor-pointer accent-[#ee6f1f]"
+                        className="w-full h-6 bg-slate-200 dark:bg-slate-800 rounded-3xl appearance-none cursor-pointer accent-[#ee6f1f]"
                       />
                       <div className="flex justify-between text-xs font-bold text-slate-400 mt-6 tracking-widest uppercase">
                         <span className="flex flex-col items-start">

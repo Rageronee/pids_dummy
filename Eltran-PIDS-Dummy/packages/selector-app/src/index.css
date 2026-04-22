@@ -14,7 +14,7 @@
 }
 
 body {
-    @apply bg-[#f4f7f9] text-slate-900 dark:bg-black dark:text-slate-100 overflow-hidden;
+    @apply bg-[#f4f7f9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden;
 }
 
 .kai-btn-orange {
@@ -31,4 +31,52 @@ body {
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+/* Custom Scrollbar Utility */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-800;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-slate-700;
+}
+
+/* Global scrollbar for body/main */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-800;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-slate-700;
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 transparent;
+}
+
+.dark * {
+    scrollbar-color: #334155 transparent;
 }

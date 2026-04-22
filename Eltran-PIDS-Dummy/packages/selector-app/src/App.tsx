@@ -380,32 +380,36 @@ function App() {
     ],
   );
   if (!authUser) {
-    return <LoginScreen onLogin={handleLogin} title="PIDS Selector App" />;
+    return (
+      <div className={isDark ? "dark" : ""}>
+        <LoginScreen onLogin={handleLogin} title="PIDS Selector App" />
+      </div>
+    );
   }
 
   return (
-    <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-black text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
-      <header className="h-[90px] bg-white dark:bg-[#020617] text-[#1d2d6a] dark:text-white flex items-center px-6 shadow-sm dark:shadow-none border-b border-slate-200 dark:border-slate-800 shrink-0 justify-between">
+    <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
+      <header className="h-[90px] bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] text-white flex items-center px-6 shadow-lg border-b border-white/10 shrink-0 justify-between">
         <div className="flex items-center gap-6">
           <button
             onClick={() => setShowServiceModal(true)}
             className="flex items-center gap-4 text-left group transition-all active:scale-95"
           >
-            <div className="w-[56px] h-[56px] bg-slate-50 dark:bg-white/10 rounded-[14px] flex items-center justify-center shadow-sm border border-slate-200 dark:border-white/10 group-hover:scale-110 transition-transform duration-500">
-              <Train className="text-[#1d2d6a] dark:text-blue-400" size={32} />
+            <div className="w-[56px] h-[56px] bg-white/10 rounded-[14px] flex items-center justify-center shadow-sm border border-white/10 group-hover:scale-110 transition-transform duration-500">
+              <Train className="text-white" size={32} />
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-slate-400 dark:text-blue-200/80 tracking-[0.25em] uppercase">
+                <span className="text-[10px] font-bold text-blue-100/80 tracking-[0.25em] uppercase">
                   Service Config
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold uppercase tracking-tight group-hover:text-[#ee6f1f] dark:group-hover:text-blue-100 transition-colors truncate">
+                <h1 className="text-2xl font-bold uppercase tracking-tight text-white group-hover:text-blue-100 transition-colors truncate">
                   {masterSyncedServiceName || "NOT SET"}
                 </h1>
                 <ChevronRight
-                  className="text-slate-300 dark:text-white/40 group-hover:text-[#1d2d6a] dark:group-hover:text-white group-hover:translate-x-1 transition-all"
+                  className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all"
                   size={24}
                 />
               </div>
@@ -419,21 +423,21 @@ function App() {
                 className={`flex items-center gap-4 text-left group transition-all active:scale-95 ${kaDropdownOpen ? "opacity-90" : ""}`}
               >
                 <div
-                  className={`w-[56px] h-[56px] rounded-[14px] flex items-center justify-center shadow-sm transition-all duration-500 ${kaDropdownOpen ? "bg-[#ee6f1f] text-white scale-110" : "bg-slate-50 dark:bg-white/10 border border-slate-200 dark:border-white/10 group-hover:bg-slate-100 dark:group-hover:bg-white/20"}`}
+                  className={`w-[56px] h-[56px] rounded-[14px] flex items-center justify-center shadow-sm transition-all duration-500 ${kaDropdownOpen ? "bg-white/20 text-white scale-110" : "bg-white/10 border border-white/10 group-hover:bg-white/20"}`}
                 >
                   <Route
-                    className={`${kaDropdownOpen ? "text-white" : "text-[#1d2d6a] dark:text-blue-200"}`}
+                    className="text-white"
                     size={32}
                   />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-blue-200/60 tracking-[0.25em] uppercase">
+                    <span className="text-[10px] font-bold text-blue-100/60 tracking-[0.25em] uppercase">
                       Select Direction
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-tight truncate">
+                    <span className="text-2xl font-bold text-white uppercase tracking-tight truncate">
                       {availableDirections.length > 0
                         ? formatDirLabel(
                             availableDirections.find(
@@ -445,14 +449,14 @@ function App() {
                     <ChevronDown
                       size={24}
                       strokeWidth={2.5}
-                      className={`text-slate-300 dark:text-white/40 group-hover:text-[#1d2d6a] dark:group-hover:text-white transition-transform ${kaDropdownOpen ? "rotate-180 text-[#ee6f1f]" : ""}`}
+                      className={`text-white/40 group-hover:text-white transition-transform ${kaDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </div>
                 </div>
               </button>
 
               {kaDropdownOpen && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border-2 border-slate-200 rounded-xl shadow-2xl overflow-hidden py-1">
+                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border-2 border-white/10 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden py-1">
                   {availableDirections.length > 0 ? (
                     availableDirections.map((dir) => (
                       <button
@@ -460,8 +464,8 @@ function App() {
                         onClick={() => handleChangeDirection(`ka${dir.num}`)}
                         className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${
                           activeKa === `ka${dir.num}`
-                            ? "bg-[#ee6f1f]/10 text-[#ee6f1f]"
-                            : "text-[#1d2d6a] hover:bg-slate-50"
+                            ? "bg-[#ee6f1f] text-white"
+                            : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                         }`}
                       >
                         {formatDirLabel(dir.label)}
@@ -471,13 +475,13 @@ function App() {
                     <>
                       <button
                         onClick={() => handleChangeDirection("ka68")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka68" ? "bg-[#ee6f1f]/10 text-[#ee6f1f]" : "text-[#1d2d6a] hover:bg-slate-50"}`}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka68" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                       >
                         KA 68 (BD-ML)
                       </button>
                       <button
                         onClick={() => handleChangeDirection("ka67")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka67" ? "bg-[#ee6f1f]/10 text-[#ee6f1f]" : "text-[#1d2d6a] hover:bg-slate-50"}`}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka67" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                       >
                         KA 67 (ML-BD)
                       </button>

@@ -272,7 +272,7 @@ export default function SchedulesPage({ token }: { token: string }) {
           <div className="flex gap-2">
             <button
               onClick={() => handleEdit(selectedSchedule)}
-              className="px-6 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold rounded-2xl border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 transition-all flex items-center gap-2"
+              className="px-6 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-2xl border border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all flex items-center gap-2"
             >
               <Clock size={18} /> Edit Jadwal
             </button>
@@ -298,7 +298,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         </span>
                         <div>
                           <p className="font-black text-[#1d2d6a] dark:text-white uppercase text-base leading-tight">{stop.station_name}</p>
-                          <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">{stop.station_code}</p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase">{stop.station_code}</p>
                         </div>
                       </div>
                       <div className="flex gap-8 items-center">
@@ -471,7 +471,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                             train_number: t?.train_number || t?.ka_number || "",
                           });
                         }}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                       >
                         <option value="" className="dark:bg-slate-900">Pilih Kereta</option>
                         {trainOptions.map((t) => (
@@ -494,7 +494,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                           })
                         }
                         placeholder="AUTOMATIC"
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                       />
                     </div>
                   </div>
@@ -519,7 +519,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                           setForm({ ...form, media: e.target.value })
                         }
                         placeholder="URL Gambar/Dokumen"
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                       />
                     </div>
                   </div>
@@ -532,7 +532,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-wider">
                       Keberangkatan
                     </h4>
-                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded">
+                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
                       Departure
                     </span>
                   </div>
@@ -553,7 +553,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                             dep_city_code: s?.kode_kota || "",
                           });
                         }}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                       >
                         <option value="" className="dark:bg-slate-900">Pilih Stasiun</option>
                         {stationOptions.map((s) => (
@@ -574,7 +574,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1">
                         <Clock size={10} /> Penjadwalan
@@ -585,7 +585,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_sched: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
@@ -598,7 +598,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_real: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
@@ -611,7 +611,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_diff: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
@@ -623,7 +623,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, dep_status: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       >
                         <option className="dark:bg-slate-900">Tepat Waktu</option>
                         <option className="dark:bg-slate-900">Terlambat</option>
@@ -638,7 +638,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-wider">
                       Kedatangan
                     </h4>
-                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-950 px-2 py-0.5 rounded">
+                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
                       Arrival
                     </span>
                   </div>
@@ -659,7 +659,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                             arr_city_code: s?.kode_kota || "",
                           });
                         }}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                       >
                         <option value="" className="dark:bg-slate-900">Pilih Stasiun</option>
                         {stationOptions.map((s) => (
@@ -680,7 +680,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1">
                         <Clock size={10} /> Penjadwalan
@@ -691,7 +691,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_sched: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
@@ -704,7 +704,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_real: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
@@ -717,7 +717,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_diff: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       />
                     </div>
                     <div className="space-y-1">
@@ -729,7 +729,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         onChange={(e) =>
                           setForm({ ...form, arr_status: e.target.value })
                         }
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
                       >
                         <option className="dark:bg-slate-900">Tepat Waktu</option>
                         <option className="dark:bg-slate-900">Terlambat</option>
@@ -749,7 +749,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="Masukkan catatan tambahan..."
                   rows={3}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                 />
               </div>
             </div>
@@ -859,7 +859,7 @@ export default function SchedulesPage({ token }: { token: string }) {
           <button
             onClick={() => fetchSchedules(true)}
             disabled={loadingMore}
-            className="px-12 py-4 bg-white border-2 border-slate-100 text-[#1d2d6a] font-bold rounded-2xl hover:border-[#ee6f1f] hover:text-[#ee6f1f] transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+            className="px-12 py-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-[#1d2d6a] dark:text-slate-300 font-bold rounded-2xl hover:border-[#ee6f1f] hover:text-[#ee6f1f] transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
           >
             {loadingMore ? (
               <RefreshCcw size={20} className="animate-spin" />

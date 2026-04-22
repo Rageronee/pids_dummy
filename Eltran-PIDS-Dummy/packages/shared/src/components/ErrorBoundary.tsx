@@ -66,14 +66,14 @@ export class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans items-center justify-center p-12 text-center select-none">
-          <div className="bg-red-50 p-8 rounded-full mb-8">
+        <div className="flex flex-col h-screen w-full bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans items-center justify-center p-12 text-center select-none transition-colors">
+          <div className="bg-red-50 dark:bg-red-950/30 p-8 rounded-full mb-8">
             <AlertCircle size={80} className="text-red-500" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight text-[#1d2d6a] mb-4">
+          <h1 className="text-4xl font-bold tracking-tight text-[#1d2d6a] dark:text-white mb-4">
             {this.props.systemName || "Controller Interface"} Error
           </h1>
-          <p className="text-xl font-medium text-slate-500 max-w-lg leading-relaxed mb-10">
+          <p className="text-xl font-medium text-slate-500 dark:text-slate-400 max-w-lg leading-relaxed mb-10">
             The interface ran into a problem rendering the active configuration
             screen.
           </p>
@@ -86,7 +86,7 @@ export class ErrorBoundary extends Component<
             Reload Interface
           </button>
 
-          <div className="mt-12 opacity-40 font-mono text-[10px] break-all max-w-xl text-left bg-slate-200 p-4 rounded-xl text-slate-600">
+          <div className="mt-12 opacity-40 font-mono text-[10px] break-all max-w-xl text-left bg-slate-200 dark:bg-slate-800 p-4 rounded-xl text-slate-600 dark:text-slate-400">
             {this.state.error?.stack || this.state.error?.message}
           </div>
         </div>

@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  .dark body {
+    @apply bg-slate-900;
+  }
+}
+
 /* --- Fix for MapLibre GL Blank Canvas Issue with Tailwind --- */
 /* Tailwind's preflight resets break MapLibre's canvas sizing */
 .maplibregl-map {
@@ -43,16 +49,16 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f8fafc;
+    background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    @apply bg-slate-200 dark:bg-slate-800;
     border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    @apply bg-slate-300 dark:bg-slate-700;
 }
 
 .thin-scrollbar::-webkit-scrollbar {
@@ -65,10 +71,39 @@ body {
 }
 
 .thin-scrollbar::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
+    @apply bg-slate-200 dark:bg-slate-800;
     border-radius: 10px;
 }
 
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
+    @apply bg-slate-300 dark:bg-slate-700;
+}
+
+/* Global scrollbar for body/main */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-800;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-slate-700;
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 transparent;
+}
+
+.dark * {
+    scrollbar-color: #1e293b transparent;
 }

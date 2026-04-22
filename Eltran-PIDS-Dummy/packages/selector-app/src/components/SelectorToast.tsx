@@ -27,13 +27,13 @@ const SelectorToast = React.memo(function SelectorToast({
         initial={{ opacity: 0, y: 50, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, x: 20, scale: 0.95 }}
-        className="fixed bottom-10 right-10 z-[70] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border-none border-slate-100 min-w-[350px] max-w-[420px]"
+        className="fixed bottom-10 right-10 z-[70] bg-white dark:bg-slate-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800 min-w-[350px] max-w-[420px] transition-colors"
       >
-        <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1d2d6a]" />
+        <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1d2d6a] dark:bg-[#ee6f1f]" />
         <div className="relative p-5 pl-7 pb-6">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50"
+            className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors bg-transparent border-none p-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <X size={18} strokeWidth={2.5} />
           </button>
@@ -42,22 +42,22 @@ const SelectorToast = React.memo(function SelectorToast({
               <Info size={24} className="text-white" />
             </div>
             <div className="flex flex-col pr-6">
-              <span className="font-semibold text-lg leading-tight mb-2 text-[#1d2d6a]">
+              <span className="font-semibold text-lg leading-tight mb-2 text-[#1d2d6a] dark:text-white">
                 {toast.title}
               </span>
-              <span className="text-slate-600 font-medium text-[15px] leading-relaxed mb-5">
+              <span className="text-slate-600 dark:text-slate-400 font-medium text-[15px] leading-relaxed mb-5">
                 {toast.message}
               </span>
               <div className="flex justify-end gap-5 items-center mt-2">
                 <button
                   onClick={onClose}
-                  className="text-slate-500 font-semibold text-sm hover:text-slate-700 transition-colors"
+                  className="text-slate-500 dark:text-slate-400 font-semibold text-sm hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                 >
                   Tutup
                 </button>
                 <button
                   onClick={onClose}
-                  className="text-[#1d2d6a] font-bold text-sm hover:text-blue-800 transition-colors"
+                  className="text-[#1d2d6a] dark:text-[#ee6f1f] font-bold text-sm hover:text-blue-800 dark:hover:text-orange-400 transition-colors"
                 >
                   Lihat Detail
                 </button>
@@ -65,7 +65,7 @@ const SelectorToast = React.memo(function SelectorToast({
             </div>
           </div>
         </div>
-        <div className="h-1.5 w-full bg-orange-100 absolute bottom-0 left-0">
+        <div className="h-1.5 w-full bg-orange-100 dark:bg-orange-950/40 absolute bottom-0 left-0">
           <motion.div
             initial={{ width: "100%" }}
             animate={{ width: "0%" }}

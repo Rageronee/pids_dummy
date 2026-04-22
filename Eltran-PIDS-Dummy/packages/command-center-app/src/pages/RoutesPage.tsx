@@ -293,7 +293,9 @@ export default function RoutesPage({
     try {
       const map = new maplibregl.Map({
         container: node,
-        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        style: document.documentElement.classList.contains("dark") 
+          ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
         center: [106.8272, -6.1751],
         zoom: 12,
         pitch: 45,
@@ -393,14 +395,10 @@ export default function RoutesPage({
     const map = mapRef.current;
     if (!map || !mapIsReady) return;
 
-    const styleUrl =
-      mapStyle === "streets"
-        ? "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        : "https://api.maptiler.com/maps/satellite/style.json?key=get_your_own_key"; // Fallback or placeholder
     const actualStyle =
       mapStyle === "streets"
-        ? "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+        ? (document.documentElement.classList.contains("dark") ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json")
+        : "https://api.maptiler.com/maps/satellite/style.json?key=get_your_own_key";
 
     map.setStyle(actualStyle);
   }, [mapStyle, mapIsReady]);
@@ -717,7 +715,7 @@ export default function RoutesPage({
   useEffect(() => {
     setHeader(
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-4 border-r border-slate-100 pr-6">
+        <div className="flex items-center gap-4 border-r border-slate-100 dark:border-slate-800 pr-6">
           {loading && (
             <div className="flex items-center gap-2 text-[#ee6f1f] animate-pulse">
               <RefreshCw size={12} className="animate-spin" />
@@ -727,10 +725,10 @@ export default function RoutesPage({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-3 border-l border-slate-100 pl-6">
+        <div className="flex items-center gap-3 border-l border-slate-100 dark:border-slate-800 pl-6">
           <div className="relative group">
             <Search
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f] transition-colors"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600 group-focus-within:text-[#ee6f1f] transition-colors"
               size={14}
             />
             <input
@@ -738,7 +736,7 @@ export default function RoutesPage({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari rute atau nomor KA..."
-              className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#1d2d6a] outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-96 shadow-sm"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#1d2d6a] dark:text-white outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all w-96 shadow-sm"
             />
           </div>
           <button
@@ -776,7 +774,7 @@ export default function RoutesPage({
       : [];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-900 transition-colors">
       <ConfirmModal
         isOpen={!!deleteTarget}
         title={`Hapus Rute`}
@@ -787,13 +785,13 @@ export default function RoutesPage({
       />
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pr-6 custom-scrollbar pb-20 border-r border-slate-200">
-          <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-2 shrink-0 w-fit">
+        <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pr-6 custom-scrollbar pb-20 border-r border-slate-200 dark:border-slate-800">
+          <div className="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-2 shrink-0 w-fit">
             {["All Routes", "Intercity", "Commuter", "Lokal"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`h-10 px-6 rounded-lg font-semibold text-xs transition-all ${activeCategory === cat ? "bg-[#1d2d6a] text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                className={`h-10 px-6 rounded-lg font-semibold text-xs transition-all ${activeCategory === cat ? "bg-[#1d2d6a] dark:bg-slate-950 text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
               >
                 {cat}
               </button>
@@ -814,8 +812,8 @@ export default function RoutesPage({
                   onClick={() => setSelectedRouteId(route.name)}
                   className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${
                     selectedRouteId === route.name
-                      ? "bg-white border-[#1d2d6a] shadow-lg"
-                      : "bg-white border-transparent hover:border-slate-200 shadow-sm"
+                      ? "bg-white dark:bg-slate-800 border-[#1d2d6a] shadow-lg"
+                      : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-700 shadow-sm"
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -823,14 +821,14 @@ export default function RoutesPage({
                       <span
                         className={`px-2 py-0.5 rounded-md text-[9px] font-semibold uppercase tracking-wider ${
                           route.status === "ON TRACK"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-red-100 text-red-600"
+                            ? "bg-green-100 text-green-600 dark:bg-green-900/30"
+                            : "bg-red-100 text-red-600 dark:bg-red-900/30"
                         }`}
                       >
                         {route.status}
                       </span>
                       {route.is_active && (
-                        <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded-md text-[9px] font-semibold uppercase tracking-wider">
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 dark:bg-blue-900/30 rounded-md text-[9px] font-semibold uppercase tracking-wider">
                           <Lock size={10} /> Running
                         </span>
                       )}
@@ -839,22 +837,22 @@ export default function RoutesPage({
                       </span>
                     </div>
                     <div className="text-right">
-                      <div className="text-[#1d2d6a] font-semibold text-sm flex items-center gap-1.5 justify-end">
+                      <div className="text-[#1d2d6a] dark:text-white font-semibold text-sm flex items-center gap-1.5 justify-end">
                         <Clock size={14} className="text-[#ee6f1f]" />
                         {route.scheduled_time}{" "}
                         {route.status === "DELAYED" ? "Delayed" : ""}
                       </div>
-                      <div className="text-slate-400 text-[9px] font-bold mt-0.5">
+                      <div className="text-slate-400 dark:text-slate-500 text-[9px] font-bold mt-0.5">
                         Delay: {route.delay}
                       </div>
                     </div>
                   </div>
 
                   <div className="mb-3">
-                    <h3 className="text-lg font-semibold text-[#1d2d6a] tracking-tight truncate">
+                    <h3 className="text-lg font-semibold text-[#1d2d6a] dark:text-white tracking-tight truncate">
                       {route.name}
                     </h3>
-                    <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[11px] mt-0.5 truncate">
+                    <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-bold text-[11px] mt-0.5 truncate">
                       {route.stations?.[0]?.name || "Origin"}
                       <ChevronRight size={12} className="shrink-0" />
                       {route.stations?.[route.stations.length - 1]?.name ||
@@ -862,9 +860,9 @@ export default function RoutesPage({
                     </div>
                   </div>
 
-                  <div className="flex border-t border-slate-100 pt-4 mt-1 flex-col gap-3">
+                  <div className="flex border-t border-slate-100 dark:border-slate-700 pt-4 mt-1 flex-col gap-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                         Trip Progress
                       </span>
                       {(() => {
@@ -877,13 +875,13 @@ export default function RoutesPage({
                               )
                             : 0;
                         return (
-                          <span className="text-[10px] font-bold text-[#1d2d6a]">
+                          <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-white">
                             {progress}%
                           </span>
                         );
                       })()}
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                       {(() => {
                         const totalStations = route.stations?.length || 0;
                         const currentIdx = route.current_station_index || 0;
@@ -908,20 +906,20 @@ export default function RoutesPage({
 
                     <div className="grid grid-cols-3 gap-2 mt-1">
                       <div className="flex items-center gap-1.5 opacity-60">
-                        <Train size={10} className="text-slate-400" />
-                        <span className="text-[9px] font-semibold text-slate-500">
+                        <Train size={10} className="text-slate-400 dark:text-slate-500" />
+                        <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
                           {route.units}U
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 opacity-60">
-                        <MapPinned size={10} className="text-slate-400" />
-                        <span className="text-[9px] font-semibold text-slate-500">
+                        <MapPinned size={10} className="text-slate-400 dark:text-slate-500" />
+                        <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
                           {route.distance}K
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 opacity-60">
-                        <Users size={10} className="text-slate-400" />
-                        <span className="text-[9px] font-semibold text-slate-500">
+                        <Users size={10} className="text-slate-400 dark:text-slate-500" />
+                        <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
                           {route.occupancy}%
                         </span>
                       </div>
@@ -932,7 +930,7 @@ export default function RoutesPage({
                     {route.is_active ? (
                       <div
                         title="Rute sedang berjalan (Terkunci)"
-                        className="p-1.5 bg-slate-50 text-slate-300 rounded-md cursor-not-allowed"
+                        className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-300 dark:text-slate-600 rounded-md cursor-not-allowed"
                       >
                         <Lock size={12} />
                       </div>
@@ -943,7 +941,7 @@ export default function RoutesPage({
                             e.stopPropagation();
                             handleEditRoute(route);
                           }}
-                          className="p-1.5 bg-slate-50 text-slate-400 hover:text-[#1d2d6a] rounded-md transition-all"
+                          className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-[#1d2d6a] dark:text-slate-400 dark:hover:text-white rounded-md transition-all"
                         >
                           <Pencil size={12} />
                         </button>
@@ -952,7 +950,7 @@ export default function RoutesPage({
                             e.stopPropagation();
                             setDeleteTarget({ id: route.name });
                           }}
-                          className="p-1.5 bg-red-50 text-red-300 hover:text-red-500 rounded-md transition-all"
+                          className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-300 hover:text-red-500 rounded-md transition-all"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -969,7 +967,7 @@ export default function RoutesPage({
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#1d2d6a] disabled:opacity-30 transition-all shadow-sm"
+                className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-[#1d2d6a] disabled:opacity-30 transition-all shadow-sm"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -981,8 +979,8 @@ export default function RoutesPage({
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
                       currentPage === i + 1
-                        ? "bg-[#1d2d6a] text-white shadow-md"
-                        : "bg-white text-slate-400 hover:bg-slate-50 border border-slate-100"
+                        ? "bg-[#1d2d6a] dark:bg-slate-700 text-white shadow-md"
+                        : "bg-white dark:bg-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700"
                     }`}
                   >
                     {i + 1}
@@ -995,7 +993,7 @@ export default function RoutesPage({
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-[#1d2d6a] disabled:opacity-30 transition-all shadow-sm"
+                className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-[#1d2d6a] disabled:opacity-30 transition-all shadow-sm"
               >
                 <ChevronRight size={16} />
               </button>
@@ -1003,16 +1001,16 @@ export default function RoutesPage({
           )}
         </div>
 
-        <div className="w-[65%] flex flex-col bg-white overflow-hidden h-full relative">
+        <div className="w-[65%] flex flex-col bg-white dark:bg-slate-900 overflow-hidden h-full relative">
           {selectedRoute ? (
             <>
               <div
                 ref={mapWrapperRef}
-                className={`relative shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${isMapFullscreen ? "fixed inset-0 z-[1000]" : "h-44 border-b border-slate-100"}`}
+                className={`relative shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${isMapFullscreen ? "fixed inset-0 z-[1000]" : "h-44 border-b border-slate-100 dark:border-slate-800"}`}
               >
                 <div
                   ref={mapContainerRef}
-                  className="absolute inset-0 bg-slate-100"
+                  className="absolute inset-0 bg-slate-100 dark:bg-slate-950"
                 />
 
                 {!isMapFullscreen && (
@@ -1034,22 +1032,22 @@ export default function RoutesPage({
                   <div className="absolute top-8 right-8 flex flex-col gap-3 z-[1100]">
                     <button
                       onClick={toggleMapFullscreen}
-                      className="p-4 bg-white/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] hover:bg-white shadow-2xl transition-all active:scale-90 border border-white/20"
+                      className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] dark:text-white hover:bg-white dark:hover:bg-slate-800 shadow-2xl transition-all active:scale-90 border border-white/20 dark:border-slate-800"
                       title="Close Fullscreen"
                     >
                       <X size={24} strokeWidth={2.5} />
                     </button>
-                    <div className="flex flex-col bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+                    <div className="flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-slate-800 overflow-hidden">
                       <button
                         onClick={() => mapRef.current?.zoomIn()}
-                        className="p-4 text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100"
+                        className="p-4 text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100 dark:border-slate-800"
                         title="Zoom In"
                       >
                         <Plus size={20} strokeWidth={2.5} />
                       </button>
                       <button
                         onClick={() => mapRef.current?.zoomOut()}
-                        className="p-4 text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100"
+                        className="p-4 text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100 dark:border-slate-800"
                         title="Zoom Out"
                       >
                         <Minus size={20} strokeWidth={2.5} />
@@ -1060,7 +1058,7 @@ export default function RoutesPage({
                             prev === "streets" ? "satellite" : "streets",
                           )
                         }
-                        className={`p-4 transition-all active:scale-90 border-b border-slate-100 ${mapStyle === "satellite" ? "text-[#ee6f1f] bg-orange-50" : "text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f]"}`}
+                        className={`p-4 transition-all active:scale-90 border-b border-slate-100 dark:border-slate-800 ${mapStyle === "satellite" ? "text-[#ee6f1f] bg-orange-50" : "text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f]"}`}
                         title="Toggle Map Style"
                       >
                         <Moon size={20} strokeWidth={2.5} />
@@ -1106,7 +1104,7 @@ export default function RoutesPage({
                             console.error("Fit bounds failed:", e);
                           }
                         }}
-                        className="p-4 text-[#1d2d6a] hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90"
+                        className="p-4 text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90"
                         title="Pusatkan Peta"
                       >
                         <Target size={20} strokeWidth={2.5} />
@@ -1127,15 +1125,15 @@ export default function RoutesPage({
                   <motion.div
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 z-[1100] flex items-center justify-between gap-10"
+                    className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 z-[1100] flex items-center justify-between gap-10"
                   >
-                    <div className="flex items-center gap-5 border-r border-slate-100 pr-10 shrink-0">
-                      <div className="p-4 bg-orange-50 text-[#ee6f1f] rounded-3xl shadow-inner">
+                    <div className="flex items-center gap-5 border-r border-slate-100 dark:border-slate-800 pr-10 shrink-0">
+                      <div className="p-4 bg-orange-50 dark:bg-slate-800 text-[#ee6f1f] rounded-3xl shadow-inner">
                         <Train size={32} />
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-2xl font-black text-[#1d2d6a] tracking-tight">
+                          <h3 className="text-2xl font-black text-[#1d2d6a] dark:text-white tracking-tight">
                             {selectedRoute.name}
                           </h3>
                           <span
@@ -1147,14 +1145,14 @@ export default function RoutesPage({
                         <div className="flex items-center gap-3">
                           <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                             Train No.{" "}
-                            <span className="text-[#1d2d6a] ml-1">
+                            <span className="text-[#1d2d6a] dark:text-white ml-1">
                               {selectedRoute.train_number}
                             </span>
                           </div>
-                          <div className="w-1 h-1 rounded-full bg-slate-300" />
+                          <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
                           <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                             Type{" "}
-                            <span className="text-[#1d2d6a] ml-1">
+                            <span className="text-[#1d2d6a] dark:text-white ml-1">
                               {(selectedRoute.type as any) ===
                               "FeatureCollection"
                                 ? "Intercity"
@@ -1172,7 +1170,7 @@ export default function RoutesPage({
                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                               Departed from
                             </div>
-                            <div className="text-sm font-bold text-[#1d2d6a]">
+                            <div className="text-sm font-bold text-[#1d2d6a] dark:text-white">
                               {(() => {
                                 const curr =
                                   selectedRoute.current_station_index || 0;
@@ -1188,14 +1186,14 @@ export default function RoutesPage({
                             </div>
                           </div>
                           <ChevronRight
-                            className="text-slate-300 mt-4"
+                            className="text-slate-300 dark:text-slate-700 mt-4"
                             size={16}
                           />
                           <div className="space-y-0.5">
                             <div className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-[0.2em]">
                               Arriving Next
                             </div>
-                            <div className="text-base font-black text-[#1d2d6a] flex items-center gap-2">
+                            <div className="text-base font-black text-[#1d2d6a] dark:text-white flex items-center gap-2">
                               {selectedRoute.stations[
                                 selectedRoute.current_station_index || 0
                               ]?.name || "Unknown"}
@@ -1207,7 +1205,7 @@ export default function RoutesPage({
                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">
                             Trip Progress
                           </span>
-                          <span className="text-lg font-black text-[#1d2d6a]">
+                          <span className="text-lg font-black text-[#1d2d6a] dark:text-white">
                             {(() => {
                               const total = selectedRoute.stations?.length || 0;
                               const curr =
@@ -1226,7 +1224,7 @@ export default function RoutesPage({
                       </div>
 
                       <div className="relative pt-2">
-                        <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
+                        <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{
@@ -1252,13 +1250,13 @@ export default function RoutesPage({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-8 pl-10 border-l border-slate-100 shrink-0">
+                    <div className="flex items-center gap-8 pl-10 border-l border-slate-100 dark:border-slate-800 shrink-0">
                       <div className="grid grid-cols-3 gap-x-8 gap-y-3">
                         <div className="space-y-0.5">
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                             Speed
                           </span>
-                          <div className="text-sm font-black text-[#1d2d6a] flex items-baseline gap-1">
+                          <div className="text-sm font-black text-[#1d2d6a] dark:text-white flex items-baseline gap-1">
                             {selectedRoute.status === "ON TRACK" ? "74" : "0"}
                             <span className="text-[9px] text-slate-400 font-bold uppercase">
                               km/h
@@ -1277,7 +1275,7 @@ export default function RoutesPage({
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                             Suhu
                           </span>
-                          <div className="flex items-center gap-1.5 text-sm font-black text-[#1d2d6a]">
+                          <div className="flex items-center gap-1.5 text-sm font-black text-[#1d2d6a] dark:text-white">
                             28°C
                           </div>
                         </div>
@@ -1285,7 +1283,7 @@ export default function RoutesPage({
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                             Distance
                           </span>
-                          <div className="text-sm font-black text-[#1d2d6a]">
+                          <div className="text-sm font-black text-[#1d2d6a] dark:text-white">
                             {selectedRoute.distance}{" "}
                             <span className="text-[10px] text-slate-400 ml-0.5">
                               KM
@@ -1305,7 +1303,7 @@ export default function RoutesPage({
                   </h4>
                   <div className="flex items-center gap-2">
                     {selectedRoute.is_active && (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-semibold border border-amber-100">
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg text-[10px] font-semibold border border-amber-100 dark:border-amber-900">
                         <AlertCircle size={12} /> Modifikasi Terkunci
                       </span>
                     )}
@@ -1349,7 +1347,7 @@ export default function RoutesPage({
                             {!isLast && (
                               <div
                                 className={`absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 ${
-                                  isPassed ? "bg-slate-200" : "bg-slate-100"
+                                  isPassed ? "bg-slate-200 dark:bg-slate-800" : "bg-slate-100 dark:bg-slate-800"
                                 }`}
                               />
                             )}

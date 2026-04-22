@@ -147,14 +147,14 @@ export function MasterModals({
       {/* Standby Confirmation Modal */}
       <AnimatePresence>
         {showStandbyConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-slate-900/80 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors"
             >
-              <div className="bg-blue-50 dark:bg-slate-950 p-6 flex flex-col items-center justify-center border-b border-blue-100 dark:border-slate-800 transition-colors">
+              <div className="bg-blue-50 dark:bg-slate-900 p-6 flex flex-col items-center justify-center border-b border-blue-100 dark:border-slate-800 transition-colors">
                 <div className="w-16 h-16 bg-blue-100 dark:bg-[#1d2d6a]/30 rounded-full flex items-center justify-center mb-4 text-blue-500 dark:text-[#ee6f1f] shadow-inner">
                   <Video size={32} />
                 </div>
@@ -191,7 +191,7 @@ export function MasterModals({
       {/* Delete GeoJSON Confirmation Modal */}
       <AnimatePresence>
         {showDeleteModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-slate-900/80 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -233,7 +233,7 @@ export function MasterModals({
       {/* Clear Playlist Confirmation Modal */}
       <AnimatePresence>
         {showClearPlaylistConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-slate-900/80 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -287,7 +287,7 @@ export function MasterModals({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-[#0b1437]/80 dark:bg-black/90 backdrop-blur-md"
+            className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-[#0b1437]/80 dark:bg-slate-900/90 backdrop-blur-md"
           >
             <div className="bg-white/10 dark:bg-slate-900/50 p-8 rounded-3xl mb-6 shadow-2xl border border-white/20 dark:border-slate-800 flex items-center justify-center transition-colors">
               <Loader2 size={64} className="text-[#ee6f1f] animate-spin" />
@@ -306,14 +306,14 @@ export function MasterModals({
       {/* Audio Settings Modal */}
       <AnimatePresence>
         {showAudioSettings && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-slate-900/80 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors"
             >
-              <div className="bg-slate-50 dark:bg-slate-950 p-6 flex flex-col items-center justify-center border-b border-slate-200 dark:border-slate-800 relative transition-colors">
+              <div className="bg-slate-50 dark:bg-slate-900 p-6 flex flex-col items-center justify-center border-b border-slate-200 dark:border-slate-800 relative transition-colors">
                 <button
                   onClick={() => setShowAudioSettings(false)}
                   className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 bg-transparent border-none p-1 rounded-full"
@@ -389,14 +389,14 @@ export function MasterModals({
       {/* Video Settings Modal */}
       <AnimatePresence>
         {showVideoSettings && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0b1437]/60 dark:bg-slate-900/80 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors"
             >
-              <div className="bg-slate-50 dark:bg-slate-950 p-6 flex flex-col items-center justify-center border-b border-slate-200 dark:border-slate-800 relative transition-colors">
+              <div className="bg-slate-50 dark:bg-slate-900 p-6 flex flex-col items-center justify-center border-b border-slate-200 dark:border-slate-800 relative transition-colors">
                 <button
                   onClick={() => setShowVideoSettings(false)}
                   className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 bg-transparent border-none p-1 rounded-full"

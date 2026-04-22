@@ -15,8 +15,6 @@ import {
   ChevronRight,
   ChevronDown,
   Maximize,
-  Sun,
-  Moon,
   Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -112,7 +110,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-black group"
+      className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-slate-900 group"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -124,7 +122,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${cameras[currentCamIndex].url})` }}
         >
-          <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-slate-900/10 mix-blend-overlay" />
         </motion.div>
       </AnimatePresence>
       <motion.div
@@ -150,7 +148,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button
             onClick={toggleFullscreen}
-            className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg"
+            className="bg-slate-900/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg"
             title="Fullscreen"
           >
             <Maximize size={24} />
@@ -168,7 +166,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
       <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button
           onClick={handlePrevCam}
-          className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
+          className="bg-slate-900/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
         >
           <ChevronLeft size={36} />
         </button>
@@ -176,7 +174,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
       <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button
           onClick={handleNextCam}
-          className="bg-black/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
+          className="bg-slate-900/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
         >
           <ChevronRight size={36} />
         </button>
@@ -194,7 +192,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute bottom-full right-0 mb-4 w-[400px] bg-black/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
+                className="absolute bottom-full right-0 mb-4 w-[400px] bg-slate-900/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
               >
                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
                   Pilih Lokasi Kamera
@@ -869,7 +867,11 @@ function App() {
 
   // Auth guard
   if (!authUser) {
-    return <LoginScreen onLogin={handleLogin} title="PIDS Master Controller" />;
+    return (
+      <div className={isDark ? "dark" : ""}>
+        <LoginScreen onLogin={handleLogin} title="PIDS Master Controller" />
+      </div>
+    );
   }
 
   const NAV_ITEMS = [
@@ -882,9 +884,9 @@ function App() {
   ];
 
   return (
-    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-black text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
+    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Sidebar */}
-      <aside className="w-80 bg-[#1d2d6a] dark:bg-[#020617] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+      <aside className="w-80 bg-slate-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
 
         <div className="p-10 pb-6">
           <img
@@ -916,7 +918,7 @@ function App() {
           </ul>
         </nav>
 
-        <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-black/5">
+        <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-slate-950/20">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 active:scale-95 group"
@@ -932,7 +934,7 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white dark:bg-[#020617] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
 
           <div className="flex items-center gap-5">
             <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
@@ -984,7 +986,7 @@ function App() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-10 bg-[#f8fafc] dark:bg-black">
+        <div className="flex-1 overflow-auto p-10 bg-[#f8fafc] dark:bg-slate-900">
           <AnimatePresence mode="wait">
             {activeTab === "pids" ? (
               <motion.div
@@ -1142,7 +1144,7 @@ function App() {
                   </div>
                   <button
                     onClick={() => setActiveTab("pids")}
-                    className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow-lg transition-all active:scale-95"
+                    className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl shadow-lg transition-all active:scale-95"
                   >
                     Return to Dashboard
                   </button>
