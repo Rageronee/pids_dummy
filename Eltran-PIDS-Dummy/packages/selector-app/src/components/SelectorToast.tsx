@@ -27,7 +27,7 @@ const SelectorToast = React.memo(function SelectorToast({
         initial={{ opacity: 0, y: 50, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, x: 20, scale: 0.95 }}
-        className="fixed bottom-10 right-10 z-[70] bg-white dark:bg-slate-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800 min-w-[350px] max-w-[420px] transition-colors"
+        className="fixed bottom-10 right-10 z-[70] bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800/50 min-w-[350px] max-w-[420px] transition-colors"
       >
         <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1d2d6a] dark:bg-[#ee6f1f]" />
         <div className="relative p-5 pl-7 pb-6">

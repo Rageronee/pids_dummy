@@ -40,7 +40,7 @@ import {
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
 import { ConfirmModal, ToastNotification } from "../components/SharedUI";
-import maplibregl from "maplibre-gl";
+
 
 interface Route {
   name: string;
@@ -61,9 +61,11 @@ interface Route {
 export default function RoutesPage({
   token,
   setHeader,
+  setPage,
 }: {
   token: string;
   setHeader: (node: React.ReactNode) => void;
+  setPage: (page: string) => void;
 }) {
   const [routes, setRoutes] = useState<Record<string, Route>>({});
   const [masterStations, setMasterStations] = useState<any[]>([]);
@@ -93,35 +95,7 @@ export default function RoutesPage({
   const [connected, setConnected] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const { toast, showToast, closeToast } = useToast();
-  const mapWrapperRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markerRef = useRef<maplibregl.Marker | null>(null);
   const stationsListRef = useRef<HTMLDivElement>(null);
-  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
-  const [mapIsReady, setMapIsReady] = useState(false);
-  const lastZoomedRouteId = useRef<string | null>(null);
-  const [mapStyle, setMapStyle] = useState<"streets" | "satellite">("streets");
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsMapFullscreen(!!document.fullscreenElement);
-      if (mapRef.current) mapRef.current.resize();
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  const toggleMapFullscreen = useCallback(() => {
-    if (!mapWrapperRef.current) return;
-    if (!document.fullscreenElement) {
-      mapWrapperRef.current.requestFullscreen().catch((err) => {
-        showToast(`Gagal fullscreen: ${err.message}`, false);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  }, [showToast]);
   const isNameMatch = (a: string | any, b: string | null | undefined) => {
     if (!a || !b) return false;
     const sA = typeof a === "string" ? a : a.name || "";
@@ -182,9 +156,9 @@ export default function RoutesPage({
           const r = d.routes[key];
           const stations =
             sData.serviceName === r.name &&
-            sData.stations &&
-            Array.isArray(sData.stations) &&
-            sData.stations.length > 0
+              sData.stations &&
+              Array.isArray(sData.stations) &&
+              sData.stations.length > 0
               ? sData.stations
               : r.stations || [];
 
@@ -252,7 +226,7 @@ export default function RoutesPage({
       const res = await fetch(`${API}/api/stations-master`);
       const d = await res.json();
       if (d.success) setMasterStations(d.data.features || []);
-    } catch {}
+    } catch { }
   }, []);
 
   const fetchDbStations = useCallback(async () => {
@@ -262,7 +236,7 @@ export default function RoutesPage({
       });
       const d = await res.json();
       if (d.success) setDbStations(d.stations || []);
-    } catch {}
+    } catch { }
   }, [token]);
 
   useEffect(() => {
@@ -277,131 +251,7 @@ export default function RoutesPage({
     };
     load();
   }, [fetchRoutes, fetchMasterStations, fetchDbStations]);
-  const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) {
-      if (mapRef.current) {
-        console.log("[Map] Container unmounted, removing map");
-        mapRef.current.remove();
-        mapRef.current = null;
-        setMapIsReady(false);
-      }
-      return;
-    }
-    if (mapRef.current) return;
 
-    console.log("[Map] Container mounted, initializing...");
-    try {
-      const map = new maplibregl.Map({
-        container: node,
-        style: document.documentElement.classList.contains("dark") 
-          ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-          : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-        center: [106.8272, -6.1751],
-        zoom: 12,
-        pitch: 45,
-        attributionControl: false,
-        trackResize: true,
-        antialias: true,
-      });
-
-      mapRef.current = map;
-
-      map.on("load", () => {
-        console.log("[Map] Style loaded");
-        setMapIsReady(true);
-        setTimeout(() => map.resize(), 50);
-      });
-
-      map.on("error", (e) => {
-        console.error("[Map] Error:", e);
-      });
-      const ro = new ResizeObserver(() => {
-        if (mapRef.current) mapRef.current.resize();
-      });
-      ro.observe(node);
-      const originalRemove = map.remove.bind(map);
-      map.remove = () => {
-        ro.disconnect();
-        originalRemove();
-      };
-    } catch (e) {
-      console.error("[Map] Init crash:", e);
-    }
-  }, []);
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapIsReady || !selectedRouteId) return;
-
-    const route = routes[selectedRouteId];
-    if (!route?.geojson) return;
-
-    try {
-      const geojson = JSON.parse(route.geojson);
-      if (map.getSource("route")) {
-        (map.getSource("route") as maplibregl.GeoJSONSource).setData(geojson);
-      } else {
-        map.addSource("route", { type: "geojson", data: geojson });
-        map.addLayer({
-          id: "route-line",
-          type: "line",
-          source: "route",
-          layout: { "line-join": "round", "line-cap": "round" },
-          paint: { "line-color": "#ee6f1f", "line-width": 4 },
-        });
-      }
-      if (markerRef.current) {
-        markerRef.current.remove();
-      }
-
-      const currentIdx = route.current_station_index || 0;
-      const currentStationFeature = geojson.features.find(
-        (f: any) =>
-          f.geometry.type === "Point" &&
-          f.properties?.name?.toUpperCase() ===
-            route.stations[currentIdx]?.name?.toUpperCase(),
-      );
-
-      if (currentStationFeature) {
-        const el = document.createElement("div");
-        el.className =
-          "w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-[0_0_20px_rgba(59,130,246,0.8)] animate-pulse relative z-50";
-        markerRef.current = new maplibregl.Marker({ element: el })
-          .setLngLat(currentStationFeature.geometry.coordinates)
-          .addTo(map);
-      }
-      const bounds = new maplibregl.LngLatBounds();
-      let hasAny = false;
-      geojson.features.forEach((f: any) => {
-        if (f.geometry.type === "Point") {
-          bounds.extend(f.geometry.coordinates);
-          hasAny = true;
-        } else if (f.geometry.type === "LineString") {
-          f.geometry.coordinates.forEach((c: any) => {
-            bounds.extend(c);
-            hasAny = true;
-          });
-        }
-      });
-
-      if (hasAny && lastZoomedRouteId.current !== selectedRouteId) {
-        map.fitBounds(bounds, { padding: 50, duration: 1500 });
-        lastZoomedRouteId.current = selectedRouteId;
-      }
-    } catch (e) {
-      console.error("[Map] Logic error:", e);
-    }
-  }, [selectedRouteId, routes, mapIsReady]);
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapIsReady) return;
-
-    const actualStyle =
-      mapStyle === "streets"
-        ? (document.documentElement.classList.contains("dark") ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json")
-        : "https://api.maptiler.com/maps/satellite/style.json?key=get_your_own_key";
-
-    map.setStyle(actualStyle);
-  }, [mapStyle, mapIsReady]);
 
   useEffect(() => {
     const socket = io(API, {
@@ -769,8 +619,8 @@ export default function RoutesPage({
   const filteredSuggestions =
     stationSearch.length > 2
       ? dbStations.filter((s) =>
-          s.name.toLowerCase().includes(stationSearch.toLowerCase()),
-        )
+        s.name.toLowerCase().includes(stationSearch.toLowerCase()),
+      )
       : [];
 
   return (
@@ -810,20 +660,18 @@ export default function RoutesPage({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.03 }}
                   onClick={() => setSelectedRouteId(route.name)}
-                  className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${
-                    selectedRouteId === route.name
-                      ? "bg-white dark:bg-slate-800 border-[#1d2d6a] shadow-lg"
-                      : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-700 shadow-sm"
-                  }`}
+                  className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${selectedRouteId === route.name
+                    ? "bg-white dark:bg-slate-800 border-[#1d2d6a] shadow-lg"
+                    : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-700 shadow-sm"
+                    }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded-md text-[9px] font-semibold uppercase tracking-wider ${
-                          route.status === "ON TRACK"
-                            ? "bg-green-100 text-green-600 dark:bg-green-900/30"
-                            : "bg-red-100 text-red-600 dark:bg-red-900/30"
-                        }`}
+                        className={`px-2 py-0.5 rounded-md text-[9px] font-semibold uppercase tracking-wider ${route.status === "ON TRACK"
+                          ? "bg-green-100 text-green-600 dark:bg-green-900/30"
+                          : "bg-red-100 text-red-600 dark:bg-red-900/30"
+                          }`}
                       >
                         {route.status}
                       </span>
@@ -871,8 +719,8 @@ export default function RoutesPage({
                         const progress =
                           totalStations > 1
                             ? Math.round(
-                                (currentIdx / (totalStations - 1)) * 100,
-                              )
+                              (currentIdx / (totalStations - 1)) * 100,
+                            )
                             : 0;
                         return (
                           <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-white">
@@ -888,42 +736,21 @@ export default function RoutesPage({
                         const progress =
                           totalStations > 1
                             ? Math.round(
-                                (currentIdx / (totalStations - 1)) * 100,
-                              )
+                              (currentIdx / (totalStations - 1)) * 100,
+                            )
                             : 0;
                         return (
                           <div
-                            className={`h-full transition-all duration-1000 rounded-full ${
-                              route.status === "DELAYED"
-                                ? "bg-amber-500"
-                                : "bg-[#ee6f1f]"
-                            }`}
+                            className={`h-full transition-all duration-1000 rounded-full ${route.status === "DELAYED"
+                              ? "bg-amber-500"
+                              : "bg-[#ee6f1f]"
+                              }`}
                             style={{ width: `${progress}%` }}
                           />
                         );
                       })()}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 mt-1">
-                      <div className="flex items-center gap-1.5 opacity-60">
-                        <Train size={10} className="text-slate-400 dark:text-slate-500" />
-                        <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
-                          {route.units}U
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 opacity-60">
-                        <MapPinned size={10} className="text-slate-400 dark:text-slate-500" />
-                        <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
-                          {route.distance}K
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 opacity-60">
-                        <Users size={10} className="text-slate-400 dark:text-slate-500" />
-                        <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
-                          {route.occupancy}%
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
                   <div className="absolute top-5 right-5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -977,11 +804,10 @@ export default function RoutesPage({
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
-                      currentPage === i + 1
-                        ? "bg-[#1d2d6a] dark:bg-slate-700 text-white shadow-md"
-                        : "bg-white dark:bg-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700"
-                    }`}
+                    className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${currentPage === i + 1
+                      ? "bg-[#1d2d6a] dark:bg-slate-700 text-white shadow-md"
+                      : "bg-white dark:bg-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-100 dark:border-slate-700"
+                      }`}
                   >
                     {i + 1}
                   </button>
@@ -1004,297 +830,7 @@ export default function RoutesPage({
         <div className="w-[65%] flex flex-col bg-white dark:bg-slate-900 overflow-hidden h-full relative">
           {selectedRoute ? (
             <>
-              <div
-                ref={mapWrapperRef}
-                className={`relative shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${isMapFullscreen ? "fixed inset-0 z-[1000]" : "h-44 border-b border-slate-100 dark:border-slate-800"}`}
-              >
-                <div
-                  ref={mapContainerRef}
-                  className="absolute inset-0 bg-slate-100 dark:bg-slate-950"
-                />
 
-                {!isMapFullscreen && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent pointer-events-none z-10" />
-                )}
-
-                {!isMapFullscreen && (
-                  <div className="absolute bottom-5 left-6 pointer-events-none z-20">
-                    <h4 className="text-lg font-semibold text-white">
-                      {selectedRoute.name}{" "}
-                      <span className="opacity-50 text-sm ml-1">
-                        ({selectedRoute.train_number})
-                      </span>
-                    </h4>
-                  </div>
-                )}
-
-                {isMapFullscreen ? (
-                  <div className="absolute top-8 right-8 flex flex-col gap-3 z-[1100]">
-                    <button
-                      onClick={toggleMapFullscreen}
-                      className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl text-[#1d2d6a] dark:text-white hover:bg-white dark:hover:bg-slate-800 shadow-2xl transition-all active:scale-90 border border-white/20 dark:border-slate-800"
-                      title="Close Fullscreen"
-                    >
-                      <X size={24} strokeWidth={2.5} />
-                    </button>
-                    <div className="flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-slate-800 overflow-hidden">
-                      <button
-                        onClick={() => mapRef.current?.zoomIn()}
-                        className="p-4 text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100 dark:border-slate-800"
-                        title="Zoom In"
-                      >
-                        <Plus size={20} strokeWidth={2.5} />
-                      </button>
-                      <button
-                        onClick={() => mapRef.current?.zoomOut()}
-                        className="p-4 text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90 border-b border-slate-100 dark:border-slate-800"
-                        title="Zoom Out"
-                      >
-                        <Minus size={20} strokeWidth={2.5} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          setMapStyle((prev) =>
-                            prev === "streets" ? "satellite" : "streets",
-                          )
-                        }
-                        className={`p-4 transition-all active:scale-90 border-b border-slate-100 dark:border-slate-800 ${mapStyle === "satellite" ? "text-[#ee6f1f] bg-orange-50" : "text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f]"}`}
-                        title="Toggle Map Style"
-                      >
-                        <Moon size={20} strokeWidth={2.5} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const map = mapRef.current;
-                          if (!map || !selectedRoute?.geojson) return;
-                          try {
-                            const geojson =
-                              typeof selectedRoute.geojson === "string"
-                                ? JSON.parse(selectedRoute.geojson)
-                                : selectedRoute.geojson;
-                            const features =
-                              geojson.features ||
-                              (geojson.type === "FeatureCollection"
-                                ? []
-                                : [geojson]);
-                            const lineString = features.find(
-                              (f: any) =>
-                                f.geometry?.type === "LineString" ||
-                                f.type === "LineString",
-                            );
-                            const coords =
-                              lineString?.geometry?.coordinates ||
-                              lineString?.coordinates;
-                            if (coords && coords.length > 0) {
-                              const bounds = coords.reduce(
-                                (acc: any, coord: any) => {
-                                  return acc.extend(coord);
-                                },
-                                new maplibregl.LngLatBounds(
-                                  coords[0],
-                                  coords[0],
-                                ),
-                              );
-                              map.fitBounds(bounds, {
-                                padding: 80,
-                                duration: 2000,
-                              });
-                            }
-                          } catch (e) {
-                            console.error("Fit bounds failed:", e);
-                          }
-                        }}
-                        className="p-4 text-[#1d2d6a] dark:text-white hover:bg-orange-50 hover:text-[#ee6f1f] transition-all active:scale-90"
-                        title="Pusatkan Peta"
-                      >
-                        <Target size={20} strokeWidth={2.5} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={toggleMapFullscreen}
-                    title="Fullscreen Map"
-                    className="absolute top-4 right-4 p-2 bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 transition-all z-20 pointer-events-auto"
-                  >
-                    <ExternalLink size={14} />
-                  </button>
-                )}
-
-                {isMapFullscreen && (
-                  <motion.div
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 z-[1100] flex items-center justify-between gap-10"
-                  >
-                    <div className="flex items-center gap-5 border-r border-slate-100 dark:border-slate-800 pr-10 shrink-0">
-                      <div className="p-4 bg-orange-50 dark:bg-slate-800 text-[#ee6f1f] rounded-3xl shadow-inner">
-                        <Train size={32} />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-2xl font-black text-[#1d2d6a] dark:text-white tracking-tight">
-                            {selectedRoute.name}
-                          </h3>
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${selectedRoute.status === "ON TRACK" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
-                          >
-                            {selectedRoute.status}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            Train No.{" "}
-                            <span className="text-[#1d2d6a] dark:text-white ml-1">
-                              {selectedRoute.train_number}
-                            </span>
-                          </div>
-                          <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-                          <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            Type{" "}
-                            <span className="text-[#1d2d6a] dark:text-white ml-1">
-                              {(selectedRoute.type as any) ===
-                              "FeatureCollection"
-                                ? "Intercity"
-                                : selectedRoute.type || "Intercity"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 space-y-4">
-                      <div className="flex justify-between items-end px-1">
-                        <div className="flex items-center gap-4">
-                          <div className="space-y-0.5">
-                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                              Departed from
-                            </div>
-                            <div className="text-sm font-bold text-[#1d2d6a] dark:text-white">
-                              {(() => {
-                                const curr =
-                                  selectedRoute.current_station_index || 0;
-                                if (curr === 0)
-                                  return (
-                                    selectedRoute.stations[0]?.name || "Origin"
-                                  );
-                                return (
-                                  selectedRoute.stations[curr - 1]?.name ||
-                                  "Origin"
-                                );
-                              })()}
-                            </div>
-                          </div>
-                          <ChevronRight
-                            className="text-slate-300 dark:text-slate-700 mt-4"
-                            size={16}
-                          />
-                          <div className="space-y-0.5">
-                            <div className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-[0.2em]">
-                              Arriving Next
-                            </div>
-                            <div className="text-base font-black text-[#1d2d6a] dark:text-white flex items-center gap-2">
-                              {selectedRoute.stations[
-                                selectedRoute.current_station_index || 0
-                              ]?.name || "Unknown"}
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#ee6f1f] animate-pulse" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">
-                            Trip Progress
-                          </span>
-                          <span className="text-lg font-black text-[#1d2d6a] dark:text-white">
-                            {(() => {
-                              const total = selectedRoute.stations?.length || 0;
-                              const curr =
-                                selectedRoute.current_station_index || 0;
-                              const progress =
-                                total > 1
-                                  ? Math.round(
-                                      (Math.max(0, curr) / (total - 1)) * 100,
-                                    )
-                                  : 0;
-                              return Math.min(100, progress);
-                            })()}
-                            %
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative pt-2">
-                        <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{
-                              width: `${(() => {
-                                const total =
-                                  selectedRoute.stations?.length || 0;
-                                const curr =
-                                  selectedRoute.current_station_index || 0;
-                                const progress =
-                                  total > 1
-                                    ? Math.round(
-                                        (Math.max(0, curr) / (total - 1)) * 100,
-                                      )
-                                    : 0;
-                                return Math.min(100, progress);
-                              })()}%`,
-                            }}
-                            className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fbc02d] rounded-full shadow-[0_0_15px_rgba(238,111,31,0.4)] relative"
-                          >
-                            <div className="absolute top-0 bottom-0 right-0 w-4 bg-white/20 skew-x-[20deg] translate-x-2" />
-                          </motion.div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-8 pl-10 border-l border-slate-100 dark:border-slate-800 shrink-0">
-                      <div className="grid grid-cols-3 gap-x-8 gap-y-3">
-                        <div className="space-y-0.5">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            Speed
-                          </span>
-                          <div className="text-sm font-black text-[#1d2d6a] dark:text-white flex items-baseline gap-1">
-                            {selectedRoute.status === "ON TRACK" ? "74" : "0"}
-                            <span className="text-[9px] text-slate-400 font-bold uppercase">
-                              km/h
-                            </span>
-                          </div>
-                        </div>
-                        <div className="space-y-0.5">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            Est. Arrival
-                          </span>
-                          <div className="text-sm font-black text-[#ee6f1f]">
-                            14:45
-                          </div>
-                        </div>
-                        <div className="space-y-0.5">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            Suhu
-                          </span>
-                          <div className="flex items-center gap-1.5 text-sm font-black text-[#1d2d6a] dark:text-white">
-                            28°C
-                          </div>
-                        </div>
-                        <div className="space-y-0.5">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            Distance
-                          </span>
-                          <div className="text-sm font-black text-[#1d2d6a] dark:text-white">
-                            {selectedRoute.distance}{" "}
-                            <span className="text-[10px] text-slate-400 ml-0.5">
-                              KM
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
 
               <div className="flex-1 flex flex-col pt-8 pl-8 pr-0 pb-0 overflow-hidden">
                 <div className="flex items-center justify-between mb-6 pr-8">
@@ -1307,6 +843,12 @@ export default function RoutesPage({
                         <AlertCircle size={12} /> Modifikasi Terkunci
                       </span>
                     )}
+                    <button
+                      onClick={() => setPage("dashboard")}
+                      className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                    >
+                      <MapIcon size={10} /> Cek Rute Map
+                    </button>
                     <button
                       onClick={scrollToCurrentStation}
                       className="px-2.5 py-1 bg-[#ee6f1f] text-white text-[9px] font-bold rounded-md shadow-sm hover:bg-[#d45d15] transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
@@ -1346,28 +888,25 @@ export default function RoutesPage({
                           >
                             {!isLast && (
                               <div
-                                className={`absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 ${
-                                  isPassed ? "bg-slate-200 dark:bg-slate-800" : "bg-slate-100 dark:bg-slate-800"
-                                }`}
+                                className={`absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 ${isPassed ? "bg-slate-200 dark:bg-slate-800" : "bg-slate-100 dark:bg-slate-800"
+                                  }`}
                               />
                             )}
 
                             <div
-                              className={`relative z-10 flex items-center p-5 bg-white dark:bg-slate-900 rounded-[24px] border transition-all duration-300 shadow-sm ${
-                                isCurrent
-                                  ? "border-orange-200 dark:border-[#ee6f1f]/50 shadow-orange-500/10 ring-1 ring-orange-200/50 dark:ring-[#ee6f1f]/20"
-                                  : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
-                              }`}
+                              className={`relative z-10 flex items-center p-5 bg-white dark:bg-slate-900 rounded-[24px] border transition-all duration-300 shadow-sm ${isCurrent
+                                ? "border-orange-200 dark:border-[#ee6f1f]/50 shadow-orange-500/10 ring-1 ring-orange-200/50 dark:ring-[#ee6f1f]/20"
+                                : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+                                }`}
                             >
                               <div className="mr-5 flex flex-col items-center justify-center shrink-0">
                                 <div
-                                  className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-500 ${
-                                    isCurrent
-                                      ? "bg-[#ee6f1f] border-[#ee6f1f] shadow-[0_0_12px_rgba(238,111,31,0.4)] scale-110"
-                                      : isPassed
-                                        ? "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                                  }`}
+                                  className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-500 ${isCurrent
+                                    ? "bg-[#ee6f1f] border-[#ee6f1f] shadow-[0_0_12px_rgba(238,111,31,0.4)] scale-110"
+                                    : isPassed
+                                      ? "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                                      : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                                    }`}
                                 >
                                   {isPassed && (
                                     <div className="w-full h-full flex items-center justify-center">
@@ -1381,13 +920,12 @@ export default function RoutesPage({
                                 <div className="flex flex-col min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span
-                                      className={`text-[9px] font-bold uppercase tracking-[0.15em] ${
-                                        isCurrent
-                                          ? "text-[#ee6f1f]"
-                                          : isPassed
-                                            ? "text-slate-300"
-                                            : "text-slate-400"
-                                      }`}
+                                      className={`text-[9px] font-bold uppercase tracking-[0.15em] ${isCurrent
+                                        ? "text-[#ee6f1f]"
+                                        : isPassed
+                                          ? "text-slate-300"
+                                          : "text-slate-400"
+                                        }`}
                                     >
                                       {isFirst
                                         ? "Origin"
@@ -1408,11 +946,10 @@ export default function RoutesPage({
                                   {(isPassed || isCurrent) && (
                                     <div className="flex justify-start mt-2">
                                       <span
-                                        className={`text-[8px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded ${
-                                          isPassed
-                                            ? "bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600"
+                                        className={`text-[8px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded ${isPassed
+                                          ? "bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600"
                                           : "bg-orange-50 dark:bg-[#ee6f1f]/10 text-[#ee6f1f]"
-                                        }`}
+                                          }`}
                                       >
                                         {isPassed
                                           ? "Departed"
@@ -1456,8 +993,8 @@ export default function RoutesPage({
                           const progressPercent =
                             totalStations > 1
                               ? Math.round(
-                                  (currentIdx / (totalStations - 1)) * 100,
-                                )
+                                (currentIdx / (totalStations - 1)) * 100,
+                              )
                               : 0;
                           return (
                             <>

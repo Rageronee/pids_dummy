@@ -19,10 +19,10 @@ export function SectionAccordion({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-all hover:border-slate-300 dark:hover:border-slate-700">
+    <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800/50 overflow-hidden shadow-sm transition-all hover:border-slate-300 dark:hover:border-slate-700">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left px-6 py-5 lg:px-8 flex items-center justify-between bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors focus:outline-none"
+        className="w-full text-left px-6 py-5 lg:px-8 flex items-center justify-between bg-white dark:bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors focus:outline-none"
       >
         <div className="flex items-center gap-4">
           <div className="text-[#ee6f1f]">

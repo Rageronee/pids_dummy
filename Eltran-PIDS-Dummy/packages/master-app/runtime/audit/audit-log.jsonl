@@ -55,3 +55,10 @@
 {"id":"d93c3eb8-6b6b-4e7b-a567-5eb72f734fe7","timestamp":"2026-04-22T08:08:01.305Z","action":"LOGOUT","user":"admin","role":"Admin","details":"Administrator logout","data":null}
 {"id":"a3bc84be-80f9-45b3-9eee-fe338e84ba25","timestamp":"2026-04-22T08:16:57.834Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"bdb652df-847a-4950-b3ab-def0431e07e3","timestamp":"2026-04-22T08:17:12.968Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"11669c53-b04b-4dbc-8c5b-92a0e6c5f7e5","timestamp":"2026-04-23T01:39:20.117Z","action":"LOGIN_FAILED","user":"admin","role":"-","details":"Percobaan login gagal untuk username: admin","data":null}
+{"id":"ca493397-e79f-4dc4-ad94-0916c6caddf1","timestamp":"2026-04-23T01:39:24.230Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"a8577515-f697-435d-b29c-f7c5a00b3adf","timestamp":"2026-04-23T01:40:00.849Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"34fad16c-bf22-4de4-a3fb-6ec0b0d96373","timestamp":"2026-04-23T01:40:12.396Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"2eb3b23a-d546-4fbb-b4eb-ee25bbe1b38d","timestamp":"2026-04-23T02:43:39.403Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"ac676b9c-ad3f-4863-a79d-e6d860c6ebfb","timestamp":"2026-04-23T02:44:04.130Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"372e3027-073b-4622-b71d-9f4fdc5112b3","timestamp":"2026-04-23T02:44:09.533Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}

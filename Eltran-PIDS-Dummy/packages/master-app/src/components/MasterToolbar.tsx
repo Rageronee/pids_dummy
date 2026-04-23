@@ -30,25 +30,25 @@ export function MasterToolbar({
       <div className="flex flex-wrap items-center justify-center gap-4 w-full md:w-auto">
         <button
           onClick={() => showToast("Memeriksa status GPS")}
-          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900 hover:bg-[#111c44] dark:hover:bg-slate-800 border border-[#2a3b7a] dark:border-slate-700 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none"
+          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900/60 hover:bg-[#111c44] dark:hover:bg-slate-800/80 border border-[#2a3b7a] dark:border-slate-700/50 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none backdrop-blur-sm"
         >
           <MapPin size={22} className="text-slate-200 dark:text-slate-400" /> Cek GPS
         </button>
         <button
           onClick={() => showToast("Menyesuaikan warna tema LED")}
-          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900 hover:bg-[#111c44] dark:hover:bg-slate-800 border border-[#2a3b7a] dark:border-slate-700 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none"
+          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900/60 hover:bg-[#111c44] dark:hover:bg-slate-800/80 border border-[#2a3b7a] dark:border-slate-700/50 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none backdrop-blur-sm"
         >
           <Settings size={22} className="text-slate-200 dark:text-slate-400" /> Warna
         </button>
         <button
           onClick={() => showToast("Beralih ke tampilan Outdoor")}
-          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900 hover:bg-[#111c44] dark:hover:bg-slate-800 border border-[#2a3b7a] dark:border-slate-700 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none"
+          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900/60 hover:bg-[#111c44] dark:hover:bg-slate-800/80 border border-[#2a3b7a] dark:border-slate-700/50 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none backdrop-blur-sm"
         >
           <MonitorPlay size={22} className="text-slate-200 dark:text-slate-400" /> Outdoor
         </button>
         <button
           onClick={() => showToast("Arah perjalanan dibalik")}
-          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900 hover:bg-[#111c44] dark:hover:bg-slate-800 border border-[#2a3b7a] dark:border-slate-700 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none"
+          className="flex items-center justify-center gap-3 px-6 py-4 rounded-[1.25rem] bg-[#152355] dark:bg-slate-900/60 hover:bg-[#111c44] dark:hover:bg-slate-800/80 border border-[#2a3b7a] dark:border-slate-700/50 text-sm font-bold text-white transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#2a3b7a] dark:focus:ring-slate-600 flex-1 md:flex-none backdrop-blur-sm"
         >
           <RefreshCw size={22} className="text-slate-200 dark:text-slate-400" /> Arah
         </button>

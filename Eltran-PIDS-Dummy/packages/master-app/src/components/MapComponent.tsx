@@ -74,8 +74,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
     map.current.on('zoom', () => {
       const z = map.current?.getZoom() || 4.5;
-      // Aggressive proportional scale: much smaller when zoomed out
-      const scale = Math.max(0.15, Math.min(1.2, Math.pow(z / 15, 2)));
+      // Proportional scale: smaller markers when zoomed out, larger when zoomed in
+      const scale = Math.max(0.5, Math.min(1.0, z / 14));
       document.documentElement.style.setProperty('--map-marker-scale', scale.toString());
     });
 
@@ -204,10 +204,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       el.innerHTML = `
         <div class="relative flex items-center justify-center">
           <div class="absolute w-12 h-12 bg-blue-500 opacity-20 rounded-full animate-ping"></div>
-           <div class="w-6 h-8 bg-blue-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center z-10 transition-transform group-hover:scale-125 relative">
-             <div class="w-1.5 h-1.5 bg-white rounded-full mt-[-8px]"></div>
-             <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px] border-t-blue-600 mb-[-8px]"></div>
-           </div>
+          <div class="w-6 h-8 bg-blue-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center z-10 transition-transform group-hover:scale-125 relative">
+            <div class="w-1.5 h-1.5 bg-white rounded-full mt-[-8px]"></div>
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px] border-t-blue-600 mb-[-8px]"></div>
+          </div>
           <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-2 py-0.5 rounded border border-white/10 text-[8px] font-black text-white whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 uppercase tracking-widest">
             ${train.name}
           </div>
@@ -288,7 +288,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
           closeBtn.onclick = (e) => {
              e.preventDefault();
              e.stopPropagation();
-             markers.current[train.id].getPopup().remove();
+             popup.remove();
           };
         }
       });
@@ -332,7 +332,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
           background: transparent;
           box-shadow: none;
           border-radius: 32px;
-          transform: scale(1) !important; /* Ensure popup doesn't scale with zoom */
         }
         .custom-pids-map-popup .maplibregl-popup-tip {
           display: none;

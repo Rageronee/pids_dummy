@@ -1,6 +1,6 @@
 /** /command-center-app/src/App.tsx — untuk mengubah: komponen PIDS; fungsi utama: App */
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -32,6 +32,7 @@ const UsersPage = lazy(() => import("./pages/UsersPage"));
 const LogsPage = lazy(() => import("./pages/LogsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 
 interface AuthUser {
   id: string;
@@ -49,6 +50,7 @@ const NAV = [
   { id: "users", label: "Akun Operator", icon: Users },
   { id: "logs", label: "System Logs", icon: ScrollText },
   { id: "settings", label: "Pengaturan", icon: Settings },
+  { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
 function PageLoader() {
@@ -70,6 +72,8 @@ export default function App() {
   const [isDark, setIsDark] = useState(() => localStorage.getItem("cc_theme") === "dark");
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
   const [notifications, setNotifications] = useState([
     { id: 1, type: "warning", msg: "Koneksi GPS KA Malabar tidak stabil", time: "15 menit lalu" },
     { id: 2, type: "info", msg: "Update jadwal KA Parahyangan berhasil", time: "1 jam lalu" },
@@ -83,6 +87,21 @@ export default function App() {
       ]);
     }, 8000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node) &&
+        bellButtonRef.current &&
+        !bellButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -132,7 +151,7 @@ export default function App() {
         method: "POST",
         headers: { Authorization: `Bearer ${authToken}` },
       });
-    } catch {}
+    } catch { }
     sessionStorage.removeItem("cc_token");
     sessionStorage.removeItem("cc_user");
     setAuthUser(null);
@@ -155,6 +174,7 @@ export default function App() {
     users: UsersPage,
     logs: LogsPage,
     settings: SettingsPage,
+    notifications: NotificationsPage,
   };
 
   const ActivePageComponent = pageComponents[activePage];
@@ -176,7 +196,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[40]"
+            className="lg:hidden fixed inset-0 bg-black/60 z-[40]"
           />
         )}
       </AnimatePresence>
@@ -215,7 +235,7 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="p-6 border-t border-white/5 bg-black/10">
+        <div className="p-6 border-t border-white/5 space-y-4">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-xs border border-white/5 active:scale-95 group"
@@ -224,7 +244,7 @@ export default function App() {
               size={18}
               className="text-white/20 group-hover:text-red-400 transition-colors"
             />
-            <span>Logout</span>
+            <span>SYSTEM LOGOUT</span>
           </button>
         </div>
       </aside>
@@ -264,8 +284,9 @@ export default function App() {
             <div className="flex items-center gap-2 border-r border-slate-200 dark:border-slate-800 pr-2 lg:pr-6">
               <div className="relative">
                 <button
+                  ref={bellButtonRef}
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all relative"
+                  className={`p-2.5 rounded-xl transition-all relative ${showNotifications ? "bg-[#ee6f1f] text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white"}`}
                 >
                   <Bell size={20} />
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
@@ -273,6 +294,7 @@ export default function App() {
                 <AnimatePresence>
                   {showNotifications && (
                     <motion.div
+                      ref={notificationRef}
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -295,7 +317,13 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      <button className="w-full py-3 text-[10px] font-black uppercase text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors">
+                      <button
+                        onClick={() => {
+                          setActivePage("notifications");
+                          setShowNotifications(false);
+                        }}
+                        className="w-full py-3 text-[10px] font-black uppercase text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors border-t border-slate-50 dark:border-slate-700/50"
+                      >
                         View History
                       </button>
                     </motion.div>

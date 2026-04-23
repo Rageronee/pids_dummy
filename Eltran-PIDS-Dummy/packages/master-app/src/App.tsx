@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { usePidsData } from "./hooks/usePidsData";
 import {
   LayoutDashboard,
@@ -16,14 +16,16 @@ import {
   ChevronDown,
   Maximize,
   Settings,
+  RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginScreen } from "@eltran/shared";
 import { MasterConsolePanel } from "./components/MasterConsolePanel";
+import MapComponent from "./components/MapComponent";
 import SettingsPage from "./pages/SettingsPage";
+
 import type { AuthUser, LogEntry } from "@eltran/pids-core";
 
-import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const API_URL = "http://localhost:3001";
@@ -263,28 +265,8 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
 
 const MonitorGPS = ({ route }: { route: any }) => {
   const [gerbongData, setGerbongData] = useState<any[]>([]);
-  const [selectedKereta, setSelectedKereta] = useState<number | null>(null);
-  const [trains, setTrains] = useState<any[]>([]);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<Record<number, maplibregl.Marker>>({});
-  const lastZoomedRouteId = useRef<string | null>(null);
-
-  const [mapIsReady, setMapIsReady] = useState(false);
-
-  // Fetch trains list for selector
-  useEffect(() => {
-    const fetchTrains = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/gps/fleet`);
-        const d = await res.json();
-        if (d.success && d.fleet?.length > 0) {
-          setTrains(d.fleet);
-          if (!selectedKereta) setSelectedKereta(d.fleet[0].kereta_id);
-        }
-      } catch {}
-    };
-    fetchTrains();
-  }, []);
+  const [selectedKereta] = useState<number>(1);
+  const [focusLocation, setFocusLocation] = useState<[number, number] | null>(null);
 
   // Fetch per-gerbong GPS when selectedKereta changes
   useEffect(() => {
@@ -301,180 +283,28 @@ const MonitorGPS = ({ route }: { route: any }) => {
     return () => clearInterval(interval);
   }, [selectedKereta]);
 
-  // Use a Callback Ref to guarantee initialization EXACTLY when the div exists
-  const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        setMapIsReady(false);
-      }
-      return;
-    }
+  const trainMarkers = useMemo(() => {
+    return gerbongData.map((g, idx) => ({
+      id: `G-${g.gerbong_id}`,
+      name: `Gerbong ${idx + 1}`,
+      location: [g.longitude, g.latitude] as [number, number],
+      heading: (g as any).heading || 0,
+      status: "Normal",
+      speed: g.speed || 0,
+      eta: "--:--"
+    }));
+  }, [gerbongData]);
 
-    if (mapRef.current) return;
-
-    try {
-      const map = new maplibregl.Map({
-        container: node,
-        style: document.documentElement.classList.contains("dark") 
-          ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-          : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-        center: [106.8272, -6.1751],
-        zoom: 12,
-        pitch: 45,
-        attributionControl: false,
-        trackResize: true,
-        antialias: true,
-      });
-
-      mapRef.current = map;
-
-      map.on("load", () => {
-        setMapIsReady(true);
-        setTimeout(() => map.resize(), 50);
-      });
-
-      // Handle resizes
-      const ro = new ResizeObserver(() => {
-        if (mapRef.current) mapRef.current.resize();
-      });
-      ro.observe(node);
-
-      const originalRemove = map.remove.bind(map);
-      map.remove = () => {
-        ro.disconnect();
-        originalRemove();
-      };
-    } catch (e) {
-      console.error("[Map] Init error:", e);
-    }
-  }, []);
-
-  // Sync GeoJSON layers with route data
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapIsReady || !route?.geojson) return;
-
-    try {
-      const geojson =
-        typeof route.geojson === "string"
-          ? JSON.parse(route.geojson)
-          : route.geojson;
-
-      // Route Path Sources & Layers
-      if (!map.getSource("route-path")) {
-        map.addSource("route-path", { type: "geojson", data: geojson });
-
-        // Outer Glow Layer
-        map.addLayer({
-          id: "route-line-glow",
-          type: "line",
-          source: "route-path",
-          paint: {
-            "line-color": "#ee6f1f",
-            "line-width": 8,
-            "line-opacity": 0.15,
-            "line-blur": 4,
-          },
-          filter: ["==", "$type", "LineString"],
-        });
-
-        // Main Route Line
-        map.addLayer({
-          id: "route-line",
-          type: "line",
-          source: "route-path",
-          layout: { "line-join": "round", "line-cap": "round" },
-          paint: { "line-color": "#ee6f1f", "line-width": 4 },
-          filter: ["==", "$type", "LineString"],
-        });
-
-        // Station Dots
-        map.addLayer({
-          id: "station-points",
-          type: "circle",
-          source: "route-path",
-          paint: {
-            "circle-radius": 5,
-            "circle-color": "#ffffff",
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#ee6f1f",
-          },
-          filter: ["==", "$type", "Point"],
-        });
-      } else {
-        (map.getSource("route-path") as maplibregl.GeoJSONSource).setData(
-          geojson,
-        );
-      }
-
-      // Sync Bounds
-      const features = geojson.features || [];
-      const lineFeature = features.find(
-        (f: any) => f.geometry?.type === "LineString",
-      );
-      if (
-        lineFeature?.geometry?.coordinates?.length > 0 &&
-        lastZoomedRouteId.current !== route.name
-      ) {
-        const bounds = new maplibregl.LngLatBounds();
-        lineFeature.geometry.coordinates.forEach((c: any) => bounds.extend(c));
-        map.fitBounds(bounds, { padding: 80, duration: 2000 });
-        lastZoomedRouteId.current = route.name;
-      }
-    } catch (e) {
-      console.error("[Map] Layer sync error:", e);
+    if (trainMarkers.length > 0 && !focusLocation) {
+       setFocusLocation(trainMarkers[0].location);
     }
-  }, [route?.geojson, mapIsReady]);
-
-  // Update markers based on gerbongData
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapIsReady) return;
-
-    const currentIds = gerbongData.map((g) => g.gerbong_id);
-    Object.keys(markersRef.current).forEach((id) => {
-      const numId = parseInt(id);
-      if (!currentIds.includes(numId)) {
-        markersRef.current[numId].remove();
-        delete markersRef.current[numId];
-      }
-    });
-
-    gerbongData.forEach((g) => {
-      if (g.longitude && g.latitude) {
-        if (!markersRef.current[g.gerbong_id]) {
-          const el = document.createElement("div");
-          el.className =
-            "marker-train-pids relative flex items-center justify-center";
-          el.innerHTML = `
-                        <div class="absolute w-12 h-12 bg-orange-500/20 rounded-full animate-ping-large"></div>
-                        <div class="relative w-7 h-7 bg-white rounded-full p-1 shadow-[0_0_15px_rgba(238,111,31,0.5)] border border-orange-500/30 flex items-center justify-center">
-                            <div class="w-full h-full bg-[#ee6f1f] rounded-full flex items-center justify-center">
-                                <div class="w-2 h-2 bg-white rounded-full"></div>
-                            </div>
-                        </div>
-                    `;
-
-          markersRef.current[g.gerbong_id] = new maplibregl.Marker({
-            element: el,
-          })
-            .setLngLat([g.longitude, g.latitude])
-            .addTo(map);
-        } else {
-          markersRef.current[g.gerbong_id].setLngLat([g.longitude, g.latitude]);
-        }
-      }
-    });
-  }, [gerbongData, mapIsReady]);
+  }, [trainMarkers]);
 
   return (
     <div className="space-y-6 h-full flex flex-col">
-      {/* Map Container Box */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
-        {/* Header Information Overlay */}
-        <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
+      <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] border border-slate-200 dark:border-slate-800/50 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
+        <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
           <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
             <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase tracking-wide">
@@ -483,15 +313,16 @@ const MonitorGPS = ({ route }: { route: any }) => {
           </div>
         </div>
 
-        {/* Map Implementation */}
-        <div
-          ref={mapContainerRef}
-          className="absolute inset-0 z-0 bg-slate-50 dark:bg-slate-900"
-        />
+        <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden">
+          <MapComponent 
+            trains={trainMarkers}
+            focusCoord={focusLocation}
+            onTrainClick={(_, loc) => setFocusLocation(loc)}
+          />
+        </div>
 
-        {/* Legend / Info Overlay */}
-        <div className="absolute bottom-6 right-6 z-10">
-          <div className="bg-[#1d2d6a] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 transition-all hover:scale-105">
+        <div className="absolute bottom-6 right-6 z-20 pointer-events-none">
+          <div className="bg-[#1d2d6a] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 transition-all hover:scale-105 pointer-events-auto">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">
                 Active Units
@@ -511,107 +342,6 @@ const MonitorGPS = ({ route }: { route: any }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Per-Gerbong GPS Tracking Panel */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-sm border border-slate-200 dark:border-slate-800 shrink-0">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-2xl text-[#ee6f1f]">
-              <MapPin size={24} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight">
-                Detail State per Gerbong
-              </h2>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
-                Monitoring real-time telemetri rangkaian
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {trains.map((t) => (
-              <button
-                key={t.kereta_id}
-                onClick={() => setSelectedKereta(t.kereta_id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedKereta === t.kereta_id ? "bg-[#1d2d6a] dark:bg-slate-800 text-white border-[#1d2d6a] dark:border-slate-700" : "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`}
-              >
-                KA {t.kereta_id}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {gerbongData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-300 gap-4">
-            <MapPin size={40} className="opacity-20" />
-            <span className="text-sm font-bold uppercase tracking-widest opacity-40">
-              Tidak ada data gerbong terdeteksi
-            </span>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-            {gerbongData.map((g, i) => (
-              <motion.div
-                key={g.gerbong_id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className="bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 hover:shadow-xl hover:bg-white dark:hover:bg-slate-800 hover:border-orange-100 dark:hover:border-orange-900/30 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-5">
-                  <div
-                    className={`w-3 h-3 rounded-full ${g.sensor_status === "Aktif" ? "bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" : "bg-slate-300"}`}
-                  />
-                  <div className="flex-1">
-                    <div className="text-[#1d2d6a] font-bold text-base leading-none mb-1 group-hover:text-[#ee6f1f]">
-                      {g.nama_gerbong}
-                    </div>
-                    <div className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">
-                      ID {String(g.no_urut_gerbong).padStart(2, "0")}
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
-                      <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">
-                        Speed
-                      </div>
-                      <div className="text-sm font-black text-[#ee6f1f]">
-                        {g.kecepatan?.toFixed(1) || "0"}{" "}
-                        <span className="text-[10px] font-bold opacity-50">
-                          km/h
-                        </span>
-                      </div>
-                    </div>
-                    <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 text-center">
-                      <div className="text-[9px] text-slate-400 uppercase font-bold mb-1">
-                        Temp
-                      </div>
-                      <div className="text-sm font-black text-[#1d2d6a]">
-                        {g.suhu?.toFixed(1) || "-"}{" "}
-                        <span className="text-[10px] font-bold opacity-50">
-                          °C
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">
-                      Status Sensor
-                    </span>
-                    <span
-                      className={`text-[11px] font-black ${g.sensor_status === "Aktif" ? "text-green-600" : "text-red-400"}`}
-                    >
-                      {g.sensor_status}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -691,7 +421,7 @@ const LogViewer = ({ token }: { token: string }) => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+      <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800/50">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight flex items-center gap-3">
             <ScrollText className="text-[#ee6f1f]" />
@@ -887,7 +617,7 @@ function App() {
   return (
     <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Sidebar */}
-      <aside className="w-80 bg-slate-900 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+      <aside className="w-80 bg-[#1d2d6a] dark:bg-slate-900 border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
 
         <div className="p-10 pb-6">
           <img
@@ -1019,65 +749,181 @@ function App() {
                     Stampformasi
                   </h2>
                   <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <table className="w-full text-left text-sm">
+                    <table className="w-full text-left text-sm border-collapse">
                       <thead className="bg-slate-50 dark:bg-slate-800 text-[#1d2d6a] dark:text-slate-300 font-bold">
                         <tr>
-                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
-                            No Rangkaian
-                          </th>
-                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
-                            No Aset
-                          </th>
-                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
-                            Nama Layanan (Service)
-                          </th>
-                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
-                            IP Address
-                          </th>
-                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">
-                            Last Report
-                          </th>
-                          <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-center">
-                            Status
-                          </th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">Unit</th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">Serial</th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">Relasi</th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">IP Address</th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700">Update</th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-center">PIDS</th>
+                          <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-center">Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {Array.from({ length: data.coachCount || 10 }).map(
-                          (_, idx) => (
-                            <tr
-                              key={idx}
-                              className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
-                            >
-                              <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">
-                                K1-{String(idx + 1).padStart(2, "0")}
-                              </td>
-                              <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
-                                K1{String(idx + 1).padStart(2, "0")}
-                                {String(800 + idx)}
-                              </td>
-                              <td className="p-4 font-bold text-[#1d2d6a] dark:text-white">
-                                {activeTrainName}
-                              </td>
-                              <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
-                                192.168.1.{100 + idx}
-                              </td>
-                              <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
-                                {currentTime.toLocaleTimeString("id-ID", {
-                                  hour12: false,
-                                })}
-                              </td>
-                              <td className="p-4 text-center">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-bold border border-green-100 dark:border-green-900/50">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                  Active
-                                </span>
-                              </td>
-                            </tr>
-                          ),
-                        )}
+                        {(() => {
+                          const trainNumbers = [
+                            "K1 0 18 01",
+                            "K1 0 18 02",
+                            "K1 0 18 03",
+                            "K1 0 18 04",
+                            "MP 0 19 01",
+                            "K3 0 19 05",
+                            "K3 0 19 06",
+                            "K3 0 19 07",
+                            "K3 0 19 08",
+                            "P 0 18 01"
+                          ];
+                          
+                          return trainNumbers.map((trainNumber, idx) => {
+                            return (
+                              <tr
+                                key={idx}
+                                className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                              >
+                                <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">
+                                  Gerbong {idx + 1}
+                                </td>
+                                <td className="p-4 font-bold text-[#1d2d6a] dark:text-white font-mono">
+                                  {trainNumber}
+                                </td>
+                                <td className="p-4 font-bold text-[#1d2d6a] dark:text-white">
+                                  {activeTrainName}
+                                </td>
+                                <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
+                                  192.168.1.{100 + idx}
+                                </td>
+                                <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
+                                  {currentTime.toLocaleTimeString("id-ID", {
+                                    hour12: false,
+                                  })}
+                                </td>
+                                <td className="p-4">
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${idx < 8 ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/50" : "bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800"}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full ${idx < 8 ? "bg-green-500 animate-pulse" : "bg-slate-300"}`} />
+                                    {idx < 8 ? "Aktif" : "Non-Aktif"}
+                                  </span>
+                                </td>
+                                <td className="p-4 text-center">
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-bold border border-green-100 dark:border-green-900/50">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                    Online
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })()}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+
+                {/* Detail State per Gerbong - Revamped Layout */}
+                <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] p-8 shadow-sm border border-slate-200 dark:border-slate-800/50">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-2xl text-[#ee6f1f]">
+                        <MapPin size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight">
+                          Detail State per Gerbong
+                        </h2>
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">
+                          Monitoring real-time telemetri rangkaian aktif
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        // Dummy refresh action
+                        const btn = document.getElementById("refresh-state-btn");
+                        if (btn) {
+                          btn.classList.add("animate-spin");
+                          setTimeout(() => btn.classList.remove("animate-spin"), 1000);
+                        }
+                      }}
+                      className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#1d2d6a] dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-slate-200 dark:border-slate-700"
+                    >
+                      <RefreshCw id="refresh-state-btn" size={16} />
+                      Refresh Data
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
+                    {(() => {
+                       const trainNumbers = [
+                         "K1 0 18 01",
+                         "K1 0 18 02",
+                         "K1 0 18 03",
+                         "K1 0 18 04",
+                         "MP 0 19 01",
+                         "K3 0 19 05",
+                         "K3 0 19 06",
+                         "K3 0 19 07",
+                         "K3 0 19 08",
+                         "P 0 18 01"
+                       ];
+                       
+                       return Array.from({ length: 10 }).map((_, i) => {
+                         const trainNumber = trainNumbers[i];
+                         const isAktif = i < 8;
+                         return (
+                           <motion.div
+                             key={i}
+                             initial={{ opacity: 0, scale: 0.95 }}
+                             animate={{ opacity: 1, scale: 1 }}
+                             transition={{ delay: i * 0.03 }}
+                             className={`relative group bg-slate-50/50 dark:bg-slate-900/20 backdrop-blur-sm border border-slate-100 dark:border-slate-800/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg ${isAktif ? 'hover:border-orange-200 dark:hover:border-orange-900/30' : 'opacity-60 grayscale'}`}
+                           >
+                             <div className="flex items-center gap-3 mb-3">
+                               <div className={`w-2 h-2 rounded-full ${isAktif ? "bg-green-500 animate-pulse" : "bg-slate-400"}`} />
+                               <div className="flex-1 overflow-hidden">
+                                 <div className="text-[#1d2d6a] dark:text-white font-bold text-xs truncate group-hover:text-[#ee6f1f]">
+                                   {trainNumber}
+                                 </div>
+                                 <div className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
+                                   Unit {String(i + 1).padStart(2, "0")}
+                                 </div>
+                               </div>
+                               <div className={`px-2 py-0.5 rounded text-[8px] font-black tracking-wider ${isAktif ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                 {isAktif ? "ON" : "OFF"}
+                               </div>
+                             </div>
+                             
+                             <div className="space-y-2">
+                               <div className="grid grid-cols-2 gap-2">
+                                 <div className="bg-white dark:bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                   <div className="text-[8px] text-slate-400 font-bold uppercase">SPD</div>
+                                   <div className="text-[10px] font-black text-[#ee6f1f]">
+                                     {isAktif ? (75 + Math.random() * 5).toFixed(1) : "0.0"}
+                                   </div>
+                                 </div>
+                                 <div className="bg-white dark:bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                   <div className="text-[8px] text-slate-400 font-bold uppercase">TMP</div>
+                                   <div className="text-[10px] font-black text-[#1d2d6a] dark:text-white">
+                                     {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"}
+                                   </div>
+                                 </div>
+                               </div>
+                               
+                               <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/30 rounded-lg px-2 py-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[7px] font-bold text-slate-400 uppercase">AUD</span>
+                                    <span className="text-[8px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'RDY' : '-'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[7px] font-bold text-slate-400 uppercase">VID</span>
+                                    <span className="text-[8px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'ACT' : '-'}</span>
+                                  </div>
+                               </div>
+                             </div>
+                           </motion.div>
+                         );
+                       });
+                    })()}
                   </div>
                 </div>
               </motion.div>

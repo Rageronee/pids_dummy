@@ -32,7 +32,7 @@ export function ConfirmModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 shadow-[0_32px_80px_-20px_rgba(0,0,0,0.3)] ring-1 ring-black/[0.05] text-center"
+            className="relative w-full max-w-sm bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-[0_32px_80px_-20px_rgba(0,0,0,0.3)] ring-1 ring-black/[0.05] text-center border border-transparent dark:border-slate-800/50"
           >
             <div className="mx-auto w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-2xl flex items-center justify-center text-red-500 mb-6 border border-red-100 dark:border-red-900/50 shadow-sm">
               <Trash2 size={32} />
@@ -78,7 +78,7 @@ export function ToastNotification({
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
-          className="fixed bottom-10 right-10 z-[100] bg-white dark:bg-slate-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800 min-w-[350px] max-w-[420px]"
+          className="fixed bottom-10 right-10 z-[100] bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800/50 min-w-[350px] max-w-[420px]"
         >
           <div
             className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? "bg-[#1d2d6a]" : "bg-red-500"}`}

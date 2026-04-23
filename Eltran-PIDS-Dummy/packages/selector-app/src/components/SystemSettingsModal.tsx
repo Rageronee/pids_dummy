@@ -68,7 +68,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
           exit={{ scale: 0.95, y: 20 }}
           className={`w-full h-full flex flex-col overflow-hidden ${isDark ? "bg-slate-950 text-white" : "bg-[#f4f7f9] text-slate-900"}`}
         >
-          <div className="bg-[#1d2d6a] dark:bg-slate-900 px-8 py-5 text-white flex justify-between items-center shrink-0 shadow-lg relative z-20">
+          <div className="bg-[#1d2d6a] dark:bg-slate-950 px-8 py-5 text-white flex justify-between items-center shrink-0 shadow-lg relative z-20 border-b border-white/10 dark:border-slate-800/50">
             <div className="flex items-center gap-6">
               <div className="p-4 rounded-[22px]">
                 <SettingsIcon className="text-[#ee6f1f]" size={40} />

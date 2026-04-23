@@ -90,6 +90,9 @@ export interface PidsState {
   volume?: number;
   muteVideo?: boolean;
   coachCount?: number;
+  // Audio Management
+  audioPlaylist?: string[];
+  simGps?: { lng: number; lat: number; heading: number };
 }
 
 // ---- Auth & Logging Types ----

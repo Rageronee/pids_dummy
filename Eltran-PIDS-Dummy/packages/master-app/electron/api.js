@@ -21,6 +21,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { createClient } from "redis";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import * as turf from "@turf/turf";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -563,6 +564,7 @@ export async function startApiServer() {
         "showTelemetry",
         "showClock",
         "ledType",
+        "simGps",
       ]);
       for (const key of Object.keys(updates)) {
         if (!ALLOWED_KEYS.has(key)) delete updates[key];
@@ -1205,8 +1207,26 @@ export async function startApiServer() {
 
   apiApp.get("/api/gps/gerbong/:id", async (req, res) => {
     try {
+      const state = await getState();
       const gerbong = await getGpsGerbong(req.params.id);
-      res.json({ success: true, gerbong });
+      
+      // Override with simulated GPS if it's the active service
+      const updatedGerbong = gerbong.map((g, idx) => {
+        if (state.simGps) {
+          // Add a tiny offset based on index to separate coaches slightly if desired
+          // but for now, just matching the train position for "accuracy"
+          return {
+            ...g,
+            latitude: state.simGps.lat,
+            longitude: state.simGps.lng,
+            heading: state.simGps.heading,
+            speed: state.speed || 0
+          };
+        }
+        return g;
+      });
+
+      res.json({ success: true, gerbong: updatedGerbong });
     } catch (err) {
       res
         .status(500)
@@ -1283,6 +1303,57 @@ export async function startApiServer() {
     if (res.headersSent) return next(err);
     res.status(500).json({ success: false, error: "Internal server error" });
   });
+
+  // GPS Simulation Loop
+  let simDistance = 0;
+  let lastSimTime = Date.now();
+  trackInterval(async () => {
+    try {
+      const state = await getState();
+      if (!state.serviceName || state.serviceName === "Belum Dikonfigurasi") return;
+      if (!state.activeRoute || !state.activeRoute.geojson) return;
+
+      const geojson = typeof state.activeRoute.geojson === 'string' 
+        ? JSON.parse(state.activeRoute.geojson) 
+        : state.activeRoute.geojson;
+      
+      const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+      const lineFeature = features.find(f => f.geometry?.type === 'LineString');
+      if (!lineFeature) return;
+
+      const now = Date.now();
+      const dt = (now - lastSimTime) / 1000; // seconds
+      lastSimTime = now;
+
+      const speedMPS = (state.speed || 0) / 3.6; // km/h to m/s
+      if (speedMPS <= 0) return;
+
+      simDistance += speedMPS * dt;
+
+      const line = turf.lineString(lineFeature.geometry.coordinates);
+      const totalLength = turf.length(line, { units: 'kilometers' }) * 1000; // to meters
+
+      if (simDistance > totalLength) {
+        simDistance = 0; // Loop back
+      }
+
+      const point = turf.along(line, simDistance / 1000, { units: 'kilometers' });
+      const nextDist = Math.min(simDistance + 50, totalLength);
+      const nextPoint = turf.along(line, nextDist / 1000, { units: 'kilometers' });
+      const bearing = turf.bearing(point, nextPoint);
+
+      const [lng, lat] = point.geometry.coordinates;
+      
+      // Update state without broadcasting here, we'll do it via io.emit to be faster
+      await updateState({
+        simGps: { lng, lat, heading: bearing }
+      });
+      
+      io.emit("state:update", await getState());
+    } catch (e) {
+      console.error("[Simulation] Error:", e.message);
+    }
+  }, 1000);
 
   return new Promise((resolve, reject) => {
     httpServer

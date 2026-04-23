@@ -152,7 +152,7 @@ export function MasterModals({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors"
+            className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors"
             >
               <div className="bg-blue-50 dark:bg-slate-900 p-6 flex flex-col items-center justify-center border-b border-blue-100 dark:border-slate-800 transition-colors">
                 <div className="w-16 h-16 bg-blue-100 dark:bg-[#1d2d6a]/30 rounded-full flex items-center justify-center mb-4 text-blue-500 dark:text-[#ee6f1f] shadow-inner">
@@ -287,7 +287,7 @@ export function MasterModals({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-[#0b1437]/80 dark:bg-slate-900/90 backdrop-blur-md"
+            className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-[#0b1437]/90 dark:bg-slate-900/95"
           >
             <div className="bg-white/10 dark:bg-slate-900/50 p-8 rounded-3xl mb-6 shadow-2xl border border-white/20 dark:border-slate-800 flex items-center justify-center transition-colors">
               <Loader2 size={64} className="text-[#ee6f1f] animate-spin" />
@@ -365,7 +365,7 @@ export function MasterModals({
                         repeatMode: e.target.value as any,
                       }))
                     }
-                    className="text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg py-1.5 px-3 focus:outline-none focus:border-[#ee6f1f] cursor-pointer outline-none transition-colors"
+                    className="text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/50 rounded-lg py-1.5 px-3 focus:outline-none focus:border-[#ee6f1f] cursor-pointer outline-none transition-colors backdrop-blur-sm"
                   >
                     <option value="off" className="dark:bg-slate-900">Mati (Off)</option>
                     <option value="all" className="dark:bg-slate-900">Ulangi Semua</option>

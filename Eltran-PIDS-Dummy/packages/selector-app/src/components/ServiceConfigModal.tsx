@@ -104,7 +104,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
           initial={{ scale: 0.95, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.95, y: 20 }}
-          className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-visible flex flex-col border border-transparent dark:border-slate-800"
+          className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-visible flex flex-col border border-transparent dark:border-slate-800/50"
         >
           <div className="bg-[#1d2d6a] dark:bg-slate-800 px-8 py-5 text-white flex justify-between items-center shrink-0 rounded-t-[2rem]">
             <div className="flex items-center gap-4">

@@ -387,7 +387,7 @@ function App() {
   }
 
   return (
-    <div className={`flex flex-col h-[100dvh] w-full bg-[#f4f7f9] dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
+    <div className={`flex flex-col h-[100dvh] w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans overflow-hidden select-none ${isDark ? "dark" : ""}`}>
       <header className="h-[90px] bg-gradient-to-r from-[#1d2d6a] to-[#2a3f8c] text-white flex items-center px-6 shadow-lg border-b border-white/10 shrink-0 justify-between">
         <div className="flex items-center gap-6">
           <button
@@ -537,7 +537,7 @@ function App() {
 
       <div className="flex gap-4 p-4 flex-1 min-h-0">
         <div className="flex-[0.65] flex flex-col gap-6">
-          <div className="bg-white dark:bg-gradient-to-r dark:from-[#1d2d6a] dark:to-[#2a3f8c] rounded-[24px] shadow-sm p-6 border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
+          <div className="bg-white dark:bg-gradient-to-r dark:from-slate-900/60 dark:to-slate-800/60 backdrop-blur-sm rounded-[24px] shadow-sm p-6 border border-slate-200 dark:border-slate-800/50 flex flex-col transition-colors">
             <div className="flex items-center gap-3 text-[#1d2d6a] dark:text-white font-bold text-xl tracking-widest uppercase mb-3">
               <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT
               POSITION
@@ -554,7 +554,7 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-[24px] shadow-sm py-5 px-6 border border-slate-200 dark:border-slate-800 flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[24px] shadow-sm py-5 px-6 border border-slate-200 dark:border-slate-800/50 flex-1 flex flex-col min-h-0 overflow-hidden">
             <div className="flex items-center gap-3 text-slate-400 dark:text-slate-500 font-bold text-sm tracking-widest uppercase mb-3 shrink-0">
               <Route size={18} /> DETAILED ROUTES
             </div>
@@ -653,7 +653,7 @@ function App() {
           <div className="flex gap-3 h-[80px] shrink-0">
             <button
               onClick={() => setShowSystemSettings(true)}
-              className="w-[80px] h-[80px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[#1d2d6a] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 rounded-[24px] shadow-sm flex items-center justify-center transition-all active:scale-95 group shrink-0"
+              className="w-[80px] h-[80px] bg-white dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200 dark:border-slate-800/50 text-[#1d2d6a] dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 rounded-[24px] shadow-sm flex items-center justify-center transition-all active:scale-95 group shrink-0"
             >
               <Settings
                 size={32}
@@ -661,7 +661,7 @@ function App() {
               />
             </button>
 
-            <div className="flex-1 bg-white dark:bg-slate-900 rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200 dark:border-slate-800 gap-4">
+            <div className="flex-1 bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[24px] shadow-sm flex items-center px-6 border border-slate-200 dark:border-slate-800/50 gap-4">
               <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/30 text-[#ee6f1f] flex items-center justify-center shrink-0">
                 <Clock size={26} strokeWidth={2.5} />
               </div>

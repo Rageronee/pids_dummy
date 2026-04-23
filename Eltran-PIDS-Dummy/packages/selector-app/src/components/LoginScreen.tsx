@@ -48,7 +48,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white dark:bg-slate-900 font-sans transition-colors">
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 font-sans transition-colors">
       <div
         className="absolute inset-0 z-0 scale-105"
         style={{

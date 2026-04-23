@@ -6,7 +6,7 @@
 
 @layer base {
   .dark body {
-    @apply bg-slate-900;
+    @apply bg-slate-950 text-slate-100;
   }
 }
 

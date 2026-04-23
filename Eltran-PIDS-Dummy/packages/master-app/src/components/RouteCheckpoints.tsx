@@ -5,6 +5,7 @@
 import { ChangeEvent } from "react";
 import { MapPin, ChevronRight, Upload, Trash2, Info } from "lucide-react";
 import { SectionAccordion } from "./ui/SectionAccordion";
+import MapComponent from "./MapComponent";
 
 interface RouteCheckpointsProps {
   route: any;
@@ -14,6 +15,9 @@ interface RouteCheckpointsProps {
   navTableRef: React.RefObject<HTMLDivElement>;
   onUploadGeoJSON: (e: ChangeEvent<HTMLInputElement>) => void;
   onDeleteClick: () => void;
+  simGps: { lng: number; lat: number; heading: number };
+  trains?: any[];
+  routeLine?: [number, number][];
 }
 
 export function RouteCheckpoints({
@@ -24,6 +28,9 @@ export function RouteCheckpoints({
   navTableRef,
   onUploadGeoJSON,
   onDeleteClick,
+  simGps,
+  trains,
+  routeLine: propRouteLine,
 }: RouteCheckpointsProps) {
   // Helper to robustly extract station name from string, JSON string, or object
   const getStationName = (s: any): string => {
@@ -34,7 +41,7 @@ export function RouteCheckpoints({
           const parsed = JSON.parse(s);
           if (parsed && parsed.name) return parsed.name;
         }
-      } catch (e) {}
+      } catch (e) { }
       return s;
     }
     return s.name || s.id || "-";
@@ -96,7 +103,7 @@ export function RouteCheckpoints({
               <span className="text-base font-bold text-[#1d2d6a] dark:text-white">
                 {route?.geojson
                   ? route.geojson_filename ||
-                    `${route.name.replace(/\s+/g, "_")}.geojson`
+                  `${route.name.replace(/\s+/g, "_")}.geojson`
                   : "Belum Ada GeoJSON"}
                 {route?.geojson && (
                   <span className="ml-3 text-xs text-white font-bold bg-[#ee6f1f] px-2 py-1 rounded-lg border border-[#ee6f1f] italic uppercase tracking-widest">
@@ -133,7 +140,7 @@ export function RouteCheckpoints({
           </div>
 
           {!route?.geojson || navData.length === 0 ? (
-            <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <div className="mt-4 flex flex-col items-center justify-center py-16 px-6 bg-white dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200 dark:border-slate-800/50 rounded-[2.5rem] shadow-sm relative overflow-hidden group transition-all hover:border-slate-300 dark:hover:border-slate-700">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent" />
               <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800 mb-6 shadow-inner group-hover:scale-110 transition-transform duration-500">
                 <Info size={40} className="text-slate-300 dark:text-slate-600" />
@@ -149,7 +156,7 @@ export function RouteCheckpoints({
             </div>
           ) : (
             <>
-              <div className="mt-8 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] overflow-hidden shadow-md bg-white dark:bg-slate-900 flex flex-col transition-colors">
+              <div className="mt-8 border border-slate-200 dark:border-slate-800/50 rounded-[2.5rem] overflow-hidden shadow-md bg-white dark:bg-slate-900/40 backdrop-blur-sm flex flex-col transition-colors">
                 {/* Header Container - NON-Scrolling vertically */}
                 <div className="flex-shrink-0 bg-[#1d2d6a] dark:bg-slate-800 text-white border-b border-[#152355] dark:border-slate-700 transition-colors">
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
@@ -193,7 +200,7 @@ export function RouteCheckpoints({
                 {/* Body Container - Scrolling vertically dengan radius bawah yang selaras */}
                 <div
                   ref={navTableRef}
-                  className="flex-grow overflow-x-hidden max-h-[600px] overflow-y-auto relative custom-scrollbar bg-white dark:bg-slate-900 rounded-b-[2.5rem] pb-10 transition-colors"
+                  className="flex-grow overflow-x-hidden max-h-[600px] overflow-y-auto relative custom-scrollbar bg-white dark:bg-transparent rounded-b-[2.5rem] pb-10 transition-colors"
                 >
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
                     <colgroup>
@@ -212,7 +219,7 @@ export function RouteCheckpoints({
                           <tr
                             key={idx}
                             data-active={isBerhenti}
-                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50/100 dark:bg-[#ee6f1f]/10" : "bg-white dark:bg-slate-900"}`}
+                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50/100 dark:bg-[#ee6f1f]/10" : "bg-white dark:bg-slate-950/20"}`}
                             style={{ scrollMarginTop: "64px" }}
                           >
                             <td

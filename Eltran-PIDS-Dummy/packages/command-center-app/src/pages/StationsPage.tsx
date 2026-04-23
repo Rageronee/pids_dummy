@@ -179,8 +179,12 @@ export default function StationsPage({
             <div className="relative w-full h-[400px] shrink-0 bg-slate-900 overflow-hidden">
                <img
                 src={selectedStation.media ? `${API}/media/station/${selectedStation.media}` : `${API}/media/station/station_fallback.png`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-opacity duration-500"
                 alt={selectedStation.name}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1474487543417-981ceee1c818?auto=format&fit=crop&q=80&w=2000`;
+                  (e.target as HTMLImageElement).onerror = null;
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
               <div className="absolute top-6 left-6">
@@ -273,13 +277,21 @@ export default function StationsPage({
               {filterOptions.map(opt=><button key={opt} onClick={()=>setActiveFilter(opt)} className={`px-6 py-3 font-black text-[10px] uppercase tracking-[0.2em] transition-all relative ${activeFilter===opt?"text-[#ee6f1f] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-[#ee6f1f]":"text-slate-400 hover:text-slate-600"}`}>{opt}</button>)}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 p-2">
               {stations.map((s,i)=>(
                 <motion.div key={s.id} layout initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.02}} onClick={()=>setSelectedStation(s)} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-2 shadow-xl hover:border-[#ee6f1f]/30 transition-all cursor-pointer group flex flex-col hover:-translate-y-1">
-                  <div className="relative h-48 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
-                    <img src={s.media?`${API}/media/station/${s.media}`:`${API}/media/station/station_fallback.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={s.name}/>
-                    <div className="absolute top-3 left-3 bg-slate-900/40 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-[8px] font-black text-white uppercase tracking-widest">{s.division}</div>
-                    <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-slate-900/95 px-3 py-1 rounded-lg text-[9px] font-black text-[#1d2d6a] dark:text-[#ee6f1f] shadow-2xl border dark:border-slate-800 uppercase tracking-tighter">{s.id}</div>
+                  <div className="relative h-56 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
+                    <img 
+                      src={s.media ? `${API}/media/station/${s.media}` : `https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80&w=800`} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                      alt={s.name}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1568992687345-26948fad841e?auto=format&fit=crop&q=80&w=800`;
+                        (e.target as HTMLImageElement).onerror = null;
+                      }}
+                    />
+                    <div className="absolute top-4 left-4 bg-[#ee6f1f] px-4 py-1.5 rounded-lg border border-white/20 text-[9px] font-black text-white uppercase tracking-widest shadow-lg">{s.division || "Java Division"}</div>
+                    <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-slate-950/95 px-4 py-1.5 rounded-lg text-[10px] font-black text-[#1d2d6a] dark:text-[#ee6f1f] shadow-2xl border border-slate-100 dark:border-slate-800 uppercase tracking-tighter">{s.id}</div>
                   </div>
                   <div className="p-6 space-y-2 flex-1 flex flex-col">
                     <h3 className="text-xl font-black text-[#1d2d6a] dark:text-white leading-none tracking-tighter transition-colors group-hover:text-[#ee6f1f]">{s.name}</h3>

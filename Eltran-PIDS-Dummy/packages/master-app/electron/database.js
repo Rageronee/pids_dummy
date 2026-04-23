@@ -387,7 +387,8 @@ async function createTables() {
             video_volume INTEGER DEFAULT 50,
             video_tv_standby BOOLEAN DEFAULT TRUE,
             video_playback_progress REAL DEFAULT 0,
-            coach_count INTEGER DEFAULT 10
+            coach_count INTEGER DEFAULT 10,
+            sim_gps_json TEXT DEFAULT '{"lng": 107.6098, "lat": -6.9147, "heading": 0}'
         )
     `);
   await pool.query(`
@@ -602,8 +603,8 @@ export async function seedData() {
   console.log(
     "[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...",
   );
-  await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count)
-                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10)
+  await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json)
+                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10, '{"lng": 107.6098, "lat": -6.9147, "heading": 0}')
                  ON CONFLICT (id) DO NOTHING`);
   const hashedAdminPw = hashPassword("admin123");
   const hashedOpPw = hashPassword("operator123");
@@ -1020,6 +1021,7 @@ export async function getState() {
       tvStandby: row.video_tv_standby ?? true,
       playbackProgress: row.video_playback_progress ?? 0,
       coachCount: row.coach_count ?? 10,
+      simGps: JSON.parse(row.sim_gps_json || '{"lng": 107.6098, "lat": -6.9147, "heading": 0}')
     };
   } catch (e) {
     console.error("[PIDS-DB] getState error:", e.message);
@@ -1062,8 +1064,8 @@ export async function updateState(updates) {
   }
 
   await query(
-    `INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, coach_count)
-                 VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+    `INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, coach_count, sim_gps_json)
+                 VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
                  ON CONFLICT (id) DO UPDATE SET
                     service_name = EXCLUDED.service_name,
                     current_station = EXCLUDED.current_station,
@@ -1088,7 +1090,8 @@ export async function updateState(updates) {
                     video_playback_mode = EXCLUDED.video_playback_mode,
                     video_volume = EXCLUDED.video_volume,
                     video_tv_standby = EXCLUDED.video_tv_standby,
-                    coach_count = EXCLUDED.coach_count`,
+                    coach_count = EXCLUDED.coach_count,
+                    sim_gps_json = EXCLUDED.sim_gps_json`,
     [
       merged.serviceName,
       merged.currentStation,
@@ -1114,6 +1117,7 @@ export async function updateState(updates) {
       merged.volume ?? 50,
       merged.tvStandby ?? true,
       merged.coachCount ?? merged.jumlahKereta ?? 10,
+      JSON.stringify(merged.simGps || { lng: 107.6098, lat: -6.9147, heading: 0 })
     ],
   );
   return await getState();

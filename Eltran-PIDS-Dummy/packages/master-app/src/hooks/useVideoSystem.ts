@@ -6,7 +6,7 @@ export function useVideoSystem(
   sendData: (updates: any) => Promise<void>,
   showToast: (msg: string, ok?: boolean) => void,
 ) {
-  const [videoList, setVideoList] = useState<string[]>([]);
+  const [videoList, setVideoList] = useState<{name: string, url: string}[]>([]);
   const [videoViewMode, setVideoViewMode] = useState<"playlist" | "files">(
     "playlist",
   );
@@ -38,7 +38,7 @@ export function useVideoSystem(
       setLoadingVideos(true);
       const res = await fetch(`${API}/api/media/videos`);
       const d = await res.json();
-      if (d.success) setVideoList(d.videos);
+      if (d.success) setVideoList(d.videos.map((v: string) => ({ name: v, url: `${API}/media/video/${encodeURIComponent(v)}` })));
     } catch (e) {
       console.error("Failed to fetch videos:", e);
     } finally {
@@ -60,7 +60,7 @@ export function useVideoSystem(
   };
 
   const addToPlaylist = (file: string) => {
-    const newPlaylist = [...playlist, file];
+    const newPlaylist = [file];
     handleVideoAction({ videoPlaylist: newPlaylist });
     showToast(`"${file}" ditambahkan ke playlist`);
   };
@@ -137,28 +137,21 @@ export function useVideoSystem(
     showToast(isShuffle ? "Urutan normal" : "Mode acak diaktifkan");
   };
 
-  const handleSelectDirectory = async () => {
-    try {
-      // @ts-ignore
-      const selectedDir = await window
-        .require("electron")
-        .ipcRenderer.invoke("select-directory");
-      if (selectedDir) {
-        const res = await fetch(`${API}/api/media/directory`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ directory: selectedDir }),
-        });
-        const d = await res.json();
-        if (d.success) {
-          showToast(`Direktori diubah ke: ${selectedDir}`);
-          fetchVideos();
-          setVideoViewMode("files");
-        }
-      }
-    } catch (e) {
-      console.error("Failed to select directory:", e);
-      showToast("Gagal membuka browser direktori");
+  const handleLoadVideoFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const newVideos = Array.from(files).map((file) => ({
+        name: file.name,
+        url: URL.createObjectURL(file),
+      }));
+
+      setVideoList((prev) => {
+        const existingUrls = new Set(prev.map((p) => p.url));
+        const newItems = newVideos.filter((f) => !existingUrls.has(f.url));
+        return [...prev, ...newItems];
+      });
+      showToast(`${files.length} file video dimuat`);
+      setVideoViewMode("files");
     }
   };
 
@@ -215,6 +208,6 @@ export function useVideoSystem(
     prevVideo,
     toggleRepeat,
     toggleShuffle,
-    handleSelectDirectory,
+    handleLoadVideoFiles,
   };
 }

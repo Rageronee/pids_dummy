@@ -60,6 +60,8 @@ export function usePidsData() {
       "altitude",
       "temperature",
       "airQuality",
+      "audioPlaylist",
+      "simGps",
     ];
     socket.on("state:update", (newState: PidsState) => {
       setData((prev) => {

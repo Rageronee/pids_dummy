@@ -3,11 +3,9 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
   ChangeEvent,
 } from "react";
-import maplibregl from "maplibre-gl";
-import * as turf from "@turf/turf";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Train,
@@ -31,6 +29,7 @@ import {
   Maximize,
   VolumeX,
   MapPin,
+  X,
 } from "lucide-react";
 import { StateToggle } from "./ui/StateToggle";
 import { TextToggle } from "./ui/TextToggle";
@@ -62,6 +61,8 @@ export function MasterConsolePanel({
   const [selectedAudio, setSelectedAudio] = useState<string>("");
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [audioTime, setAudioTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const [audioSettings, setAudioSettings] = useState({
     autoPlay: true,
     repeatMode: "off" as "off" | "all" | "one",
@@ -103,6 +104,11 @@ export function MasterConsolePanel({
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const [audioViewMode, setAudioViewMode] = useState<"playlist" | "files">(
+    "playlist",
+  );
+  const audioPlaylist = data?.audioPlaylist || [];
+
   const showToast = (msg: string, ok: boolean = true) => {
     setToast({ msg, ok, id: Date.now() });
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -137,14 +143,42 @@ export function MasterConsolePanel({
     prevVideo,
     toggleRepeat,
     toggleShuffle,
-    handleSelectDirectory,
+    handleLoadVideoFiles,
   } = useVideoSystem(data, sendData, showToast);
 
-  const [simGps, setSimGps] = useState({ lng: 0, lat: 0, heading: 0 });
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  const markerRef = useRef<maplibregl.Marker | null>(null);
-  const simGpsRef = useRef(simGps);
+  // Sync audio progress
+  useEffect(() => {
+    const player = audioPlayerRef.current;
+    if (!player) return;
+
+    const onTimeUpdate = () => setAudioTime(player.currentTime);
+    const onLoadedMetadata = () => setAudioDuration(player.duration);
+
+    player.addEventListener("timeupdate", onTimeUpdate);
+    player.addEventListener("loadedmetadata", onLoadedMetadata);
+
+    return () => {
+      player.removeEventListener("timeupdate", onTimeUpdate);
+      player.removeEventListener("loadedmetadata", onLoadedMetadata);
+    };
+  }, [audioPlayerRef.current]);
+
+  const handleSeekAudio = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = Number(e.target.value);
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.currentTime = time;
+      setAudioTime(time);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "00:00";
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const [simGps, setSimGps] = useState(data?.simGps || { lng: 113.9213, lat: -0.7893, heading: 0 });
   const navTableRef = useRef<HTMLDivElement>(null);
   const lastFocusedStation = useRef<string | null>(null);
 
@@ -216,29 +250,41 @@ export function MasterConsolePanel({
           name: a,
           url: `${API}/media/audio/${encodeURIComponent(a)}`,
         }));
-        setAudioList(fetched);
-        if (fetched.length > 0 && !selectedAudio) {
-          setSelectedAudio(fetched[0].url);
-        }
+        setAudioList((prev) => {
+          const existingUrls = new Set(prev.map((p) => p.url));
+          const newItems = fetched.filter((f: any) => !existingUrls.has(f.url));
+          return [...prev, ...newItems];
+        });
+        setSelectedAudio((prev) => {
+          if (!prev && fetched.length > 0) return fetched[0].url;
+          return prev;
+        });
       }
     } catch (e) {
       console.error("Failed to fetch audios:", e);
     }
-  }, [selectedAudio]);
+  }, []);
+
+  const addToAudioPlaylist = (audio: { name: string; url: string }) => {
+    const newPlaylist = [audio.name];
+    sendData({ audioPlaylist: newPlaylist });
+    showToast(`"${audio.name}" ditambahkan ke playlist`);
+  };
+
+  const removeFromAudioPlaylist = (name: string) => {
+    const newPlaylist = audioPlaylist.filter((n: string) => n !== name);
+    sendData({ audioPlaylist: newPlaylist });
+    showToast(`"${name}" dihapus dari playlist`);
+  };
+
+  const clearAudioPlaylist = () => {
+    sendData({ audioPlaylist: [] });
+    showToast("Playlist audio dibersihkan");
+  };
 
   useEffect(() => {
     fetchAudios();
   }, [fetchAudios]);
-  useEffect(() => {
-    fetch("http://localhost:3001/api/schedules")
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.success && res.schedules) {
-          setScheduleData(res.schedules);
-        }
-      })
-      .catch(console.error);
-  }, [activeTrainName]);
 
   // Fetch gerbong counts from db
   useEffect(() => {
@@ -294,6 +340,9 @@ export function MasterConsolePanel({
 
     const audio = new Audio(targetUrl);
     audioPlayerRef.current = audio;
+
+    audio.ontimeupdate = () => setAudioTime(audio.currentTime);
+    audio.onloadedmetadata = () => setAudioDuration(audio.duration);
 
     audio.onended = () => {
       const state = audioStateRef.current;
@@ -415,115 +464,59 @@ export function MasterConsolePanel({
 
   // Sync GPS coordinates perfectly, preventing random jitter. Coordinates act as primary anchor.
   useEffect(() => {
-    if (!stationsData.length || !data?.currentStation) return;
-    const currentStn = stationsData.find(
-      (s) => s.name === getStationName(data.currentStation),
-    );
-    if (currentStn) {
-      const newGps = {
-        lng: currentStn.longitude,
-        lat: currentStn.latitude,
-        heading: data.heading || 0,
-      };
-      setSimGps(newGps);
-      simGpsRef.current = newGps;
-    }
-  }, [stationsData, data?.currentStation]);
-
-  // Update map marker and geofencing circles whenever telemetry aligns with the selector.
-  useEffect(() => {
-    if (!map.current || !markerRef.current) return;
-
-    const lng = simGps.lng === 0 ? 107.6036 : simGps.lng;
-    const lat = simGps.lat === 0 ? -6.9125 : simGps.lat;
-
-    // Update Marker Exact Location
-    markerRef.current.setLngLat([lng, lat]);
-
-    // Smoothly move map to the new location
-    if (simGps.lng !== 0 && simGps.lat !== 0) {
-      map.current.easeTo({
-        center: [lng, lat],
-        zoom: 15,
-        duration: 1000,
-      });
-    }
-
-    // No geofencing circles update in PIDS tab
-  }, [simGps]);
-
-  // Update active station highlight circles
-  useEffect(() => {
-    if (!map.current || !route?.geojson || data?.currentStation === "-") {
-      const source = map.current?.getSource(
-        "active-station-circles",
-      ) as maplibregl.GeoJSONSource;
-      if (source) source.setData({ type: "FeatureCollection", features: [] });
+    if (data?.simGps) {
+      setSimGps(data.simGps);
       return;
     }
 
-    try {
-      const geojson =
-        typeof route.geojson === "string"
-          ? JSON.parse(route.geojson)
-          : route.geojson;
-      const features =
-        geojson.features ||
-        (geojson.type === "FeatureCollection" ? [] : [geojson]);
-
-      // Find current station point in GeoJSON (case-insensitive and trimmed)
-      const currentStationName = getStationName(data.currentStation);
-      const currentStationClean = (currentStationName || "")
-        .trim()
-        .toLowerCase();
-      const stationFeature = features.find((f: any) => {
-        if (f.geometry?.type !== "Point") return false;
-        const propName = (f.properties?.name || "").trim().toLowerCase();
-        const propStationName = (f.properties?.station_name || "")
-          .trim()
-          .toLowerCase();
-        return (
-          propName === currentStationClean ||
-          propStationName === currentStationClean
-        );
-      });
-
-      if (stationFeature) {
-        const center = stationFeature.geometry.coordinates;
-        const innerRad = (innerRadius || 250) / 1000;
-        const outerRad = (outerRadius || 750) / 1000;
-
-        const innerCircle = turf.circle(center, innerRad, {
-          steps: 64,
-          units: "kilometers",
-          properties: { type: "inner" },
-        });
-        const outerCircle = turf.circle(center, outerRad, {
-          steps: 64,
-          units: "kilometers",
-          properties: { type: "outer" },
-        });
-
-        const source = map.current.getSource(
-          "active-station-circles",
-        ) as maplibregl.GeoJSONSource;
-        if (source) {
-          source.setData({
-            type: "FeatureCollection",
-            features: [outerCircle, innerCircle],
-          });
-        }
-      } else {
-        // Clear circles if station not found
-        const source = map.current.getSource(
-          "active-station-circles",
-        ) as maplibregl.GeoJSONSource;
-        if (source) source.setData({ type: "FeatureCollection", features: [] });
-      }
-    } catch (err) {
-      console.error("Failed to update station highlight circles:", err);
+    if (!stationsData.length || !data?.currentStation) return;
+    const currentStn = stationsData.find(
+      (s: any) => s.name === getStationName(data.currentStation),
+    );
+    if (currentStn) {
+      const newGps = {
+        lng: Number(currentStn.longitude),
+        lat: Number(currentStn.latitude),
+        heading: data.heading || 0,
+      };
+      setSimGps(newGps);
     }
-  }, [route?.geojson, data?.currentStation, innerRadius, outerRadius]);
+  }, [stationsData, data?.currentStation, data?.simGps]);
+
+  const trains = useMemo(() => {
+    const fleet = data?.activeFleet || [];
+    if (fleet.length > 0) {
+      return fleet.map((f: any) => ({
+        id: f.id,
+        name: f.name,
+        location: [f.lng, f.lat],
+        status: f.status,
+        speed: f.speed,
+        eta: f.eta
+      }));
+    }
+    // Fallback to current train if activeFleet is empty
+    return [{
+      id: data?.trainNumber || "PIDS-001",
+      name: activeTrainName,
+      location: [simGps.lng, simGps.lat],
+      status: "Normal",
+      speed: data?.speed || 0,
+      eta: "--:--"
+    }];
+  }, [data?.activeFleet, data?.trainNumber, activeTrainName, simGps]);
+
+  const routeLine: [number, number][] = useMemo(() => {
+    if (!route?.geojson) return [];
+    try {
+      const gj = typeof route.geojson === "string" ? JSON.parse(route.geojson) : route.geojson;
+      const features = gj.features || (gj.type === "FeatureCollection" ? [] : [gj]);
+      const line = features.find((f: any) => f.geometry?.type === "LineString");
+      return line?.geometry?.coordinates || [];
+    } catch (e) {
+      return [];
+    }
+  }, [route?.geojson]);
 
   const activeRouteStations =
     data?.activeRoute?.stations || data?.stations || [];
@@ -1055,210 +1048,14 @@ export function MasterConsolePanel({
     reader.readAsText(file);
   };
 
-  const [mapLoaded, setMapLoaded] = useState(false);
 
-  useEffect(() => {
-    if (!mapContainer.current) return;
 
-    // Free dark tile style (no API key needed)
-    const darkStyle: maplibregl.StyleSpecification = {
-      version: 8,
-      sources: {
-        "carto-dark": {
-          type: "raster",
-          tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
-          tileSize: 256,
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
-        },
-      },
-      layers: [
-        {
-          id: "carto-dark-layer",
-          type: "raster",
-          source: "carto-dark",
-          minzoom: 0,
-          maxzoom: 19,
-        },
-      ],
-    };
-
-    const initialCenterLng = simGpsRef.current.lng || 107.6036;
-    const initialCenterLat = simGpsRef.current.lat || -6.9125;
-
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: darkStyle,
-      center: [initialCenterLng, initialCenterLat],
-      zoom: 15,
-      pitch: 45,
-      attributionControl: false,
-    });
-
-    const el = document.createElement("div");
-    el.className =
-      "w-6 h-6 bg-orange-500 rounded-full border-4 border-white shadow-[0_0_15px_rgba(238,111,31,0.8)]";
-    const initialMapLng = simGpsRef.current.lng || 107.6036;
-    const initialMapLat = simGpsRef.current.lat || -6.9125;
-    markerRef.current = new maplibregl.Marker({ element: el })
-      .setLngLat([initialMapLng, initialMapLat])
-      .addTo(map.current!);
-
-    map.current.on("load", () => {
-      setMapLoaded(true);
-    });
-
-    return () => {
-      map.current?.remove();
-      map.current = null;
-    };
-  }, []);
-
-  // Effect for handling GeoJSON changes
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-
-    if (!route?.geojson) {
-      // Remove existing route-path if geojson is deleted
-      const source = map.current.getSource("route-path");
-      if (source) {
-        if (map.current.getLayer("route-line"))
-          map.current.removeLayer("route-line");
-        if (map.current.getLayer("route-line-glow"))
-          map.current.removeLayer("route-line-glow");
-        if (map.current.getLayer("station-points"))
-          map.current.removeLayer("station-points");
-        map.current.removeSource("route-path");
-      }
-      return;
-    }
-
-    try {
-      const geojson =
-        typeof route.geojson === "string"
-          ? JSON.parse(route.geojson)
-          : route.geojson;
-
-      const existingSource = map.current.getSource(
-        "route-path",
-      ) as maplibregl.GeoJSONSource;
-
-      if (existingSource) {
-        existingSource.setData(geojson);
-      } else {
-        map.current?.addSource("route-path", {
-          type: "geojson",
-          data: geojson,
-        });
-
-        map.current?.addLayer({
-          id: "route-line",
-          type: "line",
-          source: "route-path",
-          paint: {
-            "line-color": "#1d2d6a",
-            "line-width": 6,
-            "line-opacity": 0.8,
-          },
-          filter: ["==", "$type", "LineString"],
-        });
-
-        map.current?.addLayer({
-          id: "route-line-glow",
-          type: "line",
-          source: "route-path",
-          paint: {
-            "line-color": "#ee6f1f",
-            "line-width": 2,
-            "line-opacity": 1,
-          },
-          filter: ["==", "$type", "LineString"],
-        });
-
-        map.current?.addLayer({
-          id: "station-points",
-          type: "circle",
-          source: "route-path",
-          paint: {
-            "circle-radius": 6,
-            "circle-color": "#ffffff",
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#ee6f1f",
-          },
-          filter: ["==", "$type", "Point"],
-        });
-      }
-
-      if (!map.current.getSource("active-station-circles")) {
-        // Add active station radius source
-        map.current?.addSource("active-station-circles", {
-          type: "geojson",
-          data: { type: "FeatureCollection", features: [] },
-        });
-
-        map.current?.addLayer({
-          id: "active-station-outer",
-          type: "fill",
-          source: "active-station-circles",
-          filter: ["==", "type", "outer"],
-          paint: {
-            "fill-color": "#ee6f1f",
-            "fill-opacity": 0.1,
-            "fill-outline-color": "#ee6f1f",
-          },
-        });
-
-        map.current?.addLayer({
-          id: "active-station-inner",
-          type: "fill",
-          source: "active-station-circles",
-          filter: ["==", "type", "inner"],
-          paint: {
-            "fill-color": "#ee6f1f",
-            "fill-opacity": 0.2,
-            "fill-outline-color": "#ee6f1f",
-          },
-        });
-      }
-
-      const features =
-        geojson.features ||
-        (geojson.type === "FeatureCollection" ? [] : [geojson]);
-      const lineStringFeature = features.find(
-        (f: any) =>
-          f.geometry?.type === "LineString" || f.type === "LineString",
-      );
-      const coordinates =
-        lineStringFeature?.geometry?.coordinates ||
-        lineStringFeature?.coordinates;
-
-      // Removed static geofencing layers from PIDS Tab as per user request
-
-      if (coordinates && coordinates.length > 0) {
-        if (!existingSource) {
-          const bounds = coordinates.reduce(
-            (bounds: maplibregl.LngLatBounds, coord: [number, number]) => {
-              return bounds.extend(coord);
-            },
-            new maplibregl.LngLatBounds(coordinates[0], coordinates[0]),
-          );
-
-          // Only fit bounds if we don't have a valid train location
-          if (!simGpsRef.current.lng) {
-            map.current?.fitBounds(bounds, { padding: 50, duration: 1000 });
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Failed to render GeoJSON:", err);
-    }
-  }, [route?.geojson, mapLoaded]);
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full pb-32">
       {/* INFO RANGKAIAN & TELEMETRI HEADER */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden flex flex-col xl:flex-row">
-        <div className="p-8 xl:w-[38%] bg-white dark:bg-slate-900 border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800 flex flex-col">
+      <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800/50 shadow-sm overflow-hidden flex flex-col xl:flex-row">
+        <div className="p-8 xl:w-[38%] bg-white dark:bg-slate-900/60 border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800/50 flex flex-col">
           <div className="flex items-center gap-3 mb-6 shrink-0 text-[#1d2d6a] dark:text-white">
             <div className="text-[#ee6f1f]">
               <Train size={24} />
@@ -1270,7 +1067,7 @@ export function MasterConsolePanel({
 
           <div className="flex flex-col gap-8 flex-1 justify-start">
             {/* Box 1: Identitas (Kotak A) */}
-            <div className="flex flex-col bg-[#1d2d6a] rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-[190px]">
+            <div className="flex flex-col bg-[#1d2d6a] dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800/50 shadow-sm overflow-hidden h-[190px]">
               {/* NO KA / NAMA */}
               <div className="px-8 py-3 flex-1 flex flex-col justify-center">
                 <span className="text-[12px] font-semibold text-slate-400 mb-1 uppercase tracking-[0.2em] block">
@@ -1297,7 +1094,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* Box 2: Navigasi & Tujuan (Bento White) */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-6 flex-1">
+            <div className="bg-white dark:bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/50 shadow-sm flex flex-col gap-6 flex-1">
               {/* Posisi Terkini */}
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm text-[#1d2d6a] dark:text-white">
@@ -1350,7 +1147,7 @@ export function MasterConsolePanel({
           </div>
         </div>
 
-        <div className="p-8 xl:w-[62%] bg-white dark:bg-slate-900 flex flex-col">
+        <div className="p-8 xl:w-[62%] bg-white dark:bg-transparent flex flex-col">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div className="flex items-center gap-3">
               <div className="text-[#ee6f1f]">
@@ -1421,7 +1218,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* Unified Telemetry Bento Container */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1 relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/50 shadow-sm grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8 flex-1 relative overflow-hidden">
               {/* Longitude */}
               <div className="flex flex-col items-center justify-center gap-1.5 group text-center">
                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
@@ -1522,16 +1319,16 @@ export function MasterConsolePanel({
         defaultOpen={true}
         summary={`${jumlahKereta} Kereta Tersambung • IP Global: 192.168.1.48`}
       >
-        <div className="bg-white dark:bg-slate-900 p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-6 transition-colors">
+        <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800/50 shadow-sm flex flex-col gap-6 transition-colors">
           {/* Header Controls: Global IP & Controls */}
-          <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 bg-slate-50 dark:bg-slate-950/20 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50 shadow-sm">
             {/* Global IP & Settings */}
             <div className="flex flex-wrap items-center gap-4 flex-1">
               <div className="flex flex-col">
                 <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                   Network Global IP
                 </span>
-                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1.5 shadow-sm">
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/50 px-2 py-1.5 shadow-sm rounded-lg backdrop-blur-sm">
                   <input
                     type="text"
                     defaultValue="192"
@@ -1567,7 +1364,7 @@ export function MasterConsolePanel({
                 <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1 text-center sm:text-left">
                   Tampilkan
                 </span>
-                <div className="flex items-center gap-3 p-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="flex items-center gap-3 p-1 bg-white dark:bg-slate-950/40 rounded-lg border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-sm">
                   <label className="flex items-center gap-2 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <input
                       type="checkbox"
@@ -1598,7 +1395,7 @@ export function MasterConsolePanel({
               <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                 Jumlah Kereta
               </span>
-              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 shadow-sm">
+              <div className="flex items-center gap-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/50 rounded-lg px-2.5 py-1.5 shadow-sm backdrop-blur-sm">
                 <Train size={14} className="text-slate-400 dark:text-slate-500" />
                 <select
                   className="text-xs font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent cursor-pointer focus:outline-none min-w-[150px]"
@@ -1610,7 +1407,7 @@ export function MasterConsolePanel({
                       Math.min(gerbongCounts[activeTrainName] || 15, 15),
                     ),
                   ].map((_, i) => (
-                    <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-900">
+                    <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-950">
                       {i + 1} Gerbong
                     </option>
                   ))}
@@ -1625,13 +1422,13 @@ export function MasterConsolePanel({
               ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1)),
             ].map((item, i) => (
               <div key={item} className="flex shrink-0 snap-start w-[220px]">
-                <div className="flex flex-col w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 dark:hover:border-[#ee6f1f]/40 hover:shadow-md transition-all relative">
-                  <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] dark:bg-slate-900 text-white border-b border-[#152355] dark:border-slate-800">
+                <div className="flex flex-col w-full bg-white dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200 dark:border-slate-800/50 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 dark:hover:border-[#ee6f1f]/40 hover:shadow-md transition-all relative">
+                  <div className="flex items-center justify-center h-10 shrink-0 bg-[#1d2d6a] dark:bg-slate-950/60 text-white border-b border-[#152355] dark:border-slate-800/50">
                     <span className="text-[10px] font-bold tracking-wider">
                       GERBONG {item}
                     </span>
                   </div>
-                  <div className="p-4 bg-white dark:bg-slate-900 flex flex-col gap-4 flex-1">
+                  <div className="p-4 bg-white dark:bg-transparent flex flex-col gap-4 flex-1">
                     <div className="flex flex-col">
                       <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 mb-1">
                         ID Kereta
@@ -1694,6 +1491,9 @@ export function MasterConsolePanel({
         navTableRef={navTableRef}
         onUploadGeoJSON={handleUploadGeoJSON}
         onDeleteClick={handleDeleteClick}
+        simGps={simGps}
+        trains={trains}
+        routeLine={routeLine}
       />
 
       {/* 3. SISTEM MEDIA & PENYIARAN */}
@@ -1705,7 +1505,7 @@ export function MasterConsolePanel({
       >
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
           {/* Audio Broadcast */}
-          <div className="space-y-5 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-full flex flex-col transition-colors">
+          <div className="space-y-5 bg-white dark:bg-slate-900/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 dark:border-slate-800/50 shadow-sm h-full flex flex-col transition-colors">
             <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
               <h4 className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500">
                 <Mic size={14} className="text-[#ee6f1f]" /> Audio Announcer
@@ -1744,8 +1544,8 @@ export function MasterConsolePanel({
                   onChange={(e) => setMediaSource(e.target.value)}
                   className="w-full text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 focus:outline-none focus:border-[#ee6f1f] focus:bg-white dark:focus:bg-slate-700 transition-all cursor-pointer"
                 >
-                  <option value="Line In" className="bg-white dark:bg-slate-900">Line In / Default Audio</option>
-                  <option value="Internal" className="bg-white dark:bg-slate-900">Internal Storage</option>
+                  <option value="Line In" className="bg-white dark:bg-slate-950">Line In / Default Audio</option>
+                  <option value="Internal" className="bg-white dark:bg-slate-950">Internal Storage</option>
                 </select>
               </div>
 
@@ -1769,54 +1569,142 @@ export function MasterConsolePanel({
                 placeholder="Ketik pesan darurat/info..."
               />
             </div>
-            <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-inner bg-slate-50 dark:bg-slate-900 transition-colors">
-              <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 px-3 py-2 border-b border-slate-200 dark:border-slate-800 transition-colors">
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <ListVideo size={12} /> Audio Playlist ({audioList.length})
-                </span>
-                {audioList.length > 0 && (
+            <div className="flex flex-col flex-1 min-h-[140px] border border-slate-100 dark:border-slate-800/50 rounded-xl overflow-hidden shadow-inner bg-slate-50 dark:bg-slate-950/20 transition-colors">
+              <div className="flex flex-col bg-slate-100 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800/50 transition-colors">
+                <div className="flex p-1 gap-1">
                   <button
-                    onClick={() => {
-                      setAudioList([]);
-                      setSelectedAudio("");
-                      handleStopAudio();
-                    }}
-                    className="text-[9px] font-bold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors px-2 py-0.5 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-900/30"
+                    onClick={() => setAudioViewMode("playlist")}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                      audioViewMode === "playlist"
+                        ? "bg-white dark:bg-slate-800 text-[#ee6f1f] shadow-sm"
+                        : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50"
+                    }`}
                   >
-                    Bersihkan
+                    <ListVideo size={12} /> Playlist ({audioPlaylist.length})
                   </button>
-                )}
+                  <button
+                    onClick={() => setAudioViewMode("files")}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                      audioViewMode === "files"
+                        ? "bg-white dark:bg-slate-800 text-[#ee6f1f] shadow-sm"
+                        : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50"
+                    }`}
+                  >
+                    <Mic size={12} /> Tersedia ({audioList.length})
+                  </button>
+                </div>
               </div>
+
               <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar max-h-[160px]">
-                {audioList.length === 0 ? (
+                {audioViewMode === "playlist" ? (
+                  audioPlaylist.length === 0 ? (
+                    <div className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-600 py-8">
+                      Playlist audio masih kosong.
+                    </div>
+                  ) : (
+                    audioPlaylist.map((name: string, i: number) => {
+                      const audio = audioList.find((a) => a.name === name) || { name, url: "" };
+                      return (
+                        <div
+                          key={i}
+                          className={`flex items-center gap-2 p-2 rounded-lg text-xs transition-all border ${
+                            selectedAudio === audio.url
+                              ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white border-[#1d2d6a] dark:border-[#ee6f1f] shadow-md"
+                              : "bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800/60"
+                          }`}
+                        >
+                          <div 
+                            className="flex-1 flex items-center gap-2 cursor-pointer truncate"
+                            onClick={() => {
+                              if (audio.url) {
+                                setSelectedAudio(audio.url);
+                                handlePlayAudio(audio.url);
+                              }
+                            }}
+                          >
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-black/10 dark:bg-white/10">
+                              {selectedAudio === audio.url ? (
+                                <Volume2 size={12} className="animate-pulse" />
+                              ) : (
+                                <Mic size={10} className="opacity-50" />
+                              )}
+                            </div>
+                            <span className="font-bold truncate">{audio.name}</span>
+                          </div>
+                          <button
+                            onClick={() => removeFromAudioPlaylist(audio.name)}
+                            className="p-1 hover:bg-red-500/20 rounded text-red-500 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      );
+                    })
+                  )
+                ) : audioList.length === 0 ? (
                   <div className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-600 py-8">
-                    Playlist masih kosong. Silakan muat file audio.
+                    Tidak ada file audio yang tersedia.
                   </div>
                 ) : (
-                  audioList.map((audio, i) => (
+                  audioList.map((audio: { name: string; url: string }, i: number) => (
                     <div
                       key={i}
-                      onClick={() => {
-                        setSelectedAudio(audio.url);
-                        handlePlayAudio(audio.url);
-                      }}
-                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer text-xs transition-all border ${selectedAudio === audio.url ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white border-[#1d2d6a] dark:border-[#ee6f1f] shadow-md relative overflow-hidden" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-[#1d2d6a]/30 dark:hover:border-[#ee6f1f]/30 hover:bg-blue-50/50 dark:hover:bg-slate-800"}`}
+                      className="flex items-center gap-2 p-2 rounded-lg text-xs bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800/60 transition-all"
                     >
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 bg-black/10 dark:bg-white/10">
-                        {selectedAudio === audio.url ? (
-                          <Volume2 size={12} className="animate-pulse" />
-                        ) : (
-                          <Mic size={10} className="opacity-50" />
-                        )}
-                      </div>
-                      <span className="font-bold truncate flex-1">
+                      <span className="font-bold truncate flex-1 text-slate-600 dark:text-slate-300">
                         {audio.name}
                       </span>
+                      {audioPlaylist.includes(audio.name) ? (
+                        <span className="text-[9px] font-bold text-green-500 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-900/30">
+                          Sudah ada
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => addToAudioPlaylist(audio)}
+                          className="flex items-center gap-1 text-[9px] font-bold text-[#ee6f1f] px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors"
+                        >
+                          <Plus size={12} /> Tambahkan
+                        </button>
+                      )}
                     </div>
                   ))
                 )}
               </div>
+              
+              {audioViewMode === "playlist" && audioPlaylist.length > 0 && (
+                <div className="p-2 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-950/40">
+                  <button
+                    onClick={clearAudioPlaylist}
+                    className="w-full py-1.5 text-[10px] font-bold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30 transition-all"
+                  >
+                    Bersihkan Playlist
+                  </button>
+                </div>
+              )}
             </div>
+            {/* Audio Timeline - Enhanced Premium Look */}
+            <div className="space-y-3 px-1">
+              <div className="relative h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                <motion.div 
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#ee6f1f] to-orange-400 rounded-full z-10"
+                  style={{ width: `${(audioTime / (audioDuration || 1)) * 100}%` }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max={audioDuration || 0}
+                  value={audioTime}
+                  onChange={handleSeekAudio}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                />
+              </div>
+              <div className="flex justify-between items-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                <span className="bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded border border-slate-100 dark:border-slate-800">{formatTime(audioTime)}</span>
+                <div className="flex-1 mx-4 h-px bg-slate-100 dark:bg-slate-800/50" />
+                <span className="bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded border border-slate-100 dark:border-slate-800">{formatTime(audioDuration)}</span>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={handleStopAudio}
@@ -1834,7 +1722,7 @@ export function MasterConsolePanel({
           </div>
 
           {/* Video Layar */}
-          <div className="space-y-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-full flex flex-col relative group transition-colors">
+          <div className="space-y-4 bg-white dark:bg-slate-900/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 dark:border-slate-800/50 shadow-sm h-full flex flex-col relative group transition-colors">
             <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-3">
               <h4 className="flex items-center gap-2 text-xs font-bold text-[#1d2d6a] dark:text-white">
                 <Video size={16} className="text-[#1d2d6a] dark:text-[#ee6f1f]" /> Manajemen TV /
@@ -1847,12 +1735,16 @@ export function MasterConsolePanel({
                 >
                   <Settings size={14} /> Pengaturan
                 </button>
-                <button
-                  onClick={handleSelectDirectory}
-                  className="flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm"
-                >
-                  <FolderOpen size={14} /> Pilih Direktori
-                </button>
+                <label className="flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm cursor-pointer">
+                  <FolderOpen size={14} /> Pilih Video (Lokal)
+                  <input
+                    type="file"
+                    accept="video/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleLoadVideoFiles}
+                  />
+                </label>
                 <button
                   onClick={fetchVideos}
                   className={`text-slate-400 dark:text-slate-500 hover:text-[#1d2d6a] dark:hover:text-[#ee6f1f] p-2 rounded-lg transition-colors ${loadingVideos ? "animate-spin" : ""}`}
@@ -1863,7 +1755,7 @@ export function MasterConsolePanel({
             </div>
 
             {/* Video Preview Block */}
-            <div className="bg-slate-900 rounded-xl overflow-hidden border border-slate-200 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
+            <div className="bg-slate-950 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/50 shadow-inner aspect-video max-h-[200px] relative flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center bg-slate-100/10 backdrop-blur-[2px] rounded-2xl overflow-hidden border border-slate-200/50">
                 <AnimatePresence mode="wait">
                   {activeFile ? (
@@ -1873,13 +1765,13 @@ export function MasterConsolePanel({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 1.05 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="relative w-full h-full flex items-center justify-center bg-slate-900"
+                      className="relative w-full h-full flex items-center justify-center bg-slate-950"
                     >
                       <video
                         ref={videoRef}
                         id="master-video-preview"
                         key={activeFile}
-                        src={`${API}/media/video/${encodeURIComponent(activeFile)}`}
+                        src={videoList.find(v => v.name === activeFile)?.url || `${API}/media/video/${encodeURIComponent(activeFile)}`}
                         autoPlay={isPlaying}
                         loop={playbackMode.includes("repeat")}
                         muted={data?.muteVideo ?? false}
@@ -1905,7 +1797,7 @@ export function MasterConsolePanel({
                         }}
                       />
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end pointer-events-none">
-                        <div className="bg-slate-900/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
+                        <div className="bg-slate-950/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-[70%]">
                           <div
                             className={`w-1.5 h-1.5 shrink-0 rounded-full ${isPlaying ? "bg-green-400 animate-pulse" : "bg-yellow-400"}`}
                           />
@@ -1921,7 +1813,7 @@ export function MasterConsolePanel({
                             if (vid && vid.requestFullscreen)
                               vid.requestFullscreen().catch(() => {});
                           }}
-                          className="bg-slate-900/60 backdrop-blur-sm text-white p-1.5 rounded-lg hover:bg-white/20 transition-colors pointer-events-auto"
+                          className="bg-slate-950/60 backdrop-blur-sm text-white p-1.5 rounded-lg hover:bg-white/20 transition-colors pointer-events-auto"
                           title="Full Screen"
                         >
                           <Maximize size={14} />
@@ -1990,7 +1882,7 @@ export function MasterConsolePanel({
             {/* Playback Controls Row */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-1">
               {/* Left Side: Modes */}
-              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl p-1 transition-colors">
+              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-100 dark:border-slate-700/50 rounded-xl p-1 transition-colors">
                 <button
                   onClick={toggleRepeat}
                   title="Repeat"
@@ -2181,12 +2073,12 @@ export function MasterConsolePanel({
                           <div className="p-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded shrink-0 group-hover/vitem:bg-blue-100 dark:group-hover/vitem:bg-orange-500/20 group-hover/vitem:text-[#1d2d6a] dark:group-hover/vitem:text-[#ee6f1f] transition-colors">
                             <Video size={12} />
                           </div>
-                          <span className="truncate">{file}</span>
+                          <span className="truncate">{file.name}</span>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            addToPlaylist(file);
+                            addToPlaylist(file.name);
                           }}
                           className="opacity-0 group-hover/vitem:opacity-100 p-1.5 text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-50 dark:bg-orange-500/10 hover:bg-[#1d2d6a] dark:hover:bg-[#ee6f1f] hover:text-white rounded transition-all flex items-center gap-1 shadow-sm"
                           title="Tambahkan ke Playlist"

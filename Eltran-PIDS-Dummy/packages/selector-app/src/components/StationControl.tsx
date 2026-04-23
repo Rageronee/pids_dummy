@@ -37,7 +37,7 @@ const StationControl = React.memo(function StationControl({
         <MapPin className="text-[#ee6f1f]" size={24} /> Station Control
       </h2>
       <div className="flex gap-6 h-[400px]">
-        <div className="flex-[2] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col p-8 relative overflow-hidden group transition-colors">
+        <div className="flex-[2] bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800/50 flex flex-col p-8 relative overflow-hidden group transition-colors">
           <div className="flex justify-between items-start mb-6 relative z-10">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
               Current Station
@@ -86,7 +86,7 @@ const StationControl = React.memo(function StationControl({
           </div>
         </div>
 
-        <div className="flex-1 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-8 relative overflow-hidden group transition-colors">
+        <div className="flex-1 bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800/50 flex flex-col items-center justify-center p-8 relative overflow-hidden group transition-colors">
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 mb-4">
             Upcoming Stop
           </span>

@@ -60,7 +60,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
     );
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-sm dark:shadow-none flex flex-col gap-10 h-full transition-colors">
+    <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200 dark:border-slate-800/50 rounded-[2.5rem] p-10 shadow-sm dark:shadow-none flex flex-col gap-10 h-full transition-colors">
       <div className="flex flex-col gap-3">
         <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight flex items-center gap-4">
           <Settings
@@ -83,7 +83,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
           <div className="flex gap-6">
             <div className="relative flex-1" ref={serviceDropdownRef}>
               <div
-                className={`w-full bg-slate-50 dark:bg-slate-950 border-4 rounded-[2rem] px-8 py-6 shadow-sm transition-all cursor-pointer flex items-center group relative overflow-hidden ${serviceDropdownOpen ? "border-[#ee6f1f] bg-white dark:bg-slate-900 ring-8 ring-orange-500/10" : "border-slate-100 dark:border-slate-800 hover:border-[#1d2d6a]/20 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md"}`}
+                className={`w-full bg-slate-50 dark:bg-slate-950/40 border-4 rounded-[2rem] px-8 py-6 shadow-sm transition-all cursor-pointer flex items-center group relative overflow-hidden backdrop-blur-sm ${serviceDropdownOpen ? "border-[#ee6f1f] bg-white dark:bg-slate-900 ring-8 ring-orange-500/10" : "border-slate-100 dark:border-slate-800/50 hover:border-[#1d2d6a]/20 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800/40 hover:shadow-md"}`}
                 onClick={() => setServiceDropdownOpen(!serviceDropdownOpen)}
               >
                 {!serviceDropdownOpen && (
@@ -113,7 +113,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
               </div>
 
               {serviceDropdownOpen && (
-                <div className="absolute z-[100] top-full left-0 right-0 mt-3 bg-white dark:bg-slate-900 border-4 border-[#1d2d6a]/10 dark:border-slate-800 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-h-[350px] overflow-y-auto custom-scrollbar overflow-hidden">
+                <div className="absolute z-[100] top-full left-0 right-0 mt-3 bg-white dark:bg-slate-900/80 backdrop-blur-md border-4 border-[#1d2d6a]/10 dark:border-slate-800/50 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-h-[350px] overflow-y-auto custom-scrollbar overflow-hidden">
                   {filtered.length === 0 ? (
                     <div className="px-8 py-6 text-lg font-bold text-slate-400 dark:text-slate-500 text-center">
                       Tidak ada layanan ditemukan
@@ -160,7 +160,7 @@ const ServiceConfig = React.memo(function ServiceConfig({
                 className="w-full appearance-none bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-[2rem] px-8 py-6 text-2xl font-bold text-[#1d2d6a] dark:text-white shadow-sm hover:border-[#1d2d6a]/20 dark:hover:border-slate-700 focus:border-[#ee6f1f] focus:ring-8 focus:ring-orange-500/10 focus:outline-none transition-all cursor-pointer truncate pr-20 uppercase"
               >
                 {[...Array(maxWagons)].map((_, i) => (
-                  <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-900">
+                  <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-950">
                     Gerbong {i + 1}
                   </option>
                 ))}
