@@ -23,6 +23,21 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import * as turf from "@turf/turf";
 
+// Helper to robustly extract station name from string, JSON string, or object
+function getStationName(s) {
+  if (!s || s === "-") return "-";
+  if (typeof s === "string") {
+    try {
+      if (s.startsWith("{") && s.endsWith("}")) {
+        const parsed = JSON.parse(s);
+        if (parsed && parsed.name) return parsed.name;
+      }
+    } catch (e) { }
+    return s;
+  }
+  return s.name || s.id || "-";
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -565,6 +580,8 @@ export async function startApiServer() {
         "showClock",
         "ledType",
         "simGps",
+        "simDistance",
+        "lastSimTime",
       ]);
       for (const key of Object.keys(updates)) {
         if (!ALLOWED_KEYS.has(key)) delete updates[key];
@@ -586,6 +603,53 @@ export async function startApiServer() {
           role,
           details: `Service diubah: ${updates.serviceName}`,
         });
+      }
+
+      // Snap simulation to station if currentStation changed manually
+      if (updates.currentStation && updates.currentStation !== prevState.currentStation) {
+        const state = await getState();
+        if (state.activeRoute?.geojson) {
+          try {
+            const geojson = typeof state.activeRoute.geojson === 'string' 
+              ? JSON.parse(state.activeRoute.geojson) 
+              : state.activeRoute.geojson;
+            
+            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
+            const lineFeature = features.find(f => f.geometry?.type === 'LineString');
+            const stationFeatures = features.filter(f => f.geometry?.type === 'Point');
+            
+            if (lineFeature && stationFeatures.length > 0) {
+              const targetNameInput = typeof updates.currentStation === 'object' 
+                ? (updates.currentStation.name || updates.currentStation.id || "")
+                : updates.currentStation;
+              
+              const normalizedTargetName = String(targetNameInput).toUpperCase().trim();
+
+              const targetStation = stationFeatures.find(f => {
+                const stationName = String(f.properties?.name || f.properties?.Name || "").toUpperCase().trim();
+                return stationName === normalizedTargetName;
+              });
+
+              if (targetStation && targetStation.geometry?.coordinates) {
+                const line = turf.lineString(lineFeature.geometry.coordinates);
+                const pt = turf.point(targetStation.geometry.coordinates);
+                const snapped = turf.nearestPointOnLine(line, pt);
+                const distanceInMeters = (snapped.properties?.dist || 0) * 1000;
+                
+                await updateState({
+                  simDistance: distanceInMeters,
+                  simGps: {
+                    lng: targetStation.geometry.coordinates[0],
+                    lat: targetStation.geometry.coordinates[1],
+                    heading: prevState.simGps?.heading || 0
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            console.error("[API] Snapping error:", e.message);
+          }
+        }
       }
 
       await broadcastState();
@@ -1305,8 +1369,6 @@ export async function startApiServer() {
   });
 
   // GPS Simulation Loop
-  let simDistance = 0;
-  let lastSimTime = Date.now();
   trackInterval(async () => {
     try {
       const state = await getState();
@@ -1319,37 +1381,91 @@ export async function startApiServer() {
       
       const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
       const lineFeature = features.find(f => f.geometry?.type === 'LineString');
+      const stationFeatures = features.filter(f => f.geometry?.type === 'Point');
       if (!lineFeature) return;
 
       const now = Date.now();
-      const dt = (now - lastSimTime) / 1000; // seconds
-      lastSimTime = now;
+      const lastTime = state.lastSimTime || now;
+      let dt = (now - lastTime) / 1000; // seconds
+      
+      // Cap dt to prevent massive jumps after sleep/hang
+      if (dt > 2.0) dt = 1.0; 
+      if (dt <= 0) dt = 1.0;
 
+      let currentDist = state.simDistance || 0;
       const speedMPS = (state.speed || 0) / 3.6; // km/h to m/s
-      if (speedMPS <= 0) return;
+      
+      const lineCoords = [...lineFeature.geometry.coordinates];
+      let line = turf.lineString(lineCoords);
 
-      simDistance += speedMPS * dt;
+      // Perfection: Auto-reverse simulation line if the current station list is reversed
+      // This ensures KA 68 (BD-ML) moves in the correct direction on the map
+      if (state.stations && state.stations.length >= 2) {
+        const firstStnName = String(typeof state.stations[0] === 'object' ? state.stations[0].name : state.stations[0]).toUpperCase().trim();
+        const startPoint = turf.point(lineCoords[0]);
+        const endPoint = turf.point(lineCoords[lineCoords.length - 1]);
+        
+        const firstStnFeature = stationFeatures.find(f => 
+          String(f.properties?.name || f.properties?.Name || "").toUpperCase().trim() === firstStnName
+        );
 
-      const line = turf.lineString(lineFeature.geometry.coordinates);
-      const totalLength = turf.length(line, { units: 'kilometers' }) * 1000; // to meters
-
-      if (simDistance > totalLength) {
-        simDistance = 0; // Loop back
+        if (firstStnFeature) {
+          const distToStart = turf.distance(turf.point(firstStnFeature.geometry.coordinates), startPoint);
+          const distToEnd = turf.distance(turf.point(firstStnFeature.geometry.coordinates), endPoint);
+          if (distToEnd < distToStart) {
+            line = turf.lineString(lineCoords.reverse());
+          }
+        }
       }
 
-      const point = turf.along(line, simDistance / 1000, { units: 'kilometers' });
-      const nextDist = Math.min(simDistance + 50, totalLength);
-      const nextPoint = turf.along(line, nextDist / 1000, { units: 'kilometers' });
-      const bearing = turf.bearing(point, nextPoint);
+      const totalLength = turf.length(line, { units: "kilometers" }) * 1000;
+      let lng, lat, bearing;
 
-      const [lng, lat] = point.geometry.coordinates;
-      
-      // Update state without broadcasting here, we'll do it via io.emit to be faster
-      await updateState({
-        simGps: { lng, lat, heading: bearing }
-      });
-      
-      io.emit("state:update", await getState());
+      if (speedMPS <= 0) {
+        // Snap to current station if speed is 0
+        const normalizedCurrent = getStationName(state.currentStation).toUpperCase().trim();
+        const currentStation = stationFeatures.find(f => {
+            const name = String(f.properties?.name || f.properties?.Name || "").toUpperCase().trim();
+            return name === normalizedCurrent;
+        });
+
+        if (currentStation) {
+          [lng, lat] = currentStation.geometry.coordinates;
+          bearing = state.simGps?.heading || 0;
+          
+          // Recalculate distance to be exactly at station
+          const pt = turf.point([lng, lat]);
+          const snapped = turf.nearestPointOnLine(line, pt);
+          currentDist = snapped.properties.dist * 1000;
+        } else {
+          // Keep current position if station not found
+          lng = state.simGps?.lng;
+          lat = state.simGps?.lat;
+          bearing = state.simGps?.heading || 0;
+        }
+      } else {
+        currentDist += speedMPS * dt;
+        if (currentDist > totalLength) {
+          currentDist = 0; // Loop back
+        }
+
+        const point = turf.along(line, currentDist / 1000, { units: 'kilometers' });
+        const nextDist = Math.min(currentDist + 50, totalLength);
+        const nextPoint = turf.along(line, nextDist / 1000, { units: 'kilometers' });
+        bearing = turf.bearing(point, nextPoint);
+        [lng, lat] = point.geometry.coordinates;
+      }
+
+      if (lng !== undefined && lat !== undefined) {
+        await updateState({
+          simGps: { lng, lat, heading: bearing },
+          simDistance: currentDist,
+          lastSimTime: now
+        });
+        
+        // Broadcast the full updated state
+        io.emit("state:update", await getState());
+      }
     } catch (e) {
       console.error("[Simulation] Error:", e.message);
     }

@@ -93,6 +93,8 @@ export interface PidsState {
   // Audio Management
   audioPlaylist?: string[];
   simGps?: { lng: number; lat: number; heading: number };
+  simDistance?: number;
+  lastSimTime?: number;
 }
 
 // ---- Auth & Logging Types ----

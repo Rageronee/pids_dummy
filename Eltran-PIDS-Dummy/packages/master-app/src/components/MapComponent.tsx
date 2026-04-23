@@ -22,6 +22,17 @@ interface MapComponentProps {
   onTrainClick?: (trainId: string, location: [number, number]) => void;
 }
 
+const isValidCoord = (coord: [number, number]): boolean => {
+  const [lng, lat] = coord;
+  return (
+    !isNaN(lng) && !isNaN(lat) &&
+    isFinite(lng) && isFinite(lat) &&
+    !(lng === 0 && lat === 0) &&
+    lng >= -180 && lng <= 180 &&
+    lat >= -90 && lat <= 90
+  );
+};
+
 const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, focusCoord, routeLine, onMapClick, onTrainClick }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapWrapperRef = useRef<HTMLDivElement>(null);
@@ -29,6 +40,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
   const markers = useRef<Record<string, maplibregl.Marker>>({});
   const popups = useRef<Record<string, maplibregl.Popup>>({});
   const [mapLoaded, setMapLoaded] = React.useState(false);
+  const hasFittedToTrains = useRef(false);
+  const previousTrainIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -55,8 +68,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: style,
-      center: [118.0149, -2.5489],
-      zoom: 4.5,
+      center: [107.6098, -6.9147],
+      zoom: 8,
       pitch: 0,
       attributionControl: false,
     });
@@ -73,8 +86,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     });
 
     map.current.on('zoom', () => {
-      const z = map.current?.getZoom() || 4.5;
-      // Proportional scale: smaller markers when zoomed out, larger when zoomed in
+      const z = map.current?.getZoom() || 8;
       const scale = Math.max(0.5, Math.min(1.0, z / 14));
       document.documentElement.style.setProperty('--map-marker-scale', scale.toString());
     });
@@ -174,7 +186,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     const currentMap = map.current;
     if (!currentMap || !mapLoaded || !currentMap.isStyleLoaded()) return;
 
-    const trainIds = trains.map(t => t.id);
+    const validTrains = trains.filter(t => isValidCoord(t.location));
+    const trainIds = validTrains.map(t => t.id);
     Object.keys(markers.current).forEach(id => {
       if (!trainIds.includes(id)) {
         markers.current[id].remove();
@@ -186,29 +199,53 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       }
     });
 
-    trains.forEach(train => {
+    if (validTrains.length > 0) {
+      const currentTrainId = validTrains.map(t => t.id).join(',');
+      if (previousTrainIdRef.current !== null && previousTrainIdRef.current !== currentTrainId) {
+        hasFittedToTrains.current = false;
+      }
+      previousTrainIdRef.current = currentTrainId;
+    }
+
+    if (!hasFittedToTrains.current && validTrains.length > 0 && !focusCoord) {
+      hasFittedToTrains.current = true;
+      if (validTrains.length === 1) {
+        currentMap.flyTo({ center: validTrains[0].location, zoom: 13, duration: 1500 });
+      } else {
+        const bounds = new maplibregl.LngLatBounds(validTrains[0].location, validTrains[0].location);
+        validTrains.forEach(t => bounds.extend(t.location));
+        currentMap.fitBounds(bounds, { padding: 60, duration: 1500 });
+      }
+    }
+
+    validTrains.forEach(train => {
       if (markers.current[train.id]) {
-        markers.current[train.id].setLngLat(train.location);
-        const el = markers.current[train.id].getElement();
-        if (el) {
-          const rot = train.heading || 0;
-          el.style.transform = `scale(var(--map-marker-scale, 0.8)) rotate(${rot}deg)`;
+        const marker = markers.current[train.id];
+        const currentPos = marker.getLngLat();
+        const dist = Math.sqrt(
+          Math.pow(currentPos.lng - train.location[0], 2) +
+          Math.pow(currentPos.lat - train.location[1], 2)
+        );
+        if (dist > 0.00001) {
+          marker.setLngLat(train.location);
         }
         return;
       }
 
       const el = document.createElement("div");
-      el.className = "relative group cursor-pointer flex items-center justify-center transition-all duration-300";
-      const rot = train.heading || 0;
-      el.style.transform = `scale(var(--map-marker-scale, 0.8)) rotate(${rot}deg)`;
+      el.className = "relative group cursor-pointer flex items-center justify-center";
+      el.style.width = '32px';
+      el.style.height = '40px';
       el.innerHTML = `
-        <div class="relative flex items-center justify-center">
-          <div class="absolute w-12 h-12 bg-blue-500 opacity-20 rounded-full animate-ping"></div>
-          <div class="w-6 h-8 bg-blue-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center z-10 transition-transform group-hover:scale-125 relative">
-            <div class="w-1.5 h-1.5 bg-white rounded-full mt-[-8px]"></div>
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px] border-t-blue-600 mb-[-8px]"></div>
+        <div class="relative flex items-center justify-center" style="width:32px;height:40px;">
+          <div class="absolute w-12 h-12 bg-blue-500 opacity-20 rounded-full animate-ping" style="top:-6px;left:50%;transform:translateX(-50%);"></div>
+          <div class="absolute" style="top:0;left:50%;transform:translateX(-50%);">
+            <div class="w-6 h-6 bg-blue-600 rounded-full border-[3px] border-white shadow-xl flex items-center justify-center" style="transform:scale(var(--map-marker-scale,1));transform-origin:center bottom;">
+              <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+            </div>
+            <div class="w-0 h-0 mx-auto" style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #2563eb;transform:scale(var(--map-marker-scale,1));transform-origin:center top;"></div>
           </div>
-          <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-2 py-0.5 rounded border border-white/10 text-[8px] font-black text-white whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 uppercase tracking-widest">
+          <div class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-2 py-0.5 rounded border border-white/10 text-[8px] font-black text-white whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 uppercase tracking-widest" style="top:-24px;">
             ${train.name}
           </div>
         </div>
@@ -293,7 +330,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
         }
       });
 
-      const marker = new maplibregl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat(train.location)
         .setPopup(popup)
         .addTo(currentMap);
@@ -302,12 +339,16 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       popups.current[train.id] = popup;
     });
 
-    trains.forEach(train => {
+    validTrains.forEach(train => {
         if (markers.current[train.id]) {
-           const el = markers.current[train.id].getElement();
-           if (el) {
-             const rot = train.heading || 0;
-             el.style.transform = `scale(var(--map-marker-scale, 0.8)) rotate(${rot}deg)`;
+           const marker = markers.current[train.id];
+           const currentPos = marker.getLngLat();
+           const dist = Math.sqrt(
+             Math.pow(currentPos.lng - train.location[0], 2) +
+             Math.pow(currentPos.lat - train.location[1], 2)
+           );
+           if (dist > 0.00001) {
+             marker.setLngLat(train.location);
            }
         }
     });

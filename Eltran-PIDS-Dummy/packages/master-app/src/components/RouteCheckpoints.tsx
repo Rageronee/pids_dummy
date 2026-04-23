@@ -5,7 +5,6 @@
 import { ChangeEvent } from "react";
 import { MapPin, ChevronRight, Upload, Trash2, Info } from "lucide-react";
 import { SectionAccordion } from "./ui/SectionAccordion";
-import MapComponent from "./MapComponent";
 
 interface RouteCheckpointsProps {
   route: any;
@@ -15,9 +14,6 @@ interface RouteCheckpointsProps {
   navTableRef: React.RefObject<HTMLDivElement>;
   onUploadGeoJSON: (e: ChangeEvent<HTMLInputElement>) => void;
   onDeleteClick: () => void;
-  simGps: { lng: number; lat: number; heading: number };
-  trains?: any[];
-  routeLine?: [number, number][];
 }
 
 export function RouteCheckpoints({
@@ -28,9 +24,6 @@ export function RouteCheckpoints({
   navTableRef,
   onUploadGeoJSON,
   onDeleteClick,
-  simGps,
-  trains,
-  routeLine: propRouteLine,
 }: RouteCheckpointsProps) {
   // Helper to robustly extract station name from string, JSON string, or object
   const getStationName = (s: any): string => {

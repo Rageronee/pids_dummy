@@ -376,6 +376,9 @@ async function createTables() {
             air_quality TEXT NOT NULL DEFAULT 'GOOD NOMINAL',
             display_mode TEXT NOT NULL DEFAULT 'pids',
             active_route_json TEXT DEFAULT '{}',
+            sim_gps_json TEXT DEFAULT '{"lng": 107.6098, "lat": -6.9147, "heading": 0}',
+            sim_distance REAL DEFAULT 0,
+            last_sim_time BIGINT DEFAULT 0,
             geofencing_inner_radius INTEGER DEFAULT 250,
             geofencing_outer_radius INTEGER DEFAULT 750,
             show_train_number BOOLEAN DEFAULT TRUE,
@@ -387,8 +390,7 @@ async function createTables() {
             video_volume INTEGER DEFAULT 50,
             video_tv_standby BOOLEAN DEFAULT TRUE,
             video_playback_progress REAL DEFAULT 0,
-            coach_count INTEGER DEFAULT 10,
-            sim_gps_json TEXT DEFAULT '{"lng": 107.6098, "lat": -6.9147, "heading": 0}'
+            coach_count INTEGER DEFAULT 10
         )
     `);
   await pool.query(`
@@ -597,14 +599,23 @@ async function createTables() {
   } catch (e) {
     console.warn("[PIDS-DB] Migration note (schedules constraint):", e.message);
   }
+
+  // Telemetry migrations for existing databases
+  try {
+    await pool.query(`ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS sim_gps_json TEXT DEFAULT '{"lng": 107.6098, "lat": -6.9147, "heading": 0}'`);
+    await pool.query(`ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS sim_distance REAL DEFAULT 0`);
+    await pool.query(`ALTER TABLE pids_state ADD COLUMN IF NOT EXISTS last_sim_time BIGINT DEFAULT 0`);
+  } catch (e) {
+    console.warn("[PIDS-DB] Migration note (telemetry columns):", e.message);
+  }
 }
 
 export async function seedData() {
   console.log(
     "[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...",
   );
-  await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json)
-                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10, '{"lng": 107.6098, "lat": -6.9147, "heading": 0}')
+  await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json, sim_distance, last_sim_time)
+                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10, '{"lng": 107.6098, "lat": -6.9147, "heading": 0}', 0, 0)
                  ON CONFLICT (id) DO NOTHING`);
   const hashedAdminPw = hashPassword("admin123");
   const hashedOpPw = hashPassword("operator123");
@@ -741,6 +752,12 @@ export async function seedData() {
         routeDef.direction,
         routeId,
       ]);
+      // Skip re-seeding if count matches to avoid race conditions/FK errors
+      const stnCount = await getOne("SELECT COUNT(*) FROM route_stations WHERE route_id = $1", [routeId]);
+      if (parseInt(stnCount.count) === routeDef.stations.length) {
+        console.log(`[PIDS-DB] Route stations for ${trainName} already seeded, skipping.`);
+        continue;
+      }
       await query("DELETE FROM route_stations WHERE route_id = $1", [routeId]);
     } else {
       const res = await query(
@@ -817,10 +834,8 @@ export async function seedData() {
     console.warn("[PIDS-DB] GeoJSON auto-attach skipped:", e.message);
   }
   const today = new Date().toISOString().split("T")[0];
-  await query(
-    `DELETE FROM schedules WHERE service_name = 'MALABAR' AND schedule_date = $1`,
-    [today],
-  );
+  // Note: Redundant DELETE removed to prevent foreign key violations during concurrent seeding.
+  // The INSERT ... ON CONFLICT below handles updates correctly.
 
   const scheduleDefinitions = [
     ["MALABAR", "67", "MALANG", "MLG", "BANDUNG", "BDG", "16:50", "05:44"],
@@ -1021,7 +1036,9 @@ export async function getState() {
       tvStandby: row.video_tv_standby ?? true,
       playbackProgress: row.video_playback_progress ?? 0,
       coachCount: row.coach_count ?? 10,
-      simGps: JSON.parse(row.sim_gps_json || '{"lng": 107.6098, "lat": -6.9147, "heading": 0}')
+      simGps: JSON.parse(row.sim_gps_json || '{"lng": 107.6098, "lat": -6.9147, "heading": 0}'),
+      simDistance: row.sim_distance ?? 0,
+      lastSimTime: row.last_sim_time ?? 0
     };
   } catch (e) {
     console.error("[PIDS-DB] getState error:", e.message);
@@ -1048,12 +1065,33 @@ function getDefaultState() {
     geofencingOuterRadius: 750,
     showTrainNumber: true,
     ledActive: true,
+    simDistance: 0,
+    lastSimTime: 0
   };
+}
+
+// Helper to robustly extract station name from string, JSON string, or object
+function getStationName(s) {
+  if (!s || s === "-") return "-";
+  if (typeof s === "string") {
+    try {
+      if (s.startsWith("{") && s.endsWith("}")) {
+        const parsed = JSON.parse(s);
+        if (parsed && parsed.name) return parsed.name;
+      }
+    } catch (e) { }
+    return s;
+  }
+  return s.name || s.id || "-";
 }
 
 export async function updateState(updates) {
   const current = await getState();
   const merged = { ...current, ...updates };
+
+  const currentStnName = getStationName(merged.currentStation);
+  const nextStnName = getStationName(merged.nextStation);
+
   let activeRouteJson = current.activeRoute
     ? JSON.stringify(current.activeRoute)
     : "{}";
@@ -1064,8 +1102,8 @@ export async function updateState(updates) {
   }
 
   await query(
-    `INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, coach_count, sim_gps_json)
-                 VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+    `INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, geofencing_inner_radius, geofencing_outer_radius, show_train_number, led_active, video_playlist_json, active_video_index, video_is_playing, video_playback_progress, video_playback_mode, video_volume, video_tv_standby, coach_count, sim_gps_json, sim_distance, last_sim_time)
+                 VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
                  ON CONFLICT (id) DO UPDATE SET
                     service_name = EXCLUDED.service_name,
                     current_station = EXCLUDED.current_station,
@@ -1091,12 +1129,14 @@ export async function updateState(updates) {
                     video_volume = EXCLUDED.video_volume,
                     video_tv_standby = EXCLUDED.video_tv_standby,
                     coach_count = EXCLUDED.coach_count,
-                    sim_gps_json = EXCLUDED.sim_gps_json`,
+                    sim_gps_json = EXCLUDED.sim_gps_json,
+                    sim_distance = EXCLUDED.sim_distance,
+                    last_sim_time = EXCLUDED.last_sim_time`,
     [
       merged.serviceName,
-      merged.currentStation,
+      currentStnName,
       merged.trainNumber,
-      merged.nextStation,
+      nextStnName,
       merged.status,
       merged.ledSpeed,
       merged.speed,
@@ -1117,7 +1157,9 @@ export async function updateState(updates) {
       merged.volume ?? 50,
       merged.tvStandby ?? true,
       merged.coachCount ?? merged.jumlahKereta ?? 10,
-      JSON.stringify(merged.simGps || { lng: 107.6098, lat: -6.9147, heading: 0 })
+      JSON.stringify(merged.simGps || { lng: 107.6098, lat: -6.9147, heading: 0 }),
+      merged.simDistance ?? 0,
+      merged.lastSimTime ?? 0
     ],
   );
   return await getState();
@@ -2143,6 +2185,8 @@ const BACKUP_TABLES = [
       "video_tv_standby",
       "video_playback_progress",
       "coach_count",
+      "sim_distance",
+      "last_sim_time",
     ],
     orderBySql: '"id"',
   },
@@ -2801,6 +2845,9 @@ export async function getGpsFleet() {
 }
 export async function getGpsGerbong(trainServiceId) {
   try {
+    const state = await getState();
+    const simGps = state.simGps || { lng: 107.6098, lat: -6.9147, heading: 0 };
+    
     const coaches = await getAll(
       "SELECT id, name, sequence_number, ip_address FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number",
       [trainServiceId],
@@ -2810,12 +2857,13 @@ export async function getGpsGerbong(trainServiceId) {
       coach_name: c.name,
       sequence_number: c.sequence_number,
       ip_address: c.ip_address,
-      latitude: -6.9147 + (Math.random() - 0.5) * 0.01,
-      longitude: 107.6098 + (Math.random() - 0.5) * 0.01,
-      speed: Math.floor(Math.random() * 100),
-      temperature: 24 + Math.random() * 4,
-      poi: "Station Near Build",
+      latitude: simGps.lat,
+      longitude: simGps.lng,
+      speed: state.speed || 0,
+      temperature: state.temperature || 24,
+      poi: getStationName(state.currentStation),
       sensor_status: "Active",
+      heading: simGps.heading
     }));
   } catch (e) {
     console.error("[PIDS-DB] getGpsGerbong error:", e.message);

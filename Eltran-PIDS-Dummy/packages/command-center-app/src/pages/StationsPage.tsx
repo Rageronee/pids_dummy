@@ -121,7 +121,7 @@ export default function StationsPage({
         setTotal(data.total);
         setOffset(isLoadMore ? offset + LIMIT : 0);
       }
-    } catch (e) {} finally { setLoading(false); }
+    } catch (e) { } finally { setLoading(false); }
   }, [offset, searchQuery, activeFilter]);
 
   useEffect(() => { fetchStations(false); }, [activeFilter, searchQuery]);
@@ -154,9 +154,9 @@ export default function StationsPage({
         setShowForm(false);
         setEditingId(null);
         showToast(`Stasiun disimpan`, true);
-        if (selectedStation) setSelectedStation({...selectedStation, ...form} as Station);
+        if (selectedStation) setSelectedStation({ ...selectedStation, ...form } as Station);
       }
-    } catch (e) {} finally { setSaving(false); }
+    } catch (e) { } finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
@@ -177,7 +177,7 @@ export default function StationsPage({
           <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col bg-white dark:bg-slate-950 overflow-y-auto">
             {/* 1. Hero Image Section - Sharp & Scrolls with content */}
             <div className="relative w-full h-[400px] shrink-0 bg-slate-900 overflow-hidden">
-               <img
+              <img
                 src={selectedStation.media ? `${API}/media/station/${selectedStation.media}` : `${API}/media/station/station_fallback.png`}
                 className="w-full h-full object-cover transition-opacity duration-500"
                 alt={selectedStation.name}
@@ -188,79 +188,79 @@ export default function StationsPage({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
               <div className="absolute top-6 left-6">
-                <button onClick={() => setSelectedStation(null)} className="p-3 bg-slate-900/40 backdrop-blur-md border border-white/20 text-white hover:bg-[#ee6f1f] transition-all rounded-xl"><X size={20}/></button>
+                <button onClick={() => setSelectedStation(null)} className="p-3 bg-slate-900/40 backdrop-blur-md border border-white/20 text-white hover:bg-[#ee6f1f] transition-all rounded-xl"><X size={20} /></button>
               </div>
               <div className="absolute bottom-10 left-10 right-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 bg-[#ee6f1f] px-4 py-2 rounded-2xl w-fit shadow-xl"><Globe2 size={16} className="text-white"/><span className="text-[10px] font-black text-white uppercase tracking-widest">{selectedStation.division}</span></div>
+                  <div className="flex items-center gap-3 bg-[#ee6f1f] px-4 py-2 rounded-2xl w-fit shadow-xl"><Globe2 size={16} className="text-white" /><span className="text-[10px] font-black text-white uppercase tracking-widest">{selectedStation.division}</span></div>
                   <h2 className="text-7xl font-black text-white tracking-tighter leading-none">{selectedStation.name}</h2>
-                  <div className="flex items-center gap-3 text-white/70 font-bold text-xl mt-2"><MapPin className="text-[#ee6f1f]" size={20}/><span>{selectedStation.city}, {selectedStation.provinsi || "JAWA"}</span></div>
+                  <div className="flex items-center gap-3 text-white/70 font-bold text-xl mt-2"><MapPin className="text-[#ee6f1f]" size={20} /><span>{selectedStation.city}, {selectedStation.provinsi || "JAWA"}</span></div>
                 </div>
                 <div className="flex gap-2">
-                   <button onClick={() => { setForm(selectedStation); setEditingId(selectedStation.id); setShowForm(true); }} className="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-2xl transition-all shadow-xl"><Pencil size={20}/></button>
-                   <button onClick={() => setDeleteTarget(selectedStation)} className="p-4 bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md border border-red-500/30 text-white rounded-2xl transition-all shadow-xl"><Trash2 size={20}/></button>
+                  <button onClick={() => { setForm(selectedStation); setEditingId(selectedStation.id); setShowForm(true); }} className="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-2xl transition-all shadow-xl"><Pencil size={20} /></button>
+                  <button onClick={() => setDeleteTarget(selectedStation)} className="p-4 bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md border border-red-500/30 text-white rounded-2xl transition-all shadow-xl"><Trash2 size={20} /></button>
                 </div>
               </div>
             </div>
 
             {/* 2. Unified Content Area - Industrial Flat Look */}
             <div className="p-10 lg:p-16 space-y-16 max-w-[1600px]">
-               {/* Global Status Bar */}
-               <div className="flex gap-16 border-b dark:border-slate-800 pb-10">
-                  <div className="space-y-1">
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Integrated Node ID</span>
-                     <p className="text-4xl font-black text-[#1d2d6a] dark:text-white uppercase tracking-tighter">{selectedStation.id}</p>
-                  </div>
-                  <div className="space-y-1 border-l dark:border-slate-800 pl-16">
-                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Network IP Address</span>
-                     <p className="text-4xl font-black text-[#ee6f1f] font-mono tracking-tighter">{selectedStation.ip_address || "192.168.1.xxx"}</p>
-                  </div>
-               </div>
+              {/* Global Status Bar */}
+              <div className="flex gap-16 border-b dark:border-slate-800 pb-10">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Integrated Node ID</span>
+                  <p className="text-4xl font-black text-[#1d2d6a] dark:text-white uppercase tracking-tighter">{selectedStation.id}</p>
+                </div>
+                <div className="space-y-1 border-l dark:border-slate-800 pl-16">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Network IP Address</span>
+                  <p className="text-4xl font-black text-[#ee6f1f] font-mono tracking-tighter">{selectedStation.ip_address || "192.168.1.xxx"}</p>
+                </div>
+              </div>
 
-               {/* Grid Info Blocks - Everything unified here */}
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-16">
-                  {/* Administrative */}
-                  <div className="space-y-8">
-                     <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><Building2 size={16}/> Administrative</h4>
-                     <div className="space-y-6">
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Provinsi</span><span className="text-base font-black text-slate-800 dark:text-slate-200 uppercase">{selectedStation.provinsi || "N/A"}</span></div>
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mailing Address</span><p className="text-sm font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic pr-4">"{selectedStation.alamat || selectedStation.city}"</p></div>
-                     </div>
+              {/* Grid Info Blocks - Everything unified here */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-16">
+                {/* Administrative */}
+                <div className="space-y-8">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><Building2 size={16} /> Administrative</h4>
+                  <div className="space-y-6">
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Provinsi</span><span className="text-base font-black text-slate-800 dark:text-slate-200 uppercase">{selectedStation.provinsi || "N/A"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mailing Address</span><p className="text-sm font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic pr-4">"{selectedStation.alamat || selectedStation.city}"</p></div>
                   </div>
+                </div>
 
-                  {/* Operational Communication */}
-                  <div className="space-y-8">
-                     <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><Monitor size={16}/> Communication</h4>
-                     <div className="space-y-6">
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Operational</span><span className="text-base font-black text-[#1d2d6a] dark:text-white lowercase">{selectedStation.email || "stasiun@kai.id"}</span></div>
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fixed Line</span><span className="text-base font-black text-[#1d2d6a] dark:text-white">{selectedStation.fixed_line || "(021) 123-456"}</span></div>
-                     </div>
+                {/* Operational Communication */}
+                <div className="space-y-8">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><Monitor size={16} /> Communication</h4>
+                  <div className="space-y-6">
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Operational</span><span className="text-base font-black text-[#1d2d6a] dark:text-white lowercase">{selectedStation.email || "stasiun@kai.id"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fixed Line</span><span className="text-base font-black text-[#1d2d6a] dark:text-white">{selectedStation.fixed_line || "(021) 123-456"}</span></div>
                   </div>
+                </div>
 
-                  {/* Authority - Integrated instead of separate */}
-                  <div className="space-y-8">
-                     <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><User size={16}/> Station Authority</h4>
-                     <div className="space-y-6">
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned PIC</span><span className="text-base font-black text-[#1d2d6a] dark:text-white uppercase">{selectedStation.pic_name || "NOT ASSIGNED"}</span></div>
-                        <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Line</span><span className="text-base font-black text-blue-600 dark:text-blue-400 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
-                        <button className="text-[9px] font-black uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
-                     </div>
+                {/* Authority - Integrated instead of separate */}
+                <div className="space-y-8">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><User size={16} /> Station Authority</h4>
+                  <div className="space-y-6">
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned PIC</span><span className="text-base font-black text-[#1d2d6a] dark:text-white uppercase">{selectedStation.pic_name || "NOT ASSIGNED"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Line</span><span className="text-base font-black text-blue-600 dark:text-blue-400 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
+                    <button className="text-[9px] font-black uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
                   </div>
-               </div>
+                </div>
+              </div>
 
-               {/* Geographic Map Section */}
-               <div className="space-y-8 pt-10 border-t dark:border-slate-800">
-                  <div className="flex justify-between items-center px-1">
-                    <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><MapPinned size={16}/> Geographic Positioning</h4>
-                    <div className="flex gap-4 font-mono text-[11px] font-black text-[#1d2d6a] dark:text-[#ee6f1f]">
-                       <span>LAT: {selectedStation.latitude?.toFixed(6)}</span>
-                       <span>LNG: {selectedStation.longitude?.toFixed(6)}</span>
-                    </div>
+              {/* Geographic Map Section */}
+              <div className="space-y-8 pt-10 border-t dark:border-slate-800">
+                <div className="flex justify-between items-center px-1">
+                  <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><MapPinned size={16} /> Geographic Positioning</h4>
+                  <div className="flex gap-4 font-mono text-[11px] font-black text-[#1d2d6a] dark:text-[#ee6f1f]">
+                    <span>LAT: {selectedStation.latitude?.toFixed(6)}</span>
+                    <span>LNG: {selectedStation.longitude?.toFixed(6)}</span>
                   </div>
-                  <div className="h-96 border dark:border-slate-800 relative transition-all duration-700 rounded-3xl overflow-hidden">
-                     <div ref={mapDetailContainerRef} className="absolute inset-0" />
-                  </div>
-               </div>
+                </div>
+                <div className="h-96 border dark:border-slate-800 relative transition-all duration-700 rounded-3xl overflow-hidden">
+                  <div ref={mapDetailContainerRef} className="absolute inset-0" />
+                </div>
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -268,34 +268,81 @@ export default function StationsPage({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
               <div><h1 className="text-4xl font-black text-[#1d2d6a] dark:text-white tracking-tighter leading-none">STATIONS</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-2">Network Infrastructure Nodes</p></div>
               <div className="flex gap-4">
-                 <div className="relative group w-80 shadow-sm rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800"><Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f]" size={18}/><input value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} placeholder="Find node by name..." className="w-full bg-white dark:bg-slate-950 px-14 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none transition-all"/></div>
-                 <button onClick={()=>setShowForm(true)} className="px-8 bg-[#ee6f1f] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 flex items-center gap-3 transition-all"><Plus size={16} strokeWidth={4}/> Add Node</button>
+                <div className="relative group w-80 shadow-sm rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800"><Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f]" size={18} /><input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Find node by name..." className="w-full bg-white dark:bg-slate-950 px-14 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none transition-all" /></div>
+                <button onClick={() => setShowForm(true)} className="px-8 bg-[#ee6f1f] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 flex items-center gap-3 transition-all"><Plus size={16} strokeWidth={4} /> Add Node</button>
               </div>
             </div>
 
             <div className="flex gap-2 px-2 overflow-x-auto no-scrollbar border-b dark:border-slate-800 pb-1">
-              {filterOptions.map(opt=><button key={opt} onClick={()=>setActiveFilter(opt)} className={`px-6 py-3 font-black text-[10px] uppercase tracking-[0.2em] transition-all relative ${activeFilter===opt?"text-[#ee6f1f] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-[#ee6f1f]":"text-slate-400 hover:text-slate-600"}`}>{opt}</button>)}
+              {filterOptions.map(opt => <button key={opt} onClick={() => setActiveFilter(opt)} className={`px-6 py-3 font-black text-[10px] uppercase tracking-[0.2em] transition-all relative ${activeFilter === opt ? "text-[#ee6f1f] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-[#ee6f1f]" : "text-slate-400 hover:text-slate-600"}`}>{opt}</button>)}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 p-2">
-              {stations.map((s,i)=>(
-                <motion.div key={s.id} layout initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.02}} onClick={()=>setSelectedStation(s)} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-2 shadow-xl hover:border-[#ee6f1f]/30 transition-all cursor-pointer group flex flex-col hover:-translate-y-1">
-                  <div className="relative h-56 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
-                    <img 
-                      src={s.media ? `${API}/media/station/${s.media}` : `https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80&w=800`} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              {stations.map((s, i) => (
+                <motion.div
+                  key={s.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.02 }}
+                  onClick={() => setSelectedStation(s)}
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all cursor-pointer group flex flex-col overflow-hidden"
+                >
+                  <div className="relative h-64 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    <img
+                      src={s.media ? `${API}/media/station/${s.media}` : `https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80&w=800`}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       alt={s.name}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1568992687345-26948fad841e?auto=format&fit=crop&q=80&w=800`;
                         (e.target as HTMLImageElement).onerror = null;
                       }}
                     />
-                    <div className="absolute top-4 left-4 bg-[#ee6f1f] px-4 py-1.5 rounded-lg border border-white/20 text-[9px] font-black text-white uppercase tracking-widest shadow-lg">{s.division || "Java Division"}</div>
-                    <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-slate-950/95 px-4 py-1.5 rounded-lg text-[10px] font-black text-[#1d2d6a] dark:text-[#ee6f1f] shadow-2xl border border-slate-100 dark:border-slate-800 uppercase tracking-tighter">{s.id}</div>
+                    <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">{s.division || "JAVA DIVISION"}</span>
+                    </div>
+                    <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">{s.id}</span>
+                    </div>
                   </div>
-                  <div className="p-6 space-y-2 flex-1 flex flex-col">
-                    <h3 className="text-xl font-black text-[#1d2d6a] dark:text-white leading-none tracking-tighter transition-colors group-hover:text-[#ee6f1f]">{s.name}</h3>
-                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest"><MapPin size={10} className="text-[#ee6f1f]"/>{s.city}</div>
+
+                  <div className="p-8 flex flex-col flex-1">
+                    <div className="flex items-center justify-between gap-4 mb-1">
+                      <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{s.name}</h3>
+                      <div className="flex items-center gap-1.5 bg-green-50 dark:bg-green-500/10 px-2.5 py-1 rounded-md border border-green-100 dark:border-green-500/20">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span className="text-[9px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest">AKTIF</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-slate-400 mb-6">
+                      <MapPin size={14} className="text-slate-400" />
+                      <span className="text-sm font-bold tracking-tight">Indonesia</span>
+                    </div>
+
+                    <div className="relative mb-1">
+                      <div className="h-[1px] bg-slate-100 dark:bg-slate-800 w-full" />
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-900 dark:bg-white rounded-full" />
+                    </div>
+
+                    <div className="space-y-2 flex-1">
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">TYPE</span>
+                        <p className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Railway Station</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">CODE</span>
+                        <p className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{s.id}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <button className="w-full flex items-center justify-center gap-2 py-3.5 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-black text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]">
+                        Lihat Detail
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -303,8 +350,8 @@ export default function StationsPage({
           </motion.div>
         )}
       </AnimatePresence>
-      <ConfirmModal isOpen={!!deleteTarget} title="Confirm Station Deletion" message={`Are you sure you want to remove ${deleteTarget?.name}? Data cannot be restored.`} onConfirm={handleDelete} onCancel={()=>setDeleteTarget(null)} loading={saving}/>
-      <ToastNotification toast={toast} onClose={closeToast}/>
+      <ConfirmModal isOpen={!!deleteTarget} title="Confirm Station Deletion" message={`Are you sure you want to remove ${deleteTarget?.name}? Data cannot be restored.`} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} loading={saving} />
+      <ToastNotification toast={toast} onClose={closeToast} />
     </div>
   );
 }

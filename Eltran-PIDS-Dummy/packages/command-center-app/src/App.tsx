@@ -49,8 +49,8 @@ const NAV = [
   { id: "schedules", label: "Jadwal Kereta", icon: Calendar },
   { id: "users", label: "Akun Operator", icon: Users },
   { id: "logs", label: "System Logs", icon: ScrollText },
-  { id: "settings", label: "Pengaturan", icon: Settings },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "settings", label: "Pengaturan", icon: Settings },
 ];
 
 function PageLoader() {
@@ -343,7 +343,7 @@ export default function App() {
           </div>
         </header>
         <div
-          className={`flex-1 overflow-auto ${(activePage === "routes" || activePage === "stations") ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-slate-900`}
+          className={`flex-1 overflow-auto ${(activePage === "routes" || activePage === "stations" || activePage === "notifications") ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-slate-900`}
         >
           <AnimatePresence mode="wait">
             <motion.div

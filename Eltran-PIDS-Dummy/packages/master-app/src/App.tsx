@@ -207,11 +207,10 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                         handleSelectGerbong(idx);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
-                        currentCamIndex === idx
-                          ? "bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]"
-                          : "text-white/70 hover:bg-white/5 hover:text-white"
-                      }`}
+                      className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${currentCamIndex === idx
+                        ? "bg-[#ee6f1f] text-white shadow-[0_0_15px_rgba(238,111,31,0.3)]"
+                        : "text-white/70 hover:bg-white/5 hover:text-white"
+                        }`}
                     >
                       <div
                         className={`p-1.5 rounded-lg ${currentCamIndex === idx ? "bg-white/20" : "bg-white/5"}`}
@@ -232,11 +231,10 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${
-              isDropdownOpen
-                ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20"
-                : "border-white/10 hover:border-[#ee6f1f]/40"
-            }`}
+            className={`bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border shadow-xl flex items-center gap-4 transition-all duration-300 ${isDropdownOpen
+              ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20"
+              : "border-white/10 hover:border-[#ee6f1f]/40"
+              }`}
           >
             <div
               className={`p-2.5 rounded-xl transition-colors ${isDropdownOpen ? "bg-[#ee6f1f] text-white" : "bg-[#ee6f1f]/20 text-[#ee6f1f]"}`}
@@ -263,10 +261,11 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
   );
 };
 
-const MonitorGPS = ({ route }: { route: any }) => {
+const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
   const [gerbongData, setGerbongData] = useState<any[]>([]);
   const [selectedKereta] = useState<number>(1);
   const [focusLocation, setFocusLocation] = useState<[number, number] | null>(null);
+  const previousRouteRef = useRef<string | null>(null);
 
   // Fetch per-gerbong GPS when selectedKereta changes
   useEffect(() => {
@@ -276,7 +275,7 @@ const MonitorGPS = ({ route }: { route: any }) => {
         const res = await fetch(`${API_URL}/api/gps/gerbong/${selectedKereta}`);
         const d = await res.json();
         if (d.success) setGerbongData(d.gerbong);
-      } catch {}
+      } catch { }
     };
     fetchGerbong();
     const interval = setInterval(fetchGerbong, 10000);
@@ -284,22 +283,31 @@ const MonitorGPS = ({ route }: { route: any }) => {
   }, [selectedKereta]);
 
   const trainMarkers = useMemo(() => {
+    const serviceName = route?.name || "Service";
     return gerbongData.map((g, idx) => ({
       id: `G-${g.gerbong_id}`,
-      name: `Gerbong ${idx + 1}`,
+      name: gerbongData.length === 1 ? serviceName : `${serviceName} G${idx + 1}`,
       location: [g.longitude, g.latitude] as [number, number],
       heading: (g as any).heading || 0,
       status: "Normal",
       speed: g.speed || 0,
       eta: "--:--"
     }));
-  }, [gerbongData]);
+  }, [gerbongData, route, appData?.trainNumber]);
 
   useEffect(() => {
     if (trainMarkers.length > 0 && !focusLocation) {
-       setFocusLocation(trainMarkers[0].location);
+      setFocusLocation(trainMarkers[0].location);
     }
   }, [trainMarkers]);
+
+  useEffect(() => {
+    const routeKey = `${route?.name || ''}_${appData?.trainNumber || ''}`;
+    if (previousRouteRef.current !== null && previousRouteRef.current !== routeKey) {
+      setFocusLocation(null);
+    }
+    previousRouteRef.current = routeKey;
+  }, [route?.name, appData?.trainNumber]);
 
   return (
     <div className="space-y-6 h-full flex flex-col">
@@ -308,13 +316,13 @@ const MonitorGPS = ({ route }: { route: any }) => {
           <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
             <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase tracking-wide">
-              Peta Lokasi Armada
+              Peta Lokasi
             </span>
           </div>
         </div>
 
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden">
-          <MapComponent 
+          <MapComponent
             trains={trainMarkers}
             focusCoord={focusLocation}
             onTrainClick={(_, loc) => setFocusLocation(loc)}
@@ -452,7 +460,7 @@ const LogViewer = ({ token }: { token: string }) => {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800/50 text-[#1d2d6a] dark:text-slate-200 font-semibold text-[11px]">
                 <tr>
-                   <th className="p-4 border-b border-slate-200 dark:border-slate-800">Waktu</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Waktu</th>
                   <th className="p-4 border-b border-slate-200 dark:border-slate-800">Aksi</th>
                   <th className="p-4 border-b border-slate-200 dark:border-slate-800">Pengguna</th>
                   <th className="p-4 border-b border-slate-200 dark:border-slate-800">Role</th>
@@ -572,7 +580,7 @@ function App() {
             setAuthToken(token);
             setAuthUser(JSON.parse(userStr));
           });
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -592,7 +600,7 @@ function App() {
         method: "POST",
         headers: { Authorization: `Bearer ${authToken}` },
       });
-    } catch {}
+    } catch { }
     sessionStorage.removeItem("pids_token");
     sessionStorage.removeItem("pids_user");
     setAuthUser(null);
@@ -775,7 +783,7 @@ function App() {
                             "K3 0 19 08",
                             "P 0 18 01"
                           ];
-                          
+
                           return trainNumbers.map((trainNumber, idx) => {
                             return (
                               <tr
@@ -854,75 +862,69 @@ function App() {
 
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
                     {(() => {
-                       const trainNumbers = [
-                         "K1 0 18 01",
-                         "K1 0 18 02",
-                         "K1 0 18 03",
-                         "K1 0 18 04",
-                         "MP 0 19 01",
-                         "K3 0 19 05",
-                         "K3 0 19 06",
-                         "K3 0 19 07",
-                         "K3 0 19 08",
-                         "P 0 18 01"
-                       ];
-                       
-                       return Array.from({ length: 10 }).map((_, i) => {
-                         const trainNumber = trainNumbers[i];
-                         const isAktif = i < 8;
-                         return (
-                           <motion.div
-                             key={i}
-                             initial={{ opacity: 0, scale: 0.95 }}
-                             animate={{ opacity: 1, scale: 1 }}
-                             transition={{ delay: i * 0.03 }}
-                             className={`relative group bg-slate-50/50 dark:bg-slate-900/20 backdrop-blur-sm border border-slate-100 dark:border-slate-800/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg ${isAktif ? 'hover:border-orange-200 dark:hover:border-orange-900/30' : 'opacity-60 grayscale'}`}
-                           >
-                             <div className="flex items-center gap-3 mb-3">
-                               <div className={`w-2 h-2 rounded-full ${isAktif ? "bg-green-500 animate-pulse" : "bg-slate-400"}`} />
-                               <div className="flex-1 overflow-hidden">
-                                 <div className="text-[#1d2d6a] dark:text-white font-bold text-xs truncate group-hover:text-[#ee6f1f]">
-                                   {trainNumber}
-                                 </div>
-                                 <div className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
-                                   Unit {String(i + 1).padStart(2, "0")}
-                                 </div>
-                               </div>
-                               <div className={`px-2 py-0.5 rounded text-[8px] font-black tracking-wider ${isAktif ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                 {isAktif ? "ON" : "OFF"}
-                               </div>
-                             </div>
-                             
-                             <div className="space-y-2">
-                               <div className="grid grid-cols-2 gap-2">
-                                 <div className="bg-white dark:bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                   <div className="text-[8px] text-slate-400 font-bold uppercase">SPD</div>
-                                   <div className="text-[10px] font-black text-[#ee6f1f]">
-                                     {isAktif ? (75 + Math.random() * 5).toFixed(1) : "0.0"}
-                                   </div>
-                                 </div>
-                                 <div className="bg-white dark:bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                   <div className="text-[8px] text-slate-400 font-bold uppercase">TMP</div>
-                                   <div className="text-[10px] font-black text-[#1d2d6a] dark:text-white">
-                                     {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"}
-                                   </div>
-                                 </div>
-                               </div>
-                               
-                               <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/30 rounded-lg px-2 py-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[7px] font-bold text-slate-400 uppercase">AUD</span>
-                                    <span className="text-[8px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'RDY' : '-'}</span>
+                      const trainNumbers = [
+                        "K1 0 18 01",
+                        "K1 0 18 02",
+                        "K1 0 18 03",
+                        "K1 0 18 04",
+                        "MP 0 19 01",
+                        "K3 0 19 05",
+                        "K3 0 19 06",
+                        "K3 0 19 07",
+                        "K3 0 19 08",
+                        "P 0 18 01"
+                      ];
+
+                      return Array.from({ length: 10 }).map((_, i) => {
+                        const trainNumber = trainNumbers[i];
+                        const isAktif = i < 8;
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.03 }}
+                            className={`relative group bg-slate-50/50 dark:bg-slate-900/20 backdrop-blur-sm border border-slate-100 dark:border-slate-800/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg ${isAktif ? 'hover:border-orange-200 dark:hover:border-orange-900/30' : 'opacity-60 grayscale'}`}
+                          >
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className={`w-2 h-2 rounded-full ${isAktif ? "bg-green-500 animate-pulse" : "bg-slate-400"}`} />
+                              <div className="flex-1 overflow-hidden">
+                                <div className="text-[#1d2d6a] dark:text-white font-bold text-xs truncate group-hover:text-[#ee6f1f]">
+                                  {trainNumber}
+                                </div>
+                                <div className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
+                                  Unit {String(i + 1).padStart(2, "0")}
+                                </div>
+                              </div>
+                              <div className={`px-2 py-0.5 rounded text-[8px] font-black tracking-wider ${isAktif ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                {isAktif ? "ON" : "OFF"}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-1 gap-2">
+                                <div className="bg-white dark:bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                  <div className="text-[12px] text-slate-400 font-bold uppercase">TMP</div>
+                                  <div className="text-[12px] font-black text-[#1d2d6a] dark:text-white">
+                                    {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"} °C
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[7px] font-bold text-slate-400 uppercase">VID</span>
-                                    <span className="text-[8px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'ACT' : '-'}</span>
-                                  </div>
-                               </div>
-                             </div>
-                           </motion.div>
-                         );
-                       });
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/30 rounded-lg px-2 py-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[12px] font-bold text-slate-400 uppercase">AUD</span>
+                                  <span className="text-[12px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'RDY' : '-'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[12px] font-bold text-slate-400 uppercase">VID</span>
+                                  <span className="text-[12px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'ACT' : '-'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      });
                     })()}
                   </div>
                 </div>
@@ -947,7 +949,7 @@ function App() {
                 transition={{ duration: 0.3 }}
                 className="h-full w-full max-w-6xl mx-auto"
               >
-                <MonitorGPS route={activeRoute} />
+                <MonitorGPS route={activeRoute} data={data} />
               </motion.div>
             ) : activeTab === "logs" ? (
               <motion.div

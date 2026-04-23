@@ -220,11 +220,11 @@ function App() {
         serviceName,
         stations: newStations,
         activeRoute: routeData,
-        trainNumber: `${getTrainId(resolvedKa)} Coach ${gerbong}`,
+        trainNumber: `${getTrainId(resolvedKa)} Gerbong ${gerbong}`,
       });
       showNotification(
         "Configuration Saved",
-        `Service set to ${serviceName}, Unit to Coach ${gerbong}`,
+        `Service set to ${serviceName}, Unit to Gerbong ${gerbong}`,
       );
     },
     [
@@ -240,10 +240,10 @@ function App() {
   const handleSetGerbong = useCallback(
     (gerbong: number) => {
       setSelectedGerbong(gerbong);
-      sendData({ trainNumber: `${getTrainId(activeKa)} Coach ${gerbong}` });
+      sendData({ trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}` });
       showNotification(
         "Configuration Saved",
-        `Unit configuration set to Coach ${gerbong}`,
+        `Unit configuration set to Gerbong ${gerbong}`,
       );
     },
     [sendData, showNotification, getTrainId, activeKa],

@@ -690,6 +690,11 @@ export default function RoutesPage({
                         {route.scheduled_time}{" "}
                         {route.status === "DELAYED" ? "Delayed" : ""}
                       </div>
+                      {route.is_active && (
+                        <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 rounded-lg text-[10px] font-semibold border border-amber-100 dark:border-amber-900/30">
+                          <AlertCircle size={12} /> Modifikasi Terkunci
+                        </span>
+                      )}
                       <div className="text-slate-400 dark:text-slate-500 text-[9px] font-bold mt-0.5">
                         Delay: {route.delay}
                       </div>
@@ -834,26 +839,21 @@ export default function RoutesPage({
 
               <div className="flex-1 flex flex-col pt-8 pl-8 pr-0 pb-0 overflow-hidden">
                 <div className="flex items-center justify-between mb-6 pr-8">
-                  <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                  <h4 className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider">
                     Route Schedule
                   </h4>
                   <div className="flex items-center gap-2">
-                    {selectedRoute.is_active && (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 rounded-lg text-[10px] font-semibold border border-amber-100 dark:border-amber-900/30">
-                        <AlertCircle size={12} /> Modifikasi Terkunci
-                      </span>
-                    )}
                     <button
                       onClick={() => setPage("dashboard")}
-                      className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                      className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[12px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
                     >
-                      <MapIcon size={10} /> Cek Rute Map
+                      <MapIcon size={12} /> Cek Rute Map
                     </button>
                     <button
                       onClick={scrollToCurrentStation}
-                      className="px-2.5 py-1 bg-[#ee6f1f] text-white text-[9px] font-bold rounded-md shadow-sm hover:bg-[#d45d15] transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                      className="px-2.5 py-1 bg-[#ee6f1f] text-white text-[12px] font-bold rounded-md shadow-sm hover:bg-[#d45d15] transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
                     >
-                      <Navigation size={10} /> Cek Posisi
+                      <Navigation size={12} /> Cek Posisi
                     </button>
                   </div>
                 </div>

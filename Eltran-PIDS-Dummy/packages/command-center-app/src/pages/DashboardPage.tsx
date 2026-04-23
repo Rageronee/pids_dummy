@@ -26,7 +26,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
           const parsed = JSON.parse(trimmed);
           return parsed.name || parsed.NAME || parsed.station_name || parsed.station || s;
         }
-      } catch (e) {}
+      } catch (e) { }
       return s;
     }
     if (typeof s === "object") {
@@ -77,22 +77,32 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
       const sNum = (s.display_train_number || s.train_number || s.ka_number || "").toUpperCase().trim();
       return (sName === currentServiceName || currentServiceName.includes(sName)) &&
-             (currentTrainNumber ? sNum.includes(currentTrainNumber) : true);
+        (currentTrainNumber ? sNum.includes(currentTrainNumber) : true);
     });
 
     const currentStnName = getStationName(pidsState.currentStation).toUpperCase();
     const stnInfo = stations.find(s => s.name.toUpperCase() === currentStnName || s.id.toUpperCase() === currentStnName);
-    
-    // Prioritize high-accuracy simGps if available, otherwise snap to station
-    let location: [number, number] = [106.8272, -6.1751];
-    
-    if (pidsState.simGps) {
-      location = [Number(pidsState.simGps.lng), Number(pidsState.simGps.lat)];
+
+    // Prioritize high-accuracy simGps if available and valid, otherwise snap to station coordinates
+    let location: [number, number];
+
+    const isValidGps = pidsState.simGps &&
+      pidsState.simGps.lng !== 0 &&
+      pidsState.simGps.lat !== 0 &&
+      !isNaN(Number(pidsState.simGps.lng)) &&
+      !isNaN(Number(pidsState.simGps.lat));
+
+    if (isValidGps) {
+      location = [Number(pidsState.simGps!.lng), Number(pidsState.simGps!.lat)];
+      lastLocRef.current = location;
+    } else if (stnInfo && stnInfo.longitude && stnInfo.latitude) {
+      location = [Number(stnInfo.longitude), Number(stnInfo.latitude)];
       lastLocRef.current = location;
     } else if (lastLocRef.current) {
       location = lastLocRef.current;
-    } else if (stnInfo) {
-      location = [Number(stnInfo.longitude), Number(stnInfo.latitude)];
+    } else {
+      // Default to Bandung (Neutral center for West/East Java routes)
+      location = [107.6098, -6.9147];
     }
 
     let progress = 0;
@@ -105,9 +115,11 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       }
     }
 
+    const trainNum = (pidsState.trainNumber || "").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/^KA\s*/i, "").trim();
     return [{
       id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
-      name: pidsState.serviceName,
+      name: pidsState.serviceName, // Just service name for map
+      trainNum: trainNum, // Store for card display
       status: pidsState.status || "Normal",
       progress: progress,
       nextStation: getStationName(pidsState.nextStation),
@@ -126,14 +138,19 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
   const activeRouteLine: [number, number][] = useMemo(() => {
     if (!pidsState.stations || pidsState.stations.length === 0 || stations.length === 0) return [];
     return pidsState.stations.map(stn => {
-        const stnName = getStationName(stn).toUpperCase();
-        const dbStn = stations.find(s => s.name.toUpperCase() === stnName || s.id.toUpperCase() === stnName);
-        if (dbStn && dbStn.longitude && dbStn.latitude) {
-            return [Number(dbStn.longitude), Number(dbStn.latitude)];
-        }
-        return null;
+      const stnName = getStationName(stn).toUpperCase();
+      const dbStn = stations.find(s => s.name.toUpperCase() === stnName || s.id.toUpperCase() === stnName);
+      if (dbStn && dbStn.longitude && dbStn.latitude) {
+        return [Number(dbStn.longitude), Number(dbStn.latitude)];
+      }
+      return null;
     }).filter(Boolean) as [number, number][];
   }, [pidsState.stations, stations, focusedTrain]);
+
+  useEffect(() => {
+    setFocusLocation(null);
+    setFocusedTrain(null);
+  }, [pidsState.serviceName, pidsState.trainNumber]);
 
   const handleCardClick = (location: [number, number], trainId?: string) => {
     setFocusLocation([...location]);
@@ -148,7 +165,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
             <div className="px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Live Fleet Tracking
+                Peta Live
               </span>
             </div>
           </div>
@@ -172,28 +189,28 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-2 gap-5">
             {loading
               ? Array(1).fill(0).map((_, i) => (
-                  <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-[2rem] border border-slate-200 dark:border-slate-800" />
-                ))
+                <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-[2rem] border border-slate-200 dark:border-slate-800" />
+              ))
               : activeFleet.map((s, i) => (
-                  <TransportLineCard
-                    key={i}
-                    trainName={s.name}
-                    serviceNumber={s.id}
-                    status={s.status}
-                    progress={s.progress}
-                    nextStation={s.nextStation}
-                    currentStation={s.currentStation}
-                    depTime={s.depTime}
-                    arrTime={s.arrTime}
-                    origin={s.origin}
-                    destination={s.destination}
-                    onClick={() => handleCardClick(s.location, s.id)}
-                  />
-                ))}
+                <TransportLineCard
+                  key={i}
+                  trainName={s.trainNum ? `${s.name} ${s.trainNum}` : s.name}
+                  serviceNumber={s.id}
+                  status={s.status}
+                  progress={s.progress}
+                  nextStation={s.nextStation}
+                  currentStation={s.currentStation}
+                  depTime={s.depTime}
+                  arrTime={s.arrTime}
+                  origin={s.origin}
+                  destination={s.destination}
+                  onClick={() => handleCardClick(s.location, s.id)}
+                />
+              ))}
             {!loading && activeFleet.length === 0 && (
               <div className="col-span-full p-12 text-center bg-white dark:bg-slate-900 rounded-[2.5rem] border border-dashed border-slate-300 dark:border-slate-800">
                 <div className="bg-orange-50 dark:bg-orange-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                   <Train size={32} className="text-[#ee6f1f]" />
+                  <Train size={32} className="text-[#ee6f1f]" />
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 font-bold text-base">Tidak ada armada aktif.</p>
                 <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Aktifkan servis melalui aplikasi Selector.</p>
@@ -238,7 +255,6 @@ const TransportLineCard: React.FC<{
             </div>
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight truncate">{trainName}</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{serviceNumber}</span>
             </div>
           </div>
           <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase shadow-sm ${!isDelay ? "bg-green-500 text-white" : "bg-amber-500 text-white"}`}>
@@ -266,10 +282,10 @@ const TransportLineCard: React.FC<{
             <span className="text-[10px] font-mono font-bold mt-1 text-slate-500">{depTime}</span>
           </div>
           <div className="flex-1 px-4 flex flex-col items-center">
-             <div className="text-[10px] font-black text-[#ee6f1f] mb-1">{progress}%</div>
-             <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
-               <div className={`h-full transition-all duration-1000 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`} style={{ width: `${progress}%` }} />
-             </div>
+            <div className="text-[10px] font-black text-[#ee6f1f] mb-1">{progress}%</div>
+            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+              <div className={`h-full transition-all duration-1000 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`} style={{ width: `${progress}%` }} />
+            </div>
           </div>
           <div className="flex flex-col text-right">
             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Tujuan</span>
@@ -280,16 +296,16 @@ const TransportLineCard: React.FC<{
 
         <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/30 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
           <div className="flex flex-col">
-             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1">
-               <LocateFixed size={10} /> Posisi Sekarang
-             </span>
-             <span className="text-[11px] font-black text-[#1d2d6a] dark:text-white uppercase truncate">{currentStation}</span>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1">
+              <LocateFixed size={10} /> Posisi Sekarang
+            </span>
+            <span className="text-[11px] font-black text-[#1d2d6a] dark:text-white uppercase truncate">{currentStation}</span>
           </div>
           <div className="flex flex-col border-l border-slate-200 dark:border-slate-700 pl-4">
-             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
-               Berhenti Berikutnya
-             </span>
-             <span className="text-[11px] font-black text-[#1d2d6a] dark:text-slate-300 uppercase truncate">{nextStation}</span>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              Berhenti Berikutnya
+            </span>
+            <span className="text-[11px] font-black text-[#1d2d6a] dark:text-slate-300 uppercase truncate">{nextStation}</span>
           </div>
         </div>
       </div>
