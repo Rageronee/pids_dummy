@@ -171,7 +171,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
             <div className="px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center gap-2.5">
               <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[11px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-[0.2em]">
-                Live Geospatial Fleet
+                Live
               </span>
             </div>
           </div>
@@ -190,7 +190,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
         <section className="px-6 py-8 space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1.5 border-l-4 border-[#ee6f1f] pl-4">
-              <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-800 dark:text-slate-100 leading-none">
+              <h2 className="text-[12px] font-black uppercase tracking-[0.02em] text-slate-800 dark:text-slate-100 leading-none">
                 Fleet Operational Status
               </h2>
               <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Real-time Telemetry and Arrival Forecasting</p>
@@ -266,7 +266,7 @@ const TransportLineCard: React.FC<{
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600/20 rounded-xl flex items-center justify-center text-[#ee6f1f] shadow-inner transition-transform group-hover:scale-110">
+          <div className="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600/20 rounded-xl flex items-center justify-center text-white shadow-inner transition-transform group-hover:scale-110">
             <Train size={20} />
           </div>
           <div className="flex flex-col">

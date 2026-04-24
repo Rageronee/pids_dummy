@@ -41,6 +41,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
   const popups = useRef<Record<string, maplibregl.Popup>>({});
   const [mapLoaded, setMapLoaded] = React.useState(false);
   const hasFittedToTrains = useRef(false);
+  const userInteracted = useRef(false);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -76,18 +77,20 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
     map.current.on('load', () => {
       setMapLoaded(true);
-      
+
       // Orbital seamless slow effect (Ultra-slow for cinematic feel)
       let bearing = 0;
       const rotateMap = () => {
-        if (!map.current || userInteracted) return;
-        bearing += 0.01; // Slower orbit speed
-        map.current.setBearing(bearing % 360);
+        if (!map.current) return;
+        if (!userInteracted.current) {
+          bearing += 0.005; // Ultra-slow orbit speed
+          map.current.setBearing(bearing % 360);
+        }
         requestAnimationFrame(rotateMap);
       };
-      
+
       // Start orbital effect after a small delay
-      setTimeout(rotateMap, 1000);
+      setTimeout(rotateMap, 100);
     });
 
     map.current.on('click', (e) => {
@@ -102,7 +105,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       // Proportional scale: small when zoom out, large when zoom in (Clamped for stability)
       const scale = Math.max(0.6, Math.min(1.4, 0.4 + (z / 18)));
       document.documentElement.style.setProperty('--map-marker-scale', scale.toString());
-      
+
       // Dynamic label styling based on zoom
       const labelOffset = Math.max(-28, -12 - (z * 1.8));
       const labelFontSize = Math.max(8, Math.min(11, 6 + (z / 2)));
@@ -111,12 +114,19 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     });
 
     // Handle map movement to stop orbital rotation if user interacts
-    let userInteracted = false;
+    let rotationTimeout: NodeJS.Timeout;
     const stopRotation = () => {
-      userInteracted = true;
+      userInteracted.current = true;
+      clearTimeout(rotationTimeout);
+      rotationTimeout = setTimeout(() => {
+        userInteracted.current = false;
+      }, 5000); // Resume after 5s of inactivity
     };
+
+    // Use specific user events instead of 'movestart' to avoid recursive stopping from setBearing
     map.current.on('dragstart', stopRotation);
     map.current.on('wheel', stopRotation);
+    map.current.on('touchstart', stopRotation);
 
     const observer = new MutationObserver(() => {
       const isDark = document.documentElement.classList.contains("dark");
@@ -133,6 +143,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
     return () => {
       observer.disconnect();
+      clearTimeout(rotationTimeout);
       if (map.current) {
         map.current.remove();
         map.current = null;
@@ -236,7 +247,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
     const validTrains = trains.filter(t => isValidCoord(t.location));
     const trainIds = validTrains.map(t => t.id);
-    
+
     // Remove stale markers
     Object.keys(markers.current).forEach(id => {
       if (!trainIds.includes(id)) {
@@ -249,7 +260,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       }
     });
 
-    // Auto focus logic: trigger only once when first valid trains are available
+    // Auto focus logic: Disabled as per request to keep Indonesia view on initial load
+    // Only focus if focusCoord prop is explicitly provided via DashboardPage
+    /*
     if (!hasFittedToTrains.current && validTrains.length > 0 && !focusCoord) {
       hasFittedToTrains.current = true;
       if (validTrains.length === 1) {
@@ -260,6 +273,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
         currentMap.fitBounds(bounds, { padding: 60, duration: 1500 });
       }
     }
+    */
 
     validTrains.forEach(train => {
       // If marker already exists, just update position
@@ -276,13 +290,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       el.className = "relative pointer-events-none flex flex-col items-center justify-end";
       el.style.width = '120px';
       el.style.height = '120px';
-      
+
       el.innerHTML = `
         <div class="relative flex flex-col items-center justify-end w-full h-full">
           <!-- Premium Label (Targeted Reveal) -->
           <div id="label-${safeId}" class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-4 py-2 rounded-xl border border-white/20 font-black text-white whitespace-nowrap shadow-[0_15px_40px_rgba(0,0,0,0.4)] z-50 uppercase tracking-tighter opacity-0 scale-90 pointer-events-none transition-all duration-300" style="bottom: var(--map-label-offset, -40px); font-size: var(--map-label-font-size, 10px);">
-            <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-            ${train.name}
+            <div>${train.name}</div>
           </div>
           
           <!-- Modern Marker (The only part with pointer-events-auto) -->
@@ -325,7 +338,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       el.addEventListener('click', (e) => {
         // Stop propagation to prevent map click from firing and immediately closing the route
         e.stopPropagation();
-        
+
         // Auto zoom on click
         map.current?.flyTo({
           center: train.location,
