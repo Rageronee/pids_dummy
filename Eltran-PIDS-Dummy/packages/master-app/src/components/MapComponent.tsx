@@ -41,7 +41,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
   const popups = useRef<Record<string, maplibregl.Popup>>({});
   const [mapLoaded, setMapLoaded] = React.useState(false);
   const hasFittedToTrains = useRef(false);
-  const previousTrainIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -87,7 +86,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
     map.current.on('zoom', () => {
       const z = map.current?.getZoom() || 8;
-      const scale = Math.max(0.5, Math.min(1.0, z / 14));
+      // Proportional scale: small when zoom out, large when zoom in
+      // Zoom 5 -> 0.5, Zoom 10 -> 0.75, Zoom 15 -> 1.0, Zoom 20 -> 1.5
+      const scale = Math.max(0.4, Math.min(1.8, 0.4 + (z / 15)));
       document.documentElement.style.setProperty('--map-marker-scale', scale.toString());
     });
 
@@ -113,8 +114,14 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     };
   }, []);
 
+  const lastFocusedCoord = useRef<string | null>(null);
+
   useEffect(() => {
-    if (focusCoord && map.current && mapLoaded) {
+    if (focusCoord && map.current && mapLoaded && isValidCoord(focusCoord)) {
+      const coordKey = `${focusCoord[0].toFixed(5)},${focusCoord[1].toFixed(5)}`;
+      if (lastFocusedCoord.current === coordKey) return;
+      
+      lastFocusedCoord.current = coordKey;
       map.current.flyTo({
         center: focusCoord,
         zoom: 14,
@@ -167,11 +174,18 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
         });
       }
 
-      const bounds = new maplibregl.LngLatBounds(routeLine[0], routeLine[0]);
-      for (const coord of routeLine) {
-        bounds.extend(coord);
+      // Fit bounds only once per route change
+      const routeId = routeLine.map(c => c.join(',')).join('|');
+      // @ts-ignore
+      if (currentMap._lastRouteId !== routeId) {
+        // @ts-ignore
+        currentMap._lastRouteId = routeId;
+        const bounds = new maplibregl.LngLatBounds(routeLine[0], routeLine[0]);
+        for (const coord of routeLine) {
+          bounds.extend(coord);
+        }
+        currentMap.fitBounds(bounds, { padding: 50, duration: 2000 });
       }
-      currentMap.fitBounds(bounds, { padding: 50, duration: 2000 });
     } else {
       if (currentMap.getLayer("route-line-layer")) {
         currentMap.removeLayer("route-line-layer");
@@ -199,14 +213,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       }
     });
 
-    if (validTrains.length > 0) {
-      const currentTrainId = validTrains.map(t => t.id).join(',');
-      if (previousTrainIdRef.current !== null && previousTrainIdRef.current !== currentTrainId) {
-        hasFittedToTrains.current = false;
-      }
-      previousTrainIdRef.current = currentTrainId;
-    }
-
+    // Auto focus logic: trigger only once when first valid trains are available
     if (!hasFittedToTrains.current && validTrains.length > 0 && !focusCoord) {
       hasFittedToTrains.current = true;
       if (validTrains.length === 1) {
@@ -220,33 +227,26 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
     validTrains.forEach(train => {
       if (markers.current[train.id]) {
-        const marker = markers.current[train.id];
-        const currentPos = marker.getLngLat();
-        const dist = Math.sqrt(
-          Math.pow(currentPos.lng - train.location[0], 2) +
-          Math.pow(currentPos.lat - train.location[1], 2)
-        );
-        if (dist > 0.00001) {
-          marker.setLngLat(train.location);
-        }
+        markers.current[train.id].setLngLat(train.location);
         return;
       }
 
       const el = document.createElement("div");
-      el.className = "relative group cursor-pointer flex items-center justify-center";
-      el.style.width = '32px';
-      el.style.height = '40px';
+      el.className = "relative group cursor-pointer flex flex-col items-center justify-end";
+      el.style.width = '48px';
+      el.style.height = '64px';
       el.innerHTML = `
-        <div class="relative flex items-center justify-center" style="width:32px;height:40px;">
-          <div class="absolute w-12 h-12 bg-blue-500 opacity-20 rounded-full animate-ping" style="top:-6px;left:50%;transform:translateX(-50%);"></div>
-          <div class="absolute" style="top:0;left:50%;transform:translateX(-50%);">
-            <div class="w-6 h-6 bg-blue-600 rounded-full border-[3px] border-white shadow-xl flex items-center justify-center" style="transform:scale(var(--map-marker-scale,1));transform-origin:center bottom;">
+        <div class="relative flex flex-col items-center justify-end w-full h-full">
+          <div class="absolute left-1/2 -translate-x-1/2 bg-slate-900/90 dark:bg-slate-950 px-2.5 py-1 rounded-md border border-white/20 text-[9px] font-black text-white whitespace-nowrap shadow-2xl opacity-0 group-hover:opacity-100 transition-all z-50 uppercase tracking-widest pointer-events-none -translate-y-full" style="top: 10px;">
+            ${train.name}
+          </div>
+          
+          <div class="relative flex flex-col items-center marker-pin-wrapper" style="transform: scale(var(--map-marker-scale, 1)); transform-origin: center bottom;">
+            <div class="absolute w-12 h-12 bg-blue-500/30 rounded-full animate-ping" style="top: -10px; left: 50%; margin-left: -24px;"></div>
+            <div class="w-7 h-7 bg-blue-600 rounded-full border-[3px] border-white shadow-lg flex items-center justify-center relative z-10">
               <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
             </div>
-            <div class="w-0 h-0 mx-auto" style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #2563eb;transform:scale(var(--map-marker-scale,1));transform-origin:center top;"></div>
-          </div>
-          <div class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-2 py-0.5 rounded border border-white/10 text-[8px] font-black text-white whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 uppercase tracking-widest" style="top:-24px;">
-            ${train.name}
+            <div class="w-0 h-0 -mt-1 relative z-10" style="border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #2563eb;"></div>
           </div>
         </div>
       `;
@@ -338,21 +338,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       markers.current[train.id] = marker;
       popups.current[train.id] = popup;
     });
+  }, [trains, onAnalyze, onTrainClick, mapLoaded]);
 
-    validTrains.forEach(train => {
-        if (markers.current[train.id]) {
-           const marker = markers.current[train.id];
-           const currentPos = marker.getLngLat();
-           const dist = Math.sqrt(
-             Math.pow(currentPos.lng - train.location[0], 2) +
-             Math.pow(currentPos.lat - train.location[1], 2)
-           );
-           if (dist > 0.00001) {
-             marker.setLngLat(train.location);
-           }
-        }
-    });
-  }, [trains, onAnalyze, onTrainClick]);
 
   const toggleFullscreen = () => {
     if (!mapWrapperRef.current) return;

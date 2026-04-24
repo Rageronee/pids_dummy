@@ -265,7 +265,6 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
   const [gerbongData, setGerbongData] = useState<any[]>([]);
   const [selectedKereta] = useState<number>(1);
   const [focusLocation, setFocusLocation] = useState<[number, number] | null>(null);
-  const previousRouteRef = useRef<string | null>(null);
 
   // Fetch per-gerbong GPS when selectedKereta changes
   useEffect(() => {
@@ -295,18 +294,20 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
     }));
   }, [gerbongData, route, appData?.trainNumber]);
 
+  const hasInitialFocusedRef = useRef<boolean>(false);
+  const lastRouteKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (trainMarkers.length > 0 && !focusLocation) {
+    if (trainMarkers.length > 0 && !focusLocation && !hasInitialFocusedRef.current) {
       setFocusLocation(trainMarkers[0].location);
+      hasInitialFocusedRef.current = true;
     }
-  }, [trainMarkers]);
+  }, [trainMarkers, focusLocation]);
 
   useEffect(() => {
     const routeKey = `${route?.name || ''}_${appData?.trainNumber || ''}`;
-    if (previousRouteRef.current !== null && previousRouteRef.current !== routeKey) {
-      setFocusLocation(null);
-    }
-    previousRouteRef.current = routeKey;
+    // We just track the key, but don't reset focusLocation anymore to prevent auto-scroll jumps
+    lastRouteKeyRef.current = routeKey;
   }, [route?.name, appData?.trainNumber]);
 
   return (

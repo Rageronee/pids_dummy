@@ -295,19 +295,14 @@ function App() {
 
       if (stations.length < 2) return;
 
-      const rawStations = stations;
+      const rawStations = [...stations]; // CRITICAL: Use spread to avoid in-place mutation of state
       let newStations = rawStations;
 
       let needsReverse = false;
-      let routeFeatures = (data?.activeRoute as any)?.features;
-      if (
-        !routeFeatures &&
-        masterSyncedServiceName &&
-        routes?.[masterSyncedServiceName]
-      ) {
-        routeFeatures = routes[masterSyncedServiceName].features;
-      }
+      const activeRoute = data?.activeRoute || routes?.[masterSyncedServiceName];
+      const routeFeatures = activeRoute?.features || activeRoute?.geojson?.features;
 
+      // Robust direction detection: Use GeoJSON origin markers if available
       let dynamicOriginName = null;
       if (routeFeatures) {
         const originFeature = routeFeatures.find(
@@ -322,31 +317,29 @@ function App() {
       }
 
       if (dynamicOriginName && newStations.length > 0) {
-        const lastSn = getStationName(newStations[newStations.length - 1]);
-        const lastStr = String(lastSn || "")
-          .toUpperCase()
-          .trim();
-        if (lastStr === dynamicOriginName) {
+        const firstSn = getStationName(newStations[0]);
+        const firstStr = String(firstSn || "").toUpperCase().trim();
+        
+        // If the current first station is NOT the origin of the new direction, we need to reverse
+        if (firstStr !== dynamicOriginName) {
           needsReverse = true;
         }
       } else if (newStations.length >= 2) {
+        // Fallback to name-based detection
         const firstSn = getStationName(newStations[0]);
         const lastSn = getStationName(newStations[newStations.length - 1]);
 
-        const firstStr = String(firstSn || "")
-          .toUpperCase()
-          .trim();
-        const lastStr = String(lastSn || "")
-          .toUpperCase()
-          .trim();
+        const firstStr = String(firstSn || "").toUpperCase().trim();
+        const lastStr = String(lastSn || "").toUpperCase().trim();
 
-        const isCurrentlyMlToBd =
-          firstStr.includes("MALANG") || lastStr.includes("BANDUNG");
-        const needsBdToMl = ["ka68", "ka70"].includes(newKa);
-        const needsMlToBd = ["ka67", "ka69"].includes(newKa);
+        const isCurrentlyMlToBd = firstStr.includes("MALANG") || lastStr.includes("BANDUNG");
+        const isCurrentlyBdToMl = firstStr.includes("BANDUNG") || lastStr.includes("MALANG");
 
-        if (needsBdToMl && isCurrentlyMlToBd) needsReverse = true;
-        if (needsMlToBd && !isCurrentlyMlToBd) needsReverse = true;
+        const targetIsBdToMl = ["ka68", "ka70"].includes(newKa.toLowerCase());
+        const targetIsMlToBd = ["ka67", "ka69"].includes(newKa.toLowerCase());
+
+        if (targetIsBdToMl && isCurrentlyMlToBd) needsReverse = true;
+        if (targetIsMlToBd && isCurrentlyBdToMl) needsReverse = true;
       }
 
       if (needsReverse) {

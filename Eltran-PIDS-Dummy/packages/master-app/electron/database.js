@@ -53,18 +53,24 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations) {
   try {
     const geojson = JSON.parse(geojsonText);
     const stationMap = new Map();
+    const coordFixMap = new Map(); // Store [oldLng, oldLat] -> [newLng, newLat]
+
     masterStations.forEach((s) => {
       stationMap.set(normalizeName(s.name), s);
       stationMap.set(s.code, s);
     });
 
     if (geojson.features) {
+      // Phase 1: Update Points and collect coordinate fixes
       geojson.features = geojson.features.map((f) => {
         if (f.geometry?.type === "Point") {
-          const name = normalizeName(f.properties?.name);
+          const name = normalizeName(f.properties?.name || f.properties?.Name);
           const master = stationMap.get(name);
           if (master) {
-            f.geometry.coordinates = [master.lng, master.lat];
+            const oldCoordKey = JSON.stringify(f.geometry.coordinates);
+            const newCoord = [master.lng, master.lat];
+            coordFixMap.set(oldCoordKey, newCoord);
+            f.geometry.coordinates = newCoord;
           }
           const cleanProps = {};
           const essentials = ["name", "isCheckpoint", "role"];
@@ -77,6 +83,20 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations) {
             }
           });
           f.properties = cleanProps;
+        }
+        return f;
+      });
+
+      // Phase 2: Update LineStrings using the collected fixes
+      geojson.features = geojson.features.map((f) => {
+        if (f.geometry?.type === "LineString") {
+          f.geometry.coordinates = f.geometry.coordinates.map(coord => {
+            const key = JSON.stringify(coord);
+            if (coordFixMap.has(key)) {
+              return coordFixMap.get(key);
+            }
+            return coord;
+          });
         }
         return f;
       });
@@ -699,35 +719,7 @@ export async function seedData() {
     MALABAR: {
       direction: "Malang - Bandung",
       stations: [
-        "ML",
-        "MLK",
-        "KPN",
-        "SBP",
-        "WG",
-        "BL",
-        "TA",
-        "KD",
-        "KTS",
-        "NJ",
-        "MN",
-        "NGW",
-        "SR",
-        "SLO",
-        "KT",
-        "YK",
-        "KTA",
-        "KM",
-        "GB",
-        "KYA",
-        "MA",
-        "SDR",
-        "BJR",
-        "CI",
-        "TSM",
-        "CPD",
-        "C26",
-        "KAC",
-        "BD",
+        "ML", "MLK", "KPN", "BL", "KD", "MN", "SLO", "YK", "KTA", "BTH", "PRB", "KWN", "WNS", "KM", "SRW", "KA", "GB", "IJO", "TBK", "SPH", "KJN", "KYA", "SKP", "MA", "KH", "LBG", "JRL", "KWG", "GDM", "SDR", "CPI", "MLW", "LGN", "BJR", "KNP", "BJG", "CI", "MNJ", "AWP", "TSM", "IDH", "RJP", "CAW", "CHY", "CPD", "BMW", "WNB", "CB", "LWG", "KRA", "C26", "LBJ", "NG", "CCL", "HRP", "RCK", "CMK", "GDB", "KAC", "CTH", "BD"
       ],
     },
   };

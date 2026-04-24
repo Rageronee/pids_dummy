@@ -116,10 +116,15 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     }
 
     const trainNum = (pidsState.trainNumber || "").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/^KA\s*/i, "").trim();
+    
+    // Fallback: If activeSched found a different train number, prioritize the one from pidsState
+    // to prevent showing "MALABAR 70" when the state says "67"
+    const displayTrainNum = trainNum || (activeSched?.display_train_number || activeSched?.train_number || "");
+
     return [{
       id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
-      name: pidsState.serviceName, // Just service name for map
-      trainNum: trainNum, // Store for card display
+      name: pidsState.serviceName || activeSched?.service_name || "MALABAR", // Service name as primary label
+      trainNum: displayTrainNum,
       status: pidsState.status || "Normal",
       progress: progress,
       nextStation: getStationName(pidsState.nextStation),

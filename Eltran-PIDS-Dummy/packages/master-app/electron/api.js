@@ -587,6 +587,81 @@ export async function startApiServer() {
         if (!ALLOWED_KEYS.has(key)) delete updates[key];
       }
       const prevState = await getState();
+
+      // --- ATOMIC SNAPPING LOGIC ---
+      // If currentStation changed, calculate snap BEFORE updating state
+      const prevStationName = getStationName(prevState.currentStation).toUpperCase().trim();
+      const currentStationName = updates.currentStation ? getStationName(updates.currentStation).toUpperCase().trim() : "";
+
+      if (updates.currentStation && (currentStationName !== prevStationName || !prevState.simGps || updates.isSyncing)) {
+        const activeRoute = updates.activeRoute || prevState.activeRoute;
+        const currentStations = updates.stations || prevState.stations;
+
+        if (activeRoute && (activeRoute.features || activeRoute.geojson || activeRoute.type === 'FeatureCollection')) {
+          try {
+            const geojson = activeRoute.features ? activeRoute : (
+              typeof activeRoute.geojson === 'string' ? JSON.parse(activeRoute.geojson) : activeRoute.geojson
+            );
+            
+            const features = geojson.features || [];
+            const lineFeature = features.find(f => f.geometry?.type === 'LineString');
+            const stationFeatures = features.filter(f => f.geometry?.type === 'Point');
+            
+            if (lineFeature && stationFeatures.length > 0) {
+              const targetStation = stationFeatures.find(f => {
+                const stationName = String(f.properties?.name || f.properties?.Name || "").toUpperCase().trim();
+                return stationName === currentStationName;
+              });
+
+              if (targetStation && targetStation.geometry?.coordinates) {
+                const coords = targetStation.geometry.coordinates;
+                const pt = turf.point(coords);
+                let lineCoords = [...lineFeature.geometry.coordinates];
+
+                // Ensure line orientation matches current station list direction
+                if (currentStations && currentStations.length >= 2) {
+                  const firstStationName = getStationName(currentStations[0]).toUpperCase().trim();
+                  const startCoord = lineCoords[0];
+                  const endCoord = lineCoords[lineCoords.length - 1];
+                  
+                  const startPt = turf.point(startCoord);
+                  const endPt = turf.point(endCoord);
+                  
+                  const firstStationFeature = stationFeatures.find(f => 
+                    String(f.properties?.name || f.properties?.Name || "").toUpperCase().trim() === firstStationName
+                  );
+                  
+                  if (firstStationFeature) {
+                    const firstStnPt = turf.point(firstStationFeature.geometry.coordinates);
+                    const distToStart = turf.distance(firstStnPt, startPt);
+                    const distToEnd = turf.distance(firstStnPt, endPt);
+                    if (distToEnd < distToStart) lineCoords.reverse();
+                  }
+                }
+
+                const line = turf.lineString(lineCoords);
+                const snapped = turf.nearestPointOnLine(line, pt);
+                
+                // CRITICAL: Use 'location' (distance along line) instead of 'dist' (distance to line)
+                const distanceInMeters = (snapped.properties?.location || 0) * 1000;
+
+                console.log(`[PIDS-API] Atomic Snap: ${currentStationName} @ ${distanceInMeters.toFixed(2)}m`);
+
+                // Merge snapping results into the updates object before DB write
+                updates.simDistance = distanceInMeters;
+                updates.simGps = {
+                  lng: coords[0],
+                  lat: coords[1],
+                  heading: updates.simGps?.heading || prevState.simGps?.heading || 0
+                };
+              }
+            }
+          } catch (e) {
+            console.error("[PIDS-API] Atomic Snap error:", e.message);
+          }
+        }
+      }
+
       const newState = await updateState(updates);
 
       const user = getSessionUser(req);
@@ -605,55 +680,9 @@ export async function startApiServer() {
         });
       }
 
-      // Snap simulation to station if currentStation changed manually
-      if (updates.currentStation && updates.currentStation !== prevState.currentStation) {
-        const state = await getState();
-        if (state.activeRoute?.geojson) {
-          try {
-            const geojson = typeof state.activeRoute.geojson === 'string' 
-              ? JSON.parse(state.activeRoute.geojson) 
-              : state.activeRoute.geojson;
-            
-            const features = geojson.features || (geojson.type === 'FeatureCollection' ? [] : [geojson]);
-            const lineFeature = features.find(f => f.geometry?.type === 'LineString');
-            const stationFeatures = features.filter(f => f.geometry?.type === 'Point');
-            
-            if (lineFeature && stationFeatures.length > 0) {
-              const targetNameInput = typeof updates.currentStation === 'object' 
-                ? (updates.currentStation.name || updates.currentStation.id || "")
-                : updates.currentStation;
-              
-              const normalizedTargetName = String(targetNameInput).toUpperCase().trim();
-
-              const targetStation = stationFeatures.find(f => {
-                const stationName = String(f.properties?.name || f.properties?.Name || "").toUpperCase().trim();
-                return stationName === normalizedTargetName;
-              });
-
-              if (targetStation && targetStation.geometry?.coordinates) {
-                const line = turf.lineString(lineFeature.geometry.coordinates);
-                const pt = turf.point(targetStation.geometry.coordinates);
-                const snapped = turf.nearestPointOnLine(line, pt);
-                const distanceInMeters = (snapped.properties?.dist || 0) * 1000;
-                
-                await updateState({
-                  simDistance: distanceInMeters,
-                  simGps: {
-                    lng: targetStation.geometry.coordinates[0],
-                    lat: targetStation.geometry.coordinates[1],
-                    heading: prevState.simGps?.heading || 0
-                  }
-                });
-              }
-            }
-          } catch (e) {
-            console.error("[API] Snapping error:", e.message);
-          }
-        }
-      }
-
       await broadcastState();
-      res.json({ success: true, state: newState });
+      const finalState = await getState();
+      res.json({ success: true, state: finalState });
     } catch (err) {
       console.error("[API] State update error:", err);
       res.status(500).json({ success: false, error: "State update failed" });
@@ -1436,7 +1465,7 @@ export async function startApiServer() {
           // Recalculate distance to be exactly at station
           const pt = turf.point([lng, lat]);
           const snapped = turf.nearestPointOnLine(line, pt);
-          currentDist = snapped.properties.dist * 1000;
+          currentDist = (snapped.properties.location || 0) * 1000;
         } else {
           // Keep current position if station not found
           lng = state.simGps?.lng;
