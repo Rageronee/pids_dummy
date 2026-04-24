@@ -347,6 +347,28 @@ export default function StationsPage({
                 </motion.div>
               ))}
             </div>
+
+            {stations.length < total && (
+              <div className="flex justify-center pt-8 pb-12">
+                <button
+                  onClick={() => fetchStations(true)}
+                  disabled={loading}
+                  className="flex items-center gap-3 px-12 py-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black text-[#1d2d6a] dark:text-white uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <RefreshCw size={16} className="animate-spin" />
+                      Syncing Nodes...
+                    </>
+                  ) : (
+                    <>
+                      <LayoutGrid size={16} />
+                      Load More Infrastructure
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

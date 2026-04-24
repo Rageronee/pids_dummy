@@ -282,10 +282,13 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
   }, [selectedKereta]);
 
   const trainMarkers = useMemo(() => {
-    const serviceName = route?.name || "Service";
-    return gerbongData.map((g, idx) => ({
+    const serviceName = (route?.name || "Service").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
+    const trainNum = appData?.trainNumber || "";
+    const cleanTrainNum = trainNum.replace(/\s*Gerbong\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
+    
+    return gerbongData.map((g) => ({
       id: `G-${g.gerbong_id}`,
-      name: gerbongData.length === 1 ? serviceName : `${serviceName} G${idx + 1}`,
+      name: `${serviceName} ${cleanTrainNum}`,
       location: [g.longitude, g.latitude] as [number, number],
       heading: (g as any).heading || 0,
       status: "Normal",
@@ -293,6 +296,13 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
       eta: "--:--"
     }));
   }, [gerbongData, route, appData?.trainNumber]);
+
+  // Extract route coordinates for the map line
+  const routeLine = useMemo(() => {
+    if (!route || !route.features) return undefined;
+    const lineFeature = route.features.find((f: any) => f.geometry?.type === "LineString");
+    return lineFeature?.geometry?.coordinates;
+  }, [route]);
 
   const hasInitialFocusedRef = useRef<boolean>(false);
   const lastRouteKeyRef = useRef<string | null>(null);
@@ -325,6 +335,7 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden">
           <MapComponent
             trains={trainMarkers}
+            routeLine={routeLine}
             focusCoord={focusLocation}
             onTrainClick={(_, loc) => setFocusLocation(loc)}
           />
@@ -346,7 +357,7 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
                 Service
               </span>
               <span className="text-sm font-bold truncate max-w-[120px]">
-                {route?.name || "-"}
+                {(route?.name || "-").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim()}
               </span>
             </div>
           </div>
@@ -547,8 +558,8 @@ function App() {
   }, [isDark]);
 
   const { data, sendData } = usePidsData();
-  const activeTrainName = data.serviceName || "Belum Dikonfigurasi";
-  const activeTrainNumber = data.trainNumber || "-";
+  const activeTrainName = (data.serviceName || "Belum Dikonfigurasi").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
+  const activeTrainNumber = (data.trainNumber || "-").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
   const activeRoute = data.activeRoute || {
     name: data.serviceName || "-",
     stations: data.stations || [],

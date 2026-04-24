@@ -44,16 +44,16 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
   useEffect(() => {
     if (!mapContainer.current) return;
-    
+
     const isDarkMode = document.documentElement.classList.contains("dark");
-    
+
     const style: maplibregl.StyleSpecification = {
       version: 8,
       sources: {
         "carto-tiles": {
           type: "raster",
           tiles: [
-            isDarkMode 
+            isDarkMode
               ? "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png"
               : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
           ],
@@ -95,7 +95,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     const observer = new MutationObserver(() => {
       const isDark = document.documentElement.classList.contains("dark");
       if (map.current && map.current.isStyleLoaded()) {
-        const newTiles = isDark 
+        const newTiles = isDark
           ? "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png"
           : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png";
         // @ts-ignore
@@ -120,7 +120,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     if (focusCoord && map.current && mapLoaded && isValidCoord(focusCoord)) {
       const coordKey = `${focusCoord[0].toFixed(5)},${focusCoord[1].toFixed(5)}`;
       if (lastFocusedCoord.current === coordKey) return;
-      
+
       lastFocusedCoord.current = coordKey;
       map.current.flyTo({
         center: focusCoord,
@@ -237,22 +237,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       el.style.height = '64px';
       el.innerHTML = `
         <div class="relative flex flex-col items-center justify-end w-full h-full">
-          <div class="absolute left-1/2 -translate-x-1/2 bg-slate-900/90 dark:bg-slate-950 px-2.5 py-1 rounded-md border border-white/20 text-[9px] font-black text-white whitespace-nowrap shadow-2xl opacity-0 group-hover:opacity-100 transition-all z-50 uppercase tracking-widest pointer-events-none -translate-y-full" style="top: 10px;">
-            ${train.name}
-          </div>
-          
+          <!-- Modern Marker -->
           <div class="relative flex flex-col items-center marker-pin-wrapper" style="transform: scale(var(--map-marker-scale, 1)); transform-origin: center bottom;">
-            <div class="absolute w-12 h-12 bg-blue-500/30 rounded-full animate-ping" style="top: -10px; left: 50%; margin-left: -24px;"></div>
-            <div class="w-7 h-7 bg-blue-600 rounded-full border-[3px] border-white shadow-lg flex items-center justify-center relative z-10">
-              <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+            <div class="absolute w-12 h-12 bg-blue-500/20 rounded-full animate-ping" style="top: -10px; left: 50%; margin-left: -24px;"></div>
+            
+            <div class="w-9 h-9 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 rotate-45 transition-transform group-hover:scale-110 group-hover:rotate-[225deg]">
+              <div class="rotate-[-45deg] group-hover:rotate-[-225deg] transition-transform text-white">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15h10M9 19l-2 2M15 19l2 2M7 2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>
+              </div>
             </div>
-            <div class="w-0 h-0 -mt-1 relative z-10" style="border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #2563eb;"></div>
+            
+            <!-- Pin Tail (Modernized) -->
+            <div class="w-1.5 h-3 bg-[#1d2d6a] dark:bg-blue-600 -mt-1 rounded-full relative z-0"></div>
           </div>
         </div>
       `;
 
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
+      el.addEventListener('click', () => {
         onTrainClick?.(train.id, train.location);
       });
 
@@ -315,24 +316,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
         if (analyzeBtn) {
           analyzeBtn.onclick = (e) => {
-             e.preventDefault();
-             e.stopPropagation();
-             onAnalyze?.(train.id);
+            e.preventDefault();
+            e.stopPropagation();
+            onAnalyze?.(train.id);
           };
         }
 
         if (closeBtn) {
           closeBtn.onclick = (e) => {
-             e.preventDefault();
-             e.stopPropagation();
-             popup.remove();
+            e.preventDefault();
+            e.stopPropagation();
+            popup.remove();
           };
         }
       });
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat(train.location)
-        .setPopup(popup)
         .addTo(currentMap);
 
       markers.current[train.id] = marker;
@@ -366,13 +366,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
         }
       `}</style>
       <div ref={mapContainer} className="w-full h-full rounded-2xl" />
-      <button 
+      <button
         onClick={toggleFullscreen}
-        className="absolute bottom-4 right-4 z-10 p-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg text-slate-600 dark:text-slate-300 hover:text-[#1d2d6a] dark:hover:text-white transition-all opacity-0 group-hover:opacity-100"
+        className="absolute top-4 right-4 z-10 p-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg text-slate-600 dark:text-slate-300 hover:text-[#1d2d6a] dark:hover:text-white transition-all opacity-0 group-hover:opacity-100"
         title="Toggle Fullscreen"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
         </svg>
       </button>
     </div>

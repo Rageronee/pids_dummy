@@ -115,15 +115,15 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       }
     }
 
-    const trainNum = (pidsState.trainNumber || "").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/^KA\s*/i, "").trim();
-    
+    const trainNum = (pidsState.trainNumber || "").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/-G\d+$/i, "").replace(/^KA\s*/i, "").trim();
+
     // Fallback: If activeSched found a different train number, prioritize the one from pidsState
-    // to prevent showing "MALABAR 70" when the state says "67"
     const displayTrainNum = trainNum || (activeSched?.display_train_number || activeSched?.train_number || "");
+    const serviceName = (pidsState.serviceName || activeSched?.service_name || "MALABAR").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
 
     return [{
       id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
-      name: pidsState.serviceName || activeSched?.service_name || "MALABAR", // Service name as primary label
+      name: `${serviceName} ${displayTrainNum}`.trim(), // Combined label for consistency
       trainNum: displayTrainNum,
       status: pidsState.status || "Normal",
       progress: progress,
@@ -163,14 +163,15 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans">
-      <main className="flex-grow overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300">
-        <section className="relative w-full h-[450px] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50 shadow-sm group bg-white dark:bg-slate-900/40 backdrop-blur-sm">
-          <div className="absolute top-4 left-4 z-20 flex gap-2">
-            <div className="px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Peta Live
+    <div className="flex flex-col min-h-full bg-slate-50 dark:bg-slate-950 font-sans">
+      <main className="flex-grow">
+        {/* Full-width Map Section with no margins */}
+        <section className="relative w-full h-[60vh] bg-white dark:bg-slate-900 overflow-hidden border-b border-slate-200 dark:border-slate-800">
+          <div className="absolute top-6 left-6 z-20 flex gap-2">
+            <div className="px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[11px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-[0.2em]">
+                Live Geospatial Fleet
               </span>
             </div>
           </div>
@@ -182,24 +183,35 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
             onMapClick={() => { setFocusLocation(null); setFocusedTrain(null); }}
             onTrainClick={(trainId, location) => handleCardClick(location, trainId)}
           />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f8fafc] dark:from-slate-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-50/80 dark:from-slate-950/80 to-transparent z-10 pointer-events-none" />
         </section>
 
-        <section className="space-y-4">
-          <div className="flex items-center justify-between mb-2 px-2">
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-              Active Fleet Status & Real-time ETA
-            </h2>
+        {/* Content Section - Data Dense and Edge-to-Edge */}
+        <section className="px-6 py-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1.5 border-l-4 border-[#ee6f1f] pl-4">
+              <h2 className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-800 dark:text-slate-100 leading-none">
+                Fleet Operational Status
+              </h2>
+              <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Real-time Telemetry and Arrival Forecasting</p>
+            </div>
+            <div className="bg-[#ee6f1f]/10 px-4 py-2 rounded-xl border border-[#ee6f1f]/20 backdrop-blur-md">
+              <span className="text-[10px] font-black text-[#ee6f1f] uppercase tracking-widest flex items-center gap-2">
+                <Train size={12} />
+                ACTIVE: {activeFleet.length}
+              </span>
+            </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-2 gap-5">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {loading
-              ? Array(1).fill(0).map((_, i) => (
-                <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-[2rem] border border-slate-200 dark:border-slate-800" />
+              ? Array(3).fill(0).map((_, i) => (
+                <div key={i} className="h-56 bg-slate-200/50 dark:bg-slate-900 animate-pulse rounded-[2.5rem] border border-slate-200 dark:border-slate-800" />
               ))
               : activeFleet.map((s, i) => (
                 <TransportLineCard
                   key={i}
-                  trainName={s.trainNum ? `${s.name} ${s.trainNum}` : s.name}
+                  trainName={s.name}
                   serviceNumber={s.id}
                   status={s.status}
                   progress={s.progress}
@@ -213,12 +225,12 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
                 />
               ))}
             {!loading && activeFleet.length === 0 && (
-              <div className="col-span-full p-12 text-center bg-white dark:bg-slate-900 rounded-[2.5rem] border border-dashed border-slate-300 dark:border-slate-800">
-                <div className="bg-orange-50 dark:bg-orange-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Train size={32} className="text-[#ee6f1f]" />
+              <div className="col-span-full p-20 text-center bg-white dark:bg-slate-900/40 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div className="bg-orange-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Train size={40} className="text-[#ee6f1f]" />
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 font-bold text-base">Tidak ada armada aktif.</p>
-                <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">Aktifkan servis melalui aplikasi Selector.</p>
+                <p className="text-slate-900 dark:text-white font-black text-xl uppercase tracking-tighter">No Active Fleet Detected</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest mt-2 italic">Connect via Selector App to initialize telemetry</p>
               </div>
             )}
           </div>
@@ -250,68 +262,54 @@ const TransportLineCard: React.FC<{
   return (
     <button
       onClick={onClick}
-      className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.25rem] p-6 border border-slate-200 dark:border-slate-800/50 shadow-sm hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all hover:shadow-xl group text-left w-full relative overflow-hidden flex flex-col xl:flex-row gap-6 items-center"
+      className="bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl p-5 border border-slate-200 dark:border-slate-800/80 shadow-sm hover:border-[#ee6f1f] dark:hover:border-[#ee6f1f] transition-all hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] group text-left w-full relative overflow-hidden flex flex-col gap-4"
     >
-      <div className="flex-1 w-full xl:w-auto min-w-[250px]">
-        <div className="flex justify-between items-start mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#1d2d6a] dark:bg-[#020617] rounded-xl text-white shadow-lg shadow-blue-900/20 transition-transform group-hover:scale-110 shrink-0">
-              <Train size={20} />
-            </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight truncate">{trainName}</span>
-            </div>
-          </div>
-          <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase shadow-sm ${!isDelay ? "bg-green-500 text-white" : "bg-amber-500 text-white"}`}>
-            {status || "NORMAL"}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
-          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-            <Users size={14} className="text-slate-500 dark:text-slate-400" />
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600/20 rounded-xl flex items-center justify-center text-[#ee6f1f] shadow-inner transition-transform group-hover:scale-110">
+            <Train size={20} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Kondektur / PIC</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{picName}</span>
-            <span className="text-[10px] font-medium text-slate-500">{picPhone}</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Service Node</span>
+            <span className="text-sm font-black text-slate-900 dark:text-white uppercase leading-none tracking-tight">{trainName}</span>
           </div>
+        </div>
+        <div className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-1.5 ${!isDelay ? "bg-green-500/10 text-green-500 border border-green-500/20" : "bg-amber-500/10 text-amber-500 border border-amber-500/20"}`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${!isDelay ? "bg-green-500" : "bg-amber-500"} animate-pulse`} />
+          {status || "NORMAL"}
         </div>
       </div>
 
-      <div className="flex-[1.5] w-full xl:w-auto xl:border-l border-slate-100 dark:border-slate-800 px-0 xl:px-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex flex-col">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Asal</span>
-            <span className="text-xs font-bold text-[#1d2d6a] dark:text-slate-300 truncate max-w-[120px]" title={origin}>{origin}</span>
-            <span className="text-[10px] font-mono font-bold mt-1 text-slate-500">{depTime}</span>
+      <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-tight">{origin}</span>
           </div>
-          <div className="flex-1 px-4 flex flex-col items-center">
-            <div className="text-[10px] font-black text-[#ee6f1f] mb-1">{progress}%</div>
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
-              <div className={`h-full transition-all duration-1000 rounded-full ${isDelay ? "bg-amber-500" : "bg-[#ee6f1f]"}`} style={{ width: `${progress}%` }} />
-            </div>
-          </div>
-          <div className="flex flex-col text-right">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Tujuan</span>
-            <span className="text-xs font-bold text-[#ee6f1f] truncate max-w-[120px]" title={destination}>{destination}</span>
-            <span className="text-[10px] font-mono font-bold mt-1 text-slate-500">{arrTime}</span>
+          <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 ml-[2.5px]" />
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#ee6f1f]" />
+            <span className="text-[11px] font-black text-[#ee6f1f] uppercase tracking-tight">{destination}</span>
           </div>
         </div>
+        <div className="text-right">
+          <div className="text-[18px] font-black text-[#1d2d6a] dark:text-blue-400 font-mono leading-none">{progress}%</div>
+          <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Journey Progress</div>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/30 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
-          <div className="flex flex-col">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1">
-              <LocateFixed size={10} /> Posisi Sekarang
-            </span>
-            <span className="text-[11px] font-black text-[#1d2d6a] dark:text-white uppercase truncate">{currentStation}</span>
-          </div>
-          <div className="flex flex-col border-l border-slate-200 dark:border-slate-700 pl-4">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
-              Berhenti Berikutnya
-            </span>
-            <span className="text-[11px] font-black text-[#1d2d6a] dark:text-slate-300 uppercase truncate">{nextStation}</span>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-slate-50 dark:bg-slate-800/20 p-3 rounded-xl border border-slate-100 dark:border-slate-800/40">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+            <LocateFixed size={10} /> CURRENT
+          </p>
+          <p className="text-[11px] font-black text-[#1d2d6a] dark:text-white uppercase truncate">{currentStation}</p>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-800/20 p-3 rounded-xl border border-slate-100 dark:border-slate-800/40">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+            <Clock size={10} /> NEXT ETA
+          </p>
+          <p className="text-[11px] font-black text-[#ee6f1f] uppercase truncate">{nextStation}</p>
         </div>
       </div>
     </button>
