@@ -357,7 +357,11 @@
         "isCheckpoint": true,
         "role": "stop",
         "is_origin_ka68": true,
-        "is_origin_ka70": true
+        "is_origin_ka70": true,
+        "schedule_ka67": "05:44",
+        "schedule_ka68": "18:09",
+        "schedule_ka69": "18:04",
+        "schedule_ka70": "09:29"
       },
       "geometry": {
         "type": "Point",
@@ -373,7 +377,11 @@
         "name": "Cikudapateuh",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "05:33",
+        "schedule_ka68": "18:09",
+        "schedule_ka69": "17:51",
+        "schedule_ka70": "09:29"
       },
       "geometry": {
         "type": "Point",
@@ -389,7 +397,9 @@
         "name": "Kiaracondong",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "05:26",
+        "schedule_ka69": "17:44"
       },
       "geometry": {
         "type": "Point",
@@ -405,7 +415,9 @@
         "name": "Gedebage",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka68": "18:18",
+        "schedule_ka70": "09:38"
       },
       "geometry": {
         "type": "Point",
@@ -421,7 +433,11 @@
         "name": "Cimekar",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "05:21",
+        "schedule_ka68": "18:33",
+        "schedule_ka69": "17:39",
+        "schedule_ka70": "09:49"
       },
       "geometry": {
         "type": "Point",
@@ -437,7 +453,9 @@
         "name": "Rancaekek",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "05:15",
+        "schedule_ka69": "17:32"
       },
       "geometry": {
         "type": "Point",
@@ -453,7 +471,11 @@
         "name": "Haurpugur",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "05:12",
+        "schedule_ka68": "18:38",
+        "schedule_ka69": "17:30",
+        "schedule_ka70": "09:54"
       },
       "geometry": {
         "type": "Point",
@@ -469,7 +491,11 @@
         "name": "Cicalengka",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:59",
+        "schedule_ka68": "18:42",
+        "schedule_ka69": "17:17",
+        "schedule_ka70": "09:58"
       },
       "geometry": {
         "type": "Point",
@@ -485,7 +511,11 @@
         "name": "Nagreg",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:52",
+        "schedule_ka68": "18:45",
+        "schedule_ka69": "17:10",
+        "schedule_ka70": "10:02"
       },
       "geometry": {
         "type": "Point",
@@ -501,7 +531,11 @@
         "name": "Lebakjero",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:36",
+        "schedule_ka68": "18:58",
+        "schedule_ka69": "16:57",
+        "schedule_ka70": "10:14"
       },
       "geometry": {
         "type": "Point",
@@ -517,7 +551,11 @@
         "name": "Leles",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:30",
+        "schedule_ka68": "19:07",
+        "schedule_ka69": "16:52",
+        "schedule_ka70": "10:23"
       },
       "geometry": {
         "type": "Point",
@@ -533,7 +571,9 @@
         "name": "Karangsari (Garut)",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka68": "19:16",
+        "schedule_ka70": "10:32"
       },
       "geometry": {
         "type": "Point",
@@ -549,7 +589,11 @@
         "name": "Leuwigoong",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:21",
+        "schedule_ka68": "19:27",
+        "schedule_ka69": "16:43",
+        "schedule_ka70": "10:41"
       },
       "geometry": {
         "type": "Point",
@@ -565,7 +609,9 @@
         "name": "Cibatu",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:14",
+        "schedule_ka69": "16:36"
       },
       "geometry": {
         "type": "Point",
@@ -581,7 +627,11 @@
         "name": "Warungbandrek",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "04:02",
+        "schedule_ka68": "19:34",
+        "schedule_ka69": "16:23",
+        "schedule_ka70": "10:48"
       },
       "geometry": {
         "type": "Point",
@@ -597,7 +647,11 @@
         "name": "Bumiwaluya",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "03:40",
+        "schedule_ka68": "19:41",
+        "schedule_ka69": "16:03",
+        "schedule_ka70": "10:56"
       },
       "geometry": {
         "type": "Point",
@@ -613,7 +667,11 @@
         "name": "Cipeundeuy",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "03:27",
+        "schedule_ka68": "19:54",
+        "schedule_ka69": "15:51",
+        "schedule_ka70": "11:08"
       },
       "geometry": {
         "type": "Point",
@@ -629,7 +687,11 @@
         "name": "Cirahayu",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "03:18",
+        "schedule_ka68": "20:03",
+        "schedule_ka69": "15:42",
+        "schedule_ka70": "11:19"
       },
       "geometry": {
         "type": "Point",
@@ -645,7 +707,11 @@
         "name": "Ciawi",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "03:09",
+        "schedule_ka68": "20:26",
+        "schedule_ka69": "15:33",
+        "schedule_ka70": "11:42"
       },
       "geometry": {
         "type": "Point",
@@ -661,7 +727,11 @@
         "name": "Rajapolah",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "03:02",
+        "schedule_ka68": "20:35",
+        "schedule_ka69": "15:27",
+        "schedule_ka70": "11:50"
       },
       "geometry": {
         "type": "Point",
@@ -677,7 +747,11 @@
         "name": "Indihiang",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "02:53",
+        "schedule_ka68": "20:42",
+        "schedule_ka69": "15:18",
+        "schedule_ka70": "11:57"
       },
       "geometry": {
         "type": "Point",
@@ -693,7 +767,11 @@
         "name": "Tasikmalaya",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "02:46",
+        "schedule_ka68": "20:48",
+        "schedule_ka69": "15:13",
+        "schedule_ka70": "12:04"
       },
       "geometry": {
         "type": "Point",
@@ -709,7 +787,11 @@
         "name": "Awipari",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "02:42",
+        "schedule_ka68": "20:53",
+        "schedule_ka69": "15:09",
+        "schedule_ka70": "12:09"
       },
       "geometry": {
         "type": "Point",
@@ -725,7 +807,11 @@
         "name": "Manonjaya",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "02:26",
+        "schedule_ka68": "21:02",
+        "schedule_ka69": "14:53",
+        "schedule_ka70": "12:18"
       },
       "geometry": {
         "type": "Point",
@@ -741,7 +827,11 @@
         "name": "Ciamis",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "02:17",
+        "schedule_ka68": "21:06",
+        "schedule_ka69": "14:44",
+        "schedule_ka70": "12:22"
       },
       "geometry": {
         "type": "Point",
@@ -757,7 +847,11 @@
         "name": "Bojong",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "02:10",
+        "schedule_ka68": "21:17",
+        "schedule_ka69": "14:37",
+        "schedule_ka70": "12:33"
       },
       "geometry": {
         "type": "Point",
@@ -773,7 +867,11 @@
         "name": "Karangpucung",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:59",
+        "schedule_ka68": "21:27",
+        "schedule_ka69": "14:26",
+        "schedule_ka70": "12:42"
       },
       "geometry": {
         "type": "Point",
@@ -789,7 +887,11 @@
         "name": "Banjar",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:50",
+        "schedule_ka68": "21:33",
+        "schedule_ka69": "14:17",
+        "schedule_ka70": "12:49"
       },
       "geometry": {
         "type": "Point",
@@ -805,7 +907,11 @@
         "name": "Langen",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:45",
+        "schedule_ka68": "21:40",
+        "schedule_ka69": "14:12",
+        "schedule_ka70": "12:56"
       },
       "geometry": {
         "type": "Point",
@@ -821,7 +927,11 @@
         "name": "Meluwung",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:39",
+        "schedule_ka68": "21:51",
+        "schedule_ka69": "14:06",
+        "schedule_ka70": "13:09"
       },
       "geometry": {
         "type": "Point",
@@ -837,7 +947,11 @@
         "name": "Cipari",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:30",
+        "schedule_ka68": "21:56",
+        "schedule_ka69": "13:59",
+        "schedule_ka70": "13:14"
       },
       "geometry": {
         "type": "Point",
@@ -853,7 +967,11 @@
         "name": "Sidareja",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:23",
+        "schedule_ka68": "22:02",
+        "schedule_ka69": "13:52",
+        "schedule_ka70": "13:18"
       },
       "geometry": {
         "type": "Point",
@@ -869,7 +987,11 @@
         "name": "Gandrungmangun",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:18",
+        "schedule_ka68": "22:07",
+        "schedule_ka69": "13:48",
+        "schedule_ka70": "13:25"
       },
       "geometry": {
         "type": "Point",
@@ -885,7 +1007,11 @@
         "name": "Kawunganten",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:07",
+        "schedule_ka68": "22:16",
+        "schedule_ka69": "13:36",
+        "schedule_ka70": "13:34"
       },
       "geometry": {
         "type": "Point",
@@ -901,7 +1027,11 @@
         "name": "Jeruklegi",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:03",
+        "schedule_ka68": "22:21",
+        "schedule_ka69": "13:32",
+        "schedule_ka70": "13:41"
       },
       "geometry": {
         "type": "Point",
@@ -917,7 +1047,11 @@
         "name": "Lebeng",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "01:00",
+        "schedule_ka68": "22:32",
+        "schedule_ka69": "13:30",
+        "schedule_ka70": "14:03"
       },
       "geometry": {
         "type": "Point",
@@ -933,7 +1067,11 @@
         "name": "Kasugihan",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:54",
+        "schedule_ka68": "22:36",
+        "schedule_ka69": "13:29",
+        "schedule_ka70": "14:15"
       },
       "geometry": {
         "type": "Point",
@@ -949,7 +1087,11 @@
         "name": "Maos",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:49",
+        "schedule_ka68": "22:39",
+        "schedule_ka69": "13:25",
+        "schedule_ka70": "14:19"
       },
       "geometry": {
         "type": "Point",
@@ -965,7 +1107,11 @@
         "name": "Sikampuh",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:36",
+        "schedule_ka68": "22:41",
+        "schedule_ka69": "13:16",
+        "schedule_ka70": "14:21"
       },
       "geometry": {
         "type": "Point",
@@ -981,7 +1127,11 @@
         "name": "Kroya",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:29",
+        "schedule_ka68": "22:50",
+        "schedule_ka69": "13:09",
+        "schedule_ka70": "14:30"
       },
       "geometry": {
         "type": "Point",
@@ -997,7 +1147,11 @@
         "name": "Kemranjen",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:27",
+        "schedule_ka68": "22:56",
+        "schedule_ka69": "13:05",
+        "schedule_ka70": "14:35"
       },
       "geometry": {
         "type": "Point",
@@ -1013,7 +1167,11 @@
         "name": "Sumpiuh",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:24",
+        "schedule_ka68": "23:05",
+        "schedule_ka69": "13:03",
+        "schedule_ka70": "14:44"
       },
       "geometry": {
         "type": "Point",
@@ -1029,7 +1187,11 @@
         "name": "Tambak",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:20",
+        "schedule_ka68": "23:08",
+        "schedule_ka69": "13:00",
+        "schedule_ka70": "14:48"
       },
       "geometry": {
         "type": "Point",
@@ -1045,7 +1207,11 @@
         "name": "Ijo",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:11",
+        "schedule_ka68": "23:10",
+        "schedule_ka69": "12:56",
+        "schedule_ka70": "14:51"
       },
       "geometry": {
         "type": "Point",
@@ -1061,7 +1227,11 @@
         "name": "Gombong",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:04",
+        "schedule_ka68": "23:14",
+        "schedule_ka69": "12:51",
+        "schedule_ka70": "14:53"
       },
       "geometry": {
         "type": "Point",
@@ -1077,7 +1247,11 @@
         "name": "Karanganyar",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "00:02",
+        "schedule_ka68": "23:21",
+        "schedule_ka69": "12:49",
+        "schedule_ka70": "15:00"
       },
       "geometry": {
         "type": "Point",
@@ -1093,7 +1267,11 @@
         "name": "Sruweng",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:53",
+        "schedule_ka68": "23:30",
+        "schedule_ka69": "12:40",
+        "schedule_ka70": "15:09"
       },
       "geometry": {
         "type": "Point",
@@ -1109,7 +1287,11 @@
         "name": "Kebumen",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:48",
+        "schedule_ka68": "23:33",
+        "schedule_ka69": "12:36",
+        "schedule_ka70": "15:11"
       },
       "geometry": {
         "type": "Point",
@@ -1125,7 +1307,11 @@
         "name": "Wonosari",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:46",
+        "schedule_ka68": "23:39",
+        "schedule_ka69": "12:33",
+        "schedule_ka70": "15:20"
       },
       "geometry": {
         "type": "Point",
@@ -1141,7 +1327,11 @@
         "name": "Kutowinangun",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:42",
+        "schedule_ka68": "23:46",
+        "schedule_ka69": "12:29",
+        "schedule_ka70": "15:27"
       },
       "geometry": {
         "type": "Point",
@@ -1157,7 +1347,11 @@
         "name": "Prembun",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:39",
+        "schedule_ka68": "23:48",
+        "schedule_ka69": "12:26",
+        "schedule_ka70": "15:29"
       },
       "geometry": {
         "type": "Point",
@@ -1173,7 +1367,11 @@
         "name": "Butuh",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:28",
+        "schedule_ka68": "23:53",
+        "schedule_ka69": "12:18",
+        "schedule_ka70": "15:33"
       },
       "geometry": {
         "type": "Point",
@@ -1189,7 +1387,11 @@
         "name": "Kutoarjo",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "23:19",
+        "schedule_ka68": "23:57",
+        "schedule_ka69": "12:08",
+        "schedule_ka70": "15:36"
       },
       "geometry": {
         "type": "Point",
@@ -1205,7 +1407,11 @@
         "name": "Yogyakarta",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "22:32",
+        "schedule_ka68": "00:45",
+        "schedule_ka69": "11:23",
+        "schedule_ka70": "16:25"
       },
       "geometry": {
         "type": "Point",
@@ -1221,7 +1427,11 @@
         "name": "Solo Balapan",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "21:47",
+        "schedule_ka68": "01:36",
+        "schedule_ka69": "10:38",
+        "schedule_ka70": "17:15"
       },
       "geometry": {
         "type": "Point",
@@ -1237,7 +1447,11 @@
         "name": "Madiun",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "20:23",
+        "schedule_ka68": "02:51",
+        "schedule_ka69": "09:18",
+        "schedule_ka70": "18:29"
       },
       "geometry": {
         "type": "Point",
@@ -1253,7 +1467,11 @@
         "name": "Kediri",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "19:05",
+        "schedule_ka68": "04:14",
+        "schedule_ka69": "07:59",
+        "schedule_ka70": "19:59"
       },
       "geometry": {
         "type": "Point",
@@ -1269,7 +1487,11 @@
         "name": "Blitar",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "18:18",
+        "schedule_ka68": "04:59",
+        "schedule_ka69": "07:11",
+        "schedule_ka70": "20:46"
       },
       "geometry": {
         "type": "Point",
@@ -1285,7 +1507,11 @@
         "name": "Kepanjen",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "17:08",
+        "schedule_ka68": "06:11",
+        "schedule_ka69": "05:44",
+        "schedule_ka70": "21:53"
       },
       "geometry": {
         "type": "Point",
@@ -1301,7 +1527,11 @@
         "name": "Malang Kotalama",
         "railway": "stop",
         "isCheckpoint": true,
-        "role": "stop"
+        "role": "stop",
+        "schedule_ka67": "16:50",
+        "schedule_ka68": "06:33",
+        "schedule_ka69": "05:24",
+        "schedule_ka70": "22:14"
       },
       "geometry": {
         "type": "Point",
@@ -1319,7 +1549,11 @@
         "isCheckpoint": true,
         "role": "stop",
         "is_origin_ka67": true,
-        "is_origin_ka69": true
+        "is_origin_ka69": true,
+        "schedule_ka67": "16:50",
+        "schedule_ka68": "06:51",
+        "schedule_ka69": "05:24",
+        "schedule_ka70": "22:36"
       },
       "geometry": {
         "type": "Point",
