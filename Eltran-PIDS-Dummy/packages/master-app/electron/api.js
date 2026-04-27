@@ -846,6 +846,11 @@ export async function startApiServer() {
     res.json({ success: true, ...result });
   });
 
+  apiApp.get("/api/admin/schedules", requireAdmin, async (req, res) => {
+    const result = await getSchedules(req.query);
+    res.json({ success: true, ...result });
+  });
+
   apiApp.post("/api/admin/schedules", requireAdmin, async (req, res) => {
     const result = await addSchedule(req.body);
     if (result.error)

@@ -15,6 +15,9 @@
  */
 
 import { fileURLToPath } from "url";
+
+console.log("[PIDS-DB] Database.js loaded - Version 1.1 (st.code fix)");
+
 import path from "path";
 import dotenv from "dotenv";
 
@@ -821,119 +824,119 @@ export async function seedData() {
   // The INSERT ... ON CONFLICT below handles updates correctly.
 
   const scheduleDefinitions = [
-    ["MALABAR", "67", "MALANG", "MLG", "BANDUNG", "BDG", "16:50", "05:44"],
-    ["MALABAR", "68", "BANDUNG", "BDG", "MALANG", "MLG", "18:09", "06:51"],
-    ["MALABAR", "69", "MALANG", "MLG", "BANDUNG", "BDG", "05:24", "18:04"],
-    ["MALABAR", "70", "BANDUNG", "BDG", "MALANG", "MLG", "09:29", "22:36"],
-  ];
+      ["MALABAR", "67", "MALANG", "MLG", "BANDUNG", "BDG", "16:50", "05:44"],
+      ["MALABAR", "68", "BANDUNG", "BDG", "MALANG", "MLG", "18:09", "06:51"],
+      ["MALABAR", "69", "MALANG", "MLG", "BANDUNG", "BDG", "05:24", "18:04"],
+      ["MALABAR", "70", "BANDUNG", "BDG", "MALANG", "MLG", "09:29", "22:36"],
+    ];
 
-  for (const [
-    serviceName,
-    trainNum,
-    dep,
-    depCode,
-    arr,
-    arrCode,
-    depTime,
-    arrTime,
-  ] of scheduleDefinitions) {
-    const train = await getOne(
-      "SELECT id FROM train_services WHERE name = $1",
-      [serviceName],
-    );
-    let routeId = null;
-    if (train) {
-      const route = await getOne(
-        "SELECT id FROM routes WHERE train_service_id = $1",
-        [train.id],
+    for (const [
+      serviceName,
+      trainNum,
+      dep,
+      depCode,
+      arr,
+      arrCode,
+      depTime,
+      arrTime,
+    ] of scheduleDefinitions) {
+      const train = await getOne(
+        "SELECT id FROM train_services WHERE name = $1",
+        [serviceName],
       );
-      if (route) routeId = route.id;
-    }
-
-    const res = await query(
-      `INSERT INTO schedules (
-                route_id, service_name, train_number, schedule_date, status,
-                departure_station, departure_city_code, scheduled_departure,
-                arrival_station, arrival_city_code, scheduled_arrival
-            ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10)
-            ON CONFLICT (service_name, train_number, schedule_date, scheduled_departure)
-            DO UPDATE SET route_id = EXCLUDED.route_id
-            RETURNING id`,
-      [
-        routeId,
-        serviceName,
-        trainNum,
-        today,
-        dep,
-        depCode,
-        depTime,
-        arr,
-        arrCode,
-        arrTime,
-      ],
-    );
-
-    const schedId = res.rows[0].id;
-
-    if (routeId) {
-      // Clear old stops to ensure we use fresh GeoJSON data
-      await query("DELETE FROM schedule_stops WHERE schedule_id = $1", [schedId]);
-
-      const routeStations = await getAll(
-        `
-                SELECT rs.id as rs_id, s.name, rs.sequence_order
-                FROM route_stations rs
-                JOIN stations s ON rs.station_id = s.id
-                WHERE rs.route_id = $1
-                ORDER BY rs.sequence_order
-            `,
-        [routeId],
-      );
-
-      const dbRoute = await getOne("SELECT geojson FROM routes WHERE id = $1", [
-        routeId,
-      ]);
-      const geojson = JSON.parse(dbRoute?.geojson || "{}");
-      const features = geojson.features || [];
-      const stationPropsMap = new Map();
-      features.forEach((f) => {
-        if (f.properties && f.properties.name) {
-          stationPropsMap.set(normalizeName(f.properties.name), f.properties);
-        }
-      });
-
-      const [depH, depM] = depTime.split(":").map(Number);
-      const [arrH, arrM] = arrTime.split(":").map(Number);
-      let totalMinutes = arrH * 60 + arrM - (depH * 60 + depM);
-      if (totalMinutes <= 0) totalMinutes += 24 * 60;
-      const intervalPerStop =
-        routeStations.length > 1
-          ? Math.floor(totalMinutes / (routeStations.length - 1))
-          : 0;
-
-      for (let i = 0; i < routeStations.length; i++) {
-        const rs = routeStations[i];
-        const stopMinutes = depH * 60 + depM + i * intervalPerStop;
-        const stopH = Math.floor(stopMinutes / 60) % 24;
-        const stopM = stopMinutes % 60;
-        const calcTimeStr = `${String(stopH).padStart(2, "0")}:${String(stopM).padStart(2, "0")}`;
-
-        const props = stationPropsMap.get(normalizeName(rs.name)) || {};
-        const schedKey = `schedule_ka${trainNum}`;
-        const timeStr = props[schedKey] || props[schedKey.toLowerCase()] || calcTimeStr;
-
-        const arrivalStr = i === 0 ? "" : timeStr;
-        const departureStr = i === routeStations.length - 1 ? "" : timeStr;
-        const stopStatus = i === 0 ? "DEPARTED" : "SCHEDULED";
-        await query(
-          `INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time, departure_time, platform, stop_status)
-                    VALUES ($1, $2, $3, $4, $5, $6)`,
-          [schedId, rs.rs_id, arrivalStr, departureStr, 1, stopStatus],
+      let routeId = null;
+      if (train) {
+        const route = await getOne(
+          "SELECT id FROM routes WHERE train_service_id = $1",
+          [train.id],
         );
+        if (route) routeId = route.id;
+      }
+
+      const res = await query(
+        `INSERT INTO schedules (
+                  route_id, service_name, train_number, schedule_date, status,
+                  departure_station, departure_city_code, scheduled_departure,
+                  arrival_station, arrival_city_code, scheduled_arrival
+              ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10)
+              ON CONFLICT (service_name, train_number, schedule_date, scheduled_departure)
+              DO UPDATE SET route_id = EXCLUDED.route_id
+              RETURNING id`,
+        [
+          routeId,
+          serviceName,
+          trainNum,
+          today,
+          dep,
+          depCode,
+          depTime,
+          arr,
+          arrCode,
+          arrTime,
+        ],
+      );
+
+      const schedId = res.rows[0].id;
+
+      if (routeId) {
+        // Clear old stops to ensure we use fresh GeoJSON data
+        await query("DELETE FROM schedule_stops WHERE schedule_id = $1", [schedId]);
+
+        const routeStations = await getAll(
+          `
+                  SELECT rs.id as rs_id, s.name, rs.sequence_order
+                  FROM route_stations rs
+                  JOIN stations s ON rs.station_id = s.id
+                  WHERE rs.route_id = $1
+                  ORDER BY rs.sequence_order
+              `,
+          [routeId],
+        );
+
+        const dbRoute = await getOne("SELECT geojson FROM routes WHERE id = $1", [
+          routeId,
+        ]);
+        const geojson = JSON.parse(dbRoute?.geojson || "{}");
+        const features = geojson.features || [];
+        const stationPropsMap = new Map();
+        features.forEach((f) => {
+          if (f.properties && f.properties.name) {
+            stationPropsMap.set(normalizeName(f.properties.name), f.properties);
+          }
+        });
+
+        const [depH, depM] = depTime.split(":").map(Number);
+        const [arrH, arrM] = arrTime.split(":").map(Number);
+        let totalMinutes = arrH * 60 + arrM - (depH * 60 + depM);
+        if (totalMinutes <= 0) totalMinutes += 24 * 60;
+        const intervalPerStop =
+          routeStations.length > 1
+            ? Math.floor(totalMinutes / (routeStations.length - 1))
+            : 0;
+
+        for (let i = 0; i < routeStations.length; i++) {
+          const rs = routeStations[i];
+          const stopMinutes = depH * 60 + depM + i * intervalPerStop;
+          const stopH = Math.floor(stopMinutes / 60) % 24;
+          const stopM = stopMinutes % 60;
+          const calcTimeStr = `${String(stopH).padStart(2, "0")}:${String(stopM).padStart(2, "0")}`;
+
+          const props = stationPropsMap.get(normalizeName(rs.name)) || {};
+          const schedKey = `schedule_ka${trainNum}`;
+          const timeStr = props[schedKey] || props[schedKey.toLowerCase()] || calcTimeStr;
+
+          const arrivalStr = i === 0 ? "" : timeStr;
+          const departureStr = i === routeStations.length - 1 ? "" : timeStr;
+          const stopStatus = i === 0 ? "DEPARTED" : "SCHEDULED";
+          await query(
+            `INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time, departure_time, platform, stop_status)
+                      VALUES ($1, $2, $3, $4, $5, $6)`,
+            [schedId, rs.rs_id, arrivalStr, departureStr, 1, stopStatus],
+          );
+        }
       }
     }
-  }
-  console.log("[PIDS-DB] ✓ Schedules + schedule_stops seeded");
+    console.log("[PIDS-DB] ✓ Schedules + schedule_stops seeded");
   const coachDefinitions = {
     MALABAR: [
       ["MB-L", "LOCOMOTIVE CC206", 1, "10"],
@@ -1544,16 +1547,10 @@ export async function getRoutes() {
         };
       } else {
         let currentIdx = 0;
-        if (isLive && currentStationName) {
-          const found = stations.findIndex((s) =>
-            isNameMatch(typeof s === "string" ? s : s.name, currentStationName),
-          );
-          if (found !== -1) currentIdx = found;
-        }
-
+        // No route data yet
         routes[service.name] = {
           name: service.name,
-          stations: stations,
+          stations: [],
           path: "",
           nodes: [],
           is_active: isLive,
@@ -1653,8 +1650,13 @@ export async function getSchedules(filter = {}) {
   try {
     let sql = `
             SELECT s.*, r.direction,
-                   COALESCE(t.name, s.service_name) as display_service_name,
-                   COALESCE(t.train_number, s.train_number) as display_train_number
+                   COALESCE(t.name, s.service_name) as display_train_name,
+                   COALESCE(s.train_number, t.train_number) as display_train_number,
+                   s.departure_station as stasiun_keberangkatan,
+                   s.arrival_station as stasiun_tujuan,
+                   s.scheduled_departure as waktu_keberangkatan_penjadwalan,
+                   s.scheduled_arrival as waktu_kedatangan_penjadwalan,
+                   s.notes as catatan
             FROM schedules s
             LEFT JOIN routes r ON s.route_id = r.id
             LEFT JOIN train_services t ON r.train_service_id = t.id
@@ -1690,10 +1692,10 @@ export async function getSchedules(filter = {}) {
       for (const s of schedules) {
         s.stops = await getAll(
           `
-                    SELECT ss.*, s.name as station_name, s.id as station_id
+                    SELECT ss.*, st.name as station_name, st.id as station_id, st.id as station_code
                     FROM schedule_stops ss
                     JOIN route_stations rs ON ss.route_station_id = rs.id
-                    JOIN stations s ON rs.station_id = s.id
+                    JOIN stations st ON rs.station_id = st.id
                     WHERE ss.schedule_id = $1
                     ORDER BY rs.sequence_order
                 `,
