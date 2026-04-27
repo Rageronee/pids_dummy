@@ -304,11 +304,15 @@ export default function SchedulesPage({ token }: { token: string }) {
                       <div className="flex gap-8 items-center">
                         <div className="text-right">
                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Arrival</p>
-                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 font-mono">{stop.arrival_time || "--:--"}</p>
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                            {stop.arrival_time || stop.schedule_ka67 || stop.schedule_ka68 || stop.schedule_ka69 || stop.schedule_ka70 || "--:--"}
+                          </p>
                         </div>
                         <div className="text-right">
                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Departure</p>
-                          <p className="text-sm font-semibold text-[#ee6f1f] font-mono">{stop.departure_time || "--:--"}</p>
+                          <p className="text-sm font-semibold text-[#ee6f1f] font-mono">
+                            {stop.departure_time || stop.arrival_time || stop.schedule_ka67 || stop.schedule_ka68 || stop.schedule_ka69 || stop.schedule_ka70 || "--:--"}
+                          </p>
                         </div>
                         <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-semibold border ${stop.stop_status === "ARRIVED" ? "bg-green-50 dark:bg-green-900/30 text-green-600 border-green-100 dark:border-green-900/50" :
                           stop.stop_status === "SCHEDULED" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 border-blue-100 dark:border-blue-900/50" :
@@ -385,12 +389,15 @@ export default function SchedulesPage({ token }: { token: string }) {
       />
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
             Penjadwalan Kereta
           </h2>
-          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
-            Monitoring & Manajemen {total} Jadwal Aktif
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+              Monitoring & Manajemen {total} Jadwal Aktif
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">

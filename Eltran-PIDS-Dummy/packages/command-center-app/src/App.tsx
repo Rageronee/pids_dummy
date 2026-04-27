@@ -332,12 +332,12 @@ export default function App() {
               </div>
             </div>
 
-            <div className="hidden sm:flex items-center gap-3 text-[#1d2d6a] dark:text-white">
-              <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl text-slate-400">
+            <div className="flex items-center gap-2 lg:gap-3 text-[#1d2d6a] dark:text-white">
+              <div className="bg-slate-50 dark:bg-slate-800 p-2 lg:p-2.5 rounded-xl text-slate-400">
                 <Clock size={20} />
               </div>
               <span className="text-xl lg:text-3xl font-bold font-mono tracking-tighter opacity-90">
-                {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
+                {currentTime.toLocaleTimeString("id-ID", { hour12: false }).replace(/\./g, ":")}
               </span>
             </div>
           </div>

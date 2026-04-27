@@ -243,12 +243,15 @@ export default function TrainsPage({ token }: { token: string }) {
       />
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
             Manajemen Kereta
           </h2>
-          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
-            {trains.length} kereta terdaftar dalam sistem pids
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+              {trains.length} kereta terdaftar dalam sistem PIDS
+            </p>
+          </div>
         </div>
         <div className="flex gap-3">
           <button

@@ -285,11 +285,13 @@ export default function StationsPage({
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-10 space-y-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
               <div>
-                <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">STATIONS</h2>
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+                <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">STATIONS</h2>
+                <div className="flex items-center gap-2 mt-1">
                   <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
-                  Network Infrastructure Nodes
-                </p>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    Network Infrastructure Nodes
+                  </p>
+                </div>
               </div>
               <div className="flex gap-4">
                 <div className="relative group w-80 shadow-sm rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800"><Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f]" size={18} /><input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Find node by name..." className="w-full bg-white dark:bg-slate-950 px-14 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none transition-all" /></div>

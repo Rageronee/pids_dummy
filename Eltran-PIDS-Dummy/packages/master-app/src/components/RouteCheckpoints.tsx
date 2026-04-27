@@ -14,6 +14,9 @@ interface RouteCheckpointsProps {
   navTableRef: React.RefObject<HTMLDivElement>;
   onUploadGeoJSON: (e: ChangeEvent<HTMLInputElement>) => void;
   onDeleteClick: () => void;
+  simGps?: any;
+  trains?: any[];
+  routeLine?: [number, number][];
 }
 
 export function RouteCheckpoints({

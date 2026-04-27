@@ -9,7 +9,7 @@ import { API } from "@eltran/shared";
 
 interface TVMonitorProps {
   show: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   data: PidsState | null;
   currentStation: string;
   nextStation: string;
@@ -18,6 +18,7 @@ interface TVMonitorProps {
   speed: number;
   altitude: number;
   temp: number;
+  isEmbedded?: boolean;
 }
 
 const TVMonitor = React.memo(function TVMonitor({
@@ -31,6 +32,7 @@ const TVMonitor = React.memo(function TVMonitor({
   speed,
   altitude,
   temp,
+  isEmbedded = false,
 }: TVMonitorProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [tvDisplayMode, setTvDisplayMode] = useState<"current" | "next">(
@@ -38,42 +40,48 @@ const TVMonitor = React.memo(function TVMonitor({
   );
 
   useEffect(() => {
-    if (!show) return;
+    if (!show && !isEmbedded) return;
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
-  }, [show]);
+  }, [show, isEmbedded]);
 
   useEffect(() => {
-    if (!show) return;
+    if (!show && !isEmbedded) return;
     const t = setInterval(
       () =>
         setTvDisplayMode((prev) => (prev === "current" ? "next" : "current")),
       15000,
     );
     return () => clearInterval(t);
-  }, [show]);
+  }, [show, isEmbedded]);
 
-  if (!show) return null;
+  if (!show && !isEmbedded) return null;
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 1.05 }}
+        initial={isEmbedded ? { opacity: 0 } : { opacity: 0, scale: 1.05 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 1.05 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed inset-0 z-50 bg-slate-900 flex flex-col overflow-hidden font-sans select-none"
+        className={
+          isEmbedded
+            ? "relative w-full flex-1 bg-slate-900 flex flex-col overflow-hidden font-sans select-none border-t border-slate-800"
+            : "fixed inset-0 z-50 bg-slate-900 flex flex-col overflow-hidden font-sans select-none"
+        }
       >
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 p-3 bg-slate-900/30 hover:bg-slate-900/60 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
-          title="Close Monitor"
-        >
-          <X
-            size={24}
-            className="group-hover:rotate-90 transition-transform duration-300"
-          />
-        </button>
+        {!isEmbedded && onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-6 p-3 bg-slate-900/30 hover:bg-slate-900/60 rounded-full text-white/50 hover:text-white backdrop-blur-sm transition-all z-50 group"
+            title="Close Monitor"
+          >
+            <X
+              size={24}
+              className="group-hover:rotate-90 transition-transform duration-300"
+            />
+          </button>
+        )}
 
         <AnimatePresence mode="wait">
           {data?.tvStandby !== false ? (
@@ -121,6 +129,9 @@ const TVMonitor = React.memo(function TVMonitor({
               })()}
 
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/40 pointer-events-none" />
+              
+              {/* Scanline Effect */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-30 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
 
               <div className="relative z-20 flex justify-between items-start pt-10 px-14">
                 <div className="flex flex-col text-white drop-shadow-md">
@@ -162,28 +173,28 @@ const TVMonitor = React.memo(function TVMonitor({
                   animate={{ y: 0, opacity: 1 }}
                   className="text-center w-full max-w-5xl"
                 >
-                  <h3 className="text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md uppercase tracking-[0.3em]">
+                  <h3 className={isEmbedded ? "text-[0.7vw] font-bold text-white/80 mb-1 drop-shadow-md uppercase tracking-[0.3em]" : "text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md uppercase tracking-[0.3em]"}>
                     {tvDisplayMode === "current"
                       ? "Stasiun Saat Ini"
                       : "STASIUN BERIKUTNYA"}
                   </h3>
-                  <h3 className="text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] mb-8 uppercase">
+                  <h3 className={isEmbedded ? "text-[2.5vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)] mb-4 uppercase" : "text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] mb-8 uppercase"}>
                     {tvDisplayMode === "current" ? currentStation : nextStation}
                   </h3>
                   <div className="flex items-center justify-center font-sans">
-                    <div className="bg-[#0a1536]/80 backdrop-blur-xl px-12 py-3.5 flex flex-col items-center justify-center rounded-l-3xl w-80 h-[140px] shadow-2xl border border-white/10 border-r-0">
-                      <span className="text-[13px] font-bold text-white/60 uppercase tracking-widest mb-1.5">
+                    <div className={isEmbedded ? "bg-[#0a1536]/80 backdrop-blur-xl px-6 py-2 flex flex-col items-center justify-center rounded-l-2xl w-40 h-[70px] shadow-2xl border border-white/10 border-r-0" : "bg-[#0a1536]/80 backdrop-blur-xl px-12 py-3.5 flex flex-col items-center justify-center rounded-l-3xl w-80 h-[140px] shadow-2xl border border-white/10 border-r-0"}>
+                      <span className={isEmbedded ? "text-[7px] font-bold text-white/60 uppercase tracking-widest mb-0.5" : "text-[13px] font-bold text-white/60 uppercase tracking-widest mb-1.5"}>
                         Layanan
                       </span>
-                      <span className="text-[32px] font-black text-white drop-shadow-sm leading-tight text-center uppercase">
+                      <span className={isEmbedded ? "text-[14px] font-black text-white drop-shadow-sm leading-tight text-center uppercase" : "text-[32px] font-black text-white drop-shadow-sm leading-tight text-center uppercase"}>
                         {masterSyncedServiceName}
                       </span>
                     </div>
-                    <div className="bg-[#ee6f1f]/90 backdrop-blur-xl px-12 py-3.5 flex flex-col items-center justify-center rounded-r-3xl w-80 h-[140px] shadow-2xl border border-white/20 border-l-0">
-                      <span className="text-[13px] font-bold text-white/80 uppercase tracking-widest mb-1.5">
+                    <div className={isEmbedded ? "bg-[#ee6f1f]/90 backdrop-blur-xl px-6 py-2 flex flex-col items-center justify-center rounded-r-2xl w-40 h-[70px] shadow-2xl border border-white/20 border-l-0" : "bg-[#ee6f1f]/90 backdrop-blur-xl px-12 py-3.5 flex flex-col items-center justify-center rounded-r-3xl w-80 h-[140px] shadow-2xl border border-white/20 border-l-0"}>
+                      <span className={isEmbedded ? "text-[7px] font-bold text-white/80 uppercase tracking-widest mb-0.5" : "text-[13px] font-bold text-white/80 uppercase tracking-widest mb-1.5"}>
                         Nomor KA
                       </span>
-                      <span className="text-[32px] font-black text-white drop-shadow-sm leading-tight text-center">
+                      <span className={isEmbedded ? "text-[14px] font-black text-white drop-shadow-sm leading-tight text-center" : "text-[32px] font-black text-white drop-shadow-sm leading-tight text-center"}>
                         KA-{masterSyncedNumber}
                       </span>
                     </div>
@@ -193,66 +204,66 @@ const TVMonitor = React.memo(function TVMonitor({
 
               <div className="h-[200px] bg-gradient-to-b from-transparent via-slate-900/60 to-slate-900 relative z-20 flex items-end justify-between px-24 pb-12">
                 <div className="flex items-center gap-6 w-1/3 justify-start">
-                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                  <div className={isEmbedded ? "bg-white/5 p-2 rounded-xl border border-white/10 backdrop-blur-md" : "bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md"}>
                     <Gauge
-                      size={48}
+                      size={isEmbedded ? 24 : 48}
                       className="text-[#ee6f1f]"
                       strokeWidth={2.5}
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">
+                    <span className={isEmbedded ? "text-[8px] font-bold text-white/40 uppercase tracking-widest" : "text-xs font-bold text-white/40 uppercase tracking-widest mb-1"}>
                       Kecepatan
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-black text-white tracking-tighter">
+                      <span className={isEmbedded ? "text-2xl font-black text-white tracking-tighter" : "text-5xl font-black text-white tracking-tighter"}>
                         {speed}
                       </span>
-                      <span className="text-xl font-bold text-white/60 uppercase">
+                      <span className={isEmbedded ? "text-[10px] font-bold text-white/60 uppercase" : "text-xl font-bold text-white/60 uppercase"}>
                         km/h
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-6 w-1/3 justify-center">
-                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                  <div className={isEmbedded ? "bg-white/5 p-2 rounded-xl border border-white/10 backdrop-blur-md" : "bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md"}>
                     <Mountain
-                      size={48}
+                      size={isEmbedded ? 24 : 48}
                       className="text-[#ee6f1f]"
                       strokeWidth={2.5}
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">
+                    <span className={isEmbedded ? "text-[8px] font-bold text-white/40 uppercase tracking-widest" : "text-xs font-bold text-white/40 uppercase tracking-widest mb-1"}>
                       Ketinggian
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-black text-white tracking-tighter">
+                      <span className={isEmbedded ? "text-2xl font-black text-white tracking-tighter" : "text-5xl font-black text-white tracking-tighter"}>
                         {altitude}
                       </span>
-                      <span className="text-xl font-bold text-white/60 uppercase">
+                      <span className={isEmbedded ? "text-[10px] font-bold text-white/60 uppercase" : "text-xl font-bold text-white/60 uppercase"}>
                         mdpl
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-6 w-1/3 justify-end">
-                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                  <div className={isEmbedded ? "bg-white/5 p-2 rounded-xl border border-white/10 backdrop-blur-md" : "bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md"}>
                     <Thermometer
-                      size={48}
+                      size={isEmbedded ? 24 : 48}
                       className="text-[#ee6f1f]"
                       strokeWidth={2.5}
                     />
                   </div>
                   <div className="flex flex-col text-right">
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">
+                    <span className={isEmbedded ? "text-[8px] font-bold text-white/40 uppercase tracking-widest" : "text-xs font-bold text-white/40 uppercase tracking-widest mb-1"}>
                       Suhu Kabin
                     </span>
                     <div className="flex items-baseline gap-2 justify-end">
-                      <span className="text-5xl font-black text-white tracking-tighter">
+                      <span className={isEmbedded ? "text-2xl font-black text-white tracking-tighter" : "text-5xl font-black text-white tracking-tighter"}>
                         {temp}
                       </span>
-                      <span className="text-xl font-bold text-white/60 uppercase">
+                      <span className={isEmbedded ? "text-[10px] font-bold text-white/60 uppercase" : "text-xl font-bold text-white/60 uppercase"}>
                         °C
                       </span>
                     </div>

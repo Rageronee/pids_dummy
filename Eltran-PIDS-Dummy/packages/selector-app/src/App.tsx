@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { LoginScreen } from "@eltran/shared";
 import { useSelectorSync } from "./hooks/useSelectorSync";
-import TVMonitor from "./components/TVMonitor";
 import SystemSettingsModal from "./components/SystemSettingsModal";
 import ServiceConfigModal from "./components/ServiceConfigModal.tsx";
 import SelectorToast from "./components/SelectorToast";
@@ -36,9 +35,6 @@ function App() {
     coachCount,
     trainNames,
     routes,
-    speed,
-    altitude,
-    temp,
     sendData,
   } = sync;
 
@@ -57,7 +53,6 @@ function App() {
   }, [isDark]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showTVPreview, setShowTVPreview] = useState(false);
   const [showSystemSettings, setShowSystemSettings] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [ledType, setLedType] = useState<
@@ -93,10 +88,6 @@ function App() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  useEffect(() => {
-    if (data?.displayMode === "tv") setShowTVPreview(true);
-    if (data?.displayMode === "pids") setShowTVPreview(false);
-  }, [data?.displayMode]);
   useEffect(() => {
     if (currentIndex >= stations.length) setCurrentIndex(0);
   }, [stations, currentIndex]);
@@ -183,7 +174,6 @@ function App() {
   );
 
   const handleSelectStation = useCallback(() => {
-    setShowTVPreview(false);
     sendData({
       currentStation: stations[currentIndex],
       nextStation: stations[(currentIndex + 1) % stations.length],
@@ -192,13 +182,7 @@ function App() {
     showNotification("Sync Completed", "Station display status updated.");
   }, [stations, currentIndex, sendData, showNotification]);
 
-  const handleToggleTV = useCallback(() => {
-    setShowTVPreview((prev) => {
-      const newState = !prev;
-      sendData({ displayMode: newState ? "tv" : "pids" });
-      return newState;
-    });
-  }, [sendData]);
+
 
   const handleSetConfig = useCallback(
     (
@@ -743,25 +727,11 @@ function App() {
           onSetLedSpeed={handleSetLedSpeed}
           ledType={ledType}
           onSetLedType={setLedType}
-          showTVPreview={showTVPreview}
-          handleToggleTV={handleToggleTV}
           handleLogout={handleLogout}
           isDark={isDark}
           setIsDark={setIsDark}
         />
 
-        <TVMonitor
-          show={showTVPreview}
-          onClose={handleToggleTV}
-          data={data}
-          currentStation={currentStation}
-          nextStation={nextStation}
-          masterSyncedServiceName={masterSyncedServiceName}
-          masterSyncedNumber={masterSyncedNumber}
-          speed={speed}
-          altitude={altitude}
-          temp={temp}
-        />
         <SelectorToast toast={toastMsg} onClose={() => setToastMsg(null)} />
       </div>
     </div>

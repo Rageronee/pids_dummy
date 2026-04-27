@@ -7,7 +7,6 @@ import {
   Zap,
   Clock,
   Settings as SettingsIcon,
-  Video,
   LogOut,
   Sun,
   Moon,
@@ -28,8 +27,6 @@ interface SystemSettingsProps {
   onSetLedType: (
     type: "indoor" | "outdoor" | "p10_32_16" | "p25_32_16",
   ) => void;
-  showTVPreview: boolean;
-  handleToggleTV: () => void;
   handleLogout: () => void;
   isDark?: boolean;
   setIsDark?: (dark: boolean) => void;
@@ -46,8 +43,6 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
   onSetLedSpeed,
   ledType,
   onSetLedType,
-  showTVPreview,
-  handleToggleTV,
   handleLogout,
   isDark,
   setIsDark,
@@ -91,13 +86,7 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
               >
                 {isDark ? <Sun size={28} strokeWidth={2.5} /> : <Moon size={28} strokeWidth={2.5} />}
               </button>
-              <button
-                onClick={handleToggleTV}
-                className={`flex items-center gap-2 px-6 py-4 rounded-[20px] transition-colors font-bold tracking-wider uppercase text-xs ${showTVPreview ? "bg-white text-[#1d2d6a]" : "bg-white/10 text-white hover:bg-white/20"}`}
-              >
-                <Video size={20} strokeWidth={2.5} />{" "}
-                {showTVPreview ? "DISPLAYING" : "TV Monitor"}
-              </button>
+
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-6 py-4 rounded-[20px] bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors font-bold tracking-wider uppercase text-xs"

@@ -98,9 +98,12 @@ const NotificationsPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
               Notifications
             </h2>
-            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
-              Real-time feed of system events and operational alerts.
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                Real-time feed of system events and operational alerts
+              </p>
+            </div>
           </div>
 
           {/* Compact Stats Cards */}

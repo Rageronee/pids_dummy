@@ -113,12 +113,15 @@ export default function UsersPage({ token }: { token: string }) {
       />
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
             Manajemen Pengguna
           </h2>
-          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
-            {users.length} pengguna terdaftar dalam sistem PIDS
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+              {users.length} pengguna terdaftar dalam sistem PIDS
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}

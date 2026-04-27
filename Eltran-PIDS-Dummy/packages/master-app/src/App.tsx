@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Monitor,
   Maximize,
   Settings,
   RefreshCw,
@@ -23,6 +24,7 @@ import { LoginScreen } from "@eltran/shared";
 import { MasterConsolePanel } from "./components/MasterConsolePanel";
 import MapComponent from "./components/MapComponent";
 import SettingsPage from "./pages/SettingsPage";
+import TVMonitor from "./components/TVMonitor";
 
 import type { AuthUser, LogEntry } from "@eltran/pids-core";
 
@@ -285,7 +287,7 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
     const serviceName = (route?.name || "Service").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
     const trainNum = appData?.trainNumber || "";
     const cleanTrainNum = trainNum.replace(/\s*Gerbong\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
-    
+
     return gerbongData.map((g) => ({
       id: `G-${g.gerbong_id}`,
       name: `${serviceName} ${cleanTrainNum}`,
@@ -538,6 +540,7 @@ const LogViewer = ({ token }: { token: string }) => {
 };
 
 function App() {
+  const [isTvFullscreen, setIsTvFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState("pids");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -630,6 +633,7 @@ function App() {
     { id: "stampformasi", icon: Database, label: "STAMPFORMASI" },
     { id: "tv", icon: Video, label: "CCTV" },
     { id: "gps", icon: MapPin, label: "GPS MAP" },
+    { id: "tvmonitor", icon: Monitor, label: "TV MONITOR" },
     { id: "logs", icon: ScrollText, label: "Log Aktivitas" },
     { id: "settings", icon: Settings, label: "Settings" },
   ];
@@ -731,13 +735,13 @@ function App() {
                 <Clock size={18} />
               </div>
               <span className="text-3xl font-bold font-mono tracking-tighter opacity-90">
-                {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
+                {currentTime.toLocaleTimeString("id-ID", { hour12: false }).replace(/\./g, ":")}
               </span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-10 bg-[#f8fafc] dark:bg-slate-900">
+        <div className={`flex-1 flex flex-col ${activeTab === "tvmonitor" ? "overflow-hidden" : "overflow-y-auto"} bg-[#f8fafc] dark:bg-slate-900 relative`}>
           <AnimatePresence mode="wait">
             {activeTab === "pids" ? (
               <motion.div
@@ -746,7 +750,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="max-w-7xl mx-auto"
+                className="max-w-7xl mx-auto p-10"
               >
                 <MasterConsolePanel
                   route={activeRoute}
@@ -761,7 +765,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="max-w-6xl mx-auto space-y-10"
+                className="max-w-6xl mx-auto space-y-10 p-10"
               >
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800">
                   <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-8 tracking-tight flex items-center gap-3">
@@ -948,7 +952,7 @@ function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="h-full w-full max-w-6xl mx-auto"
+                className="h-full w-full max-w-6xl mx-auto p-10"
               >
                 <MonitorCCTV data={data} />
               </motion.div>
@@ -959,9 +963,69 @@ function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="h-full w-full max-w-6xl mx-auto"
+                className="h-full w-full max-w-6xl mx-auto p-10"
               >
                 <MonitorGPS route={activeRoute} data={data} />
+              </motion.div>
+            ) : activeTab === "tvmonitor" ? (
+              <motion.div
+                key="tvmonitor"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 w-full flex flex-col relative overflow-hidden"
+              >
+                <TVMonitor
+                  show={true}
+                  isEmbedded={!isTvFullscreen}
+                  onClose={() => setIsTvFullscreen(false)}
+                  data={data}
+                  currentStation={(() => {
+                    const s = data?.currentStation;
+                    if (!s || s === "-") return "-";
+                    if (typeof s === "string") {
+                      try {
+                        if (s.startsWith("{") && s.endsWith("}")) {
+                          const parsed = JSON.parse(s);
+                          if (parsed && parsed.name) return parsed.name;
+                        }
+                      } catch (e) { }
+                      return s;
+                    }
+                    return (s as any).name || (s as any).id || "-";
+                  })()}
+                  nextStation={(() => {
+                    const s = data?.nextStation;
+                    if (!s || s === "-") return "-";
+                    if (typeof s === "string") {
+                      try {
+                        if (s.startsWith("{") && s.endsWith("}")) {
+                          const parsed = JSON.parse(s);
+                          if (parsed && parsed.name) return parsed.name;
+                        }
+                      } catch (e) { }
+                      return s;
+                    }
+                    return (s as any).name || (s as any).id || "-";
+                  })()}
+                  masterSyncedServiceName={data?.serviceName || "BELUM DIKONFIGURASI"}
+                  masterSyncedNumber={data?.trainNumber?.split(" Gerbong")[0].replace("KA ", "") || "000"}
+                  speed={data?.speed || 0}
+                  altitude={data?.altitude || 0}
+                  temp={data?.temperature || 24}
+                />
+
+                {!isTvFullscreen && (
+                  <div className="absolute top-8 right-5 z-50">
+                    <button
+                      onClick={() => setIsTvFullscreen(true)}
+                      className="bg-white/10 hover:bg-[#ee6f1f] text-white px-3 py-2 rounded-lg backdrop-blur-md border border-white/10 transition-all transform hover:scale-105 shadow-2xl flex items-center gap-3 group"
+                    >
+                      <Maximize size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+                    </button>
+                  </div>
+                )}
               </motion.div>
             ) : activeTab === "logs" ? (
               <motion.div
@@ -970,6 +1034,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                className="p-10"
               >
                 <LogViewer token={authToken} />
               </motion.div>
@@ -980,6 +1045,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                className="p-10"
               >
                 <SettingsPage isDark={isDark} setIsDark={setIsDark} />
               </motion.div>

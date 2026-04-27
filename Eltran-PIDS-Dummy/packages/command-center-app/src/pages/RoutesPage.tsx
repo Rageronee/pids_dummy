@@ -661,8 +661,21 @@ export default function RoutesPage({
         loading={saving}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pr-6 custom-scrollbar pb-20 border-r border-slate-200 dark:border-slate-800">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-10 pb-2">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
+            Manajemen Rute
+          </h2>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+              Monitoring & Konfigurasi Lintasan Kereta
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 flex overflow-hidden">
+          <div className="w-[120%] flex flex-col gap-4 overflow-y-auto p-10 pt-4 pr-6 custom-scrollbar pb-20 border-r border-slate-200 dark:border-slate-800">
           <div className="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-2 shrink-0 w-fit">
             {["All Routes", "Intercity", "Commuter", "Lokal"].map((cat) => (
               <button
@@ -1260,6 +1273,7 @@ export default function RoutesPage({
         )}
       </AnimatePresence>
 
+      </div>
       <ToastNotification toast={toast} onClose={closeToast} />
     </div>
   );

@@ -121,3 +121,7 @@
 {"id":"98458121-853a-44eb-b8d6-37d2810bc565","timestamp":"2026-04-27T04:32:53.615Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"6f6bec3b-3de4-4695-ba40-140531bb1df1","timestamp":"2026-04-27T04:50:38.755Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"91505193-7354-4ac5-88cb-16999c6e2df3","timestamp":"2026-04-27T04:50:47.066Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"4bc9e10a-4f90-4087-996d-9cfa26bc7a8d","timestamp":"2026-04-27T05:35:39.819Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"1ad1cb9f-6612-4258-a601-4a49976f6174","timestamp":"2026-04-27T05:35:52.094Z","action":"LOGIN_FAILED","user":"admin","role":"-","details":"Percobaan login gagal untuk username: admin","data":null}
+{"id":"33df14eb-ae23-4684-89a0-4b734ba82dc2","timestamp":"2026-04-27T05:35:56.290Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"d698eefc-fa64-48a8-b038-c35561a0731c","timestamp":"2026-04-27T06:03:57.713Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}

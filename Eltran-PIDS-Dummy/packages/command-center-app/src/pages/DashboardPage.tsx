@@ -70,16 +70,21 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       return [];
     }
 
-    const currentServiceName = pidsState.serviceName.toUpperCase();
-    const currentTrainNumber = (pidsState.trainNumber || "").toUpperCase().replace("KA ", "").trim();
+    const currentServiceName = (pidsState.serviceName || "").toUpperCase().trim();
+    const currentTrainNumber = (pidsState.trainNumber || "")
+      .replace(/\s*(Coach|Gerbong|Kereta)\s*\d+/gi, "")
+      .replace(/-G\d+$/i, "")
+      .replace(/^KA\s*/i, "")
+      .toUpperCase()
+      .trim();
 
     const activeSched = schedules.find(s => {
-      const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
+      const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase().trim();
       const sNum = (s.display_train_number || s.train_number || s.ka_number || "").toUpperCase().trim();
       
       const cleanMatch = (a: string, b: string) => {
         if (!a || !b) return false;
-        return a.includes(b) || b.includes(a);
+        return a === b || a.includes(b) || b.includes(a);
       };
 
       return cleanMatch(sName, currentServiceName) && 
@@ -121,20 +126,36 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       }
     }
 
-    const trainNum = (pidsState.trainNumber || "").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/-G\d+$/i, "").replace(/^KA\s*/i, "").trim();
-
-    // Fallback: If activeSched found a different train number, prioritize the one from pidsState
+    const trainNum = currentTrainNumber;
     const displayTrainNum = trainNum || (activeSched?.display_train_number || activeSched?.train_number || "");
-    const serviceName = (pidsState.serviceName || activeSched?.service_name || "MALABAR").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
+    const serviceName = (currentServiceName || activeSched?.service_name || "MALABAR")
+      .replace(/-G\d+$/i, "")
+      .replace(/\s+G\d+$/i, "")
+      .trim();
 
     const getTime = (obj: any, isArr: boolean) => {
       if (!obj) return null;
-      if (isArr) {
-        return obj.scheduled_arrival || obj.waktu_kedatangan_penjadwalan || obj.waktu_kedatangan || obj.arrival_time || obj.arrival || 
-               obj.schedule_ka67 || obj.schedule_ka68 || obj.schedule_ka69 || obj.schedule_ka70;
+      
+      // Keys to check for arrival/departure
+      const arrKeys = [
+        "scheduled_arrival", "waktu_kedatangan_penjadwalan", "waktu_kedatangan", 
+        "arrival_time", "arrival", "actual_arrival", "waktu_kedatangan_realisasi"
+      ];
+      const depKeys = [
+        "scheduled_departure", "waktu_keberangkatan_penjadwalan", "waktu_keberangkatan", 
+        "departure_time", "departure", "actual_departure", "waktu_keberangkatan_realisasi"
+      ];
+      
+      const trainKeys = [`schedule_ka${trainNum}`, `schedule_ka${trainNum}`.toLowerCase()];
+      const keys = isArr ? [...arrKeys, ...trainKeys] : [...depKeys, ...trainKeys];
+      
+      for (const key of keys) {
+        if (obj[key] && typeof obj[key] === "string" && obj[key].trim() !== "") {
+          return obj[key].trim();
+        }
       }
-      return obj.scheduled_departure || obj.waktu_keberangkatan_penjadwalan || obj.waktu_keberangkatan || obj.departure_time || obj.departure || 
-             obj.schedule_ka67 || obj.schedule_ka68 || obj.schedule_ka69 || obj.schedule_ka70;
+      
+      return null;
     };
 
     const depTime = getTime(activeSched, false) ||
@@ -213,11 +234,14 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
         {/* Content Section - Data Dense and Edge-to-Edge */}
         <section className="px-6 py-8 space-y-6">
           <div className="flex items-center justify-between">
-            <div className="space-y-2 border-l-4 border-[#ee6f1f] pl-4">
-              <h2 className="text-[12px] font-bold uppercase tracking-[0.1em] text-[#1d2d6a] dark:text-white leading-none">
+            <div className="space-y-1 border-l-4 border-[#ee6f1f] pl-5">
+              <h2 className="text-2xl font-bold uppercase tracking-tight text-[#1d2d6a] dark:text-white leading-none">
                 Fleet Operational Status
               </h2>
-              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Real-time Telemetry and Arrival Forecasting</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Real-time Telemetry and Arrival Forecasting</p>
+              </div>
             </div>
             <div className="bg-[#ee6f1f]/10 px-4 py-2 rounded-xl border border-[#ee6f1f]/20 backdrop-blur-md">
               <span className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-2">
