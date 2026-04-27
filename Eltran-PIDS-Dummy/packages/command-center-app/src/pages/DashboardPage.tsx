@@ -130,9 +130,11 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     const getTime = (obj: any, isArr: boolean) => {
       if (!obj) return null;
       if (isArr) {
-        return obj.scheduled_arrival || obj.waktu_kedatangan_penjadwalan || obj.waktu_kedatangan || obj.arrival_time || obj.arrival || obj.schedule_ka67 || obj.schedule_ka68;
+        return obj.scheduled_arrival || obj.waktu_kedatangan_penjadwalan || obj.waktu_kedatangan || obj.arrival_time || obj.arrival || 
+               obj.schedule_ka67 || obj.schedule_ka68 || obj.schedule_ka69 || obj.schedule_ka70;
       }
-      return obj.scheduled_departure || obj.waktu_keberangkatan_penjadwalan || obj.waktu_keberangkatan || obj.departure_time || obj.departure || obj.schedule_ka67 || obj.schedule_ka68;
+      return obj.scheduled_departure || obj.waktu_keberangkatan_penjadwalan || obj.waktu_keberangkatan || obj.departure_time || obj.departure || 
+             obj.schedule_ka67 || obj.schedule_ka68 || obj.schedule_ka69 || obj.schedule_ka70;
     };
 
     const depTime = getTime(activeSched, false) ||

@@ -173,12 +173,17 @@ export default function RoutesPage({
             if (typeof s === "string") {
               return { 
                 name: s, 
-                time: dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time || "" 
+                time: dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time || 
+                      dbMatch?.schedule_ka67 || dbMatch?.schedule_ka68 || 
+                      dbMatch?.schedule_ka69 || dbMatch?.schedule_ka70 || "" 
               };
             }
             return { 
               ...s, 
-              time: s.time || dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time || "" 
+              time: s.time || dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time || 
+                    s.schedule_ka67 || s.schedule_ka68 || s.schedule_ka69 || s.schedule_ka70 ||
+                    dbMatch?.schedule_ka67 || dbMatch?.schedule_ka68 || 
+                    dbMatch?.schedule_ka69 || dbMatch?.schedule_ka70 || "" 
             };
           });
 
@@ -896,7 +901,8 @@ export default function RoutesPage({
                         const sName = typeof s === "string" ? s : s.name;
                         const sTime = typeof s === "string" 
                           ? "--:--" 
-                          : (s.time || s.arrival_time || s.departure_time || s.scheduled_time || s.schedule_ka67 || s.schedule_ka68 || "--:--");
+                          : (s.time || s.arrival_time || s.departure_time || s.scheduled_time || 
+                             s.schedule_ka67 || s.schedule_ka68 || s.schedule_ka69 || s.schedule_ka70 || "--:--");
                         const sPlatform =
                           typeof s === "string" ? "1" : s.platform || "1";
 

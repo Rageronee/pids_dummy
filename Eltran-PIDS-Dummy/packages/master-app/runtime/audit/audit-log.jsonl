@@ -117,3 +117,5 @@
 {"id":"8f5e649d-4d4b-44c6-86ef-aee3f9c40459","timestamp":"2026-04-27T02:05:02.184Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 201","data":null}
 {"id":"5ba927cf-da26-4622-a95d-602cd0fb61d0","timestamp":"2026-04-27T02:05:06.470Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 205","data":null}
 {"id":"a73968c3-bd3b-4d4d-a885-040ceb5bd9d5","timestamp":"2026-04-27T04:24:53.576Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"fc9136dd-140b-4d1d-93fa-067050133328","timestamp":"2026-04-27T04:32:48.676Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"98458121-853a-44eb-b8d6-37d2810bc565","timestamp":"2026-04-27T04:32:53.615Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}

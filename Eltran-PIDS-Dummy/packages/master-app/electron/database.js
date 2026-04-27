@@ -837,12 +837,6 @@ export async function seedData() {
     depTime,
     arrTime,
   ] of scheduleDefinitions) {
-    const existingSched = await getAll(
-      "SELECT id FROM schedules WHERE service_name = $1 AND schedule_date = $2 AND scheduled_departure = $3",
-      [serviceName, today, depTime],
-    );
-    if (existingSched && existingSched.length > 0) continue;
-
     const train = await getOne(
       "SELECT id FROM train_services WHERE name = $1",
       [serviceName],
@@ -882,6 +876,9 @@ export async function seedData() {
     const schedId = res.rows[0].id;
 
     if (routeId) {
+      // Clear old stops to ensure we use fresh GeoJSON data
+      await query("DELETE FROM schedule_stops WHERE schedule_id = $1", [schedId]);
+
       const routeStations = await getAll(
         `
                 SELECT rs.id as rs_id, s.name, rs.sequence_order
@@ -892,6 +889,18 @@ export async function seedData() {
             `,
         [routeId],
       );
+
+      const dbRoute = await getOne("SELECT geojson FROM routes WHERE id = $1", [
+        routeId,
+      ]);
+      const geojson = JSON.parse(dbRoute?.geojson || "{}");
+      const features = geojson.features || [];
+      const stationPropsMap = new Map();
+      features.forEach((f) => {
+        if (f.properties && f.properties.name) {
+          stationPropsMap.set(normalizeName(f.properties.name), f.properties);
+        }
+      });
 
       const [depH, depM] = depTime.split(":").map(Number);
       const [arrH, arrM] = arrTime.split(":").map(Number);
@@ -907,7 +916,12 @@ export async function seedData() {
         const stopMinutes = depH * 60 + depM + i * intervalPerStop;
         const stopH = Math.floor(stopMinutes / 60) % 24;
         const stopM = stopMinutes % 60;
-        const timeStr = `${String(stopH).padStart(2, "0")}:${String(stopM).padStart(2, "0")}`;
+        const calcTimeStr = `${String(stopH).padStart(2, "0")}:${String(stopM).padStart(2, "0")}`;
+
+        const props = stationPropsMap.get(normalizeName(rs.name)) || {};
+        const schedKey = `schedule_ka${trainNum}`;
+        const timeStr = props[schedKey] || props[schedKey.toLowerCase()] || calcTimeStr;
+
         const arrivalStr = i === 0 ? "" : timeStr;
         const departureStr = i === routeStations.length - 1 ? "" : timeStr;
         const stopStatus = i === 0 ? "DEPARTED" : "SCHEDULED";
@@ -1480,8 +1494,34 @@ export async function getRoutes() {
 
       if (dbRoute) {
         const parsed = JSON.parse(dbRoute.geojson || "{}");
-        const routeStations =
-          stations.length > 0 ? stations : parsed.stations || [];
+        const features = parsed.features || [];
+        const stationPropsMap = new Map();
+        
+        features.forEach((f) => {
+          if (f.properties && f.properties.name) {
+            stationPropsMap.set(normalizeName(f.properties.name), f.properties);
+          }
+        });
+
+        const routeStations = stationRows.map((r) => {
+          const props = stationPropsMap.get(normalizeName(r.name)) || {};
+          return {
+            ...r,
+            ...props,
+          };
+        });
+
+        if (routeStations.length === 0 && parsed.stations) {
+           // Fallback to parsed stations if no rows found
+           parsed.stations.forEach((s) => {
+             const sName = typeof s === "string" ? s : s.name;
+             const props = stationPropsMap.get(normalizeName(sName)) || {};
+             routeStations.push({
+               name: sName,
+               ...props
+             });
+           });
+        }
 
         let currentIdx = parsed.current_station_index;
         if (isLive && currentStationName) {
