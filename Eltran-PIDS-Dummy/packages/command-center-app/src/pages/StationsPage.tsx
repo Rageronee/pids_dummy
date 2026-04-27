@@ -117,23 +117,7 @@ export default function StationsPage({
       const data = await res.json();
       if (data.success) {
         const enhanced = data.stations.map((s: any) => {
-          const isJava =
-            s.provinsi?.toLowerCase().includes("jawa") ||
-            s.province?.toLowerCase().includes("jawa") ||
-            s.city?.toLowerCase().includes("jakarta") ||
-            s.city?.toLowerCase().includes("bandung") ||
-            s.city?.toLowerCase().includes("surabaya") ||
-            s.city?.toLowerCase().includes("semarang") ||
-            s.city?.toLowerCase().includes("malang") ||
-            s.city?.toLowerCase().includes("jogja") ||
-            s.city?.toLowerCase().includes("solo") ||
-            s.city?.toLowerCase().includes("cirebon") ||
-            s.city?.toLowerCase().includes("madiun") ||
-            s.city?.toLowerCase().includes("jember") ||
-            s.city?.toLowerCase().includes("kediri") ||
-            s.city?.toLowerCase().includes("cilacap") ||
-            s.city?.toLowerCase().includes("purwokerto");
-          return { ...s, status: "ONLINE", division: isJava ? "Java Division" : "Sumatra Division" };
+          return { ...s, status: "ONLINE", division: s.division_name || "Unknown" };
         });
         setStations(prev => isLoadMore ? [...prev, ...enhanced] : enhanced);
         setTotal(data.total);
@@ -186,7 +170,19 @@ export default function StationsPage({
     } catch { showToast("Koneksi gagal", false); } finally { setSaving(false); }
   };
 
-  const filterOptions = ["All Stations", "Java Division", "Sumatra Division"];
+  const [filterOptions, setFilterOptions] = useState<string[]>(["All Stations"]);
+  const [divisions, setDivisions] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${API}/api/divisions`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          setDivisions(data.data);
+          setFilterOptions(["All Stations", ...data.data.map((d: any) => d.name)]);
+        }
+      });
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-slate-950 transition-colors">
@@ -402,6 +398,174 @@ export default function StationsPage({
                 </button>
               </div>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-8 border-b dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                <div>
+                  <h3 className="text-2xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-tight">
+                    {editingId ? "Edit Node Configuration" : "Initialize New Node"}
+                  </h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Infrastructure Management</p>
+                </div>
+                <button
+                  onClick={() => { setShowForm(false); setEditingId(null); setForm({ id: "", name: "", city: "" }); }}
+                  className="p-3 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                  {/* Basic Info */}
+                  <div className="space-y-6">
+                    <h4 className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.3em] mb-4">Basic Parameters</h4>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Unique Node ID (CODE)</label>
+                        <input
+                          value={form.id || ""}
+                          onChange={(e) => setForm({ ...form, id: e.target.value.toUpperCase() })}
+                          placeholder="e.g. BD, GMR, SGU"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:ring-4 focus:ring-orange-500/5 focus:border-[#ee6f1f] outline-none transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Station Official Name</label>
+                        <input
+                          value={form.name || ""}
+                          onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          placeholder="Full name of station"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:ring-4 focus:ring-orange-500/5 focus:border-[#ee6f1f] outline-none transition-all"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">City / Region</label>
+                          <input
+                            value={form.city || ""}
+                            onChange={(e) => setForm({ ...form, city: e.target.value })}
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Division</label>
+                          <select
+                            value={(form as any).division_id || ""}
+                            onChange={(e) => setForm({ ...form, division_id: e.target.value } as any)}
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none appearance-none"
+                          >
+                            <option value="">Select Division</option>
+                            {divisions.map(d => (
+                              <option key={d.id} value={d.id}>{d.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Geolocation */}
+                  <div className="space-y-6">
+                    <h4 className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.3em] mb-4">Coordinates (WGS84)</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Latitude</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={form.latitude || ""}
+                          onChange={(e) => setForm({ ...form, latitude: parseFloat(e.target.value) })}
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Longitude</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={form.longitude || ""}
+                          onChange={(e) => setForm({ ...form, longitude: parseFloat(e.target.value) })}
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="p-5 bg-blue-50 dark:bg-blue-500/5 rounded-2xl border border-blue-100 dark:border-blue-500/20">
+                      <div className="flex gap-4">
+                        <div className="p-2 bg-blue-500 text-white rounded-lg h-fit"><Navigation size={16} /></div>
+                        <div>
+                          <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Precision Tip</p>
+                          <p className="text-xs text-blue-800/60 dark:text-blue-400/60 mt-1 leading-relaxed">Ensure coordinates are accurate for geofencing triggers and map visualization fidelity.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Network & Security */}
+                  <div className="space-y-6 md:col-span-2">
+                    <h4 className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.3em] mb-4">Administrative & Network</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IP Address</label>
+                        <input
+                          value={form.ip_address || ""}
+                          onChange={(e) => setForm({ ...form, ip_address: e.target.value })}
+                          placeholder="192.168.x.x"
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Authorized PIC</label>
+                        <input
+                          value={form.pic_name || ""}
+                          onChange={(e) => setForm({ ...form, pic_name: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Secure Contact</label>
+                        <input
+                          value={form.pic_contact || ""}
+                          onChange={(e) => setForm({ ...form, pic_contact: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 bg-slate-50 dark:bg-slate-900/50 border-t dark:border-slate-800 flex justify-end gap-4">
+                <button
+                  onClick={() => { setShowForm(false); setEditingId(null); }}
+                  className="px-8 py-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-xs uppercase tracking-widest transition-all"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-10 py-4 bg-[#ee6f1f] text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-orange-500/20 hover:bg-[#d45d15] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
+                >
+                  {saving ? <RefreshCw className="animate-spin" size={16} /> : <Save size={16} />}
+                  {editingId ? "Update Configuration" : "Authorize Node"}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

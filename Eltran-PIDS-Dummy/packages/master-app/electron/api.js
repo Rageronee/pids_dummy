@@ -705,8 +705,28 @@ export async function startApiServer() {
     });
   });
   apiApp.get("/api/stations", async (req, res) => {
-    const result = await getStations(req.query);
-    res.json({ success: true, ...result });
+    try {
+      const filter = {
+        search: req.query.search,
+        division: req.query.division,
+        limit: req.query.limit,
+        offset: req.query.offset,
+      };
+      const result = await getStations(filter);
+      res.json({ success: true, ...result });
+    } catch (e) {
+      res.json({ success: false, error: e.message });
+    }
+  });
+
+  apiApp.get("/api/divisions", async (req, res) => {
+    try {
+      const divisions = await getAll("SELECT * FROM divisions ORDER BY name");
+      res.json({ success: true, data: divisions });
+    } catch (e) {
+      res.json({ success: false, error: e.message });
+    }
+  });
   });
   apiApp.get("/api/stations-master", async (req, res) => {
     try {
@@ -746,25 +766,7 @@ export async function startApiServer() {
       res.json({ success: true, data: geojson });
     } catch (e) {
       console.error("[API] stations-master error:", e);
-      try {
-        const { readFile } = await import("fs/promises");
-        const masterPath = path.join(
-          PUBLIC_DIR,
-          "geojson",
-          "stations_master.geojson",
-        );
-        const data = await readFile(masterPath, "utf8");
-        res.json({
-          success: true,
-          data: JSON.parse(data),
-          source: "static-fallback",
-        });
-      } catch {
-        res.status(500).json({
-          success: false,
-          error: "Gagal mengambil data master stasiun",
-        });
-      }
+      res.json({ success: false, error: "Database error: " + e.message });
     }
   });
 

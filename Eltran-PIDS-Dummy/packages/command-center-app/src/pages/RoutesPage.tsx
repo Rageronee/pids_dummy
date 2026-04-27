@@ -78,6 +78,7 @@ export default function RoutesPage({
   const [newRouteName, setNewRouteName] = useState("");
   const [selectedStations, setSelectedStations] = useState<
     Array<{
+      id: string;
       name: string;
       time: string;
       platform?: string;
@@ -96,20 +97,21 @@ export default function RoutesPage({
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const { toast, showToast, closeToast } = useToast();
   const stationsListRef = useRef<HTMLDivElement>(null);
-  const isNameMatch = (a: string | any, b: string | null | undefined) => {
+  const isNameMatch = (a: any, b: any) => {
     if (!a || !b) return false;
-    const sA = typeof a === "string" ? a : a.name || "";
+    // Prefer ID comparison for SSOT
+    const idA = typeof a === "string" ? a : a.id || a.name;
+    const idB = typeof b === "string" ? b : b.id || b.name;
+    if (idA === idB) return true;
+
     const clean = (s: string) =>
-      s
-        .toString()
+      String(s)
         .toUpperCase()
         .replace(/\(.*\)/g, "")
         .replace(/[^A-Z0-9]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
-    const cA = clean(sA);
-    const cB = clean(b);
-    return cA === cB || cA.includes(cB) || cB.includes(cA);
+    return clean(idA) === clean(idB);
   };
 
   const scrollToCurrentStation = useCallback(() => {
@@ -248,17 +250,9 @@ export default function RoutesPage({
     }
   }, [selectedRouteId, routes, scrollToCurrentStation]);
 
-  const fetchMasterStations = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/stations-master`);
-      const d = await res.json();
-      if (d.success) setMasterStations(d.data.features || []);
-    } catch { }
-  }, []);
-
   const fetchDbStations = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/stations`, {
+      const res = await fetch(`${API}/api/admin/stations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const d = await res.json();
@@ -271,13 +265,12 @@ export default function RoutesPage({
     const load = async () => {
       await Promise.all([
         fetchRoutes(),
-        fetchMasterStations(),
         fetchDbStations(),
       ]);
       setLoading(false);
     };
     load();
-  }, [fetchRoutes, fetchMasterStations, fetchDbStations]);
+  }, [fetchRoutes, fetchDbStations]);
 
 
   useEffect(() => {
@@ -390,32 +383,13 @@ export default function RoutesPage({
         return;
       }
       setNewRouteName(route.name);
-      let geojsonObj: any = null;
-      try {
-        if (route.geojson) geojsonObj = JSON.parse(route.geojson);
-      } catch (e) {
-        console.error("Parse GeoJSON error:", e);
-      }
-      setCurrentRouteGeojson(geojsonObj);
-
+      
       const stations = (route.stations || []).map((s: any) => {
-        const sName = typeof s === "string" ? s : s.name;
-        let sTime = typeof s === "string" ? "" : s.time || "";
-
-        if (geojsonObj?.features) {
-          const f = geojsonObj.features.find(
-            (f: any) =>
-              f.properties?.name?.toUpperCase() === sName.toUpperCase(),
-          );
-          if (f?.properties) {
-            const geoTime =
-              f.properties.schedule_ka68 ||
-              f.properties.schedule_ka67 ||
-              f.properties.time;
-            if (geoTime) sTime = geoTime;
-          }
-        }
-        return { name: sName, time: sTime };
+        return { 
+          id: s.id || s.name, 
+          name: s.name, 
+          time: s.time || "" 
+        };
       });
 
       setSelectedStations(stations);
@@ -497,11 +471,13 @@ export default function RoutesPage({
 
           const mappedStations = extractedStations.map((ext: any) => {
             const match = dbStations.find(
-              (s) => s.name?.toUpperCase() === ext.name,
+              (s) => s.name?.toUpperCase() === ext.name || s.id === ext.name
             );
-            return match
-              ? { name: match.name, time: ext.time }
-              : { name: ext.name, time: ext.time };
+            return {
+              id: match?.id || ext.name,
+              name: match?.name || ext.name,
+              time: ext.time
+            };
           });
 
           resetForm();
@@ -520,59 +496,28 @@ export default function RoutesPage({
 
   const addStationToRoute = useCallback(
     (station: any) => {
-      const sName = String(
-        typeof station === "object" ? station.name || "" : station,
-      ).trim();
-      if (
-        !sName ||
-        selectedStations.find(
-          (s) => String(s.name).toUpperCase() === sName.toUpperCase(),
-        )
-      )
-        return;
+      if (!station?.id) return;
+      if (selectedStations.find((s) => s.id === station.id)) return;
 
-      let foundTime = "";
-      if (currentRouteGeojson?.features) {
-        const f = currentRouteGeojson.features.find(
-          (feat: any) =>
-            String(feat.properties?.name || "").toUpperCase() ===
-            sName.toUpperCase(),
-        );
-        if (f?.properties)
-          foundTime =
-            f.properties.schedule_ka68 ||
-            f.properties.schedule_ka67 ||
-            f.properties.time ||
-            "";
-      }
-      if (!foundTime && masterStations?.length > 0) {
-        const f = masterStations.find(
-          (feat: any) =>
-            String(feat.properties?.name || "").toUpperCase() ===
-            sName.toUpperCase(),
-        );
-        if (f?.properties)
-          foundTime =
-            f.properties.schedule_ka68 ||
-            f.properties.schedule_ka67 ||
-            f.properties.time ||
-            "";
-      }
       setSelectedStations([
         ...selectedStations,
-        { name: sName, time: foundTime, platform: "1", status: "On Track" },
+        { 
+          id: station.id,
+          name: station.name, 
+          time: "", 
+          platform: "1", 
+          status: "On Track" 
+        },
       ]);
       setStationSearch("");
     },
-    [selectedStations, currentRouteGeojson, masterStations],
+    [selectedStations],
   );
 
   const routeList = Object.values(routes)
-    .filter((r) => {
+    .filter((r: any) => {
       if (activeCategory === "All Routes") return true;
-      const rType =
-        r.type ||
-        (r.name.toLowerCase().includes("malabar") ? "Intercity" : "Intercity"); // Default to Intercity if missing
+      const rType = r.class || "Intercity"; 
       return rType === activeCategory;
     })
     .filter(
@@ -1131,7 +1076,7 @@ export default function RoutesPage({
                                 {filteredSuggestions.map((s, idx) => (
                                   <button
                                     key={idx}
-                                    onClick={() => addStationToRoute(s.name)}
+                                    onClick={() => addStationToRoute(s)}
                                     className="w-full px-5 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-between group"
                                   >
                                     <div>

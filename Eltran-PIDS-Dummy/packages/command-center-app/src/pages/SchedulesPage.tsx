@@ -16,6 +16,7 @@ import {
   Info,
   Paperclip,
   Activity,
+  ArrowUp,
 } from "lucide-react";
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
@@ -38,6 +39,20 @@ export default function SchedulesPage({ token }: { token: string }) {
   const [saving, setSaving] = useState(false);
   const { toast, showToast, closeToast } = useToast();
   const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY || document.documentElement.scrollTop;
+      setShowScrollTop(scrollPos > 100);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const [trainOptions, setTrainOptions] = useState<any[]>([]);
   const [stationOptions, setStationOptions] = useState<any[]>([]);
@@ -84,6 +99,7 @@ export default function SchedulesPage({ token }: { token: string }) {
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -97,8 +113,7 @@ export default function SchedulesPage({ token }: { token: string }) {
 
       try {
         const currentOffset = isLoadMore ? offset + LIMIT : 0;
-        const search =
-          overrideSearch !== undefined ? overrideSearch : searchQuery;
+        const search = overrideSearch !== undefined ? overrideSearch : searchQuery;
         const query = new URLSearchParams({
           limit: LIMIT.toString(),
           offset: currentOffset.toString(),
@@ -141,7 +156,8 @@ export default function SchedulesPage({ token }: { token: string }) {
   useEffect(() => {
     fetchSchedules(false);
     fetchData();
-  }, []); // fetchSchedules and fetchData don't need to be in deps to avoid loops with offset
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchSchedules(false, searchQuery);
@@ -151,10 +167,7 @@ export default function SchedulesPage({ token }: { token: string }) {
 
   const handleSave = async () => {
     if (!form.train_name || !form.dep_station || !form.arr_station) {
-      showToast(
-        "Mohon lengkapi data wajib (Nama, Keberangkatan, Tujuan)",
-        false,
-      );
+      showToast("Mohon lengkapi data wajib (Nama, Keberangkatan, Tujuan)", false);
       return;
     }
     setSaving(true);
@@ -176,13 +189,11 @@ export default function SchedulesPage({ token }: { token: string }) {
         status_kedatangan: form.arr_status,
         catatan: form.notes,
         media: form.media,
-        route_id: null, // Point to point direct entry
+        route_id: null,
         stops: [],
       };
 
-      const url = editingId
-        ? `${API}/api/admin/schedules/${editingId}`
-        : `${API}/api/admin/schedules`;
+      const url = editingId ? `${API}/api/admin/schedules/${editingId}` : `${API}/api/admin/schedules`;
 
       const res = await fetch(url, {
         method: editingId ? "PUT" : "POST",
@@ -245,42 +256,90 @@ export default function SchedulesPage({ token }: { token: string }) {
     }
   };
 
-  if (selectedSchedule) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="space-y-8 pb-20"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSelectedSchedule(null)}
-              className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all shadow-sm active:scale-95"
-            >
-              <X size={20} />
-            </button>
-            <div>
-              <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight leading-none uppercase">
-                {selectedSchedule.display_train_name || selectedSchedule.train_name}
-              </h2>
-              <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-[0.2em]">
-                Service Number: {selectedSchedule.display_train_number || selectedSchedule.train_number || "-"}
-              </p>
+  return (
+    <div className="space-y-8 pb-20">
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        title="Hapus Jadwal"
+        message={`Hapus jadwal ${deleteTarget?.train_name}?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={saving}
+      />
+
+      {selectedSchedule ? (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="space-y-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSelectedSchedule(null)}
+                className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all shadow-sm active:scale-95"
+              >
+                <X size={20} />
+              </button>
+              <div>
+                <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight leading-none uppercase">
+                  {selectedSchedule.display_train_name || selectedSchedule.train_name}
+                </h2>
+                <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-[0.2em]">
+                  Service Number: {selectedSchedule.display_train_number || selectedSchedule.train_number || "-"}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(selectedSchedule)}
+                className="px-6 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-2xl border border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all flex items-center gap-2"
+              >
+                <Clock size={18} /> Edit Jadwal
+              </button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleEdit(selectedSchedule)}
-              className="px-6 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold rounded-2xl border border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all flex items-center gap-2"
-            >
-              <Clock size={18} /> Edit Jadwal
-            </button>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-center">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                    <Activity size={12} className="text-[#ee6f1f]" /> Status Perjalanan
+                  </span>
+                  <div className="pt-1">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${STATUS_COLOR[selectedSchedule.status] || "text-slate-400"}`}>
+                      {selectedSchedule.status?.replace("_", " ")}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                    <Clock size={12} className="text-[#ee6f1f]" /> Keberangkatan
+                  </span>
+                  <p className="text-xl font-bold dark:text-white font-mono leading-none pt-1">
+                    {selectedSchedule.waktu_keberangkatan_penjadwalan}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                    <MapPin size={12} className="text-[#ee6f1f]" /> Kedatangan
+                  </span>
+                  <p className="text-xl font-bold text-[#ee6f1f] font-mono leading-none pt-1">
+                    {selectedSchedule.waktu_kedatangan_penjadwalan}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                    <Info size={12} className="text-[#ee6f1f]" /> Internal Notes
+                  </span>
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-400 italic truncate pt-1">
+                    {selectedSchedule.catatan ? `"${selectedSchedule.catatan}"` : "Tidak ada catatan"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <h3 className="font-bold text-[#1d2d6a] dark:text-white uppercase tracking-[0.1em] text-sm">Route Checkpoints</h3>
@@ -294,7 +353,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     <div key={idx} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                       <div className="flex items-center gap-5">
                         <span className="text-slate-300 dark:text-slate-700 font-mono font-bold text-xl">
-                          {String(stop.sequence_order).padStart(2, "0")}
+                          {String((stop.sequence_order ?? idx) + 1).padStart(2, "0")}
                         </span>
                         <div>
                           <p className="font-bold text-[#1d2d6a] dark:text-white uppercase text-base leading-tight">{stop.station_name}</p>
@@ -342,541 +401,282 @@ export default function SchedulesPage({ token }: { token: string }) {
               </div>
             </div>
           </div>
-
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-              <h3 className="font-medium text-[#1d2d6a] dark:text-white uppercase tracking-[0.1em] text-sm border-b dark:border-slate-800 pb-4 flex items-center gap-2">
-                <Info size={16} className="text-[#ee6f1f]" /> operational Info
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Status Perjalanan</span>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-medium border ${STATUS_COLOR[selectedSchedule.status] || "text-slate-400"}`}>
-                    {selectedSchedule.status?.replace("_", " ")}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-t dark:border-slate-800/50">
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Waktu Keberangkatan</span>
-                  <span className="text-sm font-medium dark:text-white font-mono">{selectedSchedule.waktu_keberangkatan_penjadwalan}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-t dark:border-slate-800/50">
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Waktu Kedatangan</span>
-                  <span className="text-sm font-medium text-[#ee6f1f] font-mono">{selectedSchedule.waktu_kedatangan_penjadwalan}</span>
-                </div>
+        </motion.div>
+      ) : (
+        <>
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
+                Penjadwalan Kereta
+              </h2>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  Monitoring & Manajemen {total} Jadwal Aktif
+                </p>
               </div>
-              {selectedSchedule.catatan && (
-                <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border border-orange-100 dark:border-orange-900/30">
-                  <p className="text-[10px] font-medium text-[#ee6f1f] uppercase tracking-[0.2em] mb-1">Internal Notes</p>
-                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300 italic leading-relaxed">"{selectedSchedule.catatan}"</p>
-                </div>
-              )}
             </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
-
-  return (
-    <div className="space-y-8 pb-20">
-      <ConfirmModal
-        isOpen={!!deleteTarget}
-        title="Hapus Jadwal"
-        message={`Hapus jadwal ${deleteTarget?.train_name}?`}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteTarget(null)}
-        loading={saving}
-      />
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
-            Penjadwalan Kereta
-          </h2>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
-            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-              Monitoring & Manajemen {total} Jadwal Aktif
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative flex-1 md:w-80">
-            <Activity
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
-              size={18}
-            />
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari KA / Rute..."
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-12 pr-6 py-3 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
-            />
-          </div>
-          <button
-            onClick={() => {
-              if (showForm) setEditingId(null);
-              setShowForm(!showForm);
-            }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
-          >
-            {showForm ? (
-              <>
-                <X size={18} />
-                Batal
-              </>
-            ) : (
-              <>
-                <Plus size={18} />
-                Tambah Jadwal
-              </>
-            )}
-          </button>
-          <button
-            onClick={() => fetchSchedules(false)}
-            className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-[#1d2d6a] dark:hover:text-white hover:border-[#1d2d6a] dark:hover:border-slate-700 transition-all"
-          >
-            <RefreshCcw size={18} />
-          </button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden transition-colors"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-[#1d2d6a] dark:text-white font-bold text-lg flex items-center gap-2">
-                {editingId ? <Clock size={20} className="text-[#ee6f1f]" /> : <Plus size={20} className="text-[#ee6f1f]" />}
-                {editingId ? "Update Jadwal Kereta" : "Tambah Jadwal Kereta"}
-              </h3>
-            </div>
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
-                    Pilih Armada
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Nama Kereta
-                      </label>
-                      <select
-                        value={form.train_name}
-                        onChange={(e) => {
-                          const t = trainOptions.find(
-                            (tx) => tx.name === e.target.value,
-                          );
-                          setForm({
-                            ...form,
-                            train_name: e.target.value,
-                            train_number: t?.train_number || t?.ka_number || "",
-                          });
-                        }}
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
-                      >
-                        <option value="" className="dark:bg-slate-900">Pilih Kereta</option>
-                        {trainOptions.map((t) => (
-                          <option key={t.name} value={t.name} className="dark:bg-slate-900">
-                            {t.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Kode KA
-                      </label>
-                      <input
-                        value={form.train_number}
-                        onChange={(e) =>
-                          setForm({
-                            ...form,
-                            train_number: e.target.value.toUpperCase(),
-                          })
-                        }
-                        placeholder="AUTOMATIC"
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
-                    Waktu & Media
-                  </h4>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                      Media / Lampiran (URL)
-                    </label>
-                    <div className="relative">
-                      <Paperclip
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600"
-                        size={14}
-                      />
-                      <input
-                        value={form.media}
-                        onChange={(e) =>
-                          setForm({ ...form, media: e.target.value })
-                        }
-                        placeholder="URL Gambar/Dokumen"
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                    <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">
-                      Keberangkatan
-                    </h4>
-                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
-                      Departure
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Stasiun
-                      </label>
-                      <select
-                        value={form.dep_station}
-                        onChange={(e) => {
-                          const s = stationOptions.find(
-                            (sx) => sx.id === e.target.value,
-                          );
-                          setForm({
-                            ...form,
-                            dep_station: s?.name || e.target.value,
-                            dep_city_code: s?.kode_kota || "",
-                          });
-                        }}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
-                      >
-                        <option value="" className="dark:bg-slate-900">Pilih Stasiun</option>
-                        {stationOptions.map((s) => (
-                          <option key={s.id} value={s.id} className="dark:bg-slate-900">
-                            {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Kode Kota
-                      </label>
-                      <input
-                        value={form.dep_city_code}
-                        readOnly
-                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-slate-300 font-semibold text-sm opacity-70 cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-1">
-                        <Clock size={10} /> Penjadwalan
-                      </label>
-                      <input
-                        type="time"
-                        value={form.dep_sched}
-                        onChange={(e) =>
-                          setForm({ ...form, dep_sched: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1">
-                        <Activity size={10} /> Realisasi
-                      </label>
-                      <input
-                        type="time"
-                        value={form.dep_real}
-                        onChange={(e) =>
-                          setForm({ ...form, dep_real: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Selisih Waktu (Mnt)
-                      </label>
-                      <input
-                        type="number"
-                        value={form.dep_diff}
-                        onChange={(e) =>
-                          setForm({ ...form, dep_diff: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Status
-                      </label>
-                      <select
-                        value={form.dep_status}
-                        onChange={(e) =>
-                          setForm({ ...form, dep_status: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
-                      >
-                        <option className="dark:bg-slate-900">Tepat Waktu</option>
-                        <option className="dark:bg-slate-900">Terlambat</option>
-                        <option className="dark:bg-slate-900">Dibatalkan</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                    <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">
-                      Kedatangan
-                    </h4>
-                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
-                      Arrival
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Stasiun
-                      </label>
-                      <select
-                        value={form.arr_station}
-                        onChange={(e) => {
-                          const s = stationOptions.find(
-                            (sx) => sx.id === e.target.value,
-                          );
-                          setForm({
-                            ...form,
-                            arr_station: s?.name || e.target.value,
-                            arr_city_code: s?.kode_kota || "",
-                          });
-                        }}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
-                      >
-                        <option value="" className="dark:bg-slate-900">Pilih Stasiun</option>
-                        {stationOptions.map((s) => (
-                          <option key={s.id} value={s.id} className="dark:bg-slate-900">
-                            {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Kode Kota
-                      </label>
-                      <input
-                        value={form.arr_city_code}
-                        readOnly
-                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-slate-300 font-semibold text-sm opacity-70 cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-1">
-                        <Clock size={10} /> Penjadwalan
-                      </label>
-                      <input
-                        type="time"
-                        value={form.arr_sched}
-                        onChange={(e) =>
-                          setForm({ ...form, arr_sched: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1">
-                        <Activity size={10} /> Realisasi
-                      </label>
-                      <input
-                        type="time"
-                        value={form.arr_real}
-                        onChange={(e) =>
-                          setForm({ ...form, arr_real: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Selisih Waktu (Mnt)
-                      </label>
-                      <input
-                        type="number"
-                        value={form.arr_diff}
-                        onChange={(e) =>
-                          setForm({ ...form, arr_diff: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
-                        Status
-                      </label>
-                      <select
-                        value={form.arr_status}
-                        onChange={(e) =>
-                          setForm({ ...form, arr_status: e.target.value })
-                        }
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm transition-colors"
-                      >
-                        <option className="dark:bg-slate-900">Tepat Waktu</option>
-                        <option className="dark:bg-slate-900">Terlambat</option>
-                        <option className="dark:bg-slate-900">Dibatalkan</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800 transition-colors">
-                <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
-                  Catatan
-                </h4>
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="Masukkan catatan tambahan..."
-                  rows={3}
-                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <div className="relative flex-1 md:w-80">
+                <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari KA / Rute..."
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-12 pr-6 py-3 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
                 />
               </div>
-            </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="h-12 px-10 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-bold rounded-2xl text-sm transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]"
-            >
-              {saving ? (
-                "Menyimpan..."
-              ) : (
-                <>
-                  <CheckCircle2 size={24} />
-                  Simpan Penjadwalan
-                </>
-              )}
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {loading ? (
-        <div className="p-8 text-center text-slate-500">Memuat jadwal...</div>
-      ) : (
-        <div className="space-y-4">
-          {schedules.map((sched, i) => {
-            const isActive = pidsState.serviceName === (sched.display_train_name || sched.train_name || sched.service_name);
-            return (
-              <motion.div
-                key={sched.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className={`bg-white dark:bg-slate-950 border ${isActive ? "border-slate-200 hover:border-[#ee6f1f]" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
+              <button
+                onClick={() => {
+                  if (showForm) setEditingId(null);
+                  setShowForm(!showForm);
+                }}
+                className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
               >
-                <div
-                  className="flex items-center gap-4 px-6 py-5 cursor-pointer"
-                  onClick={() => setSelectedSchedule(sched)}
-                >
-                  <div className={`w-12 h-12 ${isActive ? "bg-orange-50 dark:bg-orange-950/30" : "bg-[#f8fafc] dark:bg-slate-800"} border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center shadow-sm`}>
-                    <Train size={20} className={isActive ? "text-[#ee6f1f]" : "text-[#1d2d6a] dark:text-blue-400"} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-[#1d2d6a] dark:text-white font-bold text-base uppercase">
-                        {sched.display_train_name || sched.train_name}
-                      </h3>
-                      {isActive && (
-                        <span className="bg-[#ee6f1f] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.2em] animate-pulse">
-                          LIVE ACTIVE
-                        </span>
-                      )}
-                      <span className="text-slate-400 text-[10px] font-bold">
-                        {sched.display_train_number ||
-                          sched.train_number ||
-                          sched.ka_number ||
-                          "-"}
-                      </span>
+                {showForm ? (
+                  <><X size={18} /> Batal</>
+                ) : (
+                  <><Plus size={18} /> Tambah Jadwal</>
+                )}
+              </button>
+              <button
+                onClick={() => fetchSchedules(false)}
+                className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 hover:text-[#1d2d6a] dark:hover:text-white hover:border-[#1d2d6a] dark:hover:border-slate-700 transition-all"
+              >
+                <RefreshCcw size={18} />
+              </button>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {showForm && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-8 overflow-hidden transition-colors"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <h3 className="text-[#1d2d6a] dark:text-white font-bold text-lg flex items-center gap-2">
+                    {editingId ? <Clock size={20} className="text-[#ee6f1f]" /> : <Plus size={20} className="text-[#ee6f1f]" />}
+                    {editingId ? "Update Jadwal Kereta" : "Tambah Jadwal Kereta"}
+                  </h3>
+                </div>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">Pilih Armada</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Nama Kereta</label>
+                          <select
+                            value={form.train_name}
+                            onChange={(e) => {
+                              const t = trainOptions.find((tx) => tx.name === e.target.value);
+                              setForm({ ...form, train_name: e.target.value, train_number: t?.train_number || t?.ka_number || "" });
+                            }}
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                          >
+                            <option value="">Pilih Kereta</option>
+                            {trainOptions.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Kode KA</label>
+                          <input
+                            value={form.train_number}
+                            onChange={(e) => setForm({ ...form, train_number: e.target.value.toUpperCase() })}
+                            placeholder="AUTOMATIC"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="text-slate-500 dark:text-slate-400 font-medium">
-                        {sched.schedule_date}
-                      </span>
-                      <span
-                        className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border ${STATUS_COLOR[sched.status] || "text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}`}
-                      >
-                        {sched.status?.replace("_", " ")}
-                      </span>
-                      <span className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">
-                        {sched.stops?.length || 0} Points
-                      </span>
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">Waktu & Media</h4>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Media / Lampiran (URL)</label>
+                        <div className="relative">
+                          <Paperclip className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600" size={14} />
+                          <input
+                            value={form.media}
+                            onChange={(e) => setForm({ ...form, media: e.target.value })}
+                            placeholder="URL Gambar/Dokumen"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <ChevronRight
-                    size={20}
-                    className="text-slate-300 transition-transform group-hover:translate-x-1"
-                  />
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(sched);
-                      }}
-                      className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 hover:bg-blue-100 transition-all active:scale-95"
-                    >
-                      <Clock size={14} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget(sched);
-                      }}
-                      className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 transition-all active:scale-95"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
+                        <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">Keberangkatan</h4>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Stasiun</label>
+                          <select
+                            value={form.dep_station}
+                            onChange={(e) => {
+                              const s = stationOptions.find((sx) => sx.id === e.target.value);
+                              setForm({ ...form, dep_station: s?.name || e.target.value, dep_city_code: s?.kode_kota || "" });
+                            }}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                          >
+                            <option value="">Pilih Stasiun</option>
+                            {stationOptions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Kode Kota</label>
+                          <input value={form.dep_city_code} readOnly className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-slate-300 font-semibold text-sm opacity-70 cursor-not-allowed" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-1"><Clock size={10} /> Penjadwalan</label>
+                          <input type="time" value={form.dep_sched} onChange={(e) => setForm({ ...form, dep_sched: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1"><Activity size={10} /> Realisasi</label>
+                          <input type="time" value={form.dep_real} onChange={(e) => setForm({ ...form, dep_real: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
+                        <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">Kedatangan</h4>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Stasiun</label>
+                          <select
+                            value={form.arr_station}
+                            onChange={(e) => {
+                              const s = stationOptions.find((sx) => sx.id === e.target.value);
+                              setForm({ ...form, arr_station: s?.name || e.target.value, arr_city_code: s?.kode_kota || "" });
+                            }}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                          >
+                            <option value="">Pilih Stasiun</option>
+                            {stationOptions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Kode Kota</label>
+                          <input value={form.arr_city_code} readOnly className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-slate-300 font-semibold text-sm opacity-70 cursor-not-allowed" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-1"><Clock size={10} /> Penjadwalan</label>
+                          <input type="time" value={form.arr_sched} onChange={(e) => setForm({ ...form, arr_sched: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1"><Activity size={10} /> Realisasi</label>
+                          <input type="time" value={form.arr_real} onChange={(e) => setForm({ ...form, arr_real: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm shadow-sm focus:border-[#ee6f1f] outline-none transition-colors" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">Catatan</h4>
+                    <textarea
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                      placeholder="Masukkan catatan tambahan..."
+                      rows={3}
+                      className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                    />
                   </div>
                 </div>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="h-12 px-10 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-bold rounded-2xl text-sm transition-all flex items-center gap-3 active:scale-95 shadow-lg"
+                >
+                  {saving ? "Menyimpan..." : <><CheckCircle2 size={24} /> Simpan Penjadwalan</>}
+                </button>
               </motion.div>
-            );
-          })}
-        </div>
+            )}
+          </AnimatePresence>
+
+          {loading ? (
+            <div className="p-8 text-center text-slate-500">Memuat jadwal...</div>
+          ) : (
+            <div className="space-y-4">
+              {schedules.map((sched, i) => {
+                const isActive = pidsState.serviceName === (sched.display_train_name || sched.train_name);
+                return (
+                  <motion.div
+                    key={sched.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className={`bg-white dark:bg-slate-950 border ${isActive ? "border-slate-200 hover:border-[#ee6f1f]" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
+                  >
+                    <div className="flex items-center gap-4 px-6 py-5 cursor-pointer" onClick={() => setSelectedSchedule(sched)}>
+                      <div className={`w-12 h-12 ${isActive ? "bg-orange-50 dark:bg-orange-950/30" : "bg-[#f8fafc] dark:bg-slate-800"} border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center shadow-sm`}>
+                        <Train size={20} className={isActive ? "text-[#ee6f1f]" : "text-[#1d2d6a] dark:text-blue-400"} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-[#1d2d6a] dark:text-white font-bold text-base uppercase">{sched.display_train_name || sched.train_name}</h3>
+                          {isActive && <span className="bg-[#ee6f1f] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.2em] animate-pulse">LIVE ACTIVE</span>}
+                          <span className="text-slate-400 text-[10px] font-bold">{sched.display_train_number || sched.train_number || "-"}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>{sched.schedule_date}</span>
+                          <span className={`px-2 py-0.5 rounded-lg border ${STATUS_COLOR[sched.status] || ""}`}>{sched.status?.replace("_", " ")}</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={20} className="text-slate-300 transition-transform group-hover:translate-x-1" />
+                      <div className="flex gap-2 ml-4">
+                        <button onClick={(e) => { e.stopPropagation(); handleEdit(sched); }} className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500"><Clock size={14} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(sched); }} className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500"><Trash2 size={14} /></button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {schedules.length < total && (
+            <div className="flex justify-center pt-8">
+              <button
+                onClick={() => fetchSchedules(true)}
+                disabled={loadingMore}
+                className="px-12 py-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-[#1d2d6a] dark:text-slate-300 font-bold rounded-2xl hover:border-[#ee6f1f] hover:text-[#ee6f1f] transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-3"
+              >
+                {loadingMore ? <RefreshCcw size={20} className="animate-spin" /> : <ChevronRight size={20} className="rotate-90" />}
+                {loadingMore ? "Memuat Lebih Banyak..." : "Muat Jadwal Lainnya"}
+              </button>
+            </div>
+          )}
+        </>
       )}
 
-      {schedules.length < total && (
-        <div className="flex justify-center pt-8">
-          <button
-            onClick={() => fetchSchedules(true)}
-            disabled={loadingMore}
-            className="px-12 py-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-[#1d2d6a] dark:text-slate-300 font-bold rounded-2xl hover:border-[#ee6f1f] hover:text-[#ee6f1f] transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
-          >
-            {loadingMore ? (
-              <RefreshCcw size={20} className="animate-spin" />
-            ) : (
-              <ChevronRight size={20} className="rotate-90" />
-            )}
-            {loadingMore ? "Memuat Lebih Banyak..." : "Muat Jadwal Lainnya"}
-          </button>
-        </div>
-      )}
       <ToastNotification toast={toast} onClose={closeToast} />
+
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            onClick={scrollToTop}
+            className="fixed bottom-10 right-10 z-[100] w-14 h-14 bg-[#ee6f1f] text-white rounded-[1.25rem] shadow-[0_12px_40px_rgba(238,111,31,0.4)] flex items-center justify-center hover:bg-[#d45d15] active:scale-95 transition-all group border-4 border-white dark:border-slate-900"
+            title="Scroll to Top"
+          >
+            <ArrowUp size={24} className="group-hover:-translate-y-1 transition-transform" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

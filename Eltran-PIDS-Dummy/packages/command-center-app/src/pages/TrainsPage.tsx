@@ -23,6 +23,7 @@ import {
   Save,
   ArrowUp,
   ArrowDown,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API } from "../config";
@@ -36,9 +37,35 @@ export default function TrainsPage({ token }: { token: string }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [selectedTrain, setSelectedTrain] = useState<any | null>(null);
   const { toast, showToast, closeToast } = useToast();
 
   const [stations, setStations] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (selectedTrain) {
+      if (!selectedTrain.gerbongs) {
+        fetch(`${API}/api/admin/trains/${encodeURIComponent(selectedTrain.name)}/gerbongs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(r => r.json())
+          .then(d => {
+            if (d.success) {
+              setSelectedTrain((prev: any) => ({ ...prev, gerbongs: d.coaches }));
+            }
+          });
+      }
+      
+      // Fetch route details
+      fetch(`${API}/api/routes/${encodeURIComponent(selectedTrain.name)}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            setSelectedTrain((prev: any) => ({ ...prev, route: d.data }));
+          }
+        });
+    }
+  }, [selectedTrain?.name, token]);
   const [form, setForm] = useState({
     name: "",
     ka_number: "",
@@ -807,7 +834,8 @@ export default function TrainsPage({ token }: { token: string }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 }}
-                className="grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-0 px-8 py-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group items-center"
+                onClick={() => setSelectedTrain(train)}
+                className={`grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-0 px-8 py-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group items-center cursor-pointer ${selectedTrain?.name === train.name ? "bg-slate-50 dark:bg-slate-800 ring-2 ring-inset ring-[#ee6f1f]" : ""}`}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
@@ -868,6 +896,140 @@ export default function TrainsPage({ token }: { token: string }) {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedTrain && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-x-0 bottom-0 z-[60] p-6 lg:p-10 pointer-events-none"
+          >
+            <div className="max-w-7xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-[0_-20px_80px_-20px_rgba(0,0,0,0.15)] overflow-hidden pointer-events-auto">
+              <div className="p-8 flex flex-col lg:flex-row gap-10">
+                <div className="flex-1 space-y-8">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 bg-[#1d2d6a] dark:bg-slate-950 rounded-[2rem] flex items-center justify-center shadow-lg">
+                        <Train size={40} className="text-white dark:text-[#ee6f1f]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-3xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-tight">
+                            {selectedTrain.name}
+                          </h3>
+                          <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 uppercase">
+                            {selectedTrain.ka_number || "NO CODE"}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                          Fleet Operational Overview
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedTrain(null)}
+                      className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800/50">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Inventory</p>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-bold text-[#1d2d6a] dark:text-white">{selectedTrain.gerbongs?.length || 0}</span>
+                        <span className="text-xs font-bold text-slate-400 mb-1.5 uppercase">Gerbong</span>
+                      </div>
+                    </div>
+                    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800/50">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">IP Address</p>
+                      <div className="flex items-center gap-2 text-[#1d2d6a] dark:text-white font-mono font-bold text-lg">
+                        <Wifi size={18} className="text-[#ee6f1f]" />
+                        {selectedTrain.ip_address || "NOT SET"}
+                      </div>
+                    </div>
+                    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800/50">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">PIC Status</p>
+                      <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-bold text-sm">
+                        <User size={16} className="text-blue-500" />
+                        {selectedTrain.pic_name || "Unassigned"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-orange-50 dark:bg-orange-950/20 rounded-3xl border border-orange-100 dark:border-orange-900/30">
+                    <h4 className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
+                      Route Configuration
+                      <span className="text-[10px] font-bold text-slate-400">MISSION CRITICAL</span>
+                    </h4>
+                    {selectedTrain.route ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1 p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Origin</p>
+                            <p className="text-xs font-bold text-[#1d2d6a] dark:text-white">{selectedTrain.route.stations?.[0]?.name || "N/A"}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-slate-300" />
+                          <div className="flex-1 p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Destination</p>
+                            <p className="text-xs font-bold text-[#ee6f1f]">{selectedTrain.route.stations?.[selectedTrain.route.stations.length - 1]?.name || "N/A"}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                          {selectedTrain.route.stations?.map((s: any, idx: number) => (
+                            <div key={idx} className="flex-shrink-0 px-3 py-1.5 bg-white/50 dark:bg-slate-950/50 rounded-lg border border-slate-200/50 dark:border-slate-800/50 text-[10px] font-bold text-slate-500">
+                              {s.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-400 italic">
+                        {selectedTrain.notes ? `"${selectedTrain.notes}"` : "No active route or maintenance logs currently assigned to this fleet."}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="w-full lg:w-96 space-y-6">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] p-6 border border-slate-100 dark:border-slate-800/50">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
+                      Coach Breakdown
+                      <span className="text-[#ee6f1f]">LIVE</span>
+                    </h4>
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                      {selectedTrain.gerbongs?.map((g: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-[10px] font-bold text-slate-500">
+                              {idx + 1}
+                            </div>
+                            <span className="text-sm font-bold text-[#1d2d6a] dark:text-white">{g.nama_gerbong || g.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Online</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleEdit(selectedTrain)}
+                    className="w-full h-14 bg-[#ee6f1f] text-white rounded-2xl font-bold uppercase tracking-[0.1em] text-sm shadow-lg hover:bg-[#d45d15] transition-all flex items-center justify-center gap-2"
+                  >
+                    <Settings size={20} />
+                    Modify Fleet Configuration
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ToastNotification toast={toast} onClose={closeToast} />
     </div>

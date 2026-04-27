@@ -237,6 +237,13 @@ async function getAll(sql, params = []) {
 
 async function createTables() {
   await pool.query(`
+        CREATE TABLE IF NOT EXISTS divisions (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE,
+            code TEXT NOT NULL UNIQUE
+        )
+    `);
+  await pool.query(`
         CREATE TABLE IF NOT EXISTS stations (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
@@ -254,7 +261,8 @@ async function createTables() {
             village TEXT DEFAULT '',
             postal_code TEXT DEFAULT '',
             poi TEXT DEFAULT '',
-            media TEXT DEFAULT ''
+            media TEXT DEFAULT '',
+            division_id INTEGER REFERENCES divisions(id) ON DELETE SET NULL
         )
     `);
   await pool.query(`
@@ -667,30 +675,42 @@ export async function seedData() {
   );
   const masterStations = JSON.parse(fs.readFileSync(stationsPath, "utf8"));
 
+  await query("INSERT INTO divisions (name, code) VALUES ('Java Division', 'JAVA'), ('Sumatra Division', 'SUMA') ON CONFLICT DO NOTHING");
+  const javaDiv = await getOne("SELECT id FROM divisions WHERE code = 'JAVA'");
+  const sumaDiv = await getOne("SELECT id FROM divisions WHERE code = 'SUMA'");
+
+  const javaHeuristics = [
+    "malang", "bandung", "surakarta", "solo", "yogya", "semarang", "cirebon", "jakarta", 
+    "blitar", "kediri", "nganjuk", "madiun", "ngawi", "sragen", "klaten", "purworejo", 
+    "kebumen", "cilacap", "banjar", "ciamis", "tasikmalaya", "garut", "purwakarta", 
+    "subang", "karawang", "bekasi", "tangerang", "serang", "cilegon", "banyuwangi", 
+    "jember", "probolinggo", "pasuruan", "sidoarjo", "surabaya", "mojokerto", 
+    "jombang", "bojonegoro", "lamongan", "gresik", "tuban", "brebes", "tegal", 
+    "pemalang", "pekalongan", "batang", "kendal", "demak", "kudus", "pati", 
+    "rembang", "wonogiri", "sukoharjo", "boyolali", "magelang", "temanggung", 
+    "wonosobo", "banjarnegara", "purbalingga", "banyumas"
+  ];
+
   for (const s of masterStations) {
+    const isJava = javaHeuristics.some(city => 
+      (s.city || "").toLowerCase().includes(city) || 
+      (s.name || "").toLowerCase().includes(city)
+    ) || (s.province || "").toLowerCase().includes("jawa") || (s.province || "").toLowerCase().includes("dki") || (s.code || "").startsWith("JR");
+    
+    const divId = isJava ? javaDiv.id : sumaDiv.id;
+
     await query(
-      `INSERT INTO stations (id, name, city, latitude, longitude, city_code, province, regency, district, address, postal_code, media)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO stations (id, name, city, latitude, longitude, city_code, province, regency, district, address, postal_code, media, division_id)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                      ON CONFLICT (id) DO UPDATE SET
                         name=EXCLUDED.name, city=EXCLUDED.city,
                         latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude,
                         city_code=EXCLUDED.city_code, province=EXCLUDED.province,
                         regency=EXCLUDED.regency, district=EXCLUDED.district,
                         address=EXCLUDED.address, postal_code=EXCLUDED.postal_code,
-                        media=EXCLUDED.media`,
+                        media=EXCLUDED.media, division_id=EXCLUDED.division_id`,
       [
-        s.code,
-        s.name,
-        s.city,
-        s.lat,
-        s.lng,
-        s.region_code,
-        s.province,
-        s.regency,
-        s.district,
-        s.address,
-        s.postal_code,
-        s.image_url,
+        s.code, s.name, s.city, s.lat, s.lng, s.region_code, s.province, s.regency, s.district, s.address, s.postal_code, s.image_url, divId
       ],
     );
   }
@@ -1022,7 +1042,36 @@ export async function getState() {
       temperature: row.temperature,
       airQuality: row.air_quality,
       displayMode: row.display_mode,
-      stations: activeRoute?.stations || [],
+      stations: await (async () => {
+        const rawStations = activeRoute?.stations || [];
+        if (rawStations.length === 0) return [];
+        
+        // Extract IDs or names for lookup
+        const lookupValues = rawStations.map(s => (typeof s === "string" ? s : s.id || s.name));
+        const placeholders = lookupValues.map((_, i) => `$${i + 1}`).join(", ");
+        
+        // Lookup by ID first, then by name if no ID is found
+        const dbStations = await getAll(
+          `SELECT id, name, city, latitude as lat, longitude as lng FROM stations WHERE id IN (${placeholders}) OR name IN (${placeholders})`,
+          [...lookupValues, ...lookupValues]
+        );
+
+        // Map back to original order while merging data
+        return rawStations.map(raw => {
+          const rawId = typeof raw === "string" ? raw : raw.id || raw.name;
+          const match = dbStations.find(s => s.id === rawId || s.name === rawId);
+          
+          if (typeof raw === "string") {
+            return match || { id: raw, name: raw };
+          } else {
+            return {
+              ...raw,
+              ...(match || {}),
+              name: match?.name || raw.name || raw.id, // Prefer DB name
+            };
+          }
+        });
+      })(),
       activeRoute,
       geofencingInnerRadius: row.geofencing_inner_radius,
       geofencingOuterRadius: row.geofencing_outer_radius,
@@ -1260,101 +1309,28 @@ export async function deleteTrain(name) {
 
 export async function getStations(filter = {}) {
   try {
-    let sql = "SELECT * FROM stations";
+    let sql = `
+      SELECT s.*, d.name as division_name 
+      FROM stations s 
+      LEFT JOIN divisions d ON s.division_id = d.id
+    `;
     const params = [];
 
     if (filter.search) {
       const search = `%${filter.search}%`;
-      sql += ` WHERE name ILIKE $1 OR city ILIKE $1`;
+      sql += ` WHERE (s.name ILIKE $1 OR s.city ILIKE $1)`;
       params.push(search);
     }
 
-    sql += " ORDER BY name";
-
-    let stations = await getAll(sql, params);
-
     if (filter.division && filter.division !== "All Stations") {
-      const javaCities = [
-        "malang",
-        "bandung",
-        "surakarta",
-        "solo",
-        "yogya",
-        "semarang",
-        "cirebon",
-        "jakarta",
-        "blitar",
-        "kediri",
-        "nganjuk",
-        "madiun",
-        "ngawi",
-        "sragen",
-        "klaten",
-        "purworejo",
-        "kebumen",
-        "cilacap",
-        "banjar",
-        "ciamis",
-        "tasikmalaya",
-        "garut",
-        "purwakarta",
-        "subang",
-        "karawang",
-        "bekasi",
-        "tangerang",
-        "serang",
-        "cilegon",
-        "banyuwangi",
-        "jember",
-        "probolinggo",
-        "pasuruan",
-        "sidoarjo",
-        "surabaya",
-        "mojokerto",
-        "jombang",
-        "bojonegoro",
-        "lamongan",
-        "gresik",
-        "tuban",
-        "brebes",
-        "tegal",
-        "pemalang",
-        "pekalongan",
-        "batang",
-        "kendal",
-        "demak",
-        "kudus",
-        "pati",
-        "rembang",
-        "wonogiri",
-        "sukoharjo",
-        "boyolali",
-        "magelang",
-        "temanggung",
-        "wonosobo",
-        "purworejo",
-        "kebumen",
-        "banjarnegara",
-        "purbalingga",
-        "banyumas",
-        "cilacap",
-      ];
-
-      stations = stations.filter((s) => {
-        const isJava =
-          javaCities.some(
-            (city) =>
-              (s.city || "").toLowerCase().includes(city) ||
-              (s.name || "").toLowerCase().includes(city),
-          ) ||
-          (s.provinsi || "").toLowerCase().includes("jawa") ||
-          (s.provinsi || "").toLowerCase().includes("dki") ||
-          (s.id || "").startsWith("JR");
-
-        const div = isJava ? "Java Division" : "Sumatra Division";
-        return div === filter.division;
-      });
+      sql += filter.search ? " AND " : " WHERE ";
+      sql += `d.name = $${params.length + 1}`;
+      params.push(filter.division);
     }
+
+    sql += " ORDER BY s.name";
+
+    const stations = await getAll(sql, params);
 
     const total = stations.length;
     const limit = filter.limit ? parseInt(filter.limit) : total;
@@ -1393,25 +1369,18 @@ export async function addStation(data) {
       postal_code,
       poi,
       media,
+      division_id,
     } = data;
-    const legacyPicName = data.nama_pic;
-    const legacyPicContact = data.kontak_pic;
-    const legacyCityCode = data.kode_kota;
-    const legacyAddress = data.alamat;
-    const legacyProvince = data.provinsi;
-    const legacyRegency = data.kabupaten_kota;
-    const legacyDistrict = data.kecamatan;
-    const legacyVillage = data.kelurahan_desa;
-    const legacyPostalCode = data.kode_pos;
     await query(
-      `INSERT INTO stations (id, name, city, latitude, longitude, ip_address, pic_name, pic_contact, city_code, address, province, regency, district, village, postal_code, poi, media)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      `INSERT INTO stations (id, name, city, latitude, longitude, ip_address, pic_name, pic_contact, city_code, address, province, regency, district, village, postal_code, poi, media, division_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
              ON CONFLICT (id) DO UPDATE SET
              name = EXCLUDED.name, city = EXCLUDED.city, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
              ip_address = EXCLUDED.ip_address, pic_name = EXCLUDED.pic_name, pic_contact = EXCLUDED.pic_contact,
              city_code = EXCLUDED.city_code, address = EXCLUDED.address, province = EXCLUDED.province,
              regency = EXCLUDED.regency, district = EXCLUDED.district,
-             village = EXCLUDED.village, postal_code = EXCLUDED.postal_code, poi = EXCLUDED.poi, media = EXCLUDED.media`,
+             village = EXCLUDED.village, postal_code = EXCLUDED.postal_code, poi = EXCLUDED.poi, media = EXCLUDED.media,
+             division_id = EXCLUDED.division_id`,
       [
         id,
         name,
@@ -1419,17 +1388,18 @@ export async function addStation(data) {
         latitude || 0,
         longitude || 0,
         ip_address || "",
-        pic_name || legacyPicName || "",
-        pic_contact || legacyPicContact || "",
-        city_code || legacyCityCode || "",
-        address || legacyAddress || "",
-        province || legacyProvince || "",
-        regency || legacyRegency || "",
-        district || legacyDistrict || "",
-        village || legacyVillage || "",
-        postal_code || legacyPostalCode || "",
+        pic_name || "",
+        pic_contact || "",
+        city_code || "",
+        address || "",
+        province || "",
+        regency || "",
+        district || "",
+        village || "",
+        postal_code || "",
         poi || "",
         media || "",
+        division_id || null,
       ],
     );
     return { success: true, station: data };
@@ -1532,6 +1502,7 @@ export async function getRoutes() {
         }
 
         routes[service.name] = {
+          ...service, // Include all train_service fields (class, train_number, etc)
           ...parsed,
           name: service.name,
           stations: routeStations,
@@ -1543,12 +1514,13 @@ export async function getRoutes() {
           status: isLive ? liveState.status : parsed.status || "ON TRACK",
           train_number: isLive
             ? liveState.trainNumber
-            : service.ka_number || parsed.train_number || "",
+            : service.train_number || parsed.train_number || "",
         };
       } else {
         let currentIdx = 0;
         // No route data yet
         routes[service.name] = {
+          ...service,
           name: service.name,
           stations: [],
           path: "",
@@ -1692,7 +1664,7 @@ export async function getSchedules(filter = {}) {
       for (const s of schedules) {
         s.stops = await getAll(
           `
-                    SELECT ss.*, st.name as station_name, st.id as station_id, st.id as station_code
+                    SELECT ss.*, st.name as station_name, st.id as station_id, st.id as station_code, rs.sequence_order
                     FROM schedule_stops ss
                     JOIN route_stations rs ON ss.route_station_id = rs.id
                     JOIN stations st ON rs.station_id = st.id
@@ -1947,16 +1919,11 @@ export async function addGerbong(coach) {
       id,
       ip_address,
       name,
-      nama_gerbong,
       sequence_number,
-      no_urut_gerbong,
       train_service_id,
-      id_kereta,
       media,
       maintenance_log,
-      log_maintenance,
       operational_log,
-      log_operasional,
     } = coach;
     await query(
       `INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id, media, maintenance_log, operational_log)
@@ -1968,12 +1935,12 @@ export async function addGerbong(coach) {
       [
         id,
         ip_address || "",
-        name || nama_gerbong,
-        sequence_number ?? no_urut_gerbong ?? 1,
-        train_service_id ?? id_kereta,
+        name,
+        sequence_number ?? 1,
+        train_service_id,
         media || "",
-        maintenance_log || log_maintenance || "",
-        operational_log || log_operasional || "",
+        maintenance_log || "",
+        operational_log || "",
       ],
     );
     return { success: true };
