@@ -76,8 +76,14 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     const activeSched = schedules.find(s => {
       const sName = (s.display_service_name || s.service_name || s.train_name || "").toUpperCase();
       const sNum = (s.display_train_number || s.train_number || s.ka_number || "").toUpperCase().trim();
-      return (sName === currentServiceName || currentServiceName.includes(sName)) &&
-        (currentTrainNumber ? sNum.includes(currentTrainNumber) : true);
+      
+      const cleanMatch = (a: string, b: string) => {
+        if (!a || !b) return false;
+        return a.includes(b) || b.includes(a);
+      };
+
+      return cleanMatch(sName, currentServiceName) && 
+             (!currentTrainNumber || cleanMatch(sNum, currentTrainNumber));
     });
 
     const currentStnName = getStationName(pidsState.currentStation).toUpperCase();
@@ -121,6 +127,22 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     const displayTrainNum = trainNum || (activeSched?.display_train_number || activeSched?.train_number || "");
     const serviceName = (pidsState.serviceName || activeSched?.service_name || "MALABAR").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
 
+    const getTime = (obj: any, isArr: boolean) => {
+      if (!obj) return null;
+      if (isArr) {
+        return obj.scheduled_arrival || obj.waktu_kedatangan_penjadwalan || obj.waktu_kedatangan || obj.arrival_time || obj.arrival || obj.schedule_ka67 || obj.schedule_ka68;
+      }
+      return obj.scheduled_departure || obj.waktu_keberangkatan_penjadwalan || obj.waktu_keberangkatan || obj.departure_time || obj.departure || obj.schedule_ka67 || obj.schedule_ka68;
+    };
+
+    const depTime = getTime(activeSched, false) ||
+                    (activeSched?.stops && activeSched.stops.length > 0 ? getTime(activeSched.stops[0], false) : null) || 
+                    "--:--";
+
+    const arrTime = getTime(activeSched, true) ||
+                    (activeSched?.stops && activeSched.stops.length > 0 ? getTime(activeSched.stops[activeSched.stops.length - 1], true) : null) || 
+                    "--:--";
+
     return [{
       id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
       name: `${serviceName} ${displayTrainNum}`.trim(), // Combined label for consistency
@@ -129,14 +151,14 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       progress: progress,
       nextStation: getStationName(pidsState.nextStation),
       currentStation: getStationName(pidsState.currentStation),
-      depTime: activeSched?.scheduled_departure || activeSched?.waktu_keberangkatan_penjadwalan || "--:--",
-      arrTime: activeSched?.scheduled_arrival || activeSched?.waktu_kedatangan_penjadwalan || "--:--",
+      depTime: depTime,
+      arrTime: arrTime,
       origin: getStationName(pidsState.stations?.[0]) || activeSched?.departure_station || "---",
       destination: getStationName(pidsState.stations?.[totalStations - 1]) || activeSched?.arrival_station || "---",
       speed: pidsState.speed || 0,
       location: location,
       heading: pidsState.simGps?.heading || 0,
-      eta: activeSched?.scheduled_arrival || activeSched?.waktu_kedatangan_penjadwalan || "--:--",
+      eta: arrTime, // Use arrTime as ETA fallback
     }];
   }, [pidsState, schedules, stations]);
 

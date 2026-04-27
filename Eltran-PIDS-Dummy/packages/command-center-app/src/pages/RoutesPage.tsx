@@ -154,13 +154,33 @@ export default function RoutesPage({
 
         keys.forEach((key, idx) => {
           const r = d.routes[key];
-          const stations =
+          const rawStations =
             sData.serviceName === r.name &&
               sData.stations &&
               Array.isArray(sData.stations) &&
               sData.stations.length > 0
               ? sData.stations
               : r.stations || [];
+
+          // Merge real-time station data with DB time info if available
+          const dbStations = r.stations || [];
+          const stations = rawStations.map((s: any, idx: number) => {
+            const sName = typeof s === "string" ? s : s.name;
+            const dbMatch = dbStations.find((dbs: any) => 
+              isNameMatch(dbs, sName)
+            ) || dbStations[idx];
+            
+            if (typeof s === "string") {
+              return { 
+                name: s, 
+                time: dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time || "" 
+              };
+            }
+            return { 
+              ...s, 
+              time: s.time || dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time || "" 
+            };
+          });
 
           let foundIndex = r.current_station_index;
           if (currentStationName) {
@@ -874,8 +894,9 @@ export default function RoutesPage({
                         const isCurrent = idx === currentIdx;
 
                         const sName = typeof s === "string" ? s : s.name;
-                        const sTime =
-                          typeof s === "string" ? "--:--" : s.time || "--:--";
+                        const sTime = typeof s === "string" 
+                          ? "--:--" 
+                          : (s.time || s.arrival_time || s.departure_time || s.scheduled_time || s.schedule_ka67 || s.schedule_ka68 || "--:--");
                         const sPlatform =
                           typeof s === "string" ? "1" : s.platform || "1";
 
