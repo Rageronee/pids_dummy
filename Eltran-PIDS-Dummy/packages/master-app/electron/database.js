@@ -1474,7 +1474,9 @@ export async function getRoutes() {
         "SELECT * FROM routes WHERE train_service_id = $1",
         [service.id],
       );
-      let stations = [];
+      const isLive = isNameMatch(service.name, liveState.serviceName);
+      const currentStationName = isLive ? liveState.currentStation : "";
+
       if (dbRoute) {
         const stationRows = await getAll(
           `
@@ -1486,17 +1488,11 @@ export async function getRoutes() {
                 `,
           [dbRoute.id],
         );
-        stations = stationRows.map((r) => ({ name: r.name, media: r.media }));
-      }
 
-      const isLive = isNameMatch(service.name, liveState.serviceName);
-      const currentStationName = isLive ? liveState.currentStation : "";
-
-      if (dbRoute) {
         const parsed = JSON.parse(dbRoute.geojson || "{}");
         const features = parsed.features || [];
         const stationPropsMap = new Map();
-        
+
         features.forEach((f) => {
           if (f.properties && f.properties.name) {
             stationPropsMap.set(normalizeName(f.properties.name), f.properties);
@@ -1506,24 +1502,25 @@ export async function getRoutes() {
         const routeStations = stationRows.map((r) => {
           const props = stationPropsMap.get(normalizeName(r.name)) || {};
           return {
-            ...r,
+            name: r.name,
+            media: r.media,
             ...props,
           };
         });
 
         if (routeStations.length === 0 && parsed.stations) {
-           // Fallback to parsed stations if no rows found
-           parsed.stations.forEach((s) => {
-             const sName = typeof s === "string" ? s : s.name;
-             const props = stationPropsMap.get(normalizeName(sName)) || {};
-             routeStations.push({
-               name: sName,
-               ...props
-             });
-           });
+          // Fallback to parsed stations if no rows found
+          parsed.stations.forEach((s) => {
+            const sName = typeof s === "string" ? s : s.name;
+            const props = stationPropsMap.get(normalizeName(sName)) || {};
+            routeStations.push({
+              name: sName,
+              ...props,
+            });
+          });
         }
 
-        let currentIdx = parsed.current_station_index;
+        let currentIdx = parsed.current_station_index || 0;
         if (isLive && currentStationName) {
           const found = routeStations.findIndex((s) =>
             isNameMatch(typeof s === "string" ? s : s.name, currentStationName),
