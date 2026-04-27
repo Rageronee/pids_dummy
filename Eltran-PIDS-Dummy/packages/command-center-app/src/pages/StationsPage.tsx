@@ -230,7 +230,7 @@ export default function StationsPage({
                   <p className="text-4xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-tighter">{selectedStation.id}</p>
                 </div>
                 <div className="space-y-1 border-l dark:border-slate-800 pl-16">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em]">Network IP Address</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Network IP Address</span>
                   <p className="text-4xl font-bold text-[#ee6f1f] font-mono tracking-tighter">{selectedStation.ip_address || "192.168.1.xxx"}</p>
                 </div>
               </div>
@@ -261,7 +261,7 @@ export default function StationsPage({
                   <div className="space-y-6">
                     <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Assigned PIC</span><span className="text-base font-medium text-[#1d2d6a] dark:text-white uppercase">{selectedStation.pic_name || "NOT ASSIGNED"}</span></div>
                     <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Secure Line</span><span className="text-base font-medium text-blue-600 dark:text-blue-400 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
-                    <button className="text-[9px] font-medium uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
+                    <button className="text-[10px] font-medium uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
                   </div>
                 </div>
               </div>
@@ -285,8 +285,8 @@ export default function StationsPage({
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-10 space-y-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
               <div>
-                <h1 className="text-5xl font-bold text-[#1d2d6a] dark:text-white tracking-tighter leading-none">STATIONS</h1>
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
+                <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">STATIONS</h2>
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
                   <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
                   Network Infrastructure Nodes
                 </p>
@@ -297,8 +297,16 @@ export default function StationsPage({
               </div>
             </div>
 
-            <div className="flex gap-2 px-2 overflow-x-auto no-scrollbar border-b dark:border-slate-800 pb-1">
-              {filterOptions.map(opt => <button key={opt} onClick={() => setActiveFilter(opt)} className={`px-6 py-3 font-semibold text-[10px] uppercase tracking-[0.2em] transition-all relative ${activeFilter === opt ? "text-[#ee6f1f] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-[#ee6f1f]" : "text-slate-400 hover:text-slate-600"}`}>{opt}</button>)}
+            <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-4 shrink-0 w-fit">
+              {filterOptions.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setActiveFilter(opt)}
+                  className={`h-10 px-6 rounded-xl font-bold text-[10px] uppercase tracking-[0.1em] transition-all ${activeFilter === opt ? "bg-[#ee6f1f] text-white shadow-lg shadow-orange-500/20" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"}`}
+                >
+                  {opt}
+                </button>
+              ))}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 p-2">

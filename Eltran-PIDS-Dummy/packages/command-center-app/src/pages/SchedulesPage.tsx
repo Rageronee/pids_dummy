@@ -135,7 +135,7 @@ export default function SchedulesPage({ token }: { token: string }) {
       const [trD, stD] = await Promise.all([tr.json(), st.json()]);
       if (trD.success) setTrainOptions(trD.trains || []);
       if (stD.success) setStationOptions(stD.stations || []);
-    } catch {}
+    } catch { }
   }, [token]);
 
   useEffect(() => {
@@ -303,18 +303,17 @@ export default function SchedulesPage({ token }: { token: string }) {
                       </div>
                       <div className="flex gap-8 items-center">
                         <div className="text-right">
-                          <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Arrival</p>
+                          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Arrival</p>
                           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 font-mono">{stop.arrival_time || "--:--"}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Departure</p>
+                          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Departure</p>
                           <p className="text-sm font-semibold text-[#ee6f1f] font-mono">{stop.departure_time || "--:--"}</p>
                         </div>
-                        <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-semibold border ${
-                          stop.stop_status === "ARRIVED" ? "bg-green-50 dark:bg-green-900/30 text-green-600 border-green-100 dark:border-green-900/50" :
+                        <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-semibold border ${stop.stop_status === "ARRIVED" ? "bg-green-50 dark:bg-green-900/30 text-green-600 border-green-100 dark:border-green-900/50" :
                           stop.stop_status === "SCHEDULED" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 border-blue-100 dark:border-blue-900/50" :
-                          "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700"
-                        }`}>
+                            "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700"
+                          }`}>
                           {stop.stop_status}
                         </div>
                       </div>
@@ -326,11 +325,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                     <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Direct Point-to-Point Route</p>
                     <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
                       <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-                        <p className="text-[8px] font-semibold text-slate-400 uppercase mb-1">Origin</p>
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">Origin</p>
                         <p className="font-bold dark:text-white">{selectedSchedule.stasiun_keberangkatan}</p>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-                        <p className="text-[8px] font-semibold text-slate-400 uppercase mb-1">Destination</p>
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">Destination</p>
                         <p className="font-bold dark:text-white">{selectedSchedule.stasiun_tujuan}</p>
                       </div>
                     </div>
@@ -363,7 +362,7 @@ export default function SchedulesPage({ token }: { token: string }) {
               </div>
               {selectedSchedule.catatan && (
                 <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border border-orange-100 dark:border-orange-900/30">
-                  <p className="text-[8px] font-medium text-[#ee6f1f] uppercase tracking-[0.2em] mb-1">Internal Notes</p>
+                  <p className="text-[10px] font-medium text-[#ee6f1f] uppercase tracking-[0.2em] mb-1">Internal Notes</p>
                   <p className="text-xs font-bold text-slate-700 dark:text-slate-300 italic leading-relaxed">"{selectedSchedule.catatan}"</p>
                 </div>
               )}
@@ -389,7 +388,7 @@ export default function SchedulesPage({ token }: { token: string }) {
           <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
             Penjadwalan Kereta
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
             Monitoring & Manajemen {total} Jadwal Aktif
           </p>
         </div>
@@ -532,7 +531,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">
                       Keberangkatan
                     </h4>
-                    <span className="text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
                       Departure
                     </span>
                   </div>
@@ -638,7 +637,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">
                       Kedatangan
                     </h4>
-                    <span className="text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
                       Arrival
                     </span>
                   </div>
@@ -783,7 +782,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`bg-white dark:bg-slate-950 border ${isActive ? "border-[#ee6f1f] ring-2 ring-[#ee6f1f]/20" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
+                className={`bg-white dark:bg-slate-950 border ${isActive ? "border-slate-200 hover:border-[#ee6f1f]" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
               >
                 <div
                   className="flex items-center gap-4 px-6 py-5 cursor-pointer"
@@ -798,7 +797,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         {sched.display_train_name || sched.train_name}
                       </h3>
                       {isActive && (
-                        <span className="bg-[#ee6f1f] text-white text-[8px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.2em] animate-pulse">
+                        <span className="bg-[#ee6f1f] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.2em] animate-pulse">
                           LIVE ACTIVE
                         </span>
                       )}
@@ -810,47 +809,47 @@ export default function SchedulesPage({ token }: { token: string }) {
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-medium">
-                      {sched.schedule_date}
-                    </span>
-                    <span
-                      className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border ${STATUS_COLOR[sched.status] || "text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}`}
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">
+                        {sched.schedule_date}
+                      </span>
+                      <span
+                        className={`inline-flex px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border ${STATUS_COLOR[sched.status] || "text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}`}
+                      >
+                        {sched.status?.replace("_", " ")}
+                      </span>
+                      <span className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">
+                        {sched.stops?.length || 0} Points
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={20}
+                    className="text-slate-300 transition-transform group-hover:translate-x-1"
+                  />
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(sched);
+                      }}
+                      className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 hover:bg-blue-100 transition-all active:scale-95"
                     >
-                      {sched.status?.replace("_", " ")}
-                    </span>
-                    <span className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[9px]">
-                      {sched.stops?.length || 0} Points
-                    </span>
+                      <Clock size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(sched);
+                      }}
+                      className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 transition-all active:scale-95"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
-                <ChevronRight
-                  size={20}
-                  className="text-slate-300 transition-transform group-hover:translate-x-1"
-                />
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(sched);
-                    }}
-                    className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 hover:bg-blue-100 transition-all active:scale-95"
-                  >
-                    <Clock size={14} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteTarget(sched);
-                    }}
-                    className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 transition-all active:scale-95"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
         </div>
       )}
 

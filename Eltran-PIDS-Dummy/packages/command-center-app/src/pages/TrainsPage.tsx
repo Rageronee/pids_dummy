@@ -243,10 +243,10 @@ export default function TrainsPage({ token }: { token: string }) {
       />
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
             Manajemen Kereta
           </h2>
-          <p className="text-slate-500 text-base font-bold">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
             {trains.length} kereta terdaftar dalam sistem pids
           </p>
         </div>
@@ -663,7 +663,7 @@ export default function TrainsPage({ token }: { token: string }) {
                             </div>
                             <div className="flex-1 grid grid-cols-2 gap-3">
                               <div className="space-y-1">
-                                <label className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase">
+                                <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">
                                   Nama Gerbong
                                 </label>
                                 <input
@@ -679,7 +679,7 @@ export default function TrainsPage({ token }: { token: string }) {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase">
+                                <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">
                                   No. Urut
                                 </label>
                                 <input
@@ -697,7 +697,7 @@ export default function TrainsPage({ token }: { token: string }) {
                           </div>
                           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-50 dark:border-slate-800 transition-colors">
                             <div className="space-y-1">
-                              <label className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
+                              <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
                                 <Settings size={10} /> Maintenance Log
                               </label>
                               <input
@@ -712,7 +712,7 @@ export default function TrainsPage({ token }: { token: string }) {
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
+                              <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
                                 <Activity size={10} /> Ops Log
                               </label>
                               <input
@@ -728,7 +728,7 @@ export default function TrainsPage({ token }: { token: string }) {
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
+                            <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
                               <Info size={10} /> MediaURL
                             </label>
                             <input

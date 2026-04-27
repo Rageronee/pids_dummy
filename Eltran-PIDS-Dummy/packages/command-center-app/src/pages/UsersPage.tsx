@@ -113,10 +113,10 @@ export default function UsersPage({ token }: { token: string }) {
       />
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1d2d6a] dark:text-white">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
             Manajemen Pengguna
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-bold">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
             {users.length} pengguna terdaftar dalam sistem PIDS
           </p>
         </div>

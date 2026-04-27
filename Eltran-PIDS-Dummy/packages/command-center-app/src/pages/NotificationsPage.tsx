@@ -95,10 +95,10 @@ const NotificationsPage: React.FC = () => {
       <div className="relative z-10 px-6 lg:px-10 pt-8 pb-6">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-3xl lg:text-4xl font-bold text-[#1d2d6a] dark:text-white tracking-tighter uppercase">
+            <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2 uppercase">
               Notifications
-            </h1>
-            <p className="text-slate-500 dark:text-slate-500 font-bold">
+            </h2>
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
               Real-time feed of system events and operational alerts.
             </p>
           </div>
@@ -112,7 +112,7 @@ const NotificationsPage: React.FC = () => {
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${s.bg} opacity-30`} />
                 <div className="relative z-10">
-                  <div className="text-[9px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-0.5">{s.label}</div>
+                  <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-0.5">{s.label}</div>
                   <div className={`text-xl font-bold ${s.color} tracking-tighter`}>{s.value}</div>
                 </div>
                 <div className={`relative z-10 p-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 ${s.color} shadow-inner`}>
@@ -138,7 +138,7 @@ const NotificationsPage: React.FC = () => {
                 <button
                   key={opt.id}
                   onClick={() => setActiveFilter(opt.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-[0.2em] transition-all ${activeFilter === opt.id
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-tight transition-all ${activeFilter === opt.id
                     ? "bg-[#ee6f1f] text-white shadow-md shadow-orange-500/10"
                     : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5"
                     }`}
@@ -203,12 +203,12 @@ const NotificationsPage: React.FC = () => {
                   <div className="p-5 lg:p-6 flex flex-col md:flex-row gap-5 items-start md:items-center">
                     <div className="flex-1 space-y-3">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className={`px-2.5 py-0.5 rounded-lg text-[8px] font-bold uppercase tracking-[0.2em] ${n.type === 'danger' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] ${n.type === 'danger' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                           }`}>
                           {n.category}
                         </span>
 
-                        <div className="flex items-center gap-1.5 text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
                           <Clock size={10} strokeWidth={3} />
                           {n.time}
                         </div>
@@ -216,7 +216,7 @@ const NotificationsPage: React.FC = () => {
                         {n.status === 'unread' && (
                           <div className="flex items-center gap-1.5 bg-[#ee6f1f]/10 px-2 py-0.5 rounded-full border border-[#ee6f1f]/20">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#ee6f1f] animate-pulse" />
-                            <span className="text-[8px] font-bold text-[#ee6f1f] uppercase tracking-[0.2em]">Active</span>
+                            <span className="text-[10px] font-bold text-[#ee6f1f] uppercase tracking-[0.2em]">Active</span>
                           </div>
                         )}
                       </div>
@@ -231,11 +231,11 @@ const NotificationsPage: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-4 pt-1">
-                        <button className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-[#ee6f1f] transition-all">
+                        <button className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-[#ee6f1f] transition-all">
                           <ExternalLink size={10} strokeWidth={3} />
                           <span>View Trace</span>
                         </button>
-                        <button className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-red-500 transition-all">
+                        <button className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-red-500 transition-all">
                           <Trash2 size={10} strokeWidth={3} />
                           <span>Dismiss</span>
                         </button>

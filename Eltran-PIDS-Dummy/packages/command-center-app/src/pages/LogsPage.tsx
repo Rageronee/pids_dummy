@@ -120,10 +120,10 @@ export default function LogsPage({ token }: { token: string }) {
     <div className="space-y-8">
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1d2d6a] dark:text-white">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
             Log Sistem
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-bold">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
             {logs.length} entri total
           </p>
         </div>
@@ -134,12 +134,12 @@ export default function LogsPage({ token }: { token: string }) {
           <RefreshCcw size={16} />
         </button>
       </div>
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0 w-fit">
         {filterOptions.map((opt) => (
           <button
             key={opt}
             onClick={() => handleFilterChange(opt)}
-            className={`h-9 px-4 rounded-xl text-[10px] font-bold border transition-all ${filter === opt ? "bg-[#ee6f1f] text-white border-[#ee6f1f]" : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`}
+            className={`h-9 px-5 rounded-xl text-[10px] font-bold uppercase tracking-[0.1em] transition-all ${filter === opt ? "bg-[#ee6f1f] text-white shadow-lg shadow-orange-500/20" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"}`}
           >
             {opt === "ALL" ? "Semua" : ACTION_META[opt]?.label || opt}
           </button>

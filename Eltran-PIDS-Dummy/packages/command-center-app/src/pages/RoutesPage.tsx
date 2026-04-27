@@ -643,7 +643,7 @@ export default function RoutesPage({
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`h-10 px-6 rounded-lg font-bold text-xs transition-all ${activeCategory === cat ? "bg-[#1d2d6a] dark:bg-slate-950 text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
+                className={`h-10 px-6 rounded-lg font-bold text-xs transition-all ${activeCategory === cat ? "bg-[#ee6f1f] dark:bg-slate-950 text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
               >
                 {cat}
               </button>
@@ -663,14 +663,14 @@ export default function RoutesPage({
                   transition={{ delay: i * 0.03 }}
                   onClick={() => setSelectedRouteId(route.name)}
                   className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${selectedRouteId === route.name
-                    ? "bg-white dark:bg-slate-800 border-[#1d2d6a] shadow-lg"
-                    : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-700 shadow-sm"
+                    ? "bg-white dark:bg-slate-800 border-slate-200 hover:border-[#ee6f1f] dark:border-slate-700 dark:hover:border-[#ee6f1f] shadow-lg"
+                    : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 hover:border-[#ee6f1f]  shadow-sm"
                     }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-[0.1em] ${route.status === "ON TRACK"
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.1em] ${route.status === "ON TRACK"
                           ? "bg-green-100 text-green-600 dark:bg-green-900/30"
                           : "bg-red-100 text-red-600 dark:bg-red-900/30"
                           }`}
@@ -678,13 +678,14 @@ export default function RoutesPage({
                         {route.status}
                       </span>
                       {route.is_active && (
-                        <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 dark:bg-blue-900/30 rounded-md text-[9px] font-bold uppercase tracking-[0.1em]">
-                          <Lock size={10} /> Running
+                        <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 rounded-lg text-[10px] font-bold border border-amber-100 dark:border-amber-900/30">
+                          <AlertCircle size={12} /> Modifikasi Terkunci
                         </span>
                       )}
-                      <span className="text-slate-400 font-bold text-[9px] uppercase tracking-[0.1em]">
+                      <span className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.1em]">
                         {route.train_number}
                       </span>
+
                     </div>
                     <div className="text-right">
                       <div className="text-[#1d2d6a] dark:text-white font-bold text-sm flex items-center gap-1.5 justify-end">
@@ -692,12 +693,8 @@ export default function RoutesPage({
                         {route.scheduled_time}{" "}
                         {route.status === "DELAYED" ? "Delayed" : ""}
                       </div>
-                      {route.is_active && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 rounded-lg text-[10px] font-bold border border-amber-100 dark:border-amber-900/30">
-                          <AlertCircle size={12} /> Modifikasi Terkunci
-                        </span>
-                      )}
-                      <div className="text-slate-400 dark:text-slate-500 text-[9px] font-bold mt-0.5">
+
+                      <div className="text-slate-400 dark:text-slate-500 text-[10px] font-bold mt-0.5">
                         Delay: {route.delay}
                       </div>
                     </div>
@@ -849,7 +846,7 @@ export default function RoutesPage({
                       onClick={() => setPage("dashboard")}
                       className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[12px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
                     >
-                      <MapIcon size={12} /> Cek Rute Map
+                      <MapIcon size={12} /> Lihat Peta
                     </button>
                     <button
                       onClick={scrollToCurrentStation}
@@ -922,7 +919,7 @@ export default function RoutesPage({
                                 <div className="flex flex-col min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span
-                                      className={`text-[9px] font-semibold uppercase tracking-[0.15em] ${isCurrent
+                                      className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${isCurrent
                                         ? "text-[#ee6f1f]"
                                         : isPassed
                                           ? "text-slate-300"
@@ -948,7 +945,7 @@ export default function RoutesPage({
                                   {(isPassed || isCurrent) && (
                                     <div className="flex justify-start mt-2">
                                       <span
-                                        className={`text-[8px] font-semibold uppercase tracking-[0.1em] px-2 py-0.5 rounded ${isPassed
+                                        className={`text-[10px] font-semibold uppercase tracking-[0.1em] px-2 py-0.5 rounded ${isPassed
                                           ? "bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600"
                                           : "bg-orange-50 dark:bg-[#ee6f1f]/10 text-[#ee6f1f]"
                                           }`}
@@ -962,19 +959,13 @@ export default function RoutesPage({
                                 </div>
 
                                 <div className="flex flex-col items-end shrink-0 ml-4">
-                                  <div
-                                    className={`text-sm font-semibold tracking-tight ${isCurrent ? "text-[#ee6f1f]" : isPassed ? "text-slate-400 dark:text-slate-600" : "text-[#1d2d6a] dark:text-slate-200"}`}
-                                  >
-                                    {sTime}
-                                  </div>
-                                  <div className="flex items-center gap-1.5 mt-1">
-                                    <Layers
-                                      size={10}
-                                      className="text-slate-300"
-                                    />
-                                    <span className="text-[10px] font-semibold text-slate-300 uppercase">
-                                      PF {sPlatform}
-                                    </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <Clock size={12} className={isCurrent ? "text-[#ee6f1f]" : "text-slate-300 dark:text-slate-600"} />
+                                    <div
+                                      className={`text-sm font-bold font-mono tracking-tighter ${isCurrent ? "text-[#ee6f1f]" : isPassed ? "text-slate-400 dark:text-slate-600" : "text-[#1d2d6a] dark:text-slate-200"}`}
+                                    >
+                                      {sTime}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -1119,7 +1110,7 @@ export default function RoutesPage({
                                     <div className="text-[#1d2d6a] font-semibold text-xs">
                                       {s.name}
                                     </div>
-                                    <div className="text-slate-400 text-[9px] font-semibold uppercase">
+                                    <div className="text-slate-400 text-[10px] font-semibold uppercase">
                                       {s.city}
                                     </div>
                                   </div>
@@ -1137,7 +1128,7 @@ export default function RoutesPage({
                   </div>
 
                   <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col min-h-[300px]">
-                    <h4 className="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                       <LayoutGrid size={12} className="text-[#ee6f1f]" /> Stops
                       Sequence ({selectedStations.length})
                     </h4>

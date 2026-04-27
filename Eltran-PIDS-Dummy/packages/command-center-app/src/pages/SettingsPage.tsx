@@ -12,8 +12,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isDark, setIsDark }) => {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight">Pengaturan Sistem</h2>
-        <p className="text-slate-500 dark:text-slate-400 font-bold">Konfigurasi preferensi tampilan dan keamanan panel kontrol</p>
+        <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">Pengaturan Sistem</h2>
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">Konfigurasi preferensi tampilan dan keamanan panel kontrol</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
