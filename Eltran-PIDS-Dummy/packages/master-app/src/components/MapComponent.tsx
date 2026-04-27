@@ -239,11 +239,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
         <div class="relative flex flex-col items-center justify-end w-full h-full">
           <!-- Modern Marker -->
           <div class="relative flex flex-col items-center marker-pin-wrapper" style="transform: scale(var(--map-marker-scale, 1)); transform-origin: center bottom;">
-            <div class="absolute w-12 h-12 bg-blue-500/20 rounded-full animate-ping" style="top: -10px; left: 50%; margin-left: -24px;"></div>
-            
-            <div class="w-9 h-9 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 rotate-45 transition-transform group-hover:scale-110 group-hover:rotate-[225deg]">
-              <div class="rotate-[-45deg] group-hover:rotate-[-225deg] transition-transform text-white">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15h10M9 19l-2 2M15 19l2 2M7 2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>
+            <div id="pin-icon" class="w-9 h-9 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 transition-all duration-500">
+              <div class="transition-all duration-500 text-white">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/>
+                </svg>
               </div>
             </div>
             

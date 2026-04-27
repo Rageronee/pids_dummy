@@ -209,10 +209,10 @@ export default function App() {
               alt="KAI Logo"
               className="h-10 w-auto mb-6 brightness-0 invert"
             />
-            <h1 className="text-2xl font-black text-white tracking-tight leading-tight">
+            <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
               Command Center
             </h1>
-            <p className="text-l font-bold text-blue-200/40 mt-1 font-mono">
+            <p className="text-base font-semibold text-blue-200/40 mt-1 font-mono tracking-[0.1em]">
               Control Panel
             </p>
           </div>
@@ -228,7 +228,7 @@ export default function App() {
                 setActivePage(item.id);
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-bold text-base ${activePage === item.id ? "bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-semibold text-base ${activePage === item.id ? "bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
             >
               <item.icon size={22} strokeWidth={2.5} />
               {item.label}
@@ -238,7 +238,7 @@ export default function App() {
         <div className="p-6 border-t border-white/5 space-y-4">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-black text-xs border border-white/5 active:scale-95 group"
+            className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs border border-white/5 active:scale-95 group"
           >
             <LogOut
               size={18}
@@ -273,7 +273,7 @@ export default function App() {
                 {headerTitle ? (
                   <div className="flex items-center gap-2">{headerTitle}</div>
                 ) : (
-                  <span className="text-lg lg:text-xl font-black text-[#1d2d6a] dark:text-white uppercase tracking-normal">
+                  <span className="text-lg lg:text-xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-normal">
                     {NAV.find((n) => n.id === activePage)?.label}
                   </span>
                 )}
@@ -301,8 +301,8 @@ export default function App() {
                       className="absolute right-0 mt-4 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden"
                     >
                       <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                        <span className="font-bold text-sm dark:text-white">Notifications</span>
-                        <span className="text-[10px] font-black text-blue-500 uppercase cursor-pointer">Mark all as read</span>
+                        <span className="font-semibold text-sm dark:text-white">Notifications</span>
+                        <span className="text-[10px] font-bold text-blue-500 uppercase cursor-pointer">Mark all as read</span>
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.map((n) => (
@@ -311,7 +311,7 @@ export default function App() {
                               {n.type === 'danger' ? <AlertTriangle size={16} /> : <Info size={16} />}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-tight mb-1">{n.msg}</p>
+                              <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-tight mb-1">{n.msg}</p>
                               <p className="text-[10px] font-medium text-slate-400">{n.time}</p>
                             </div>
                           </div>
@@ -322,7 +322,7 @@ export default function App() {
                           setActivePage("notifications");
                           setShowNotifications(false);
                         }}
-                        className="w-full py-3 text-[10px] font-black uppercase text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors border-t border-slate-50 dark:border-slate-700/50"
+                        className="w-full py-3 text-[10px] font-bold uppercase text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors border-t border-slate-50 dark:border-slate-700/50"
                       >
                         View History
                       </button>
@@ -336,7 +336,7 @@ export default function App() {
               <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl text-slate-400">
                 <Clock size={20} />
               </div>
-              <span className="text-xl lg:text-3xl font-black font-mono tracking-tighter opacity-90">
+              <span className="text-xl lg:text-3xl font-bold font-mono tracking-tighter opacity-90">
                 {currentTime.toLocaleTimeString("id-ID", { hour12: false })}
               </span>
             </div>

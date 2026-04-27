@@ -38,21 +38,21 @@ export function ConfirmModal({
               <Trash2 size={32} />
             </div>
             <h3 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-2">{title}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-bold leading-relaxed mb-8">
               {message}
             </p>
             <div className="flex flex-col gap-3">
               <button
                 onClick={onConfirm}
                 disabled={loading}
-                className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-2xl text-sm transition-all active:scale-95 shadow-[0_8px_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2"
+                className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-sm transition-all active:scale-95 shadow-[0_8px_20px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2"
               >
                 {loading ? "Menghapus..." : "Ya, Hapus"}
               </button>
               <button
                 onClick={onCancel}
                 disabled={loading}
-                className="w-full h-12 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold rounded-2xl text-sm transition-all"
+                className="w-full h-12 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold rounded-2xl text-sm transition-all"
               >
                 Batal
               </button>
@@ -102,17 +102,17 @@ export function ToastNotification({
               </div>
               <div className="flex flex-col pr-6">
                 <span
-                  className={`font-semibold text-lg leading-tight mb-2 ${toast.ok ? "text-[#1d2d6a] dark:text-white" : "text-red-600 dark:text-red-400"}`}
+                  className={`font-bold text-lg leading-tight mb-2 ${toast.ok ? "text-[#1d2d6a] dark:text-white" : "text-red-600 dark:text-red-400"}`}
                 >
                   {toast.ok ? "Informasi Sistem" : "Peringatan Sistem"}
                 </span>
-                <span className="text-slate-600 dark:text-slate-400 font-medium text-[15px] leading-relaxed mb-5">
+                <span className="text-slate-600 dark:text-slate-400 font-bold text-[15px] leading-relaxed mb-5">
                   {toast.msg}
                 </span>
                 <div className="flex justify-end gap-5 items-center mt-2">
                   <button
                     onClick={onClose}
-                    className="text-slate-500 dark:text-slate-400 font-semibold text-sm hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                    className="text-slate-500 dark:text-slate-400 font-bold text-sm hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                   >
                     Tutup
                   </button>

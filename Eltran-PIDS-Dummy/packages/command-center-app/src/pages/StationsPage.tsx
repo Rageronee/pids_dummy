@@ -116,7 +116,25 @@ export default function StationsPage({
       const res = await fetch(`${API}/api/stations?${query}`);
       const data = await res.json();
       if (data.success) {
-        const enhanced = data.stations.map((s: any) => ({ ...s, status: "ONLINE", division: s.provinsi?.toLowerCase().includes("jawa") ? "Java Division" : "Sumatra Division" }));
+        const enhanced = data.stations.map((s: any) => {
+          const isJava =
+            s.provinsi?.toLowerCase().includes("jawa") ||
+            s.province?.toLowerCase().includes("jawa") ||
+            s.city?.toLowerCase().includes("jakarta") ||
+            s.city?.toLowerCase().includes("bandung") ||
+            s.city?.toLowerCase().includes("surabaya") ||
+            s.city?.toLowerCase().includes("semarang") ||
+            s.city?.toLowerCase().includes("malang") ||
+            s.city?.toLowerCase().includes("jogja") ||
+            s.city?.toLowerCase().includes("solo") ||
+            s.city?.toLowerCase().includes("cirebon") ||
+            s.city?.toLowerCase().includes("madiun") ||
+            s.city?.toLowerCase().includes("jember") ||
+            s.city?.toLowerCase().includes("kediri") ||
+            s.city?.toLowerCase().includes("cilacap") ||
+            s.city?.toLowerCase().includes("purwokerto");
+          return { ...s, status: "ONLINE", division: isJava ? "Java Division" : "Sumatra Division" };
+        });
         setStations(prev => isLoadMore ? [...prev, ...enhanced] : enhanced);
         setTotal(data.total);
         setOffset(isLoadMore ? offset + LIMIT : 0);
@@ -128,14 +146,14 @@ export default function StationsPage({
 
   useEffect(() => {
     setHeaderTitle(
-      <div className="flex items-center gap-3 text-xl font-black uppercase">
+      <div className="flex items-center gap-3 text-xl font-bold uppercase">
         {selectedStation ? (
           <div className="flex items-center gap-2 tracking-tight">
             <button onClick={() => setSelectedStation(null)} className="text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors">STATIONS</button>
             <ChevronRight size={18} strokeWidth={4} className="text-slate-300" />
-            <span className="text-[#1d2d6a] dark:text-white font-black">{selectedStation.name}</span>
+            <span className="text-[#1d2d6a] dark:text-white font-bold">{selectedStation.name}</span>
           </div>
-        ) : <span className="text-[#1d2d6a] dark:text-white font-black">STATION MANAGEMENT</span>}
+        ) : <span className="text-[#1d2d6a] dark:text-white font-bold">STATION MANAGEMENT</span>}
       </div>
     );
     return () => setHeaderTitle(null);
@@ -178,11 +196,11 @@ export default function StationsPage({
             {/* 1. Hero Image Section - Sharp & Scrolls with content */}
             <div className="relative w-full h-[400px] shrink-0 bg-slate-900 overflow-hidden">
               <img
-                src={selectedStation.media ? `${API}/media/station/${selectedStation.media}` : `${API}/media/station/station_fallback.png`}
+                src={selectedStation.media ? `${API}/media/station/${selectedStation.media}` : `https://images.unsplash.com/photo-1612527670286-1912f78763f2?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`}
                 className="w-full h-full object-cover transition-opacity duration-500"
                 alt={selectedStation.name}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1474487543417-981ceee1c818?auto=format&fit=crop&q=80&w=2000`;
+                  (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1612527670286-1912f78763f2?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`;
                   (e.target as HTMLImageElement).onerror = null;
                 }}
               />
@@ -192,8 +210,8 @@ export default function StationsPage({
               </div>
               <div className="absolute bottom-10 left-10 right-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 bg-[#ee6f1f] px-4 py-2 rounded-2xl w-fit shadow-xl"><Globe2 size={16} className="text-white" /><span className="text-[10px] font-black text-white uppercase tracking-widest">{selectedStation.division}</span></div>
-                  <h2 className="text-7xl font-black text-white tracking-tighter leading-none">{selectedStation.name}</h2>
+                  <div className="flex items-center gap-3 bg-[#ee6f1f] px-4 py-2 rounded-2xl w-fit shadow-xl"><Globe2 size={16} className="text-white" /><span className="text-[10px] font-bold text-white uppercase tracking-[0.2em]">{selectedStation.division}</span></div>
+                  <h2 className="text-7xl font-bold text-white tracking-tighter leading-none">{selectedStation.name}</h2>
                   <div className="flex items-center gap-3 text-white/70 font-bold text-xl mt-2"><MapPin className="text-[#ee6f1f]" size={20} /><span>{selectedStation.city}, {selectedStation.provinsi || "JAWA"}</span></div>
                 </div>
                 <div className="flex gap-2">
@@ -208,12 +226,12 @@ export default function StationsPage({
               {/* Global Status Bar */}
               <div className="flex gap-16 border-b dark:border-slate-800 pb-10">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Integrated Node ID</span>
-                  <p className="text-4xl font-black text-[#1d2d6a] dark:text-white uppercase tracking-tighter">{selectedStation.id}</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Integrated Node ID</span>
+                  <p className="text-4xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-tighter">{selectedStation.id}</p>
                 </div>
                 <div className="space-y-1 border-l dark:border-slate-800 pl-16">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Network IP Address</span>
-                  <p className="text-4xl font-black text-[#ee6f1f] font-mono tracking-tighter">{selectedStation.ip_address || "192.168.1.xxx"}</p>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em]">Network IP Address</span>
+                  <p className="text-4xl font-bold text-[#ee6f1f] font-mono tracking-tighter">{selectedStation.ip_address || "192.168.1.xxx"}</p>
                 </div>
               </div>
 
@@ -221,29 +239,29 @@ export default function StationsPage({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-16">
                 {/* Administrative */}
                 <div className="space-y-8">
-                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><Building2 size={16} /> Administrative</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] flex items-center gap-3"><Building2 size={16} /> Administrative</h4>
                   <div className="space-y-6">
-                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Provinsi</span><span className="text-base font-black text-slate-800 dark:text-slate-200 uppercase">{selectedStation.provinsi || "N/A"}</span></div>
-                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mailing Address</span><p className="text-sm font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic pr-4">"{selectedStation.alamat || selectedStation.city}"</p></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Provinsi</span><span className="text-base font-medium text-slate-800 dark:text-slate-200 uppercase">{selectedStation.provinsi || "N/A"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Mailing Address</span><p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic pr-4">"{selectedStation.alamat || selectedStation.city}"</p></div>
                   </div>
                 </div>
 
                 {/* Operational Communication */}
                 <div className="space-y-8">
-                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><Monitor size={16} /> Communication</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] flex items-center gap-3"><Monitor size={16} /> Communication</h4>
                   <div className="space-y-6">
-                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Operational</span><span className="text-base font-black text-[#1d2d6a] dark:text-white lowercase">{selectedStation.email || "stasiun@kai.id"}</span></div>
-                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fixed Line</span><span className="text-base font-black text-[#1d2d6a] dark:text-white">{selectedStation.fixed_line || "(021) 123-456"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Email Operational</span><span className="text-base font-medium text-[#1d2d6a] dark:text-white lowercase">{selectedStation.email || "stasiun@kai.id"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Fixed Line</span><span className="text-base font-medium text-[#1d2d6a] dark:text-white">{selectedStation.fixed_line || "(021) 123-456"}</span></div>
                   </div>
                 </div>
 
                 {/* Authority - Integrated instead of separate */}
                 <div className="space-y-8">
-                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><User size={16} /> Station Authority</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] flex items-center gap-3"><User size={16} /> Station Authority</h4>
                   <div className="space-y-6">
-                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned PIC</span><span className="text-base font-black text-[#1d2d6a] dark:text-white uppercase">{selectedStation.pic_name || "NOT ASSIGNED"}</span></div>
-                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Secure Line</span><span className="text-base font-black text-blue-600 dark:text-blue-400 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
-                    <button className="text-[9px] font-black uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Assigned PIC</span><span className="text-base font-medium text-[#1d2d6a] dark:text-white uppercase">{selectedStation.pic_name || "NOT ASSIGNED"}</span></div>
+                    <div className="flex flex-col space-y-1.5"><span className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em]">Secure Line</span><span className="text-base font-medium text-blue-600 dark:text-blue-400 font-mono">{selectedStation.pic_contact || "N/A"}</span></div>
+                    <button className="text-[9px] font-medium uppercase text-[#ee6f1f] border border-[#ee6f1f] px-4 py-2 hover:bg-[#ee6f1f] hover:text-white transition-all w-fit">Contact Authority</button>
                   </div>
                 </div>
               </div>
@@ -251,8 +269,8 @@ export default function StationsPage({
               {/* Geographic Map Section */}
               <div className="space-y-8 pt-10 border-t dark:border-slate-800">
                 <div className="flex justify-between items-center px-1">
-                  <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] flex items-center gap-3"><MapPinned size={16} /> Geographic Positioning</h4>
-                  <div className="flex gap-4 font-mono text-[11px] font-black text-[#1d2d6a] dark:text-[#ee6f1f]">
+                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] flex items-center gap-3"><MapPinned size={16} /> Geographic Positioning</h4>
+                  <div className="flex gap-4 font-mono text-[11px] font-bold text-[#1d2d6a] dark:text-[#ee6f1f]">
                     <span>LAT: {selectedStation.latitude?.toFixed(6)}</span>
                     <span>LNG: {selectedStation.longitude?.toFixed(6)}</span>
                   </div>
@@ -266,15 +284,21 @@ export default function StationsPage({
         ) : (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-10 space-y-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-              <div><h1 className="text-4xl font-black text-[#1d2d6a] dark:text-white tracking-tighter leading-none">STATIONS</h1><p className="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-2">Network Infrastructure Nodes</p></div>
+              <div>
+                <h1 className="text-5xl font-bold text-[#1d2d6a] dark:text-white tracking-tighter leading-none">STATIONS</h1>
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-[#ee6f1f] rounded-full animate-pulse" />
+                  Network Infrastructure Nodes
+                </p>
+              </div>
               <div className="flex gap-4">
                 <div className="relative group w-80 shadow-sm rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800"><Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#ee6f1f]" size={18} /><input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Find node by name..." className="w-full bg-white dark:bg-slate-950 px-14 py-4 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none transition-all" /></div>
-                <button onClick={() => setShowForm(true)} className="px-8 bg-[#ee6f1f] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 flex items-center gap-3 transition-all"><Plus size={16} strokeWidth={4} /> Add Node</button>
+                <button onClick={() => setShowForm(true)} className="px-8 bg-[#ee6f1f] text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-orange-500/20 active:scale-95 flex items-center gap-3 transition-all"><Plus size={16} strokeWidth={4} /> Add Node</button>
               </div>
             </div>
 
             <div className="flex gap-2 px-2 overflow-x-auto no-scrollbar border-b dark:border-slate-800 pb-1">
-              {filterOptions.map(opt => <button key={opt} onClick={() => setActiveFilter(opt)} className={`px-6 py-3 font-black text-[10px] uppercase tracking-[0.2em] transition-all relative ${activeFilter === opt ? "text-[#ee6f1f] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-[#ee6f1f]" : "text-slate-400 hover:text-slate-600"}`}>{opt}</button>)}
+              {filterOptions.map(opt => <button key={opt} onClick={() => setActiveFilter(opt)} className={`px-6 py-3 font-semibold text-[10px] uppercase tracking-[0.2em] transition-all relative ${activeFilter === opt ? "text-[#ee6f1f] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:bg-[#ee6f1f]" : "text-slate-400 hover:text-slate-600"}`}>{opt}</button>)}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 p-2">
@@ -290,55 +314,54 @@ export default function StationsPage({
                 >
                   <div className="relative h-64 overflow-hidden bg-slate-100 dark:bg-slate-800">
                     <img
-                      src={s.media ? `${API}/media/station/${s.media}` : `https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80&w=800`}
+                      src={s.media ? `${API}/media/station/${s.media}` : `https://images.unsplash.com/photo-1612527670286-1912f78763f2?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       alt={s.name}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1568992687345-26948fad841e?auto=format&fit=crop&q=80&w=800`;
+                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1612527670286-1912f78763f2?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`;
                         (e.target as HTMLImageElement).onerror = null;
                       }}
                     />
                     <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">{s.division || "JAVA DIVISION"}</span>
+                      <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em] leading-none">{s.division || "JAVA DIVISION"}</span>
                     </div>
                     <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">{s.id}</span>
+                      <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em] leading-none">{s.id}</span>
                     </div>
                   </div>
 
                   <div className="p-8 flex flex-col flex-1">
-                    <div className="flex items-center justify-between gap-4 mb-1">
-                      <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{s.name}</h3>
-                      <div className="flex items-center gap-1.5 bg-green-50 dark:bg-green-500/10 px-2.5 py-1 rounded-md border border-green-100 dark:border-green-500/20">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                        <span className="text-[9px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest">AKTIF</span>
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <h3 className="text-2xl font-bold text-[#1d2d6a] dark:text-white tracking-tight leading-tight">{s.name}</h3>
+                      <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-500/20">
+                        <div className="w-2 h-2 bg-[#ee6f1f] rounded-full animate-pulse" />
+                        <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-blue-400 uppercase tracking-[0.2em]">ONLINE</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-slate-400 mb-6">
-                      <MapPin size={14} className="text-slate-400" />
-                      <span className="text-sm font-bold tracking-tight">Indonesia</span>
+                    <div className="flex items-center gap-2 text-slate-500 mb-6 font-medium uppercase text-[10px] tracking-[0.2em]">
+                      <MapPin size={14} className="text-[#ee6f1f]" />
+                      <span>{s.city}, Indonesia</span>
                     </div>
 
                     <div className="relative mb-1">
                       <div className="h-[1px] bg-slate-100 dark:bg-slate-800 w-full" />
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-900 dark:bg-white rounded-full" />
                     </div>
 
-                    <div className="space-y-2 flex-1">
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">TYPE</span>
-                        <p className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Railway Station</p>
+                    <div className="space-y-4 flex-1">
+                      <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em] leading-none">Category</span>
+                        <p className="text-sm font-medium text-[#1d2d6a] dark:text-white tracking-tight uppercase">Railway Hub</p>
                       </div>
 
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">CODE</span>
-                        <p className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{s.id}</p>
+                      <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em] leading-none">ID</span>
+                        <p className="text-sm font-medium text-[#1d2d6a] dark:text-white tracking-tight uppercase">{s.id}</p>
                       </div>
                     </div>
 
                     <div className="mt-5">
-                      <button className="w-full flex items-center justify-center gap-2 py-3.5 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-black text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]">
+                      <button className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#ee6f1f] hover:bg-[#d45d15] rounded-xl text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]">
                         Lihat Detail
                         <ChevronRight size={16} />
                       </button>
@@ -353,7 +376,7 @@ export default function StationsPage({
                 <button
                   onClick={() => fetchStations(true)}
                   disabled={loading}
-                  className="flex items-center gap-3 px-12 py-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black text-[#1d2d6a] dark:text-white uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-3 px-12 py-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold text-[#1d2d6a] dark:text-white uppercase tracking-[0.2em] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95 disabled:opacity-50"
                 >
                   {loading ? (
                     <>

@@ -180,25 +180,16 @@ export async function initDatabase(retries = 5) {
 let _autoSaveTimer = null;
 export function startAutoSave(intervalMs = parseInt(process.env.PIDS_AUTOSAVE_INTERVAL_MS || process.env.AUTOSAVE_INTERVAL || "300000", 10)) {
   try {
-    if (_autoSaveTimer) {
-      clearInterval(_autoSaveTimer);
-      _autoSaveTimer = null;
-    }
-    _autoSaveTimer = setInterval(async () => {
+    // Modified to run only 1x as per user request to save storage/cache
+    setTimeout(async () => {
       try {
         const backup = await createBackup();
-        console.log(`[PIDS-DB] Autosave backup created: ${backup.filename}`);
+        console.log(`[PIDS-DB] Initial session backup created: ${backup.filename}`);
       } catch (e) {
-        console.error("[PIDS-DB] Autosave error:", e.message);
+        console.error("[PIDS-DB] Initial backup error:", e.message);
       }
-    }, intervalMs);
-    if (typeof _autoSaveTimer.unref === "function") _autoSaveTimer.unref();
-    return () => {
-      if (_autoSaveTimer) {
-        clearInterval(_autoSaveTimer);
-        _autoSaveTimer = null;
-      }
-    };
+    }, 5000); // Run once after 5 seconds
+    return () => {};
   } catch (e) {
     console.error('[PIDS-DB] startAutoSave failed:', e.message);
   }
@@ -635,7 +626,7 @@ export async function seedData() {
     "[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...",
   );
   await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json, sim_distance, last_sim_time)
-                 VALUES (1, '', '', '', '', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10, '{"lng": 107.6098, "lat": -6.9147, "heading": 0}', 0, 0)
+                 VALUES (1, 'MALABAR', 'MALANG', '67', 'MALANG KOTA LAMA', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 12, '{"lng": 112.6371, "lat": -7.9772, "heading": 0}', 0, 0)
                  ON CONFLICT (id) DO NOTHING`);
   const hashedAdminPw = hashPassword("admin123");
   const hashedOpPw = hashPassword("operator123");
@@ -1289,6 +1280,47 @@ export async function getStations(filter = {}) {
         "ciamis",
         "tasikmalaya",
         "garut",
+        "purwakarta",
+        "subang",
+        "karawang",
+        "bekasi",
+        "tangerang",
+        "serang",
+        "cilegon",
+        "banyuwangi",
+        "jember",
+        "probolinggo",
+        "pasuruan",
+        "sidoarjo",
+        "surabaya",
+        "mojokerto",
+        "jombang",
+        "bojonegoro",
+        "lamongan",
+        "gresik",
+        "tuban",
+        "brebes",
+        "tegal",
+        "pemalang",
+        "pekalongan",
+        "batang",
+        "kendal",
+        "demak",
+        "kudus",
+        "pati",
+        "rembang",
+        "wonogiri",
+        "sukoharjo",
+        "boyolali",
+        "magelang",
+        "temanggung",
+        "wonosobo",
+        "purworejo",
+        "kebumen",
+        "banjarnegara",
+        "purbalingga",
+        "banyumas",
+        "cilacap",
       ];
 
       stations = stations.filter((s) => {

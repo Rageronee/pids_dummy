@@ -88,7 +88,7 @@ export default function LoginPage({
             <h1 className="text-3xl leading-tight font-bold tracking-tight text-[#1d2d6a] dark:text-white drop-shadow-sm">
               PIDS Command Center
             </h1>
-            <p className="mt-2 text-[16px] font-semibold text-[#1d2d6a] dark:text-slate-300 opacity-90">
+            <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] dark:text-slate-300 opacity-90">
               Passenger Information Display System
             </p>
           </div>
@@ -98,7 +98,7 @@ export default function LoginPage({
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+              className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#ee6f1f] focus:outline-none transition-colors"
               disabled={loading}
               autoComplete="username"
             />
@@ -108,7 +108,7 @@ export default function LoginPage({
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 pr-10 text-sm font-semibold text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#ee6f1f] focus:outline-none transition-colors"
                 disabled={loading}
                 autoComplete="current-password"
               />
@@ -127,7 +127,7 @@ export default function LoginPage({
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex w-full items-center gap-2 text-red-500 dark:text-red-400 text-xs font-semibold pt-1"
+                  className="flex w-full items-center gap-2 text-red-500 dark:text-red-400 text-xs font-bold pt-1"
                 >
                   <AlertCircle size={14} className="shrink-0" />
                   <span>{error}</span>
@@ -137,18 +137,18 @@ export default function LoginPage({
             <button
               type="submit"
               disabled={loading}
-              className="mt-8 w-full h-12 rounded-full bg-[#ee6f1f] text-sm font-semibold text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+              className="mt-8 w-full h-12 rounded-full bg-[#ee6f1f] text-sm font-bold text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
             >
               {loading ? "Memproses..." : "Masuk Ke Sistem"}
             </button>
-            <p className="text-center w-full text-sm text-slate-400 dark:text-slate-500 font-medium mt-6">
+            <p className="text-center w-full text-sm text-slate-400 dark:text-slate-500 font-bold mt-6">
               Demo: admin / admin123
             </p>
           </form>
         </motion.div>
       </div>
       <div className="absolute bottom-6 w-full text-center z-10">
-        <p className="text-[10px] font-semibold text-slate-500/70 dark:text-slate-600">
+        <p className="text-[10px] font-bold text-slate-500/70 dark:text-slate-600">
           © 2025 PT ELTRAN INDONESIA - PIDS V1.2.0
         </p>
       </div>

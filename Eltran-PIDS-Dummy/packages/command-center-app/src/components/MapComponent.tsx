@@ -80,11 +80,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
       // Orbital seamless slow effect (Ultra-slow for cinematic feel)
       let bearing = 0;
+      let direction = 1;
       const rotateMap = () => {
         if (!map.current) return;
         if (!userInteracted.current) {
-          bearing += 0.005; // Ultra-slow orbit speed
-          map.current.setBearing(bearing % 360);
+          bearing += 0.005 * direction;
+          if (bearing >= 90) {
+            direction = -1;
+          } else if (bearing <= -90) {
+            direction = 1;
+          }
+          map.current.setBearing(bearing);
         }
         requestAnimationFrame(rotateMap);
       };
@@ -167,12 +173,21 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       if (lastFocusedCoord.current === coordKey) return;
 
       lastFocusedCoord.current = coordKey;
+      
+      // Programmatic movement should pause auto-rotation to prevent conflicts
+      userInteracted.current = true;
+      
       map.current.flyTo({
         center: focusCoord,
         zoom: 14,
         essential: true,
         duration: 2000
       });
+
+      // Resume auto-rotation after movement is likely finished
+      setTimeout(() => {
+        userInteracted.current = false;
+      }, 5000);
     }
   }, [focusCoord, mapLoaded]);
 
@@ -294,18 +309,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
       el.innerHTML = `
         <div class="relative flex flex-col items-center justify-end w-full h-full">
           <!-- Premium Label (Targeted Reveal) -->
-          <div id="label-${safeId}" class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-4 py-2 rounded-xl border border-white/20 font-black text-white whitespace-nowrap shadow-[0_15px_40px_rgba(0,0,0,0.4)] z-50 uppercase tracking-tighter opacity-0 scale-90 pointer-events-none transition-all duration-300" style="bottom: var(--map-label-offset, -40px); font-size: var(--map-label-font-size, 10px);">
+          <div id="label-${safeId}" class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-4 py-2 rounded-xl border border-white/20 font-bold text-white whitespace-nowrap shadow-[0_15px_40px_rgba(0,0,0,0.4)] z-50 uppercase tracking-tighter opacity-0 scale-90 pointer-events-none transition-all duration-300" style="bottom: var(--map-label-offset, -40px); font-size: var(--map-label-font-size, 10px);">
             <div>${train.name}</div>
           </div>
           
           <!-- Modern Marker (The only part with pointer-events-auto) -->
           <div id="marker-pin-${safeId}" class="relative flex flex-col items-center pointer-events-auto cursor-pointer" style="transform: scale(var(--map-marker-scale, 1)); transform-origin: center bottom;">
-            <!-- Animation Ping (Disabled pointer events) -->
-            <div class="absolute w-12 h-12 bg-blue-500/20 rounded-full animate-ping pointer-events-none" style="top: -10px; left: 50%; margin-left: -24px;"></div>
-            
-            <div id="pin-icon-${safeId}" class="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 rotate-45 transition-all duration-500">
-              <div class="rotate-[-45deg] transition-all duration-500 text-white">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15h10M9 19l-2 2M15 19l2 2M7 2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>
+            <div id="pin-icon-${safeId}" class="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 transition-all duration-500">
+              <div class="transition-all duration-500 text-white">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/>
+                </svg>
               </div>
             </div>
             
@@ -324,14 +338,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
         pinEl.onmouseenter = () => {
           labelEl.classList.remove('opacity-0', 'scale-90');
           labelEl.classList.add('opacity-100', 'scale-110');
-          iconEl.classList.add('rotate-[225deg]', 'scale-110');
-          iconEl.firstElementChild?.classList.add('rotate-[-225deg]');
+          iconEl.classList.add('scale-110');
         };
         pinEl.onmouseleave = () => {
           labelEl.classList.remove('opacity-100', 'scale-110');
           labelEl.classList.add('opacity-0', 'scale-90');
-          iconEl.classList.remove('rotate-[225deg]', 'scale-110');
-          iconEl.firstElementChild?.classList.remove('rotate-[-225deg]');
+          iconEl.classList.remove('scale-110');
         };
       }
 
@@ -363,23 +375,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             <div class="flex flex-col">
-              <span class="text-[8px] font-black uppercase tracking-[0.2em] opacity-50 mb-0.5">Fleet Node</span>
-              <h3 class="text-sm font-black uppercase tracking-tight leading-none truncate pr-6">${train.name}</h3>
+              <span class="text-[8px] font-bold uppercase tracking-[0.2em] opacity-50 mb-0.5">Fleet Node</span>
+              <h3 class="text-sm font-bold uppercase tracking-tight leading-none truncate pr-6">${train.name}</h3>
             </div>
           </div>
 
           <div class="p-4 space-y-3.5 bg-white dark:bg-transparent">
             <div class="flex justify-between items-center">
               <div class="space-y-0.5">
-                <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Status</p>
+                <p class="text-[7px] font-semibold text-slate-400 uppercase tracking-widest">Status</p>
                 <div class="flex items-center gap-1.5">
                   <div class="w-2 h-2 rounded-full ${train.status === 'Normal' || train.status === 'Beroperasi' || train.status === 'STANDBY' ? 'bg-green-500' : 'bg-amber-500'} animate-pulse"></div>
-                  <span class="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase">${train.status}</span>
+                  <span class="text-[10px] font-semibold text-slate-800 dark:text-slate-200 uppercase">${train.status}</span>
                 </div>
               </div>
               <div class="text-right space-y-0.5">
-                <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Speed</p>
-                <p class="text-[10px] font-black text-[#ee6f1f] uppercase">${train.speed} <span class="text-[8px] opacity-60">KM/H</span></p>
+                <p class="text-[7px] font-semibold text-slate-400 uppercase tracking-widest">Speed</p>
+                <p class="text-[10px] font-semibold text-[#ee6f1f] uppercase">${train.speed} <span class="text-[8px] opacity-60">KM/H</span></p>
               </div>
             </div>
 
@@ -387,10 +399,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
 
             <div class="flex justify-between items-end">
               <div class="space-y-0.5">
-                <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Next Arrival</p>
-                <span class="text-xs font-black text-[#1d2d6a] dark:text-blue-400 font-mono">${train.eta || '--:--'}</span>
+                <p class="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Next Arrival</p>
+                <span class="text-xs font-bold text-[#1d2d6a] dark:text-blue-400 font-mono">${train.eta || '--:--'}</span>
               </div>
-              <button id="btn-analyze-${train.id}" class="px-3 py-2 bg-[#ee6f1f] hover:bg-[#d45d15] text-[9px] font-black uppercase tracking-widest text-white rounded-lg transition-all shadow-lg shadow-orange-500/10 active:scale-95 cursor-pointer">
+              <button id="btn-analyze-${train.id}" class="px-3 py-2 bg-[#ee6f1f] hover:bg-[#d45d15] text-[9px] font-bold uppercase tracking-widest text-white rounded-lg transition-all shadow-lg shadow-orange-500/10 active:scale-95 cursor-pointer">
                 Details
               </button>
             </div>

@@ -261,10 +261,10 @@ export default function SchedulesPage({ token }: { token: string }) {
               <X size={20} />
             </button>
             <div>
-              <h2 className="text-3xl font-black text-[#1d2d6a] dark:text-white tracking-tight leading-none uppercase">
+              <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight leading-none uppercase">
                 {selectedSchedule.display_train_name || selectedSchedule.train_name}
               </h2>
-              <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-widest">
+              <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-[0.2em]">
                 Service Number: {selectedSchedule.display_train_number || selectedSchedule.train_number || "-"}
               </p>
             </div>
@@ -283,8 +283,8 @@ export default function SchedulesPage({ token }: { token: string }) {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h3 className="font-black text-[#1d2d6a] dark:text-white uppercase tracking-wider text-sm">Route Checkpoints</h3>
-                <span className="px-3 py-1 bg-white dark:bg-slate-900 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-[#1d2d6a] dark:text-white uppercase tracking-[0.1em] text-sm">Route Checkpoints</h3>
+                <span className="px-3 py-1 bg-white dark:bg-slate-900 rounded-lg text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] border border-slate-100 dark:border-slate-800">
                   {selectedSchedule.stops?.length || 0} Stations
                 </span>
               </div>
@@ -293,24 +293,24 @@ export default function SchedulesPage({ token }: { token: string }) {
                   selectedSchedule.stops.map((stop: any, idx: number) => (
                     <div key={idx} className="px-8 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                       <div className="flex items-center gap-5">
-                        <span className="text-slate-300 dark:text-slate-700 font-mono font-black text-xl">
+                        <span className="text-slate-300 dark:text-slate-700 font-mono font-bold text-xl">
                           {String(stop.sequence_order).padStart(2, "0")}
                         </span>
                         <div>
-                          <p className="font-black text-[#1d2d6a] dark:text-white uppercase text-base leading-tight">{stop.station_name}</p>
-                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase">{stop.station_code}</p>
+                          <p className="font-bold text-[#1d2d6a] dark:text-white uppercase text-base leading-tight">{stop.station_name}</p>
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">{stop.station_code}</p>
                         </div>
                       </div>
                       <div className="flex gap-8 items-center">
                         <div className="text-right">
-                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Arrival</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-300 font-mono">{stop.arrival_time || "--:--"}</p>
+                          <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Arrival</p>
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 font-mono">{stop.arrival_time || "--:--"}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Departure</p>
-                          <p className="text-sm font-black text-[#ee6f1f] font-mono">{stop.departure_time || "--:--"}</p>
+                          <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Departure</p>
+                          <p className="text-sm font-semibold text-[#ee6f1f] font-mono">{stop.departure_time || "--:--"}</p>
                         </div>
-                        <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-black border ${
+                        <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-semibold border ${
                           stop.stop_status === "ARRIVED" ? "bg-green-50 dark:bg-green-900/30 text-green-600 border-green-100 dark:border-green-900/50" :
                           stop.stop_status === "SCHEDULED" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 border-blue-100 dark:border-blue-900/50" :
                           "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700"
@@ -323,14 +323,14 @@ export default function SchedulesPage({ token }: { token: string }) {
                 ) : (
                   <div className="p-20 text-center space-y-4">
                     <MapPin size={48} className="mx-auto text-slate-200" />
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Direct Point-to-Point Route</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Direct Point-to-Point Route</p>
                     <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
                       <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Origin</p>
+                        <p className="text-[8px] font-semibold text-slate-400 uppercase mb-1">Origin</p>
                         <p className="font-bold dark:text-white">{selectedSchedule.stasiun_keberangkatan}</p>
                       </div>
                       <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-                        <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Destination</p>
+                        <p className="text-[8px] font-semibold text-slate-400 uppercase mb-1">Destination</p>
                         <p className="font-bold dark:text-white">{selectedSchedule.stasiun_tujuan}</p>
                       </div>
                     </div>
@@ -342,28 +342,28 @@ export default function SchedulesPage({ token }: { token: string }) {
 
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-              <h3 className="font-black text-[#1d2d6a] dark:text-white uppercase tracking-wider text-sm border-b dark:border-slate-800 pb-4 flex items-center gap-2">
+              <h3 className="font-medium text-[#1d2d6a] dark:text-white uppercase tracking-[0.1em] text-sm border-b dark:border-slate-800 pb-4 flex items-center gap-2">
                 <Info size={16} className="text-[#ee6f1f]" /> operational Info
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Perjalanan</span>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black border ${STATUS_COLOR[selectedSchedule.status] || "text-slate-400"}`}>
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Status Perjalanan</span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-medium border ${STATUS_COLOR[selectedSchedule.status] || "text-slate-400"}`}>
                     {selectedSchedule.status?.replace("_", " ")}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-t dark:border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waktu Keberangkatan</span>
-                  <span className="text-sm font-black dark:text-white font-mono">{selectedSchedule.waktu_keberangkatan_penjadwalan}</span>
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Waktu Keberangkatan</span>
+                  <span className="text-sm font-medium dark:text-white font-mono">{selectedSchedule.waktu_keberangkatan_penjadwalan}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-t dark:border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waktu Kedatangan</span>
-                  <span className="text-sm font-black text-[#ee6f1f] font-mono">{selectedSchedule.waktu_kedatangan_penjadwalan}</span>
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Waktu Kedatangan</span>
+                  <span className="text-sm font-medium text-[#ee6f1f] font-mono">{selectedSchedule.waktu_kedatangan_penjadwalan}</span>
                 </div>
               </div>
               {selectedSchedule.catatan && (
                 <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border border-orange-100 dark:border-orange-900/30">
-                  <p className="text-[8px] font-black text-[#ee6f1f] uppercase tracking-[0.2em] mb-1">Internal Notes</p>
+                  <p className="text-[8px] font-medium text-[#ee6f1f] uppercase tracking-[0.2em] mb-1">Internal Notes</p>
                   <p className="text-xs font-bold text-slate-700 dark:text-slate-300 italic leading-relaxed">"{selectedSchedule.catatan}"</p>
                 </div>
               )}
@@ -386,7 +386,7 @@ export default function SchedulesPage({ token }: { token: string }) {
       />
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex-1">
-          <h2 className="text-3xl font-black text-[#1d2d6a] dark:text-white tracking-tight mb-2">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-2">
             Penjadwalan Kereta
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
@@ -403,7 +403,7 @@ export default function SchedulesPage({ token }: { token: string }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari KA / Rute..."
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-12 pr-6 py-3 text-sm font-semibold text-[#1d2d6a] dark:text-white focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-12 pr-6 py-3 text-sm font-bold text-[#1d2d6a] dark:text-white focus:outline-none focus:border-[#ee6f1f] shadow-sm transition-all"
             />
           </div>
           <button
@@ -411,7 +411,7 @@ export default function SchedulesPage({ token }: { token: string }) {
               if (showForm) setEditingId(null);
               setShowForm(!showForm);
             }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
+            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 shrink-0 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
           >
             {showForm ? (
               <>
@@ -451,12 +451,12 @@ export default function SchedulesPage({ token }: { token: string }) {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
                     Pilih Armada
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Nama Kereta
                       </label>
                       <select
@@ -482,7 +482,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Kode KA
                       </label>
                       <input
@@ -501,11 +501,11 @@ export default function SchedulesPage({ token }: { token: string }) {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
                     Waktu & Media
                   </h4>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                       Media / Lampiran (URL)
                     </label>
                     <div className="relative">
@@ -529,16 +529,16 @@ export default function SchedulesPage({ token }: { token: string }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                    <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-wider">
+                    <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">
                       Keberangkatan
                     </h4>
-                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
+                    <span className="text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
                       Departure
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Stasiun
                       </label>
                       <select
@@ -564,7 +564,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Kode Kota
                       </label>
                       <input
@@ -576,7 +576,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                   </div>
                   <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-1">
                         <Clock size={10} /> Penjadwalan
                       </label>
                       <input
@@ -589,7 +589,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1">
                         <Activity size={10} /> Realisasi
                       </label>
                       <input
@@ -602,7 +602,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Selisih Waktu (Mnt)
                       </label>
                       <input
@@ -615,7 +615,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Status
                       </label>
                       <select
@@ -635,16 +635,16 @@ export default function SchedulesPage({ token }: { token: string }) {
 
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                    <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-wider">
+                    <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm uppercase tracking-[0.1em]">
                       Kedatangan
                     </h4>
-                    <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
+                    <span className="text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded">
                       Arrival
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Stasiun
                       </label>
                       <select
@@ -670,7 +670,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Kode Kota
                       </label>
                       <input
@@ -682,7 +682,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                   </div>
                   <div className="grid grid-cols-2 gap-4 bg-[#f8fafc] dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-[10px] font-semibold text-[#ee6f1f] uppercase tracking-[0.1em] flex items-center gap-1">
                         <Clock size={10} /> Penjadwalan
                       </label>
                       <input
@@ -695,7 +695,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1">
                         <Activity size={10} /> Realisasi
                       </label>
                       <input
@@ -708,7 +708,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Selisih Waktu (Mnt)
                       </label>
                       <input
@@ -721,7 +721,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Status
                       </label>
                       <select
@@ -741,7 +741,7 @@ export default function SchedulesPage({ token }: { token: string }) {
               </div>
 
               <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800 transition-colors">
-                <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
                   Catatan
                 </h4>
                 <textarea
@@ -749,14 +749,14 @@ export default function SchedulesPage({ token }: { token: string }) {
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="Masukkan catatan tambahan..."
                   rows={3}
-                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-[#1d2d6a] dark:text-white font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                 />
               </div>
             </div>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="h-12 px-10 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-semibold rounded-2xl text-sm transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]"
+              className="h-12 px-10 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-bold rounded-2xl text-sm transition-all flex items-center gap-3 active:scale-95 shadow-[0_12px_24px_rgba(238,111,31,0.3)]"
             >
               {saving ? (
                 "Menyimpan..."
@@ -798,7 +798,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         {sched.display_train_name || sched.train_name}
                       </h3>
                       {isActive && (
-                        <span className="bg-[#ee6f1f] text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse">
+                        <span className="bg-[#ee6f1f] text-white text-[8px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.2em] animate-pulse">
                           LIVE ACTIVE
                         </span>
                       )}
@@ -818,7 +818,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     >
                       {sched.status?.replace("_", " ")}
                     </span>
-                    <span className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">
+                    <span className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[9px]">
                       {sched.stops?.length || 0} Points
                     </span>
                   </div>

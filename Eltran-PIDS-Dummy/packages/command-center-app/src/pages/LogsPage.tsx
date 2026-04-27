@@ -120,10 +120,10 @@ export default function LogsPage({ token }: { token: string }) {
     <div className="space-y-8">
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-1">
+          <h2 className="text-2xl font-bold text-[#1d2d6a] dark:text-white">
             Log Sistem
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-bold">
             {logs.length} entri total
           </p>
         </div>
@@ -139,14 +139,14 @@ export default function LogsPage({ token }: { token: string }) {
           <button
             key={opt}
             onClick={() => handleFilterChange(opt)}
-            className={`h-9 px-4 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? "bg-[#ee6f1f] text-white border-[#ee6f1f]" : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`}
+            className={`h-9 px-4 rounded-xl text-[10px] font-bold border transition-all ${filter === opt ? "bg-[#ee6f1f] text-white border-[#ee6f1f]" : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"}`}
           >
             {opt === "ALL" ? "Semua" : ACTION_META[opt]?.label || opt}
           </button>
         ))}
       </div>
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
-        <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-wider transition-colors">
+        <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em] transition-colors">
           <span>Waktu</span>
           <span>Aksi</span>
           <span>Pengguna</span>
@@ -168,7 +168,7 @@ export default function LogsPage({ token }: { token: string }) {
                 transition={{ delay: Math.min(i * 0.01, 0.3) }}
                 className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors items-start"
               >
-                <div className="font-mono text-[11px] font-medium pt-1">
+                <div className="font-mono text-[11px] font-semibold pt-1">
                   <div className="text-slate-500 dark:text-slate-400">
                     {dt.toLocaleDateString("id-ID", {
                       day: "2-digit",
@@ -189,10 +189,10 @@ export default function LogsPage({ token }: { token: string }) {
                 <span className="text-[#1d2d6a] dark:text-white text-sm font-semibold self-center">
                   {log.user}
                 </span>
-                <span className="text-slate-400 dark:text-slate-500 text-xs font-medium self-center">
+                <span className="text-slate-400 dark:text-slate-500 text-xs font-semibold self-center">
                   {log.role}
                 </span>
-                <span className="text-slate-600 dark:text-slate-300 text-sm font-medium self-center pr-6">
+                <span className="text-slate-600 dark:text-slate-300 text-sm font-semibold self-center pr-6">
                   {log.details}
                 </span>
               </motion.div>

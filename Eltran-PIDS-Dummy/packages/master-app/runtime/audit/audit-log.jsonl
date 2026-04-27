@@ -110,3 +110,9 @@
 {"id":"bd75798e-c664-4383-8ce4-5179ff90237e","timestamp":"2026-04-24T04:32:05.987Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"48a18879-f10f-4c1a-98d8-a00f954c8f41","timestamp":"2026-04-24T04:32:10.416Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"e9f0a255-aa6b-4456-b071-dd96f4629a36","timestamp":"2026-04-24T04:32:14.002Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"4868a5f9-9d93-4214-a7d6-c0e4eddabca9","timestamp":"2026-04-27T02:03:12.637Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"b1085d91-815d-498f-ac50-b1622cf93685","timestamp":"2026-04-27T02:03:29.510Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"3c1bb301-edf3-493d-a7e0-0c3a36a02b72","timestamp":"2026-04-27T02:03:39.675Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"36c439df-d9f7-4937-86bd-e98687d4ee48","timestamp":"2026-04-27T02:04:58.321Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 203","data":null}
+{"id":"8f5e649d-4d4b-44c6-86ef-aee3f9c40459","timestamp":"2026-04-27T02:05:02.184Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 201","data":null}
+{"id":"5ba927cf-da26-4622-a95d-602cd0fb61d0","timestamp":"2026-04-27T02:05:06.470Z","action":"ADMIN_CRUD","user":"admin","role":"Admin","details":"Jadwal dihapus: 205","data":null}

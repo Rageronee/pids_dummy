@@ -243,10 +243,10 @@ export default function TrainsPage({ token }: { token: string }) {
       />
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-[#1d2d6a] tracking-tight mb-2">
+          <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white">
             Manajemen Kereta
           </h2>
-          <p className="text-slate-500 text-base font-medium">
+          <p className="text-slate-500 text-base font-bold">
             {trains.length} kereta terdaftar dalam sistem pids
           </p>
         </div>
@@ -259,7 +259,7 @@ export default function TrainsPage({ token }: { token: string }) {
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
+            className={`flex items-center gap-2 h-11 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
           >
             {showForm ? (
               <>
@@ -289,7 +289,7 @@ export default function TrainsPage({ token }: { token: string }) {
                 <Plus size={20} className="text-[#ee6f1f]" /> Registrasi Kereta
                 & Gerbong
               </h3>
-              <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-950 px-3 py-1 rounded-lg">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] bg-slate-50 dark:bg-slate-950 px-3 py-1 rounded-lg">
                 Konfigurasi Armada
               </span>
             </div>
@@ -297,12 +297,12 @@ export default function TrainsPage({ token }: { token: string }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
                     Identitas utama
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Nama Kereta
                       </label>
                       <input
@@ -318,7 +318,7 @@ export default function TrainsPage({ token }: { token: string }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Train Code (KA)
                       </label>
                       <input
@@ -336,7 +336,7 @@ export default function TrainsPage({ token }: { token: string }) {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Origin Station
                       </label>
                       <select
@@ -358,7 +358,7 @@ export default function TrainsPage({ token }: { token: string }) {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Destination Station
                       </label>
                       <select
@@ -383,7 +383,7 @@ export default function TrainsPage({ token }: { token: string }) {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
                     Route Stations (Intermediate)
                   </h4>
                   <div className="relative">
@@ -394,7 +394,7 @@ export default function TrainsPage({ token }: { token: string }) {
                       value={stationSearch}
                       onChange={(e) => setStationSearch(e.target.value)}
                       placeholder="Search intermediate station..."
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-4 py-3 text-[#1d2d6a] dark:text-white font-bold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                     />
                     {filteredSuggestions.length > 0 && (
                       <div className="absolute z-10 w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 max-h-[200px] overflow-y-auto transition-colors">
@@ -493,7 +493,7 @@ export default function TrainsPage({ token }: { token: string }) {
                               setForm({ ...form, route_stations: nr });
                             }}
                             placeholder="Station notes (e.g. Stop, Pass)"
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-1.5 text-[#1d2d6a] dark:text-white font-medium text-[10px] focus:outline-none focus:border-[#ee6f1f] transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-1.5 text-[#1d2d6a] dark:text-white font-semibold text-[10px] focus:outline-none focus:border-[#ee6f1f] transition-all"
                           />
                         </div>
                       ))
@@ -502,12 +502,12 @@ export default function TrainsPage({ token }: { token: string }) {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-wider">
+                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">
                     Operational & PIC
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         PIC Name
                       </label>
                       <div className="relative">
@@ -526,7 +526,7 @@ export default function TrainsPage({ token }: { token: string }) {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         PIC Contact
                       </label>
                       <div className="relative">
@@ -545,7 +545,7 @@ export default function TrainsPage({ token }: { token: string }) {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         IP Address
                       </label>
                       <div className="relative">
@@ -564,7 +564,7 @@ export default function TrainsPage({ token }: { token: string }) {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                         Notes
                       </label>
                       <input
@@ -578,7 +578,7 @@ export default function TrainsPage({ token }: { token: string }) {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">
                       Media / Attachment (URL)
                     </label>
                     <div className="relative">
@@ -601,7 +601,7 @@ export default function TrainsPage({ token }: { token: string }) {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-l-4 border-[#ee6f1f] pl-3">
-                  <h4 className="font-semibold text-[#1d2d6a] dark:text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                  <h4 className="font-bold text-[#1d2d6a] dark:text-white text-xs uppercase tracking-[0.1em] flex items-center gap-2">
                     <Layout size={14} /> Daftar Gerbong
                   </h4>
                   <button
@@ -620,7 +620,7 @@ export default function TrainsPage({ token }: { token: string }) {
                         ],
                       })
                     }
-                    className="text-[10px] font-semibold text-[#ee6f1f] hover:text-[#d45d15] flex items-center gap-1 uppercase tracking-widest"
+                    className="text-[10px] font-bold text-[#ee6f1f] hover:text-[#d45d15] flex items-center gap-1 uppercase tracking-[0.2em]"
                   >
                     <Plus size={12} /> Tambah Gerbong
                   </button>
@@ -633,7 +633,7 @@ export default function TrainsPage({ token }: { token: string }) {
                         size={32}
                         className="text-slate-200 dark:text-slate-800 mx-auto mb-2"
                       />
-                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase">
+                      <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-600 uppercase">
                         Belum ada gerbong terdaftar
                       </p>
                     </div>
@@ -753,14 +753,14 @@ export default function TrainsPage({ token }: { token: string }) {
             <div className="flex justify-end items-center gap-3 pt-6 border-t border-slate-100 dark:border-slate-800 transition-colors">
               <button
                 onClick={() => setShowForm(false)}
-                className="h-11 px-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold rounded-2xl text-sm transition-all active:scale-95"
+                className="h-11 px-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold rounded-2xl text-sm transition-all active:scale-95"
               >
                 Batal
               </button>
               <button
                 onClick={handleAdd}
                 disabled={saving || !form.name.trim()}
-                className="h-11 px-12 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-semibold rounded-2xl text-sm transition-all flex items-center gap-2 active:scale-95 shadow-lg group"
+                className="h-11 px-12 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white font-bold rounded-2xl text-sm transition-all flex items-center gap-2 active:scale-95 shadow-lg group"
               >
                 {saving ? (
                   "Menyimpan..."
@@ -780,7 +780,7 @@ export default function TrainsPage({ token }: { token: string }) {
       </AnimatePresence>
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
-        <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-0 px-8 py-5 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-wider transition-colors">
+        <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-0 px-8 py-5 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em] transition-colors">
           <span>Nama & Kode Kereta</span>
           <span>IP Address</span>
           <span>Status</span>
@@ -788,7 +788,7 @@ export default function TrainsPage({ token }: { token: string }) {
           <span></span>
         </div>
         {loading ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm font-bold">
             Memuat data...
           </div>
         ) : trains.length === 0 ? (
@@ -821,12 +821,12 @@ export default function TrainsPage({ token }: { token: string }) {
                         </span>
                       )}
                     </div>
-                    <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-tight">
+                    <span className="text-slate-400 dark:text-slate-500 text-[10px] font-semibold uppercase tracking-[0.2em] leading-tight">
                       Layanan PIDS Aktif
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 font-mono font-bold text-sm">
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 font-mono font-semibold text-sm">
                   <Wifi size={14} className="text-green-500 dark:text-green-400" />
                   {train.ip_address || "-"}
                 </div>
@@ -840,7 +840,7 @@ export default function TrainsPage({ token }: { token: string }) {
                     {train.status?.toUpperCase() || "OFFLINE"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs font-medium">
+                <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs font-semibold">
                   <Clock size={14} />
                   {train.last_update
                     ? new Date(train.last_update).toLocaleTimeString("id-ID")

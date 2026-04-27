@@ -113,16 +113,16 @@ export default function UsersPage({ token }: { token: string }) {
       />
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1d2d6a] dark:text-white tracking-tight mb-1">
+          <h2 className="text-2xl font-bold text-[#1d2d6a] dark:text-white">
             Manajemen Pengguna
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-bold">
             {users.length} pengguna terdaftar dalam sistem PIDS
           </p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className={`flex items-center gap-2 h-10 px-6 rounded-2xl font-semibold text-sm transition-all active:scale-95 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
+          className={`flex items-center gap-2 h-10 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 ${showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700" : "bg-[#ee6f1f] text-white hover:bg-[#d45d15] shadow-md"}`}
         >
           {showForm ? (
             <>
@@ -146,7 +146,7 @@ export default function UsersPage({ token }: { token: string }) {
             exit={{ opacity: 0, height: 0 }}
             className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-6 space-y-4 overflow-hidden mb-8 transition-colors"
           >
-            <h3 className="text-slate-500 dark:text-slate-400 font-semibold text-sm uppercase tracking-wider">
+            <h3 className="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-[0.1em]">
               User Baru
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -167,14 +167,14 @@ export default function UsersPage({ token }: { token: string }) {
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Password"
                 type="password"
-                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[#1d2d6a] dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all"
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[#1d2d6a] dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all"
               />
               <select
                 value={newRole}
                 onChange={(e) =>
                   setNewRole(e.target.value as "Admin" | "Operator")
                 }
-                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all appearance-none"
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[#1d2d6a] dark:text-white font-bold text-sm focus:outline-none focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/10 transition-all appearance-none"
               >
                 <option value="Operator" className="dark:bg-slate-900">Operator</option>
                 <option value="Admin" className="dark:bg-slate-900">Admin</option>
@@ -183,7 +183,7 @@ export default function UsersPage({ token }: { token: string }) {
             <button
               onClick={handleAddUser}
               disabled={saving}
-              className="h-11 px-8 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white font-semibold rounded-2xl text-sm transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none"
+              className="h-11 px-8 bg-[#ee6f1f] hover:bg-[#d45d15] disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white font-bold rounded-2xl text-sm transition-all active:scale-95 flex items-center gap-2 shadow-[0_8px_20px_rgba(238,111,31,0.25)] disabled:shadow-none"
             >
               {saving ? (
                 "Menyimpan..."
@@ -199,7 +199,7 @@ export default function UsersPage({ token }: { token: string }) {
       </AnimatePresence>
 
       <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
-        <div className="grid grid-cols-[80px_1fr_1fr_100px_60px] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-wider transition-colors">
+        <div className="grid grid-cols-[80px_1fr_1fr_100px_60px] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors">
           <span>ID</span>
           <span>Nama</span>
           <span>Username</span>
@@ -207,7 +207,7 @@ export default function UsersPage({ token }: { token: string }) {
           <span></span>
         </div>
         {loading ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm font-semibold">
             Memuat pengguna...
           </div>
         ) : (
@@ -223,7 +223,7 @@ export default function UsersPage({ token }: { token: string }) {
               <span className="text-[#1d2d6a] dark:text-white font-semibold">
                 {u.full_name}
               </span>
-              <span className="text-slate-500 dark:text-slate-400 font-mono text-sm font-medium">
+              <span className="text-slate-500 dark:text-slate-400 font-mono text-sm font-semibold">
                 {u.username}
               </span>
               <span
