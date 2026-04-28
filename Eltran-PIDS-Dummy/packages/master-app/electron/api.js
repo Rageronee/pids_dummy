@@ -727,7 +727,6 @@ export async function startApiServer() {
       res.json({ success: false, error: e.message });
     }
   });
-  });
   apiApp.get("/api/stations-master", async (req, res) => {
     try {
       const result = await getStations({});

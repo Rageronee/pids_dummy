@@ -630,6 +630,13 @@ async function createTables() {
   } catch (e) {
     console.warn("[PIDS-DB] Migration note (telemetry columns):", e.message);
   }
+
+  // Station migrations
+  try {
+    await pool.query(`ALTER TABLE stations ADD COLUMN IF NOT EXISTS division_id INTEGER REFERENCES divisions(id) ON DELETE SET NULL`);
+  } catch (e) {
+    console.warn("[PIDS-DB] Migration note (stations division_id):", e.message);
+  }
 }
 
 export async function seedData() {
@@ -1048,11 +1055,12 @@ export async function getState() {
         
         // Extract IDs or names for lookup
         const lookupValues = rawStations.map(s => (typeof s === "string" ? s : s.id || s.name));
-        const placeholders = lookupValues.map((_, i) => `$${i + 1}`).join(", ");
+        const placeholders1 = lookupValues.map((_, i) => `$${i + 1}`).join(", ");
+        const placeholders2 = lookupValues.map((_, i) => `$${i + 1 + lookupValues.length}`).join(", ");
         
         // Lookup by ID first, then by name if no ID is found
         const dbStations = await getAll(
-          `SELECT id, name, city, latitude as lat, longitude as lng FROM stations WHERE id IN (${placeholders}) OR name IN (${placeholders})`,
+          `SELECT id, name, city, latitude as lat, longitude as lng FROM stations WHERE id IN (${placeholders1}) OR name IN (${placeholders2})`,
           [...lookupValues, ...lookupValues]
         );
 

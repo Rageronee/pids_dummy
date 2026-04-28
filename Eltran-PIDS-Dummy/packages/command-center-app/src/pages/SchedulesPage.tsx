@@ -17,6 +17,7 @@ import {
   Paperclip,
   Activity,
   ArrowUp,
+  ArrowLeft,
 } from "lucide-react";
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
@@ -277,9 +278,10 @@ export default function SchedulesPage({ token }: { token: string }) {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSelectedSchedule(null)}
-                className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all shadow-sm active:scale-95"
+                className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-all shadow-sm active:scale-95 flex items-center gap-2 group"
               >
-                <X size={20} />
+                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="text-xs font-bold uppercase tracking-wider pr-2">Kembali</span>
               </button>
               <div>
                 <h2 className="text-3xl font-bold text-[#1d2d6a] dark:text-white tracking-tight leading-none uppercase">
@@ -670,7 +672,7 @@ export default function SchedulesPage({ token }: { token: string }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             onClick={scrollToTop}
-            className="fixed bottom-10 right-10 z-[100] w-14 h-14 bg-[#ee6f1f] text-white rounded-[1.25rem] shadow-[0_12px_40px_rgba(238,111,31,0.4)] flex items-center justify-center hover:bg-[#d45d15] active:scale-95 transition-all group border-4 border-white dark:border-slate-900"
+            className="fixed bottom-10 right-10 z-[100] w-14 h-14 bg-[#ee6f1f] text-white rounded-2xl shadow-[0_20px_50px_rgba(238,111,31,0.3)] flex items-center justify-center hover:bg-[#d45d15] active:scale-90 transition-all group border-4 border-white dark:border-slate-900"
             title="Scroll to Top"
           >
             <ArrowUp size={24} className="group-hover:-translate-y-1 transition-transform" />
