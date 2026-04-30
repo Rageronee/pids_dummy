@@ -10,7 +10,16 @@ export default defineConfig({
     },
   },
   base: "./",
-  server: { port: 5176 },
+  server: {
+    port: 5176,
+    proxy: {
+      "/api": "http://localhost:3001",
+      "/socket.io": {
+        target: "http://localhost:3001",
+        ws: true,
+      },
+    },
+  },
   build: {
     outDir: "dist",
     target: "esnext",
