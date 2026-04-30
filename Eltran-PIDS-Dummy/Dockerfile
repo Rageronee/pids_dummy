@@ -1,37 +1,28 @@
-# Use Node 20
+# --- STAGE 1: Builder ---
 FROM node:20-alpine AS builder
-
 WORKDIR /app
-
-# Copy root package files
 COPY package.json package-lock.json ./
-
-# Copy all packages package.json to leverage caching
 COPY packages/master-app/package.json ./packages/master-app/
 COPY packages/selector-app/package.json ./packages/selector-app/
 COPY packages/command-center-app/package.json ./packages/command-center-app/
 COPY packages/pids-core/package.json ./packages/pids-core/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install dependencies
 RUN npm install
-
-# Copy source code
 COPY . .
-
-# Build all apps
 RUN npm run build
 
-# Final Runner Stage
-FROM node:20-alpine
-
+# --- STAGE 2: Backend Runner ---
+FROM node:20-alpine AS backend
 WORKDIR /app
-
-# Copy everything from builder (or just what's needed)
 COPY --from=builder /app /app
-
-# Expose API port (matching API_PORT in .env, default 3001)
 EXPOSE 3001
-
-# Command to run the backend
 CMD ["node", "packages/master-app/server.js"]
+
+# --- STAGE 3: Frontend Web Runner ---
+FROM nginx:alpine AS frontend
+COPY --from=builder /app/packages/master-app/dist /usr/share/nginx/html/master
+COPY --from=builder /app/packages/selector-app/dist /usr/share/nginx/html/selector
+COPY --from=builder /app/packages/command-center-app/dist /usr/share/nginx/html/cc
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
