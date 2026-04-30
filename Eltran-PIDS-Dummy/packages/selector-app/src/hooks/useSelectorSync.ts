@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import type { AuthUser, PidsState } from "@eltran/pids-core";
+import { API as SHARED_API } from "@eltran/shared";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_URL = import.meta.env.VITE_API_URL || SHARED_API;
 
 function normalizeStations(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

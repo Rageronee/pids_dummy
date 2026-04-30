@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { API as SHARED_API } from "../config";
 import type { AuthUser } from "@eltran/pids-core";
 
 interface LoginScreenProps {
@@ -12,7 +13,7 @@ interface LoginScreenProps {
   isDark?: boolean;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_URL = import.meta.env.VITE_API_URL || SHARED_API;
 
 export function LoginScreen({
   onLogin,

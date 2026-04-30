@@ -20,7 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LoginScreen } from "@eltran/shared";
+import { LoginScreen, API as SHARED_API } from "@eltran/shared";
 import { MasterConsolePanel } from "./components/MasterConsolePanel";
 import MapComponent from "./components/MapComponent";
 import SettingsPage from "./pages/SettingsPage";
@@ -30,7 +30,7 @@ import type { AuthUser, LogEntry } from "@eltran/pids-core";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-const API_URL = "http://localhost:3001";
+const API_URL = SHARED_API;
 
 // --- Monitor CCTV Component ---
 const MonitorCCTV = ({ data: _data }: { data: any }) => {

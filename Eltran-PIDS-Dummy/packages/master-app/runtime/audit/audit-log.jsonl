@@ -146,3 +146,12 @@
 {"id":"e5e96ec0-5845-4329-b68a-8087761a556e","timestamp":"2026-04-27T09:07:42.015Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"ab9377ef-3b71-4f23-a6ed-aba82f72c8cd","timestamp":"2026-04-27T09:07:46.748Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"bf3fbfbf-7d1f-41e2-a238-5e546a3f7940","timestamp":"2026-04-27T09:33:12.711Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"98b729e0-6b1e-4050-8df5-54f829829a50","timestamp":"2026-04-28T08:37:50.817Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"c0885820-6a53-428c-bb0a-b85ff2d0d10b","timestamp":"2026-04-28T08:37:56.592Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"37b42969-1382-42fd-8fd5-c1737f333aa0","timestamp":"2026-04-28T08:38:00.280Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"4536647b-426c-4047-b256-e9b17b6c8ca1","timestamp":"2026-04-28T08:38:11.896Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"10da52a8-5117-4d0a-91bb-a2ca3363a474","timestamp":"2026-04-28T09:02:25.709Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"c4c05581-3c30-4302-aa92-f7bcc7b2af50","timestamp":"2026-04-28T09:02:32.901Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"fcbec735-0458-4c10-9603-c5d99d77a096","timestamp":"2026-04-28T09:02:39.586Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"5ea992ee-7b88-4569-a2bd-d1edd136ee58","timestamp":"2026-04-28T09:02:44.967Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"4b253904-e9f0-4dbf-a61b-9de48ced9f62","timestamp":"2026-04-28T09:52:04.600Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}

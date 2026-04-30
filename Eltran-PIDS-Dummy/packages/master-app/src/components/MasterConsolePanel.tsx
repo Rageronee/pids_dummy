@@ -230,7 +230,7 @@ export function MasterConsolePanel({
 
   // Fetch schedules for the active service
   useEffect(() => {
-    fetch("http://localhost:3001/api/schedules")
+    fetch("${API}/api/schedules")
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.schedules) {
@@ -288,7 +288,7 @@ export function MasterConsolePanel({
 
   // Fetch gerbong counts from db
   useEffect(() => {
-    fetch("http://localhost:3001/api/db")
+    fetch("${API}/api/db")
       .then((res) => res.json())
       .then((res) => {
         if (res.gerbongCounts) {
@@ -424,7 +424,7 @@ export function MasterConsolePanel({
       try {
         const token = sessionStorage.getItem("pids_token");
         const res = await fetch(
-          `http://localhost:3001/api/admin/routes/${encodeURIComponent(activeTrainName)}/geojson`,
+          `${API}/api/admin/routes/${encodeURIComponent(activeTrainName)}/geojson`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -873,7 +873,7 @@ export function MasterConsolePanel({
       setUploading(true);
       const token = sessionStorage.getItem("pids_token");
       // Instead of deleting from DB, just clear the active state
-      const res = await fetch(`http://localhost:3001/api/state`, {
+      const res = await fetch(`${API}/api/state`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -955,7 +955,7 @@ export function MasterConsolePanel({
         let res: Response;
         try {
           res = await fetch(
-            `http://localhost:3001/api/admin/routes/${encodeURIComponent(routeName)}/geojson`,
+            `${API}/api/admin/routes/${encodeURIComponent(routeName)}/geojson`,
             {
               method: "POST",
               headers: {
@@ -1006,7 +1006,7 @@ export function MasterConsolePanel({
                 )
                 .map((f: any) => f.properties.name) || [];
 
-            await fetch(`http://localhost:3001/api/state`, {
+            await fetch(`${API}/api/state`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
