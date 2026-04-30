@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: postgres:15-alpine
+    container_name: pids-db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=YOUR_PASSWORD_HERE
+      - POSTGRES_DB=eltran_pids
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  # Redis for state/cache
+  redis:
+    image: redis:alpine
+    container_name: pids-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # Backend API
+  api:
+    build: .
+    container_name: pids-api
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://postgres:YOUR_PASSWORD_HERE@db:5432/eltran_pids
+      - REDIS_URL=redis://redis:6379
+      - API_PORT=3001
+      - NODE_ENV=production
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./runtime:/app/runtime
+      - ./public/geojson:/app/public/geojson
+
+  # Frontend (Served via Nginx in Docker)
+  web:
+    image: nginx:alpine
+    container_name: pids-web
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./packages/master-app/dist:/usr/share/nginx/html/master
+      - ./packages/selector-app/dist:/usr/share/nginx/html/selector
+      - ./packages/command-center-app/dist:/usr/share/nginx/html/cc
+    depends_on:
+      - api
+
+volumes:
+  db-data:
