@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom"],
   },
   base: "./",
   server: {
@@ -29,11 +30,6 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom"],
-          "vendor-ui": ["framer-motion", "lucide-react", "recharts"],
-          "vendor-io": ["socket.io-client"],
-        },
       },
     },
   },
