@@ -53,6 +53,35 @@ Data persistence is handled by a PostgreSQL database (`eltran_pids`) managed via
    ```
    The API server will be available at `http://localhost:3001`.
 
+## 🚀 Production Deployment (Docker)
+
+To deploy this project to an Ubuntu server (e.g., 24/7 mission control):
+
+1. **Prerequisites:**
+   - Docker & Docker Compose installed.
+   - SSH access (via PuTTY or CMD).
+   - Git installed on the server.
+
+2. **One-Time Setup:**
+   ```bash
+   git clone https://github.com/Rageronee/pids_dummy.git
+   cd pids_dummy/Eltran-PIDS-Dummy
+   docker-compose up -d --build
+   ```
+
+3. **Updating Code (Continuous Deployment):**
+   Push your changes from your local machine, then on the server run:
+   ```bash
+   git pull origin main && docker-compose up -d --build
+   ```
+
+4. **Accessing Apps:**
+   - Master: `http://<SERVER_IP>/master/`
+   - Selector: `http://<SERVER_IP>/selector/`
+   - Command Center: `http://<SERVER_IP>/cc/`
+
+---
+
 6. In a new terminal, start the desired frontend application:
    - Master App: `npm run dev:master` → `http://localhost:5173`
    - Selector App: `npm run dev:selector` → `http://localhost:5174`

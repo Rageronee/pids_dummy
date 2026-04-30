@@ -548,7 +548,7 @@ function App() {
 
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem("master_theme");
-    return saved ? saved === "dark" : true;
+    return saved ? saved === "dark" : false;
   });
 
   useEffect(() => {

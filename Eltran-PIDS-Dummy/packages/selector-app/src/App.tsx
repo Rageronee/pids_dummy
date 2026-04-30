@@ -40,7 +40,7 @@ function App() {
 
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem("selector_theme");
-    return saved ? saved === "dark" : true;
+    return saved ? saved === "dark" : false;
   });
 
   useEffect(() => {
