@@ -1,7 +1,7 @@
 # --- STAGE 1: Builder ---
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package*.json ./
 COPY packages/master-app/package.json ./packages/master-app/
 COPY packages/selector-app/package.json ./packages/selector-app/
 COPY packages/command-center-app/package.json ./packages/command-center-app/
