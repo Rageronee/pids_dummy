@@ -282,14 +282,23 @@ async function createTables() {
         )
     `);
   await pool.query(`
+        CREATE TABLE IF NOT EXISTS trainsets (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE,
+            description TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+  await pool.query(`
         CREATE TABLE IF NOT EXISTS routes (
             id SERIAL PRIMARY KEY,
-            train_service_id INTEGER NOT NULL UNIQUE,
+            name TEXT NOT NULL DEFAULT '',
+            train_service_id INTEGER,
             direction TEXT NOT NULL DEFAULT '',
             svg_path TEXT DEFAULT '',
             geojson TEXT DEFAULT '',
             geojson_filename TEXT DEFAULT '',
-            CONSTRAINT fk_train_service FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE CASCADE
+            CONSTRAINT fk_train_service FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE SET NULL
         )
     `);
   await pool.query(`
@@ -311,6 +320,7 @@ async function createTables() {
         CREATE TABLE IF NOT EXISTS schedules (
             id SERIAL PRIMARY KEY,
             route_id INTEGER,
+            train_service_id INTEGER,
             schedule_date TEXT NOT NULL DEFAULT (CURRENT_DATE::text),
             status TEXT NOT NULL DEFAULT 'ON_TIME',
             notes TEXT DEFAULT '',
@@ -330,7 +340,9 @@ async function createTables() {
             arrival_status TEXT DEFAULT 'On Time',
             service_name TEXT DEFAULT '',
             train_number TEXT DEFAULT '',
-            CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
+            trainset_id INTEGER,
+            CONSTRAINT fk_route_sched FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE SET NULL,
+            CONSTRAINT fk_train_sched FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE SET NULL,
             CONSTRAINT uq_schedule_trip UNIQUE (service_name, train_number, schedule_date, scheduled_departure)
         )
     `);
@@ -442,11 +454,13 @@ async function createTables() {
             ip_address TEXT DEFAULT '',
             name TEXT NOT NULL,
             sequence_number INTEGER NOT NULL DEFAULT 1,
-            train_service_id INTEGER NOT NULL,
+            trainset_id INTEGER REFERENCES trainsets(id) ON DELETE CASCADE,
+            train_service_id INTEGER,
             media TEXT DEFAULT '',
             maintenance_log TEXT DEFAULT '',
             operational_log TEXT DEFAULT '',
-            CONSTRAINT fk_train_service_coach FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE CASCADE
+            CONSTRAINT fk_trainset_coach FOREIGN KEY (trainset_id) REFERENCES trainsets(id) ON DELETE CASCADE,
+            CONSTRAINT fk_train_service_coach FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE SET NULL
         )
     `);
   await pool.query(`
@@ -565,6 +579,40 @@ async function createTables() {
       );
     }
   }
+
+  // ADD MIGRATION FOR TRAINSET_ID IN SCHEDULES
+  try {
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name='schedules' AND column_name='trainset_id'
+        ) THEN
+          ALTER TABLE schedules ADD COLUMN trainset_id INTEGER;
+          RAISE NOTICE 'Added trainset_id to schedules';
+        END IF;
+      END $$;
+    `);
+  } catch (e) {
+    console.error("[PIDS-DB] Migration error (schedules.trainset_id):", e.message);
+  }
+  // ADD MIGRATION FOR TRAINSET_ID IN COACHES
+  try {
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name='coaches' AND column_name='trainset_id'
+        ) THEN
+          ALTER TABLE coaches ADD COLUMN trainset_id INTEGER REFERENCES trainsets(id) ON DELETE CASCADE;
+          RAISE NOTICE 'Added trainset_id to coaches';
+        END IF;
+      END $$;
+    `);
+  } catch (e) {
+    console.error("[PIDS-DB] Migration error (coaches.trainset_id):", e.message);
+  }
+
   const tableRenames = [
     ["gerbong", "coaches"],
     ["sensor", "sensors"],
@@ -636,6 +684,42 @@ async function createTables() {
     await pool.query(`ALTER TABLE stations ADD COLUMN IF NOT EXISTS division_id INTEGER REFERENCES divisions(id) ON DELETE SET NULL`);
   } catch (e) {
     console.warn("[PIDS-DB] Migration note (stations division_id):", e.message);
+  }
+
+  // SSOT Architecture Migration: Decouple routes from train_services
+  try {
+    await pool.query(`ALTER TABLE routes ADD COLUMN IF NOT EXISTS name TEXT NOT NULL DEFAULT ''`);
+    await pool.query(`
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'routes_train_service_id_key'
+        ) THEN
+          ALTER TABLE routes DROP CONSTRAINT routes_train_service_id_key;
+        END IF;
+      END $$;
+    `);
+    await pool.query(`ALTER TABLE routes ALTER COLUMN train_service_id DROP NOT NULL`);
+    await pool.query(`
+      UPDATE routes SET name = ts.name
+      FROM train_services ts
+      WHERE routes.train_service_id = ts.id AND (routes.name IS NULL OR routes.name = '')
+    `);
+    console.log("[PIDS-DB] ✓ SSOT Migration: routes decoupled from train_services");
+  } catch (e) {
+    console.warn("[PIDS-DB] Migration note (SSOT routes):", e.message);
+  }
+
+  // SSOT Migration: Add train_service_id FK to schedules
+  try {
+    await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS train_service_id INTEGER REFERENCES train_services(id) ON DELETE SET NULL`);
+    await pool.query(`
+      UPDATE schedules SET train_service_id = ts.id
+      FROM train_services ts
+      WHERE schedules.service_name = ts.name AND schedules.train_service_id IS NULL
+    `);
+    console.log("[PIDS-DB] ✓ SSOT Migration: schedules linked to train_services");
+  } catch (e) {
+    console.warn("[PIDS-DB] Migration note (SSOT schedules):", e.message);
   }
 }
 
@@ -736,6 +820,22 @@ export async function seedData() {
     );
   }
   console.log("[PIDS-DB] ✓ Train services seeded");
+
+  // SEED TRAINSETS
+  const trainsetDefinitions = [
+    { name: "TS-01", description: "Rangkaian Stainless Steel 2024" },
+    { name: "TS-02", description: "Rangkaian Stainless Steel 2024" },
+    { name: "TS-03", description: "Rangkaian Stainless Steel 2024" },
+    { name: "TS-04", description: "Rangkaian Stainless Steel 2024" },
+  ];
+
+  for (const ts of trainsetDefinitions) {
+    await query(
+      "INSERT INTO trainsets (name, description) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING",
+      [ts.name, ts.description]
+    );
+  }
+  console.log("[PIDS-DB] ✓ Trainsets seeded");
   const routeDefinitions = {
     MALABAR: {
       direction: "Malang - Bandung",
@@ -755,8 +855,8 @@ export async function seedData() {
       continue;
     }
     const existingRoute = await getOne(
-      "SELECT id FROM routes WHERE train_service_id = $1",
-      [train.id],
+      "SELECT id FROM routes WHERE name = $1",
+      [trainName],
     );
     let routeId;
     if (existingRoute) {
@@ -774,8 +874,8 @@ export async function seedData() {
       await query("DELETE FROM route_stations WHERE route_id = $1", [routeId]);
     } else {
       const res = await query(
-        "INSERT INTO routes (train_service_id, direction) VALUES ($1, $2) RETURNING id",
-        [train.id, routeDef.direction],
+        "INSERT INTO routes (name, train_service_id, direction) VALUES ($1, $2, $3) RETURNING id",
+        [trainName, train.id, routeDef.direction],
       );
       routeId = res.rows[0].id;
     }
@@ -820,14 +920,9 @@ export async function seedData() {
         continue;
       }
       const geojsonText = readFileSync(filePath, "utf-8");
-      const train = await getOne(
-        "SELECT id FROM train_services WHERE name = $1",
-        [trainName],
-      );
-      if (!train) continue;
       const route = await getOne(
-        "SELECT id FROM routes WHERE train_service_id = $1",
-        [train.id],
+        "SELECT id FROM routes WHERE name = $1",
+        [trainName],
       );
       if (!route) continue;
       const optimizedGeoJSON = mergeAndOptimizeGeoJSON(
@@ -872,22 +967,23 @@ export async function seedData() {
         [serviceName],
       );
       let routeId = null;
-      if (train) {
-        const route = await getOne(
-          "SELECT id FROM routes WHERE train_service_id = $1",
-          [train.id],
-        );
-        if (route) routeId = route.id;
-      }
+      const route = await getOne(
+        "SELECT id FROM routes WHERE name = $1",
+        [serviceName],
+      );
+      if (route) routeId = route.id;
+
+      // Pick a trainset (simple rotation for seeding)
+      const tsId = ((parseInt(trainNum) % 4) + 1);
 
       const res = await query(
         `INSERT INTO schedules (
                   route_id, service_name, train_number, schedule_date, status,
                   departure_station, departure_city_code, scheduled_departure,
-                  arrival_station, arrival_city_code, scheduled_arrival
-              ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10)
+                  arrival_station, arrival_city_code, scheduled_arrival, trainset_id
+              ) VALUES ($1, $2, $3, $4, 'ON_TIME', $5, $6, $7, $8, $9, $10, $11)
               ON CONFLICT (service_name, train_number, schedule_date, scheduled_departure)
-              DO UPDATE SET route_id = EXCLUDED.route_id
+              DO UPDATE SET route_id = EXCLUDED.route_id, trainset_id = EXCLUDED.trainset_id
               RETURNING id`,
         [
           routeId,
@@ -900,6 +996,7 @@ export async function seedData() {
           arr,
           arrCode,
           arrTime,
+          tsId
         ],
       );
 
@@ -1447,98 +1544,68 @@ function isNameMatch(a, b) {
 
 export async function getRoutes() {
   try {
-    const services = await getAll("SELECT * FROM train_services ORDER BY id");
-    const liveState = await getState();
+    const dbRoutes = await getAll(`
+      SELECT r.*, ts.name as train_name, ts.class as train_class, ts.train_number as train_num
+      FROM routes r
+      LEFT JOIN train_services ts ON r.train_service_id = ts.id
+      ORDER BY r.id
+    `);
     const routes = {};
-    for (const service of services) {
-      const dbRoute = await getOne(
-        "SELECT * FROM routes WHERE train_service_id = $1",
-        [service.id],
+
+    for (const dbRoute of dbRoutes) {
+      const routeKey = dbRoute.name || dbRoute.train_name || `route_${dbRoute.id}`;
+
+      const stationRows = await getAll(
+        `SELECT rs.id as rs_id, s.id as station_id, s.name, s.media, rs.sequence_order
+         FROM route_stations rs
+         JOIN stations s ON rs.station_id = s.id
+         WHERE rs.route_id = $1
+         ORDER BY rs.sequence_order`,
+        [dbRoute.id],
       );
-      const isLive = isNameMatch(service.name, liveState.serviceName);
-      const currentStationName = isLive ? liveState.currentStation : "";
 
-      if (dbRoute) {
-        const stationRows = await getAll(
-          `
-                    SELECT s.name, s.media
-                    FROM route_stations rs
-                    JOIN stations s ON rs.station_id = s.id
-                    WHERE rs.route_id = $1
-                    ORDER BY rs.sequence_order
-                `,
-          [dbRoute.id],
-        );
+      const parsed = JSON.parse(dbRoute.geojson || "{}");
+      const features = parsed.features || [];
+      const stationPropsMap = new Map();
 
-        const parsed = JSON.parse(dbRoute.geojson || "{}");
-        const features = parsed.features || [];
-        const stationPropsMap = new Map();
-
-        features.forEach((f) => {
-          if (f.properties && f.properties.name) {
-            stationPropsMap.set(normalizeName(f.properties.name), f.properties);
-          }
-        });
-
-        const routeStations = stationRows.map((r) => {
-          const props = stationPropsMap.get(normalizeName(r.name)) || {};
-          return {
-            name: r.name,
-            media: r.media,
-            ...props,
-          };
-        });
-
-        if (routeStations.length === 0 && parsed.stations) {
-          // Fallback to parsed stations if no rows found
-          parsed.stations.forEach((s) => {
-            const sName = typeof s === "string" ? s : s.name;
-            const props = stationPropsMap.get(normalizeName(sName)) || {};
-            routeStations.push({
-              name: sName,
-              ...props,
-            });
-          });
+      features.forEach((f) => {
+        if (f.properties && f.properties.name) {
+          stationPropsMap.set(normalizeName(f.properties.name), f.properties);
         }
+      });
 
-        let currentIdx = parsed.current_station_index || 0;
-        if (isLive && currentStationName) {
-          const found = routeStations.findIndex((s) =>
-            isNameMatch(typeof s === "string" ? s : s.name, currentStationName),
-          );
-          if (found !== -1) currentIdx = found;
-        }
+      const routeStations = stationRows.map((r) => {
+        const props = stationPropsMap.get(normalizeName(r.name)) || {};
+        return {
+          id: r.station_id,
+          rs_id: r.rs_id,
+          name: r.name,
+          media: r.media,
+          sequence_order: r.sequence_order,
+          ...props,
+        };
+      });
 
-        routes[service.name] = {
-          ...service, // Include all train_service fields (class, train_number, etc)
-          ...parsed,
-          name: service.name,
-          stations: routeStations,
-          geojson: dbRoute.geojson,
-          geojson_filename: dbRoute.geojson_filename,
-          is_active: isLive,
-          current_station: currentStationName,
-          current_station_index: currentIdx,
-          status: isLive ? liveState.status : parsed.status || "ON TRACK",
-          train_number: isLive
-            ? liveState.trainNumber
-            : service.train_number || parsed.train_number || "",
-        };
-      } else {
-        let currentIdx = 0;
-        // No route data yet
-        routes[service.name] = {
-          ...service,
-          name: service.name,
-          stations: [],
-          path: "",
-          nodes: [],
-          is_active: isLive,
-          current_station: currentStationName,
-          current_station_index: currentIdx,
-          status: isLive ? liveState.status : "STANDBY",
-        };
+      if (routeStations.length === 0 && parsed.stations) {
+        parsed.stations.forEach((s) => {
+          const sName = typeof s === "string" ? s : s.name;
+          const props = stationPropsMap.get(normalizeName(sName)) || {};
+          routeStations.push({ name: sName, ...props });
+        });
       }
+
+      routes[routeKey] = {
+        id: dbRoute.id,
+        name: routeKey,
+        direction: dbRoute.direction,
+        train_service_id: dbRoute.train_service_id,
+        train_name: dbRoute.train_name || "",
+        train_class: dbRoute.train_class || "",
+        train_number: dbRoute.train_num || "",
+        stations: routeStations,
+        geojson: dbRoute.geojson,
+        geojson_filename: dbRoute.geojson_filename,
+      };
     }
     return routes;
   } catch (e) {
@@ -1551,17 +1618,25 @@ export async function saveRoute(name, stations) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const train = await getOne(
-      "SELECT id FROM train_services WHERE name = $1",
-      [name],
-    );
-    if (!train) throw new Error(`Train ${name} not found`);
 
-    const res = await client.query(
-      "INSERT INTO routes (train_service_id) VALUES ($1) ON CONFLICT (train_service_id) DO UPDATE SET train_service_id = EXCLUDED.train_service_id RETURNING id",
-      [train.id],
+    const existing = await client.query(
+      "SELECT id FROM routes WHERE name = $1", [name]
     );
-    const routeId = res.rows[0].id;
+
+    let routeId;
+    if (existing.rows.length > 0) {
+      routeId = existing.rows[0].id;
+    } else {
+      const train = await client.query(
+        "SELECT id FROM train_services WHERE name = $1", [name]
+      );
+      const trainServiceId = train.rows[0]?.id || null;
+      const res = await client.query(
+        "INSERT INTO routes (name, train_service_id) VALUES ($1, $2) RETURNING id",
+        [name, trainServiceId],
+      );
+      routeId = res.rows[0].id;
+    }
 
     await client.query("DELETE FROM route_stations WHERE route_id = $1", [
       routeId,
@@ -1614,12 +1689,7 @@ export async function saveRoute(name, stations) {
 }
 export async function deleteRoute(name) {
   try {
-    const train = await getOne(
-      "SELECT id FROM train_services WHERE name = $1",
-      [name],
-    );
-    if (!train) throw new Error(`Train ${name} not found`);
-    await query("DELETE FROM routes WHERE train_service_id = $1", [train.id]);
+    await query("DELETE FROM routes WHERE name = $1", [name]);
     return { success: true };
   } catch (e) {
     return { error: e.message };
@@ -1629,9 +1699,9 @@ export async function deleteRoute(name) {
 export async function getSchedules(filter = {}) {
   try {
     let sql = `
-            SELECT s.*, r.direction,
-                   COALESCE(t.name, s.service_name) as display_train_name,
-                   COALESCE(s.train_number, t.train_number) as display_train_number,
+            SELECT s.*, r.direction, r.name as route_name, ts.name as trainset_name,
+                   COALESCE(t.name, rt.name, s.service_name) as display_train_name,
+                   COALESCE(s.train_number, t.train_number, rt.train_number) as display_train_number,
                    s.departure_station as stasiun_keberangkatan,
                    s.arrival_station as stasiun_tujuan,
                    s.scheduled_departure as waktu_keberangkatan_penjadwalan,
@@ -1639,7 +1709,9 @@ export async function getSchedules(filter = {}) {
                    s.notes as catatan
             FROM schedules s
             LEFT JOIN routes r ON s.route_id = r.id
-            LEFT JOIN train_services t ON r.train_service_id = t.id
+            LEFT JOIN train_services t ON s.train_service_id = t.id
+            LEFT JOIN train_services rt ON r.train_service_id = rt.id
+            LEFT JOIN trainsets ts ON s.trainset_id = ts.id
         `;
     let countSql = "SELECT COUNT(*) as total FROM schedules s";
     const params = [];
@@ -1909,11 +1981,53 @@ export async function deleteSchedule(id) {
     return { error: e.message };
   }
 }
-export async function getGerbong(trainServiceId) {
+
+// --- TRAINSETS (Physical Units) ---
+export async function getTrainsets() {
   try {
+    const sets = await getAll("SELECT * FROM trainsets ORDER BY name");
+    // Attach coach count for UI convenience
+    for (const s of sets) {
+      const count = await getOne("SELECT COUNT(*) as total FROM coaches WHERE trainset_id = $1", [s.id]);
+      s.coach_count = parseInt(count.total, 10);
+    }
+    return sets;
+  } catch (e) {
+    console.error("[PIDS-DB] getTrainsets error:", e.message);
+    return [];
+  }
+}
+
+export async function saveTrainset(data) {
+  try {
+    const { id, name, description } = data;
+    if (id) {
+      await query("UPDATE trainsets SET name = $1, description = $2 WHERE id = $3", [name, description, id]);
+      return { id };
+    } else {
+      const res = await query("INSERT INTO trainsets (name, description) VALUES ($1, $2) RETURNING id", [name, description]);
+      return res.rows[0];
+    }
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+export async function deleteTrainset(id) {
+  try {
+    await query("DELETE FROM trainsets WHERE id = $1", [id]);
+    return { success: true };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+export async function getGerbong(parentId, isTrainset = false) {
+  try {
+    const field = isTrainset ? "trainset_id" : "train_service_id";
     return await getAll(
-      "SELECT * FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number",
-      [trainServiceId],
+      `SELECT * FROM coaches WHERE ${field} = $1 ORDER BY sequence_number`,
+      [parentId],
     );
   } catch (e) {
     console.error("[PIDS-DB] getGerbong error:", e.message);
@@ -1929,23 +2043,27 @@ export async function addGerbong(coach) {
       name,
       sequence_number,
       train_service_id,
+      trainset_id,
       media,
       maintenance_log,
       operational_log,
     } = coach;
     await query(
-      `INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id, media, maintenance_log, operational_log)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id, trainset_id, media, maintenance_log, operational_log)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              ON CONFLICT (id) DO UPDATE SET
              ip_address = EXCLUDED.ip_address, name = EXCLUDED.name,
-             sequence_number = EXCLUDED.sequence_number, train_service_id = EXCLUDED.train_service_id,
+             sequence_number = EXCLUDED.sequence_number, 
+             train_service_id = EXCLUDED.train_service_id,
+             trainset_id = EXCLUDED.trainset_id,
              media = EXCLUDED.media, maintenance_log = EXCLUDED.maintenance_log, operational_log = EXCLUDED.operational_log`,
       [
         id,
         ip_address || "",
         name,
         sequence_number ?? 1,
-        train_service_id,
+        train_service_id || null,
+        trainset_id || null,
         media || "",
         maintenance_log || "",
         operational_log || "",
@@ -2254,11 +2372,12 @@ const BACKUP_TABLES = [
       "name",
       "sequence_number",
       "train_service_id",
+      "trainset_id",
       "media",
       "maintenance_log",
       "operational_log",
     ],
-    orderBySql: '"train_service_id", "sequence_number", "id"',
+    orderBySql: '"train_service_id", "trainset_id", "sequence_number", "id"',
   },
   {
     name: "sensors",
@@ -2585,20 +2704,26 @@ export async function updateRouteGeoJSON(name, geojson, filename = "") {
 
       const extractedStations = extractStationsFromGeoJSON(geojson);
       let routeRes = await client.query(
-        "SELECT id FROM routes WHERE train_service_id = $1",
-        [service.id],
+        "SELECT id FROM routes WHERE name = $1",
+        [name],
       );
+      if (routeRes.rows.length === 0) {
+        routeRes = await client.query(
+          "SELECT id FROM routes WHERE train_service_id = $1",
+          [service.id],
+        );
+      }
       let route = routeRes.rows[0] || null;
       if (!route) {
         const routeResult = await client.query(
-          "INSERT INTO routes (train_service_id, geojson, geojson_filename) VALUES ($1, $2, $3) RETURNING id",
-          [service.id, JSON.stringify(geojson), filename],
+          "INSERT INTO routes (name, train_service_id, geojson, geojson_filename) VALUES ($1, $2, $3, $4) RETURNING id",
+          [name, service.id, JSON.stringify(geojson), filename],
         );
         route = routeResult.rows[0];
       } else {
         await client.query(
-          "UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3",
-          [JSON.stringify(geojson), filename, route.id],
+          "UPDATE routes SET geojson = $1, geojson_filename = $2, name = COALESCE(NULLIF(name, ''), $3) WHERE id = $4",
+          [JSON.stringify(geojson), filename, name, route.id],
         );
         await client.query("DELETE FROM route_stations WHERE route_id = $1", [
           route.id,

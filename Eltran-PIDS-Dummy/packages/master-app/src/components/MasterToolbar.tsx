@@ -4,7 +4,7 @@
 import { MapPin, Settings, MonitorPlay, RefreshCw, Save } from "lucide-react";
 
 interface MasterToolbarProps {
-  jumlahKereta: number;
+  coachCount: number;
   innerRadius: number;
   outerRadius: number;
   sendData: (updates: any) => Promise<void>;
@@ -12,14 +12,14 @@ interface MasterToolbarProps {
 }
 
 export function MasterToolbar({
-  jumlahKereta,
+  coachCount,
   innerRadius,
   outerRadius,
   sendData,
   showToast,
 }: MasterToolbarProps) {
   return (
-    <div className="fixed bottom-0 left-0 lg:left-80 right-0 z-[60] bg-[#1d2d6a]/95 dark:bg-[#020617]/95 backdrop-blur-xl border-t border-[#152355] dark:border-slate-800 shadow-[0_-15px_60px_rgba(0,0,0,0.25)] px-8 py-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 transition-colors">
+    <div className="fixed bottom-0 left-0 lg:left-72 right-0 z-[60] bg-[#1d2d6a]/95 dark:bg-[#020617]/95 backdrop-blur-xl border-t border-[#152355] dark:border-slate-800 shadow-[0_-15px_60px_rgba(0,0,0,0.25)] px-8 py-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 transition-colors">
       <div className="flex flex-col text-center md:text-left">
         <span className="text-xs font-bold text-blue-300 dark:text-blue-500 uppercase tracking-widest mb-1">
           Global Action Toolbar
@@ -58,7 +58,7 @@ export function MasterToolbar({
         <button
           onClick={async () => {
             await sendData({
-              jumlahKereta,
+              coachCount,
               geofencingInnerRadius: innerRadius,
               geofencingOuterRadius: outerRadius,
             });

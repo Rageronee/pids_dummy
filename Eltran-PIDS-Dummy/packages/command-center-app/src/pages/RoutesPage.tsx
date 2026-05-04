@@ -2,40 +2,22 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { io } from "socket.io-client";
 import {
   MapPin,
   Plus,
   Trash2,
   Pencil,
-  CheckCircle2,
   ChevronRight,
   ChevronLeft,
   X,
   Search,
   ArrowUp,
   ArrowDown,
-  FileJson,
-  MapPinned,
   Save,
   Navigation,
   Map as MapIcon,
-  Train,
-  Users,
-  Clock,
-  AlertCircle,
-  ExternalLink,
-  MoreVertical,
-  LayoutGrid,
-  List,
-  Lock,
-  Unlock,
   RefreshCw,
-  Check,
-  Layers,
-  Minus,
-  Moon,
-  Target,
+  LayoutGrid,
 } from "lucide-react";
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
@@ -43,19 +25,13 @@ import { ConfirmModal, ToastNotification } from "../components/SharedUI";
 
 
 interface Route {
+  id?: number;
   name: string;
-  stations: any[];
+  stations: Array<{ id: string; name: string; media?: string }>;
   geojson?: string;
-  status?: "ON TRACK" | "DELAYED";
-  type?: "Intercity" | "Commuter" | "Lokal";
-  train_number?: string;
-  units?: number;
-  distance?: number;
-  occupancy?: number;
-  scheduled_time?: string;
-  delay?: string;
-  is_active?: boolean;
-  current_station_index?: number;
+  train_name?: string;
+  train_class?: string;
+  direction?: string;
 }
 
 export default function RoutesPage({
@@ -68,7 +44,6 @@ export default function RoutesPage({
   setPage: (page: string) => void;
 }) {
   const [routes, setRoutes] = useState<Record<string, Route>>({});
-  const [masterStations, setMasterStations] = useState<any[]>([]);
   const [dbStations, setDbStations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -80,147 +55,41 @@ export default function RoutesPage({
     Array<{
       id: string;
       name: string;
-      time: string;
-      platform?: string;
-      status?: string;
-      type?: string;
     }>
   >([]);
   const [stationSearch, setStationSearch] = useState("");
-  const [currentRouteGeojson, setCurrentRouteGeojson] = useState<any>(null);
+
   const [isEditing, setIsEditing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
   const [saving, setSaving] = useState(false);
-  const [connected, setConnected] = useState(false);
+
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const { toast, showToast, closeToast } = useToast();
   const stationsListRef = useRef<HTMLDivElement>(null);
-  const isNameMatch = (a: any, b: any) => {
-    if (!a || !b) return false;
-    // Prefer ID comparison for SSOT
-    const idA = typeof a === "string" ? a : a.id || a.name;
-    const idB = typeof b === "string" ? b : b.id || b.name;
-    if (idA === idB) return true;
 
-    const clean = (s: string) =>
-      String(s)
-        .toUpperCase()
-        .replace(/\(.*\)/g, "")
-        .replace(/[^A-Z0-9]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    return clean(idA) === clean(idB);
-  };
-
-  const scrollToCurrentStation = useCallback(() => {
-    const route = selectedRouteId ? routes[selectedRouteId] : null;
-    if (!route || !stationsListRef.current) return;
-
-    const currentIdx = route.current_station_index || 0;
-    const stationElement = stationsListRef.current.querySelector(
-      `[data-station-index="${currentIdx}"]`,
-    );
-
-    if (stationElement) {
-      stationElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }, [selectedRouteId, routes]);
 
   const fetchRoutes = useCallback(async () => {
     try {
-      const [rResp, sResp] = await Promise.all([
-        fetch(`${API}/api/admin/routes`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${API}/api/state`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      const rResp = await fetch(`${API}/api/admin/routes`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const d = await rResp.json();
-      const sData = await sResp.json();
 
       if (d.success && d.routes) {
         const keys = Object.keys(d.routes);
         const enhancedRoutes: Record<string, Route> = {};
-        const currentStationName = sData.currentStation || "";
-        const serviceName = sData.serviceName || "";
 
-        if (currentStationName) {
-          console.log(
-            `[PIDS Sync] Received current station: "${currentStationName}"`,
-          );
-        }
-
-        keys.forEach((key, idx) => {
+        keys.forEach((key) => {
           const r = d.routes[key];
-          const rawStations =
-            sData.serviceName === r.name &&
-              sData.stations &&
-              Array.isArray(sData.stations) &&
-              sData.stations.length > 0
-              ? sData.stations
-              : r.stations || [];
-
-          // Merge real-time station data with DB time info if available
-          const dbStations = r.stations || [];
-          const stations = rawStations.map((s: any, idx: number) => {
-            const sName = typeof s === "string" ? s : s.name;
-            const dbMatch = dbStations.find((dbs: any) =>
-              isNameMatch(dbs, sName)
-            ) || dbStations[idx];
-
-            if (typeof s === "string") {
-              return {
-                name: s,
-                time: dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time ||
-                  dbMatch?.schedule_ka67 || dbMatch?.schedule_ka68 ||
-                  dbMatch?.schedule_ka69 || dbMatch?.schedule_ka70 || ""
-              };
-            }
-            return {
-              ...s,
-              time: s.time || dbMatch?.time || dbMatch?.arrival_time || dbMatch?.departure_time ||
-                s.schedule_ka67 || s.schedule_ka68 || s.schedule_ka69 || s.schedule_ka70 ||
-                dbMatch?.schedule_ka67 || dbMatch?.schedule_ka68 ||
-                dbMatch?.schedule_ka69 || dbMatch?.schedule_ka70 || ""
-            };
-          });
-
-          let foundIndex = r.current_station_index;
-          if (currentStationName) {
-            const mappedIndex = stations.findIndex((s: any) =>
-              isNameMatch(s, currentStationName),
-            );
-            if (mappedIndex !== -1) {
-              if (foundIndex !== mappedIndex) {
-                console.log(
-                  `[PIDS Sync] Index mismatch fix for ${key}: DB index ${foundIndex} -> Calculated ${mappedIndex}`,
-                );
-              }
-              foundIndex = mappedIndex;
-            }
-          }
-
-          const conventionalNum = (idx + 1).toString().padStart(2, "0");
+          
           enhancedRoutes[key] = {
             ...r,
             id: key,
             name: r.name || key,
-            stations: stations,
-            is_active: r.is_active === true, // Strict boolean from backend
-            current_station_index: foundIndex !== undefined ? foundIndex : 0,
-            current_station:
-              currentStationName && r.is_active
-                ? currentStationName
-                : r.current_station || "",
-            status: r.status || "ON TRACK",
-            train_number:
-              r.train_number ||
-              (serviceName === r.name ? sData.trainNumber : "") ||
-              `KA ${conventionalNum}`,
+            stations: r.stations || [],
           };
         });
         setRoutes(enhancedRoutes);
@@ -234,21 +103,7 @@ export default function RoutesPage({
       setLoading(false);
     }
   }, [token, selectedRouteId]);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastAutoScrolledRouteRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (selectedRouteId && routes[selectedRouteId]) {
-      // Only auto-scroll if the route has changed (initial entry to this route's detail)
-      if (lastAutoScrolledRouteRef.current !== selectedRouteId) {
-        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-        scrollTimeoutRef.current = setTimeout(() => {
-          scrollToCurrentStation();
-          lastAutoScrolledRouteRef.current = selectedRouteId;
-        }, 300);
-      }
-    }
-  }, [selectedRouteId, routes, scrollToCurrentStation]);
 
   const fetchDbStations = useCallback(async () => {
     try {
@@ -273,32 +128,7 @@ export default function RoutesPage({
   }, [fetchRoutes, fetchDbStations]);
 
 
-  useEffect(() => {
-    const socket = io(API, {
-      transports: ["websocket", "polling"],
-      reconnection: true,
-    });
-    socket.on("connect", () => {
-      console.log("[Socket.IO] Routes page connected");
-      setConnected(true);
-    });
-    socket.on("disconnect", () => {
-      setConnected(false);
-    });
-    socket.on("db:update", () => {
-      console.log(
-        "[Socket.IO] Database update received, re-fetching routes...",
-      );
-      fetchRoutes();
-    });
-    socket.on("state:update", () => {
-      console.log("[Socket.IO] State update received, re-fetching routes...");
-      fetchRoutes();
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, [fetchRoutes]);
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -307,7 +137,6 @@ export default function RoutesPage({
   const resetForm = useCallback(() => {
     setNewRouteName("");
     setSelectedStations([]);
-    setCurrentRouteGeojson(null);
     setIsEditing(false);
     setStationSearch("");
   }, []);
@@ -322,14 +151,7 @@ export default function RoutesPage({
         return;
       }
 
-      const existing = routes[nameToSave];
-      if (existing?.is_active) {
-        showToast(
-          "Rute ini sedang berjalan dan tidak dapat dimodifikasi!",
-          false,
-        );
-        return;
-      }
+
 
       setSaving(true);
       try {
@@ -378,17 +200,12 @@ export default function RoutesPage({
 
   const handleEditRoute = useCallback(
     (route: any) => {
-      if (route.is_active) {
-        showToast("Akses Ditolak: Rute sedang aktif!", false);
-        return;
-      }
       setNewRouteName(route.name);
       
       const stations = (route.stations || []).map((s: any) => {
         return { 
           id: s.id || s.name, 
-          name: s.name, 
-          time: s.time || "" 
+          name: s.name,
         };
       });
 
@@ -401,11 +218,7 @@ export default function RoutesPage({
 
   const confirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
-    if (routes[deleteTarget.id]?.is_active) {
-      showToast("Gagal: Rute sedang aktif!", false);
-      setDeleteTarget(null);
-      return;
-    }
+
     setSaving(true);
     try {
       const res = await fetch(
@@ -456,12 +269,7 @@ export default function RoutesPage({
             )
             .map((f: any) => {
               const name = f.properties.name.toUpperCase();
-              const time =
-                f.properties.schedule_ka68 ||
-                f.properties.schedule_ka67 ||
-                f.properties.time ||
-                "";
-              return { name, time };
+              return { name };
             });
 
           if (extractedStations.length === 0) {
@@ -476,7 +284,6 @@ export default function RoutesPage({
             return {
               id: match?.id || ext.name,
               name: match?.name || ext.name,
-              time: ext.time
             };
           });
 
@@ -503,10 +310,7 @@ export default function RoutesPage({
         ...selectedStations,
         { 
           id: station.id,
-          name: station.name, 
-          time: "", 
-          platform: "1", 
-          status: "On Track" 
+          name: station.name,
         },
       ]);
       setStationSearch("");
@@ -522,8 +326,7 @@ export default function RoutesPage({
     })
     .filter(
       (r) =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.train_number?.toLowerCase().includes(searchQuery.toLowerCase()),
+        r.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   const totalPages = Math.ceil(routeList.length / itemsPerPage);
@@ -640,33 +443,13 @@ export default function RoutesPage({
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.1em] ${route.status === "ON TRACK"
-                            ? "bg-green-100 text-green-600 dark:bg-green-900/30"
-                            : "bg-red-100 text-red-600 dark:bg-red-900/30"
-                            }`}
-                        >
-                          {route.status}
-                        </span>
-                        {route.is_active && (
-                          <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 rounded-lg text-[10px] font-bold border border-amber-100 dark:border-amber-900/30">
-                            <AlertCircle size={12} /> Modifikasi Terkunci
-                          </span>
-                        )}
                         <span className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.1em]">
-                          {route.train_number}
+                          {route.train_class || "Intercity"} Route
                         </span>
-
                       </div>
                       <div className="text-right">
-                        <div className="text-[#1d2d6a] dark:text-white font-bold text-sm flex items-center gap-1.5 justify-end">
-                          <Clock size={14} className="text-[#ee6f1f]" />
-                          {route.scheduled_time}{" "}
-                          {route.status === "DELAYED" ? "Delayed" : ""}
-                        </div>
-
                         <div className="text-slate-400 dark:text-slate-500 text-[10px] font-bold mt-0.5">
-                          Delay: {route.delay}
+                          {route.stations?.length || 0} Stops
                         </div>
                       </div>
                     </div>
@@ -683,81 +466,27 @@ export default function RoutesPage({
                       </div>
                     </div>
 
-                    <div className="flex border-t border-slate-100 dark:border-slate-700 pt-4 mt-1 flex-col gap-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.1em]">
-                          Trip Progress
-                        </span>
-                        {(() => {
-                          const totalStations = route.stations?.length || 0;
-                          const currentIdx = route.current_station_index || 0;
-                          const progress =
-                            totalStations > 1
-                              ? Math.round(
-                                (currentIdx / (totalStations - 1)) * 100,
-                              )
-                              : 0;
-                          return (
-                            <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-white">
-                              {progress}%
-                            </span>
-                          );
-                        })()}
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        {(() => {
-                          const totalStations = route.stations?.length || 0;
-                          const currentIdx = route.current_station_index || 0;
-                          const progress =
-                            totalStations > 1
-                              ? Math.round(
-                                (currentIdx / (totalStations - 1)) * 100,
-                              )
-                              : 0;
-                          return (
-                            <div
-                              className={`h-full transition-all duration-1000 rounded-full ${route.status === "DELAYED"
-                                ? "bg-amber-500"
-                                : "bg-[#ee6f1f]"
-                                }`}
-                              style={{ width: `${progress}%` }}
-                            />
-                          );
-                        })()}
-                      </div>
 
-                    </div>
 
                     <div className="absolute top-5 right-5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {route.is_active ? (
-                        <div
-                          title="Rute sedang berjalan (Terkunci)"
-                          className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-300 dark:text-slate-600 rounded-md cursor-not-allowed"
-                        >
-                          <Lock size={12} />
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditRoute(route);
-                            }}
-                            className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-[#1d2d6a] dark:text-slate-400 dark:hover:text-white rounded-md transition-all"
-                          >
-                            <Pencil size={12} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteTarget({ id: route.name });
-                            }}
-                            className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-300 hover:text-red-500 rounded-md transition-all"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditRoute(route);
+                        }}
+                        className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-[#1d2d6a] dark:text-slate-400 dark:hover:text-white rounded-md transition-all"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget({ id: route.name });
+                        }}
+                        className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-300 hover:text-red-500 rounded-md transition-all"
+                      >
+                        <Trash2 size={12} />
+                      </button>
                     </div>
                   </motion.div>
                 ))
@@ -810,7 +539,7 @@ export default function RoutesPage({
                 <div className="flex-1 flex flex-col pt-6 pl-8 pr-0 pb-0 overflow-hidden">
                   <div className="flex items-center justify-between mb-6 pr-8">
                     <h4 className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.1em]">
-                      Route Schedule
+                      Route Checkpoints
                     </h4>
                     <div className="flex items-center gap-2">
                       <button
@@ -818,12 +547,6 @@ export default function RoutesPage({
                         className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[12px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
                       >
                         <MapIcon size={12} /> Lihat Peta
-                      </button>
-                      <button
-                        onClick={scrollToCurrentStation}
-                        className="px-2.5 py-1 bg-[#ee6f1f] text-white text-[12px] font-bold rounded-md shadow-sm hover:bg-[#d45d15] transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
-                      >
-                        <Navigation size={12} /> Cek Posisi
                       </button>
                     </div>
                   </div>
@@ -838,53 +561,26 @@ export default function RoutesPage({
                           const stations = selectedRoute.stations || [];
                           const isFirst = idx === 0;
                           const isLast = idx === stations.length - 1;
-
-                          const currentIdx =
-                            selectedRoute.current_station_index || 0;
-                          const isPassed = idx < currentIdx;
-                          const isCurrent = idx === currentIdx;
-
                           const sName = typeof s === "string" ? s : s.name;
-                          const sTime = typeof s === "string"
-                            ? "--:--"
-                            : (s.time || s.arrival_time || s.departure_time || s.scheduled_time ||
-                              s.schedule_ka67 || s.schedule_ka68 || s.schedule_ka69 || s.schedule_ka70 || "--:--");
-                          const sPlatform =
-                            typeof s === "string" ? "1" : s.platform || "1";
 
                           return (
                             <div
                               key={idx}
                               data-station-index={idx}
-                              className="relative pb-5 last:pb-2 scroll-mt-24"
+                              className="relative pb-5 last:pb-2"
                             >
                               {!isLast && (
                                 <div
-                                  className={`absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 ${isPassed ? "bg-slate-200 dark:bg-slate-800" : "bg-slate-100 dark:bg-slate-800"
-                                    }`}
+                                  className="absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 bg-slate-100 dark:bg-slate-800"
                                 />
                               )}
 
                               <div
-                                className={`relative z-10 flex items-center p-5 bg-white dark:bg-slate-900 rounded-[24px] border transition-all duration-300 shadow-sm ${isCurrent
-                                  ? "border-orange-200 dark:border-[#ee6f1f]/50 shadow-orange-500/10 ring-1 ring-orange-200/50 dark:ring-[#ee6f1f]/20"
-                                  : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
-                                  }`}
+                                className="relative z-10 flex items-center p-5 bg-white dark:bg-slate-900 rounded-[24px] border transition-all duration-300 shadow-sm border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
                               >
                                 <div className="mr-5 flex flex-col items-center justify-center shrink-0">
-                                  <div
-                                    className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-500 ${isCurrent
-                                      ? "bg-[#ee6f1f] border-[#ee6f1f] shadow-[0_0_12px_rgba(238,111,31,0.4)] scale-110"
-                                      : isPassed
-                                        ? "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                                      }`}
-                                  >
-                                    {isPassed && (
-                                      <div className="w-full h-full flex items-center justify-center">
-                                        <div className="w-1 h-1 bg-slate-300 rounded-full" />
-                                      </div>
-                                    )}
+                                  <div className="w-8 h-8 rounded-lg bg-[#1d2d6a]/5 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-[#1d2d6a] dark:text-slate-300">
+                                    {String(idx + 1).padStart(2, "0")}
                                   </div>
                                 </div>
 
@@ -892,54 +588,20 @@ export default function RoutesPage({
                                   <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
                                       <span
-                                        className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${isCurrent
-                                          ? "text-[#ee6f1f]"
-                                          : isPassed
-                                            ? "text-slate-300"
-                                            : "text-slate-400"
-                                          }`}
+                                        className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400"
                                       >
                                         {isFirst
                                           ? "Origin"
                                           : isLast
                                             ? "Terminus"
-                                            : "Station"}
+                                            : `Checkpoint ${idx}`}
                                       </span>
-                                      {isCurrent && (
-                                        <div className="w-1 h-1 rounded-full bg-[#ee6f1f] animate-pulse" />
-                                      )}
                                     </div>
                                     <h5
-                                      className={`text-base font-semibold leading-tight truncate ${isPassed ? "text-slate-400 dark:text-slate-600" : "text-[#1d2d6a] dark:text-white"}`}
+                                      className="text-base font-semibold leading-tight truncate text-[#1d2d6a] dark:text-white"
                                     >
                                       {sName}
                                     </h5>
-
-                                    {(isPassed || isCurrent) && (
-                                      <div className="flex justify-start mt-2">
-                                        <span
-                                          className={`text-[10px] font-semibold uppercase tracking-[0.1em] px-2 py-0.5 rounded ${isPassed
-                                            ? "bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600"
-                                            : "bg-orange-50 dark:bg-[#ee6f1f]/10 text-[#ee6f1f]"
-                                            }`}
-                                        >
-                                          {isPassed
-                                            ? "Departed"
-                                            : "Arriving Next"}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="flex flex-col items-end shrink-0 ml-4">
-                                    <div className="flex items-center gap-1.5">
-                                      <Clock size={12} className={isCurrent ? "text-[#ee6f1f]" : "text-slate-300 dark:text-slate-600"} />
-                                      <div
-                                        className={`text-sm font-bold font-mono tracking-tighter ${isCurrent ? "text-[#ee6f1f]" : isPassed ? "text-slate-400 dark:text-slate-600" : "text-[#1d2d6a] dark:text-slate-200"}`}
-                                      >
-                                        {sTime}
-                                      </div>
-                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -949,40 +611,7 @@ export default function RoutesPage({
                       )}
                     </div>
 
-                    {selectedRoute.stations &&
-                      selectedRoute.stations.length > 0 && (
-                        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 shrink-0 pr-8 pb-8">
-                          {(() => {
-                            const totalStations = selectedRoute.stations.length;
-                            const currentIdx =
-                              selectedRoute.current_station_index || 0;
-                            const progressPercent =
-                              totalStations > 1
-                                ? Math.round(
-                                  (currentIdx / (totalStations - 1)) * 100,
-                                )
-                                : 0;
-                            return (
-                              <>
-                                <div className="flex justify-between items-center mb-3">
-                                  <div className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">
-                                    Trip Progress
-                                  </div>
-                                  <div className="text-xs font-medium text-[#1d2d6a] dark:text-white">
-                                    {progressPercent}% Completed
-                                  </div>
-                                </div>
-                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-gradient-to-r from-[#ee6f1f] to-[#fcd34d] rounded-full transition-all duration-1000"
-                                    style={{ width: `${progressPercent}%` }}
-                                  />
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </div>
-                      )}
+
                   </div>
                 </div>
               </>
@@ -995,7 +624,7 @@ export default function RoutesPage({
                   Select a Route
                 </h4>
                 <p className="text-xs font-bold text-slate-400 mt-1 max-w-[200px]">
-                  Click any route card on the left to monitor live status
+                  Click any route card on the left to view station sequence
                 </p>
               </div>
             )}
@@ -1126,16 +755,7 @@ export default function RoutesPage({
                                 <div className="text-xs font-semibold text-[#1d2d6a] truncate">
                                   {s.name}
                                 </div>
-                                <input
-                                  type="time"
-                                  value={s.time}
-                                  onChange={(e) => {
-                                    const n = [...selectedStations];
-                                    n[idx].time = e.target.value;
-                                    setSelectedStations(n);
-                                  }}
-                                  className="mt-0.5 text-[#ee6f1f] text-[10px] font-semibold bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
-                                />
+
                               </div>
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button

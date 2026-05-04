@@ -42,7 +42,7 @@
 
 @layer components {
     .kai-card {
-        @apply rounded-[2.5rem] border border-slate-200 bg-white dark:bg-slate-900/40 backdrop-blur-sm dark:border-slate-800/50 shadow-md overflow-hidden;
+        @apply rounded-[2.5rem] border border-slate-200 bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm dark:border-slate-800/50 shadow-md overflow-hidden;
     }
 
     .kai-sidebar-item {
@@ -63,7 +63,7 @@
 }
 
 body {
-    @apply bg-[#f8fafc] text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-[#f8fafc] text-slate-900 dark:bg-[#0a0f1e] dark:text-slate-100;
 }
 
 /* Custom Scrollbar Styling (Premium & Subtle) */

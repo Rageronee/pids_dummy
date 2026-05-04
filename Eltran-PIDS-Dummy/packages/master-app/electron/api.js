@@ -92,6 +92,9 @@ import {
   closeDatabase,
   updateRouteGeoJSON,
   importStationsFromGeoJSON,
+  getTrainsets,
+  saveTrainset,
+  deleteTrainset,
 } from "./database.js";
 
 const PUBLIC_DIR = path.resolve(__dirname, "..", "public");
@@ -959,6 +962,59 @@ export async function startApiServer() {
       }
     },
   );
+
+  // --- TRAINSETS API ---
+  apiApp.get("/api/admin/trainsets", requireAdmin, async (req, res) => {
+    res.json({ success: true, trainsets: await getTrainsets() });
+  });
+
+  apiApp.post("/api/admin/trainsets", requireAdmin, async (req, res) => {
+    const result = await saveTrainset(req.body);
+    if (result.error) return res.status(500).json({ success: false, error: result.error });
+    await writeLog({
+      action: "ADMIN_CRUD",
+      user: req.user.username,
+      role: req.user.role,
+      details: `Trainset diperbarui: ${req.body.name}`,
+    });
+    await broadcastDbUpdate();
+    res.json({ success: true, trainset: result });
+  });
+
+  apiApp.delete("/api/admin/trainsets/:id", requireAdmin, async (req, res) => {
+    const result = await deleteTrainset(req.params.id);
+    if (result.error) return res.status(500).json({ success: false, error: result.error });
+    await writeLog({
+      action: "ADMIN_CRUD",
+      user: req.user.username,
+      role: req.user.role,
+      details: `Trainset dihapus ID: ${req.params.id}`,
+    });
+    await broadcastDbUpdate();
+    res.json({ success: true });
+  });
+
+  apiApp.get("/api/admin/trainsets/:id/gerbongs", requireAdmin, async (req, res) => {
+    res.json({ success: true, coaches: await getGerbong(req.params.id, true) });
+  });
+
+  apiApp.post("/api/admin/trainsets/:id/gerbongs", requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { coaches } = req.body;
+    try {
+      const existing = await getGerbong(id, true);
+      for (const c of existing) {
+        await deleteGerbong(c.id);
+      }
+      for (const c of coaches) {
+        await addGerbong({ ...c, trainset_id: id, id: c.id || crypto.randomUUID() });
+      }
+      res.json({ success: true });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   apiApp.get("/api/admin/routes", requireAdmin, async (req, res) => {
     res.json({ success: true, routes: await getRoutes() });
   });

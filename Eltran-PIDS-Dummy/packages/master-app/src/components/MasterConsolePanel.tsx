@@ -50,7 +50,7 @@ export function MasterConsolePanel({
   sendData: (updates: any) => Promise<void>;
 }) {
   const activeTrainName = data?.serviceName || "Belum Dikonfigurasi";
-  const [jumlahKereta, setJumlahKereta] = useState(data?.jumlahKereta || 4);
+  const coachCount = data?.coachCount || 4;
   const [gerbongCounts, setGerbongCounts] = useState<Record<string, number>>(
     {},
   );
@@ -230,7 +230,7 @@ export function MasterConsolePanel({
 
   // Fetch schedules for the active service
   useEffect(() => {
-    fetch("${API}/api/schedules")
+    fetch(`${API}/api/schedules`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.schedules) {
@@ -298,12 +298,15 @@ export function MasterConsolePanel({
       .catch(console.error);
   }, []);
 
-  // Update jumlah kereta when activeTrainName or gerbongCounts changes
+  // Update coachCount when activeTrainName or gerbongCounts changes
   useEffect(() => {
     if (activeTrainName && gerbongCounts[activeTrainName]) {
-      setJumlahKereta(gerbongCounts[activeTrainName]);
+      const dbCount = gerbongCounts[activeTrainName];
+      if (dbCount !== coachCount) {
+        sendData({ coachCount: dbCount });
+      }
     }
-  }, [activeTrainName, gerbongCounts]);
+  }, [activeTrainName, gerbongCounts, coachCount, sendData]);
 
   const handleLoadAudioFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -1317,7 +1320,7 @@ export function MasterConsolePanel({
         title="1. Konfigurasi Aset & Jaringan"
         icon={Settings}
         defaultOpen={true}
-        summary={`${jumlahKereta} Kereta Tersambung • IP Global: 192.168.1.48`}
+        summary={`${coachCount} Kereta Tersambung • IP Global: 192.168.1.48`}
       >
         <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm p-5 lg:p-6 mt-4 rounded-2xl border border-slate-200 dark:border-slate-800/50 shadow-sm flex flex-col gap-6 transition-colors">
           {/* Header Controls: Global IP & Controls */}
@@ -1399,8 +1402,8 @@ export function MasterConsolePanel({
                 <Train size={14} className="text-slate-400 dark:text-slate-500" />
                 <select
                   className="text-xs font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent cursor-pointer focus:outline-none min-w-[150px]"
-                  value={jumlahKereta}
-                  onChange={(e) => setJumlahKereta(Number(e.target.value))}
+                  value={coachCount}
+                  onChange={(e) => sendData({ coachCount: Number(e.target.value) })}
                 >
                   {[
                     ...Array(
@@ -1419,7 +1422,7 @@ export function MasterConsolePanel({
           {/* Visualizer */}
           <div className="flex items-stretch gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent snap-x">
             {[
-              ...Array.from({ length: jumlahKereta }, (_, i) => String(i + 1)),
+              ...Array.from({ length: coachCount }, (_, i) => String(i + 1)),
             ].map((item, i) => (
               <div key={item} className="flex shrink-0 snap-start w-[220px]">
                 <div className="flex flex-col w-full bg-white dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200 dark:border-slate-800/50 rounded-2xl overflow-hidden shadow-sm group hover:border-[#1d2d6a]/40 dark:hover:border-[#ee6f1f]/40 hover:shadow-md transition-all relative">
@@ -1494,6 +1497,7 @@ export function MasterConsolePanel({
         simGps={simGps}
         trains={trains}
         routeLine={routeLine}
+        scheduleData={scheduleData}
       />
 
       {/* 3. SISTEM MEDIA & PENYIARAN */}
@@ -2100,7 +2104,7 @@ export function MasterConsolePanel({
 
       {/* FIXED BOTTOM TOOLBAR */}
       <MasterToolbar
-        jumlahKereta={jumlahKereta}
+        coachCount={coachCount}
         innerRadius={innerRadius}
         outerRadius={outerRadius}
         sendData={sendData}

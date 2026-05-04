@@ -3,7 +3,7 @@
  * Extracted from MasterConsolePanel for modularity.
  */
 import { ChangeEvent } from "react";
-import { MapPin, ChevronRight, Upload, Trash2, Info } from "lucide-react";
+import { MapPin, Upload, Trash2, Info } from "lucide-react";
 import { SectionAccordion } from "./ui/SectionAccordion";
 
 interface RouteCheckpointsProps {
@@ -17,6 +17,7 @@ interface RouteCheckpointsProps {
   simGps?: any;
   trains?: any[];
   routeLine?: [number, number][];
+  scheduleData?: any[];
 }
 
 export function RouteCheckpoints({
@@ -27,6 +28,7 @@ export function RouteCheckpoints({
   navTableRef,
   onUploadGeoJSON,
   onDeleteClick,
+  scheduleData = [],
 }: RouteCheckpointsProps) {
   // Helper to robustly extract station name from string, JSON string, or object
   const getStationName = (s: any): string => {
@@ -157,27 +159,31 @@ export function RouteCheckpoints({
                 <div className="flex-shrink-0 bg-[#1d2d6a] dark:bg-slate-800 text-white border-b border-[#152355] dark:border-slate-700 transition-colors">
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
                     <colgroup>
-                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[10%]" />
                       <col className="w-[8%]" />
-                      <col className="w-[11%]" />
-                      <col className="w-[11%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[10%]" />
                       <col className="w-[8%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[28%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[26%]" />
                     </colgroup>
                     <thead>
                       <tr>
                         <th className="py-6 px-6 text-sm font-bold uppercase tracking-widest first:rounded-tl-[2rem]">
-                          Nama Stasiun
+                          Stasiun
                         </th>
                         <th className="py-6 px-4 text-sm font-bold uppercase tracking-widest">
+                          Jadwal
+                        </th>
+                        <th className="py-6 px-4 text-sm font-bold uppercase tracking-widest text-center">
                           Ket
                         </th>
                         <th className="py-6 px-4 text-sm font-bold text-right uppercase tracking-widest">
-                          Longitude
+                          Lon
                         </th>
                         <th className="py-6 px-4 text-sm font-bold text-right uppercase tracking-widest">
-                          Latitude
+                          Lat
                         </th>
                         <th className="py-6 px-4 text-sm font-bold text-center uppercase tracking-widest">
                           TTA
@@ -186,7 +192,7 @@ export function RouteCheckpoints({
                           Status
                         </th>
                         <th className="py-6 px-6 text-sm font-bold uppercase tracking-widest last:rounded-tr-[2rem]">
-                          Next Stasiun
+                          Next
                         </th>
                       </tr>
                     </thead>
@@ -200,39 +206,70 @@ export function RouteCheckpoints({
                 >
                   <table className="w-full text-left whitespace-nowrap border-separate border-spacing-0 table-fixed">
                     <colgroup>
-                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[10%]" />
                       <col className="w-[8%]" />
-                      <col className="w-[11%]" />
-                      <col className="w-[11%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[10%]" />
                       <col className="w-[8%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[28%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[26%]" />
                     </colgroup>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-base">
                       {navData.map((item: any, idx: number) => {
-                        const isBerhenti = item.status === "BERHENTI";
+                        const currentStationName = getStationName(data?.currentStation).toUpperCase();
+                        const itemName = item.name.toUpperCase();
+                        const isBerhenti = item.status === "BERHENTI" || itemName === currentStationName;
+                        
+                        // Cari waktu di scheduleData
+                        let timeStr = "--:--";
+                        const activeSched = scheduleData.find((s: any) => 
+                          (s.train_name?.toUpperCase() === route?.name?.toUpperCase()) || 
+                          (s.display_train_name?.toUpperCase() === route?.name?.toUpperCase())
+                        );
+
+                        if (activeSched?.stops) {
+                          const stop = activeSched.stops.find((st: any) => 
+                            st.station_name?.toUpperCase() === itemName ||
+                            st.stasiun?.toUpperCase() === itemName
+                          );
+                          timeStr = stop?.arrival_time || stop?.departure_time || stop?.waktu_kedatangan_penjadwalan || "--:--";
+                        } else {
+                          const sched = scheduleData.find((s: any) => 
+                            (s.stasiun_keberangkatan?.toUpperCase() === itemName) || 
+                            (s.stasiun_tujuan?.toUpperCase() === itemName)
+                          );
+                          timeStr = sched ? (sched.waktu_keberangkatan_penjadwalan || sched.waktu_kedatangan_penjadwalan || "--:--") : "--:--";
+                        }
+
                         return (
                           <tr
                             key={idx}
                             data-active={isBerhenti}
-                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50/100 dark:bg-[#ee6f1f]/10" : "bg-white dark:bg-slate-950/20"}`}
+                            className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isBerhenti ? "bg-orange-50 dark:bg-[#ee6f1f]/10" : "bg-white dark:bg-slate-950/20"}`}
                             style={{ scrollMarginTop: "64px" }}
                           >
                             <td
                               className={`py-6 px-6 font-bold flex items-center gap-4 ${isBerhenti ? "text-[#ee6f1f]" : "text-slate-700 dark:text-slate-300"}`}
                             >
-                              {isBerhenti && (
-                                <ChevronRight
-                                  size={20}
-                                  className="text-[#ee6f1f]"
-                                />
-                              )}
-                              <div className="truncate" title={item.name}>
-                                {item.name}
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                  {isBerhenti && <div className="w-2 h-2 rounded-full bg-[#ee6f1f] animate-ping" />}
+                                  <div className="truncate" title={item.name}>
+                                    {item.name}
+                                  </div>
+                                </div>
+                                {isBerhenti && <span className="text-[9px] font-bold uppercase text-[#ee6f1f]/60 mt-1 tracking-widest">Posisi Saat Ini</span>}
                               </div>
                             </td>
+                            <td className="py-6 px-4">
+                               <div className="flex flex-col">
+                                 <span className="text-sm font-black text-[#1d2d6a] dark:text-white font-mono">{timeStr}</span>
+                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SCHED</span>
+                               </div>
+                            </td>
                             <td
-                              className="py-6 px-4 font-bold text-slate-500 dark:text-slate-500 text-xs uppercase tracking-wider truncate"
+                              className="py-6 px-4 font-bold text-slate-500 dark:text-slate-500 text-[10px] text-center uppercase tracking-wider truncate"
                               title={item.type}
                             >
                               {item.type}

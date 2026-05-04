@@ -114,7 +114,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-slate-900 group"
+      className="relative h-full w-full overflow-hidden rounded-[3rem] shadow-2xl border border-white/10 bg-[#0f172a] group"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -126,7 +126,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${cameras[currentCamIndex].url})` }}
         >
-          <div className="absolute inset-0 bg-slate-900/10 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-[#0a0f1e]/10 mix-blend-overlay" />
         </motion.div>
       </AnimatePresence>
       <motion.div
@@ -152,7 +152,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button
             onClick={toggleFullscreen}
-            className="bg-slate-900/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg"
+            className="bg-[#0f172a]/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110 shadow-lg"
             title="Fullscreen"
           >
             <Maximize size={24} />
@@ -170,7 +170,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
       <div className="absolute inset-y-0 left-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button
           onClick={handlePrevCam}
-          className="bg-slate-900/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
+          className="bg-[#0f172a]/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
         >
           <ChevronLeft size={36} />
         </button>
@@ -178,7 +178,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
       <div className="absolute inset-y-0 right-0 w-32 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button
           onClick={handleNextCam}
-          className="bg-slate-900/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
+          className="bg-[#0f172a]/50 hover:bg-[#ee6f1f] text-white p-4 rounded-full backdrop-blur-md transition-all transform hover:scale-110"
         >
           <ChevronRight size={36} />
         </button>
@@ -196,7 +196,7 @@ const MonitorCCTV = ({ data: _data }: { data: any }) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute bottom-full right-0 mb-4 w-[400px] bg-slate-900/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
+                className="absolute bottom-full right-0 mb-4 w-[400px] bg-[#0f172a]/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 p-2"
               >
                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 py-2 border-b border-white/5 mb-1">
                   Pilih Lokasi Kamera
@@ -268,7 +268,6 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
   const [selectedKereta] = useState<number>(1);
   const [focusLocation, setFocusLocation] = useState<[number, number] | null>(null);
 
-  // Fetch per-gerbong GPS when selectedKereta changes
   useEffect(() => {
     if (!selectedKereta) return;
     const fetchGerbong = async () => {
@@ -284,27 +283,59 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
   }, [selectedKereta]);
 
   const trainMarkers = useMemo(() => {
-    const serviceName = (route?.name || "Service").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
+    const serviceName = (appData?.serviceName || route?.name || "Service").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
     const trainNum = appData?.trainNumber || "";
-    const cleanTrainNum = trainNum.replace(/\s*Gerbong\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
+    const cleanTrainNum = trainNum.replace(/\s*(Coach|Gerbong|Kereta)\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
 
-    return gerbongData.map((g) => ({
-      id: `G-${g.gerbong_id}`,
-      name: `${serviceName} ${cleanTrainNum}`,
-      location: [g.longitude, g.latitude] as [number, number],
-      heading: (g as any).heading || 0,
-      status: "Normal",
-      speed: g.speed || 0,
-      eta: "--:--"
-    }));
-  }, [gerbongData, route, appData?.trainNumber]);
+    // 1. If we have per-gerbong data, use it
+    if (gerbongData.length > 0) {
+      return gerbongData.map((g) => ({
+        id: `G-${g.gerbong_id}`,
+        name: `${serviceName} ${cleanTrainNum}`,
+        location: [g.longitude, g.latitude] as [number, number],
+        heading: (g as any).heading || 0,
+        status: "Normal",
+        speed: g.speed || 0,
+        eta: appData?.eta || "--:--"
+      }));
+    }
 
-  // Extract route coordinates for the map line
+    // 2. Fallback to active service simGps if available
+    const isValidGps = appData?.simGps &&
+      appData.simGps.lng !== 0 &&
+      appData.simGps.lat !== 0 &&
+      !isNaN(Number(appData.simGps.lng)) &&
+      !isNaN(Number(appData.simGps.lat));
+
+    if (isValidGps) {
+      return [{
+        id: `ARMADA-LIVE`,
+        name: `${serviceName} ${cleanTrainNum}`,
+        location: [Number(appData.simGps.lng), Number(appData.simGps.lat)] as [number, number],
+        heading: appData.simGps.heading || 0,
+        status: appData.status || "Beroperasi",
+        speed: appData.speed || 0,
+        eta: appData.eta || "--:--"
+      }];
+    }
+
+    return [];
+  }, [gerbongData, route, appData]);
+
   const routeLine = useMemo(() => {
-    if (!route || !route.features) return undefined;
+    if (!route || !route.features) {
+      if (appData?.activeRoute?.geojson) {
+        try {
+          const gj = typeof appData.activeRoute.geojson === "string" ? JSON.parse(appData.activeRoute.geojson) : appData.activeRoute.geojson;
+          const lineFeature = gj.features?.find((f: any) => f.geometry?.type === "LineString");
+          return lineFeature?.geometry?.coordinates;
+        } catch { return undefined; }
+      }
+      return undefined;
+    }
     const lineFeature = route.features.find((f: any) => f.geometry?.type === "LineString");
     return lineFeature?.geometry?.coordinates;
-  }, [route]);
+  }, [route, appData?.activeRoute]);
 
   const hasInitialFocusedRef = useRef<boolean>(false);
   const lastRouteKeyRef = useRef<string | null>(null);
@@ -323,10 +354,10 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
   }, [route?.name, appData?.trainNumber]);
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
-      <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] border border-slate-200 dark:border-slate-800/50 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
+    <div className="space-y-4 h-full flex flex-col">
+      <div className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-[2.5rem] border border-slate-200 dark:border-[#1e293b]/50 shadow-sm overflow-hidden flex-1 relative group min-h-[450px]">
         <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg flex items-center gap-3">
+          <div className="bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 dark:border-[#1e293b] shadow-lg flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
             <span className="text-xs font-bold text-[#1d2d6a] dark:text-white uppercase tracking-wide">
               Peta Lokasi
@@ -347,7 +378,7 @@ const MonitorGPS = ({ route, data: appData }: { route: any; data: any }) => {
           <div className="bg-[#1d2d6a] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 transition-all hover:scale-105 pointer-events-auto">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-blue-200/50 uppercase tracking-widest">
-                Active Units
+                ACT Units
               </span>
               <span className="text-sm font-bold">
                 {gerbongData.length} Rangkaian
@@ -386,7 +417,7 @@ const LogViewer = ({ token }: { token: string }) => {
     },
     LOGOUT: {
       label: "Logout",
-      color: "text-slate-600 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800",
+      color: "text-slate-600 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-[#1e293b]",
     },
     STATE_UPDATE: {
       label: "Update State",
@@ -442,8 +473,8 @@ const LogViewer = ({ token }: { token: string }) => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800/50">
+    <div className="max-w-6xl mx-auto space-y-4">
+      <div className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-[#1e293b]/50">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight flex items-center gap-3">
             <ScrollText className="text-[#ee6f1f]" />
@@ -454,7 +485,7 @@ const LogViewer = ({ token }: { token: string }) => {
               <button
                 key={opt}
                 onClick={() => setFilter(opt)}
-                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? "bg-[#1d2d6a] dark:bg-slate-950 text-white border-[#1d2d6a] dark:border-slate-800" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${filter === opt ? "bg-[#1d2d6a] dark:bg-[#0a0f1e] text-white border-[#1d2d6a] dark:border-[#1e293b]" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
               >
                 {opt === "ALL" ? "Semua" : ACTION_LABELS[opt]?.label || opt}
               </button>
@@ -470,15 +501,15 @@ const LogViewer = ({ token }: { token: string }) => {
             Belum ada log yang tercatat.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-[#1e293b]">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800/50 text-[#1d2d6a] dark:text-slate-200 font-semibold text-[11px]">
                 <tr>
-                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Waktu</th>
-                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Aksi</th>
-                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Pengguna</th>
-                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Role</th>
-                  <th className="p-4 border-b border-slate-200 dark:border-slate-800">Keterangan</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-[#1e293b]">Waktu</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-[#1e293b]">Aksi</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-[#1e293b]">Pengguna</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-[#1e293b]">Role</th>
+                  <th className="p-4 border-b border-slate-200 dark:border-[#1e293b]">Keterangan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -541,7 +572,7 @@ const LogViewer = ({ token }: { token: string }) => {
 
 function App() {
   const [isTvFullscreen, setIsTvFullscreen] = useState(false);
-  const [activeTab, setActiveTab] = useState("pids");
+  const [ACTTab, setACTTab] = useState("pids");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authToken, setAuthToken] = useState<string>("");
@@ -561,9 +592,9 @@ function App() {
   }, [isDark]);
 
   const { data, sendData } = usePidsData();
-  const activeTrainName = (data.serviceName || "Belum Dikonfigurasi").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
-  const activeTrainNumber = (data.trainNumber || "-").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
-  const activeRoute = data.activeRoute || {
+  const ACTTrainName = (data.serviceName || "Belum Dikonfigurasi").replace(/-G\d+$/i, "").replace(/\s+G\d+$/i, "").trim();
+  const ACTTrainNumber = (data.trainNumber || "-").replace(/\s*(Coach|Gerbong)\s*\d+/gi, "").replace(/-G\d+$/i, "").trim();
+  const ACTRoute = data.activeRoute || {
     name: data.serviceName || "-",
     stations: data.stations || [],
     path: "",
@@ -620,7 +651,7 @@ function App() {
     sessionStorage.removeItem("pids_user");
     setAuthUser(null);
     setAuthToken("");
-    setActiveTab("pids");
+    setACTTab("pids");
   };
 
   // Auth guard
@@ -639,11 +670,11 @@ function App() {
   ];
 
   return (
-    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
+    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-[#0a0f1e] text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Sidebar */}
-      <aside className="w-80 bg-[#1d2d6a] dark:bg-slate-900 border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20">
+      <aside className="w-72 bg-[#1d2d6a] dark:bg-[#0f172a] border-r border-blue-900 dark:border-[#1e293b] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20 shrink-0">
 
-        <div className="p-10 pb-6">
+        <div className="p-6 lg:p-8 pb-4 lg:pb-6">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
             alt="KAI Logo"
@@ -662,8 +693,8 @@ function App() {
             {NAV_ITEMS.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-5 px-8 py-5 rounded-2xl transition-all duration-300 font-bold text-lg ${activeTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]" : "text-white/60 dark:text-slate-500 hover:text-white dark:hover:text-slate-300 hover:bg-white/5 dark:hover:bg-white/5"}`}
+                  onClick={() => setACTTab(item.id)}
+                  className={`w-full flex items-center gap-4 px-6 lg:px-8 py-4 lg:py-5 rounded-2xl transition-all duration-300 font-bold text-base lg:text-lg ${ACTTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]" : "text-white/60 dark:text-slate-500 hover:text-white dark:hover:text-slate-300 hover:bg-white/5 dark:hover:bg-white/5"}`}
                 >
                   <item.icon size={28} strokeWidth={2.5} />
                   <span>{item.label}</span>
@@ -673,10 +704,10 @@ function App() {
           </ul>
         </nav>
 
-        <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-slate-950/20">
+        <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-[#0a0f1e]/20">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 active:scale-95 group"
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 ACT:scale-95 group"
           >
             <LogOut
               size={16}
@@ -689,13 +720,13 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+        <header className="h-20 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-[#1e293b] flex items-center justify-between px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
 
           <div className="flex items-center gap-5">
             <div className="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
               {(() => {
                 const Icon =
-                  NAV_ITEMS.find((n) => n.id === activeTab)?.icon || Train;
+                  NAV_ITEMS.find((n) => n.id === ACTTab)?.icon || Train;
                 return (
                   <Icon
                     className="text-[#1d2d6a] dark:text-slate-300"
@@ -707,23 +738,23 @@ function App() {
             </div>
             <div>
               <span className="text-xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-normal">
-                {NAV_ITEMS.find((n) => n.id === activeTab)?.label}
+                {NAV_ITEMS.find((n) => n.id === ACTTab)?.label}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-10">
-            {/* Active Unit Badge Style */}
+            {/* ACT Unit Badge Style */}
 
-            <div className="flex items-center gap-4 border-r border-slate-100 dark:border-slate-800 pr-10">
+            <div className="flex items-center gap-4 border-r border-slate-100 dark:border-[#1e293b] pr-10">
               <div className="text-right">
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">
-                  Active Unit
+                  ACT Unit
                 </div>
                 <div className="text-base font-bold text-[#1d2d6a] dark:text-white tracking-tight">
-                  {activeTrainName}{" "}
+                  {ACTTrainName}{" "}
                   <span className="text-[#ee6f1f] ml-1.5 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 rounded font-mono text-md border border-orange-100 dark:border-orange-900/30">
-                    KA {activeTrainNumber?.split(" Gerbong")[0]}
+                    KA {ACTTrainNumber?.split(" Gerbong")[0]}
                   </span>
                 </div>
               </div>
@@ -741,38 +772,38 @@ function App() {
           </div>
         </header>
 
-        <div className={`flex-1 flex flex-col ${activeTab === "tvmonitor" ? "overflow-hidden" : "overflow-y-auto"} bg-[#f8fafc] dark:bg-slate-900 relative`}>
+        <div className={`flex-1 flex flex-col ${ACTTab === "tvmonitor" ? "overflow-hidden" : "overflow-y-auto"} bg-[#f8fafc] dark:bg-[#0a0f1e] relative`}>
           <AnimatePresence mode="wait">
-            {activeTab === "pids" ? (
+            {ACTTab === "pids" ? (
               <motion.div
                 key="pids"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="max-w-7xl mx-auto p-10"
+                className="w-full max-w-[1600px] mx-auto p-6 lg:p-10"
               >
                 <MasterConsolePanel
-                  route={activeRoute}
+                  route={ACTRoute}
                   data={data}
                   sendData={sendData}
                 />
               </motion.div>
-            ) : activeTab === "stampformasi" ? (
+            ) : ACTTab === "stampformasi" ? (
               <motion.div
                 key="stampformasi"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="max-w-6xl mx-auto space-y-10 p-10"
+                className="w-full max-w-[1600px] mx-auto space-y-10 p-6 lg:p-10"
               >
-                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-[#1e293b]">
                   <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white mb-8 tracking-tight flex items-center gap-3">
                     <Database className="text-[#ee6f1f]" />
                     Stampformasi
                   </h2>
-                  <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
                     <table className="w-full text-left text-sm border-collapse">
                       <thead className="bg-slate-50 dark:bg-slate-800 text-[#1d2d6a] dark:text-slate-300 font-bold">
                         <tr>
@@ -787,20 +818,15 @@ function App() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {(() => {
+                          const coachCount = data.coachCount || 4;
                           const trainNumbers = [
-                            "K1 0 18 01",
-                            "K1 0 18 02",
-                            "K1 0 18 03",
-                            "K1 0 18 04",
-                            "MP 0 19 01",
-                            "K3 0 19 05",
-                            "K3 0 19 06",
-                            "K3 0 19 07",
-                            "K3 0 19 08",
-                            "P 0 18 01"
+                            "K1 0 18 01", "K1 0 18 02", "K1 0 18 03", "K1 0 18 04",
+                            "MP 0 19 01", "K3 0 19 05", "K3 0 19 06", "K3 0 19 07",
+                            "K3 0 19 08", "P 0 18 01"
                           ];
 
-                          return trainNumbers.map((trainNumber, idx) => {
+                          return Array.from({ length: coachCount }).map((_, idx) => {
+                            const trainNumber = trainNumbers[idx % trainNumbers.length];
                             return (
                               <tr
                                 key={idx}
@@ -813,7 +839,7 @@ function App() {
                                   {trainNumber}
                                 </td>
                                 <td className="p-4 font-bold text-[#1d2d6a] dark:text-white">
-                                  {activeTrainName}
+                                  {ACTTrainName}
                                 </td>
                                 <td className="p-4 font-mono text-slate-500 dark:text-slate-400">
                                   192.168.1.{100 + idx}
@@ -824,13 +850,13 @@ function App() {
                                   })}
                                 </td>
                                 <td className="p-4">
-                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${idx < 8 ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/50" : "bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800"}`}>
-                                    <div className={`w-1.5 h-1.5 rounded-full ${idx < 8 ? "bg-green-500 animate-pulse" : "bg-slate-300"}`} />
-                                    {idx < 8 ? "Aktif" : "Non-Aktif"}
+                                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${idx < coachCount ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/50" : "bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-[#1e293b]"}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full ${idx < coachCount ? "bg-green-500 animate-pulse" : "bg-slate-300"}`} />
+                                    {idx < coachCount ? "Aktif" : "Non-Aktif"}
                                   </span>
                                 </td>
                                 <td className="p-4 text-center">
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-bold border border-green-100 dark:border-green-900/50">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-bold border border-green-100 dark:border-green-900/50">
                                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                     Online
                                   </span>
@@ -844,99 +870,113 @@ function App() {
                   </div>
                 </div>
 
-                {/* Detail State per Gerbong - Revamped Layout */}
-                <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] p-8 shadow-sm border border-slate-200 dark:border-slate-800/50">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-2xl text-[#ee6f1f]">
-                        <MapPin size={24} />
+                {/* Detail State per Gerbong - Compact Premium Layout */}
+                <div className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-[#1e293b]/50">
+                  <div className="flex items-center justify-between mb-10">
+                    <div className="flex items-center gap-6">
+                      <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-3xl text-[#ee6f1f] shadow-inner">
+                        <Train size={32} />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight">
-                          Detail State per Gerbong
+                        <h2 className="text-xl font-black text-[#1d2d6a] dark:text-white tracking-tight">
+                          Fleet Telemetry Status
                         </h2>
-                        <p className="text-xs text-slate-400 font-medium mt-0.5">
-                          Monitoring real-time telemetri rangkaian aktif
+                        <p className="text-xs text-slate-400 font-bold mt-0.5 uppercase tracking-widest">
+                          Real-time unit subsystem monitoring
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => {
-                        // Dummy refresh action
                         const btn = document.getElementById("refresh-state-btn");
                         if (btn) {
                           btn.classList.add("animate-spin");
                           setTimeout(() => btn.classList.remove("animate-spin"), 1000);
                         }
                       }}
-                      className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#1d2d6a] dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-slate-200 dark:border-slate-700"
+                      className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#1d2d6a] dark:text-slate-300 px-6 py-3 rounded-2xl text-sm font-black transition-all border border-slate-200 dark:border-slate-700 shadow-sm ACT:scale-95"
                     >
-                      <RefreshCw id="refresh-state-btn" size={16} />
-                      Refresh Data
+                      <RefreshCw id="refresh-state-btn" size={18} />
+                      REFRESH TELEMETRY
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5">
                     {(() => {
+                      const coachCount = data.coachCount || 4;
                       const trainNumbers = [
-                        "K1 0 18 01",
-                        "K1 0 18 02",
-                        "K1 0 18 03",
-                        "K1 0 18 04",
-                        "MP 0 19 01",
-                        "K3 0 19 05",
-                        "K3 0 19 06",
-                        "K3 0 19 07",
-                        "K3 0 19 08",
-                        "P 0 18 01"
+                        "K1 0 18 01", "K1 0 18 02", "K1 0 18 03", "K1 0 18 04",
+                        "MP 0 19 01", "K3 0 19 05", "K3 0 19 06", "K3 0 19 07",
+                        "K3 0 19 08", "P 0 18 01"
                       ];
 
-                      return Array.from({ length: 10 }).map((_, i) => {
-                        const trainNumber = trainNumbers[i];
-                        const isAktif = i < 8;
+                      const visibleCoaches = Array.from({ length: coachCount });
+                      return visibleCoaches.map((_, i) => {
+                        const trainNumber = trainNumbers[i % trainNumbers.length];
+                        const isAktif = true;
                         return (
                           <motion.div
                             key={i}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
-                            className={`relative group bg-slate-50/50 dark:bg-slate-900/20 backdrop-blur-sm border border-slate-100 dark:border-slate-800/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg ${isAktif ? 'hover:border-orange-200 dark:hover:border-orange-900/30' : 'opacity-60 grayscale'}`}
+                            className={`relative group bg-slate-50/50 dark:bg-[#111827]/60 backdrop-blur-xl border border-slate-100 dark:border-[#1e293b]/50 rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${isAktif ? 'hover:border-[#ee6f1f]/40' : 'opacity-60 grayscale'}`}
                           >
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className={`w-2 h-2 rounded-full ${isAktif ? "bg-green-500 animate-pulse" : "bg-slate-400"}`} />
-                              <div className="flex-1 overflow-hidden">
-                                <div className="text-[#1d2d6a] dark:text-white font-bold text-xs truncate group-hover:text-[#ee6f1f]">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Unit {String(i + 1).padStart(2, "0")}</span>
+                                <div className="text-lg font-black text-[#1d2d6a] dark:text-white tracking-tight group-hover:text-[#ee6f1f] transition-colors">
                                   {trainNumber}
                                 </div>
-                                <div className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
-                                  Unit {String(i + 1).padStart(2, "0")}
-                                </div>
                               </div>
-                              <div className={`px-2 py-0.5 rounded text-[8px] font-black tracking-wider ${isAktif ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                {isAktif ? "ON" : "OFF"}
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${isAktif ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                <Cctv size={24} />
                               </div>
                             </div>
 
-                            <div className="space-y-2">
-                              <div className="grid grid-cols-1 gap-2">
-                                <div className="bg-white dark:bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                  <div className="text-[12px] text-slate-400 font-bold uppercase">TMP</div>
-                                  <div className="text-[12px] font-black text-[#1d2d6a] dark:text-white">
-                                    {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"} °C
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white dark:bg-[#0a0f1e]/40 p-2.5 rounded-xl border border-slate-100 dark:border-[#1e293b]/50 shadow-sm">
+                                  <div className="text-[9px] text-slate-400 font-black uppercase mb-1 tracking-wider">Temp</div>
+                                  <div className="text-base font-black text-[#1d2d6a] dark:text-white font-mono flex items-baseline gap-0.5">
+                                    {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"}<span className="text-sm opacity-50">°C</span>
+                                  </div>
+                                </div>
+                                <div className="bg-white dark:bg-[#0a0f1e]/40 p-2.5 rounded-xl border border-slate-100 dark:border-[#1e293b]/50 shadow-sm">
+                                  <div className="text-[9px] text-slate-400 font-black uppercase mb-1 tracking-wider">Net</div>
+                                  <div className="text-base font-black text-green-500 font-mono flex items-center gap-1">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                    {isAktif ? "LAT" : "OFF"}
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/30 rounded-lg px-2 py-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[12px] font-bold text-slate-400 uppercase">AUD</span>
-                                  <span className="text-[12px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'RDY' : '-'}</span>
+                              <div className="grid grid-cols-3 gap-1 bg-[#1d2d6a]/5 dark:bg-slate-800/40 p-2 rounded-xl border border-slate-100/50 dark:border-[#1e293b]/30">
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Audio</span>
+                                  <div className={`px-1 py-0.5 rounded text-[8px] font-black ${isAktif ? 'bg-blue-100 dark:bg-blue-900/30 text-[#1d2d6a] dark:text-blue-400' : 'text-slate-400'}`}>
+                                    {isAktif ? 'RDY' : '-'}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[12px] font-bold text-slate-400 uppercase">VID</span>
-                                  <span className="text-[12px] font-black text-[#1d2d6a] dark:text-slate-300">{isAktif ? 'ACT' : '-'}</span>
+                                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 self-center" />
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Video</span>
+                                  <div className={`px-1 py-0.5 rounded text-[8px] font-black ${isAktif ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'text-slate-400'}`}>
+                                    {isAktif ? 'ACT' : '-'}
+                                  </div>
+                                </div>
+                                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 self-center" />
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">PIDS</span>
+                                  <div className={`px-1 py-0.5 rounded text-[8px] font-black ${isAktif ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'text-slate-400'}`}>
+                                    {isAktif ? 'SYN' : '-'}
+                                  </div>
                                 </div>
                               </div>
+                            </div>
+                            
+                            <div className="absolute top-4 right-4">
+                               <div className={`w-2 h-2 rounded-full shadow-md ${isAktif ? "bg-green-500 animate-pulse ring-2 ring-green-500/10" : "bg-slate-400"}`} />
                             </div>
                           </motion.div>
                         );
@@ -945,7 +985,7 @@ function App() {
                   </div>
                 </div>
               </motion.div>
-            ) : activeTab === "tv" ? (
+            ) : ACTTab === "tv" ? (
               <motion.div
                 key="tv"
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -956,7 +996,7 @@ function App() {
               >
                 <MonitorCCTV data={data} />
               </motion.div>
-            ) : activeTab === "gps" ? (
+            ) : ACTTab === "gps" ? (
               <motion.div
                 key="gps"
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -965,9 +1005,9 @@ function App() {
                 transition={{ duration: 0.3 }}
                 className="h-full w-full max-w-6xl mx-auto p-10"
               >
-                <MonitorGPS route={activeRoute} data={data} />
+                <MonitorGPS route={ACTRoute} data={data} />
               </motion.div>
-            ) : activeTab === "tvmonitor" ? (
+            ) : ACTTab === "tvmonitor" ? (
               <motion.div
                 key="tvmonitor"
                 initial={{ opacity: 0 }}
@@ -1027,7 +1067,7 @@ function App() {
                   </div>
                 )}
               </motion.div>
-            ) : activeTab === "logs" ? (
+            ) : ACTTab === "logs" ? (
               <motion.div
                 key="logs"
                 initial={{ opacity: 0, y: 10 }}
@@ -1038,7 +1078,7 @@ function App() {
               >
                 <LogViewer token={authToken} />
               </motion.div>
-            ) : activeTab === "settings" ? (
+            ) : ACTTab === "settings" ? (
               <motion.div
                 key="settings"
                 initial={{ opacity: 0, y: 10 }}
@@ -1056,7 +1096,7 @@ function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="h-full flex flex-col items-center justify-center text-slate-400 gap-6"
               >
-                <div className="bg-white dark:bg-slate-900 p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 dark:border-slate-800 max-w-md w-full">
+                <div className="bg-white dark:bg-[#0f172a] p-12 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col items-center gap-6 border border-slate-100 dark:border-[#1e293b] max-w-md w-full">
                   <div className="bg-orange-50 p-6 rounded-3xl text-[#ee6f1f]">
                     <AlertCircle size={48} />
                   </div>
@@ -1065,13 +1105,13 @@ function App() {
                       Access Restricted
                     </h2>
                     <p className="text-sm font-medium text-slate-400 leading-relaxed">
-                      Module <span className="text-[#1d2d6a]">{activeTab}</span>{" "}
+                      Module <span className="text-[#1d2d6a]">{ACTTab}</span>{" "}
                       sedang dalam pemeliharaan.
                     </p>
                   </div>
                   <button
-                    onClick={() => setActiveTab("pids")}
-                    className="w-full mt-4 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-2xl shadow-lg transition-all active:scale-95"
+                    onClick={() => setACTTab("pids")}
+                    className="w-full mt-4 px-8 py-4 bg-[#0f172a] hover:bg-slate-800 text-white text-sm font-bold rounded-2xl shadow-lg transition-all ACT:scale-95"
                   >
                     Return to Dashboard
                   </button>

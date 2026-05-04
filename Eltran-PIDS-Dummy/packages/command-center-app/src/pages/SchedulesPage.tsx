@@ -18,6 +18,7 @@ import {
   Activity,
   ArrowUp,
   ArrowLeft,
+  Route as RouteIcon,
 } from "lucide-react";
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
@@ -55,11 +56,14 @@ export default function SchedulesPage({ token }: { token: string }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const [trainOptions, setTrainOptions] = useState<any[]>([]);
+  const [trainsetOptions, setTrainsetOptions] = useState<any[]>([]);
+  const [routeOptions, setRouteOptions] = useState<any[]>([]);
   const [stationOptions, setStationOptions] = useState<any[]>([]);
+  const [selectedRouteId, setSelectedRouteId] = useState<string>("");
+  const [selectedTrainsetId, setSelectedTrainsetId] = useState<string>("");
   const [form, setForm] = useState({
-    train_name: "",
-    train_number: "",
+    train_name: "", // Service Name (e.g. ARGO WILIS)
+    train_number: "", // Train Number (e.g. 1A)
     dep_station: "",
     dep_city_code: "",
     arr_station: "",
@@ -140,17 +144,24 @@ export default function SchedulesPage({ token }: { token: string }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const [tr, st] = await Promise.all([
-        fetch(`${API}/api/admin/trains`, {
+      const [tr, st, rt] = await Promise.all([
+        fetch(`${API}/api/admin/trainsets`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(`${API}/api/admin/stations`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
+        fetch(`${API}/api/admin/routes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
-      const [trD, stD] = await Promise.all([tr.json(), st.json()]);
-      if (trD.success) setTrainOptions(trD.trains || []);
+      const [trD, stD, rtD] = await Promise.all([tr.json(), st.json(), rt.json()]);
+      if (trD.success) setTrainsetOptions(trD.trainsets || []);
       if (stD.success) setStationOptions(stD.stations || []);
+      if (rtD.success && rtD.routes) {
+        const routeList = Object.values(rtD.routes) as any[];
+        setRouteOptions(routeList);
+      }
     } catch { }
   }, [token]);
 
@@ -174,6 +185,7 @@ export default function SchedulesPage({ token }: { token: string }) {
     setSaving(true);
     try {
       const payload = {
+        trainset_id: selectedTrainsetId ? parseInt(selectedTrainsetId) : null,
         train_name: form.train_name,
         train_number: form.train_number,
         stasiun_keberangkatan: form.dep_station,
@@ -190,7 +202,7 @@ export default function SchedulesPage({ token }: { token: string }) {
         status_kedatangan: form.arr_status,
         catatan: form.notes,
         media: form.media,
-        route_id: null,
+        route_id: selectedRouteId ? parseInt(selectedRouteId) : null,
         stops: [],
       };
 
@@ -210,6 +222,7 @@ export default function SchedulesPage({ token }: { token: string }) {
         fetchSchedules(false);
         setShowForm(false);
         setEditingId(null);
+        setSelectedTrainsetId("");
         setForm({
           train_name: "",
           train_number: "",
@@ -288,7 +301,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                   {selectedSchedule.display_train_name || selectedSchedule.train_name}
                 </h2>
                 <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-[0.2em]">
-                  Service Number: {selectedSchedule.display_train_number || selectedSchedule.train_number || "-"}
+                  Service Number: {selectedSchedule.display_train_number || selectedSchedule.train_number || "-"} | Rangkaian: {selectedSchedule.trainset_name || "N/A"}
                 </p>
               </div>
             </div>
@@ -366,13 +379,13 @@ export default function SchedulesPage({ token }: { token: string }) {
                         <div className="text-right">
                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Arrival</p>
                           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 font-mono">
-                            {stop.arrival_time || stop.schedule_ka67 || stop.schedule_ka68 || stop.schedule_ka69 || stop.schedule_ka70 || "--:--"}
+                            {stop.arrival_time || "--:--"}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Departure</p>
                           <p className="text-sm font-semibold text-[#ee6f1f] font-mono">
-                            {stop.departure_time || stop.arrival_time || stop.schedule_ka67 || stop.schedule_ka68 || stop.schedule_ka69 || stop.schedule_ka70 || "--:--"}
+                            {stop.departure_time || stop.arrival_time || "--:--"}
                           </p>
                         </div>
                         <div className={`w-24 px-3 py-1 rounded-lg text-center text-[10px] font-semibold border ${stop.stop_status === "ARRIVED" ? "bg-green-50 dark:bg-green-900/30 text-green-600 border-green-100 dark:border-green-900/50" :
@@ -470,28 +483,73 @@ export default function SchedulesPage({ token }: { token: string }) {
                       <h4 className="font-bold text-[#1d2d6a] dark:text-white text-sm flex items-center gap-2 border-l-4 border-[#ee6f1f] pl-3 uppercase tracking-[0.1em]">Pilih Armada</h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Nama Kereta</label>
+                          <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Pilih Rangkaian (Trainset)</label>
                           <select
-                            value={form.train_name}
-                            onChange={(e) => {
-                              const t = trainOptions.find((tx) => tx.name === e.target.value);
-                              setForm({ ...form, train_name: e.target.value, train_number: t?.train_number || t?.ka_number || "" });
-                            }}
+                            value={selectedTrainsetId}
+                            onChange={(e) => setSelectedTrainsetId(e.target.value)}
                             className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
                           >
-                            <option value="">Pilih Kereta</option>
-                            {trainOptions.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+                            <option value="">Pilih Armada Fisik</option>
+                            {trainsetOptions.map((t) => <option key={t.id} value={String(t.id)}>{t.name} ({t.gerbongs?.length || 0} Unit)</option>)}
                           </select>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Kode KA</label>
+                          <label className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Nama Layanan / KA</label>
                           <input
-                            value={form.train_number}
-                            onChange={(e) => setForm({ ...form, train_number: e.target.value.toUpperCase() })}
-                            placeholder="AUTOMATIC"
+                            value={form.train_name}
+                            onChange={(e) => setForm({ ...form, train_name: e.target.value.toUpperCase() })}
+                            placeholder="e.g. ARGO WILIS"
                             className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] transition-all"
                           />
                         </div>
+                      </div>
+                      <div className="space-y-1 mt-4">
+                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] flex items-center gap-1.5">
+                          <RouteIcon size={10} className="text-[#ee6f1f]" /> Pilih Rute
+                        </label>
+                        <select
+                          value={selectedRouteId}
+                          onChange={(e) => {
+                            const routeId = e.target.value;
+                            setSelectedRouteId(routeId);
+                            const route = routeOptions.find((r: any) => String(r.id) === routeId);
+                            if (route && route.stations?.length >= 2) {
+                              const firstStation = route.stations[0];
+                              const lastStation = route.stations[route.stations.length - 1];
+                              setForm((prev) => ({
+                                ...prev,
+                                dep_station: firstStation?.name || prev.dep_station,
+                                arr_station: lastStation?.name || prev.arr_station,
+                              }));
+                            }
+                          }}
+                          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[#1d2d6a] dark:text-white font-semibold text-sm focus:outline-none focus:border-[#ee6f1f] appearance-none transition-all"
+                        >
+                          <option value="">Tanpa Rute (Manual)</option>
+                          {routeOptions.map((r: any) => (
+                            <option key={r.id || r.name} value={String(r.id)}>
+                              {r.name} ({r.stations?.length || 0} stasiun)
+                            </option>
+                          ))}
+                        </select>
+                        {selectedRouteId && (() => {
+                          const route = routeOptions.find((r: any) => String(r.id) === selectedRouteId);
+                          if (!route || !route.stations?.length) return null;
+                          return (
+                            <div className="mt-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-2">Route Checkpoints</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {route.stations.map((s: any, idx: number) => (
+                                  <span key={idx} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                    idx === 0 ? "bg-green-50 dark:bg-green-900/20 text-green-600 border-green-200 dark:border-green-800" :
+                                    idx === route.stations.length - 1 ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 border-orange-200 dark:border-orange-800" :
+                                    "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600"
+                                  }`}>{s.name}</span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="space-y-4">
@@ -629,7 +687,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         <div className="flex items-center gap-3 mb-1">
                           <h3 className="text-[#1d2d6a] dark:text-white font-bold text-base uppercase">{sched.display_train_name || sched.train_name}</h3>
                           {isActive && <span className="bg-[#ee6f1f] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.2em] animate-pulse">LIVE ACTIVE</span>}
-                          <span className="text-slate-400 text-[10px] font-bold">{sched.display_train_number || sched.train_number || "-"}</span>
+                          <span className="text-slate-400 text-[10px] font-bold">{sched.display_train_number || sched.train_number || "-"} | {sched.trainset_name || "N/A"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span>{sched.schedule_date}</span>

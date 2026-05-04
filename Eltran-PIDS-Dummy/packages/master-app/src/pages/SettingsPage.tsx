@@ -18,7 +18,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isDark, setIsDark }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Theme Settings */}
-        <section className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-slate-800/50 space-y-8 transition-all hover:shadow-md">
+        <section className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-slate-800/50 space-y-8 transition-all hover:shadow-md">
           <div className="flex items-center gap-4 border-b border-slate-50 dark:border-slate-800 pb-6">
             <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-2xl text-[#ee6f1f]">
               <Monitor size={24} />
@@ -48,7 +48,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isDark, setIsDark }) => {
         </section>
 
         {/* Audio & Visual */}
-        <section className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-slate-800/50 space-y-8">
+        <section className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-slate-800/50 space-y-8">
           <div className="flex items-center gap-4 border-b border-slate-50 dark:border-slate-800 pb-6">
             <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-2xl text-blue-500">
               <Video size={24} />
@@ -72,7 +72,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isDark, setIsDark }) => {
         </section>
 
         {/* System Info */}
-        <section className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-slate-800/50 space-y-8 md:col-span-2">
+        <section className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm border border-slate-100 dark:border-slate-800/50 space-y-8 md:col-span-2">
           <div className="flex items-center gap-4 border-b border-slate-50 dark:border-slate-800 pb-6">
             <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400">
               <Info size={24} />
