@@ -112,7 +112,7 @@ const TVMonitor = React.memo(function TVMonitor({
                 const mediaFile = (stationObj as any)?.media || null;
                 const bgUrl = mediaFile
                   ? `${API}/media/station/${encodeURIComponent(mediaFile)}`
-                  : `${API}/media/station/station_fallback.png`;
+                  : `/images/station_bg.png`;
 
                 return (
                   <motion.div
@@ -120,15 +120,15 @@ const TVMonitor = React.memo(function TVMonitor({
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 1.2 }}
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20000ms] scale-110 group-hover:scale-100"
                     style={{ backgroundImage: `url('${bgUrl}')` }}
                   >
-                    <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px]" />
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
                   </motion.div>
                 );
               })()}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/40 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 pointer-events-none" />
               
               {/* Scanline Effect */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-30 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
@@ -173,12 +173,12 @@ const TVMonitor = React.memo(function TVMonitor({
                   animate={{ y: 0, opacity: 1 }}
                   className="text-center w-full max-w-5xl"
                 >
-                  <h3 className={isEmbedded ? "text-[0.7vw] font-bold text-white/80 mb-1 drop-shadow-md uppercase tracking-[0.3em]" : "text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md uppercase tracking-[0.3em]"}>
+                  <h3 className={isEmbedded ? "text-xs font-bold text-white/80 mb-1 drop-shadow-md uppercase tracking-[0.3em]" : "text-[1.5vw] font-bold text-white/80 mb-2 drop-shadow-md uppercase tracking-[0.3em]"}>
                     {tvDisplayMode === "current"
                       ? "Stasiun Saat Ini"
                       : "STASIUN BERIKUTNYA"}
                   </h3>
-                  <h3 className={isEmbedded ? "text-[2.5vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)] mb-4 uppercase" : "text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] mb-8 uppercase"}>
+                  <h3 className={isEmbedded ? "text-3xl font-bold text-white tracking-tight leading-none drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)] mb-6 uppercase" : "text-[8vw] font-bold text-white tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] mb-8 uppercase"}>
                     {tvDisplayMode === "current" ? currentStation : nextStation}
                   </h3>
                   <div className="flex items-center justify-center font-sans">
@@ -195,7 +195,7 @@ const TVMonitor = React.memo(function TVMonitor({
                         Nomor KA
                       </span>
                       <span className={isEmbedded ? "text-[14px] font-black text-white drop-shadow-sm leading-tight text-center" : "text-[32px] font-black text-white drop-shadow-sm leading-tight text-center"}>
-                        KA-{masterSyncedNumber}
+                        {masterSyncedNumber.includes("KA") ? masterSyncedNumber : `KA-${masterSyncedNumber}`}
                       </span>
                     </div>
                   </div>

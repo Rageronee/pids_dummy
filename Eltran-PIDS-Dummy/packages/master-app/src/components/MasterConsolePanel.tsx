@@ -708,9 +708,9 @@ export function MasterConsolePanel({
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((simGps.lat * Math.PI) / 180) *
-        Math.cos((nextStnLat * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos((nextStnLat * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     distToNextKm = R * c;
     distToNext =
@@ -899,7 +899,7 @@ export function MasterConsolePanel({
         try {
           const err = await res.json();
           msg = err.error || err.message || msg;
-        } catch (e) {}
+        } catch (e) { }
         showToast(msg, false);
       }
     } catch (e) {
@@ -1100,7 +1100,7 @@ export function MasterConsolePanel({
             <div className="bg-white dark:bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/50 shadow-sm flex flex-col gap-6 flex-1">
               {/* Posisi Terkini */}
               <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm text-[#1d2d6a] dark:text-white">
+                <div className="w-11 h-11 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm text-[#1d2d6a] dark:text-[#ee6f1f]">
                   <MapPin size={22} />
                 </div>
                 <div className="flex flex-col">
@@ -1118,7 +1118,7 @@ export function MasterConsolePanel({
 
               {/* Tujuan Berikutnya */}
               <div className="flex flex-col gap-4">
-                <span className="text-[10px] font-bold text-[#1d2d6a] uppercase tracking-[0.1em] flex items-center gap-2">
+                <span className="text-[10px] font-bold text-[#1d2d6a] dark:text-slate-200 uppercase tracking-[0.1em] flex items-center gap-2">
                   TUJUAN BERIKUTNYA
                 </span>
                 <div className="flex flex-col gap-4">
@@ -1126,16 +1126,16 @@ export function MasterConsolePanel({
                     {nextStationName}
                   </h4>
 
-                  <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-1">
+                  <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-5 mt-1">
                     <div className="flex flex-col gap-1">
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em]">
                         Jarak Target
                       </span>
-                      <div className="text-lg font-bold text-[#1d2d6a] flex items-baseline gap-1">
+                      <div className="text-lg font-bold text-[#1d2d6a] dark:text-slate-200 flex items-baseline gap-1">
                         {distToNext}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1 border-l border-slate-100 pl-5">
+                    <div className="flex flex-col gap-1 border-l border-slate-100 dark:border-slate-800 pl-5">
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em]">
                         Estimasi (ETA)
                       </span>
@@ -1156,7 +1156,7 @@ export function MasterConsolePanel({
               <div className="text-[#ee6f1f]">
                 <Satellite size={24} />
               </div>
-              <h3 className="font-bold text-[#1d2d6a] text-xs uppercase tracking-wider">
+              <h3 className="font-bold text-[#1d2d6a] dark:text-white text-xs uppercase tracking-wider">
                 Telemetri Satelit (GPS)
               </h3>
             </div>
@@ -1171,7 +1171,7 @@ export function MasterConsolePanel({
           </div>
           <div className="flex flex-col gap-8 flex-1 justify-start">
             {/* Speed Hero Box (Kotak B: Telemetri) */}
-            <div className="bg-gradient-to-r from-[#1d2d6a] to-[#111f57] rounded-3xl border border-slate-100 shadow-lg flex flex-col relative overflow-hidden h-[190px] group">
+            <div className="bg-gradient-to-r from-[#1d2d6a] to-[#111f57] dark:from-slate-800 dark:to-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-lg flex flex-col relative overflow-hidden h-[190px] group">
               {/* SPEED SECTION */}
               <div className="px-8 flex-1 flex flex-col justify-center relative z-10">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1578,21 +1578,19 @@ export function MasterConsolePanel({
                 <div className="flex p-1 gap-1">
                   <button
                     onClick={() => setAudioViewMode("playlist")}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                      audioViewMode === "playlist"
-                        ? "bg-white dark:bg-slate-800 text-[#ee6f1f] shadow-sm"
-                        : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50"
-                    }`}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${audioViewMode === "playlist"
+                      ? "bg-white dark:bg-slate-800 text-[#ee6f1f] shadow-sm"
+                      : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50"
+                      }`}
                   >
                     <ListVideo size={12} /> Playlist ({audioPlaylist.length})
                   </button>
                   <button
                     onClick={() => setAudioViewMode("files")}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                      audioViewMode === "files"
-                        ? "bg-white dark:bg-slate-800 text-[#ee6f1f] shadow-sm"
-                        : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50"
-                    }`}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${audioViewMode === "files"
+                      ? "bg-white dark:bg-slate-800 text-[#ee6f1f] shadow-sm"
+                      : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50"
+                      }`}
                   >
                     <Mic size={12} /> Tersedia ({audioList.length})
                   </button>
@@ -1611,13 +1609,12 @@ export function MasterConsolePanel({
                       return (
                         <div
                           key={i}
-                          className={`flex items-center gap-2 p-2 rounded-lg text-xs transition-all border ${
-                            selectedAudio === audio.url
-                              ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white border-[#1d2d6a] dark:border-[#ee6f1f] shadow-md"
-                              : "bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800/60"
-                          }`}
+                          className={`flex items-center gap-2 p-2 rounded-lg text-xs transition-all border ${selectedAudio === audio.url
+                            ? "bg-[#1d2d6a] dark:bg-[#ee6f1f] text-white border-[#1d2d6a] dark:border-[#ee6f1f] shadow-md"
+                            : "bg-white dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800/60"
+                            }`}
                         >
-                          <div 
+                          <div
                             className="flex-1 flex items-center gap-2 cursor-pointer truncate"
                             onClick={() => {
                               if (audio.url) {
@@ -1674,7 +1671,7 @@ export function MasterConsolePanel({
                   ))
                 )}
               </div>
-              
+
               {audioViewMode === "playlist" && audioPlaylist.length > 0 && (
                 <div className="p-2 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-950/40">
                   <button
@@ -1689,7 +1686,7 @@ export function MasterConsolePanel({
             {/* Audio Timeline - Enhanced Premium Look */}
             <div className="space-y-3 px-1">
               <div className="relative h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
-                <motion.div 
+                <motion.div
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#ee6f1f] to-orange-400 rounded-full z-10"
                   style={{ width: `${(audioTime / (audioDuration || 1)) * 100}%` }}
                 />
@@ -1815,7 +1812,7 @@ export function MasterConsolePanel({
                               "master-video-preview",
                             );
                             if (vid && vid.requestFullscreen)
-                              vid.requestFullscreen().catch(() => {});
+                              vid.requestFullscreen().catch(() => { });
                           }}
                           className="bg-slate-950/60 backdrop-blur-sm text-white p-1.5 rounded-lg hover:bg-white/20 transition-colors pointer-events-auto"
                           title="Full Screen"
@@ -2005,11 +2002,10 @@ export function MasterConsolePanel({
                         <div
                           key={i}
                           onClick={() => playVideoAt(i)}
-                          className={`text-[11px] font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${
-                            isActive
-                              ? "text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-100/70 dark:bg-orange-500/10 border-blue-200 dark:border-orange-500/20 shadow-sm"
-                              : "text-slate-600 dark:text-slate-400 bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
-                          }`}
+                          className={`text-[11px] font-bold p-2.5 rounded-lg flex items-center justify-between gap-3 border transition-all cursor-pointer group/plitem ${isActive
+                            ? "text-[#1d2d6a] dark:text-[#ee6f1f] bg-blue-100/70 dark:bg-orange-500/10 border-blue-200 dark:border-orange-500/20 shadow-sm"
+                            : "text-slate-600 dark:text-slate-400 bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+                            }`}
                         >
                           <div className="flex items-center gap-3 w-full overflow-hidden">
                             <div

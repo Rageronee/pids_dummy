@@ -133,19 +133,19 @@ function App() {
 
   useEffect(() => {
     if (Date.now() - lastUserActionRef.current < 5000) return;
-    
+
     if (data?.currentStation && stations.length > 0) {
       const currentName = String(
         typeof data.currentStation === "object"
           ? (data.currentStation as any).name
           : data.currentStation || ""
       ).toUpperCase().trim();
-      
+
       const idx = stations.findIndex(s => {
         const sName = String(typeof s === "object" ? (s as any).name : s || "").toUpperCase().trim();
         return sName === currentName;
       });
-      
+
       if (idx !== -1 && idx !== currentIndex) {
         setCurrentIndex(idx);
       }
@@ -498,10 +498,10 @@ function App() {
                     <span className="text-2xl font-bold text-white uppercase tracking-tight truncate">
                       {availableDirections.length > 0
                         ? formatDirLabel(
-                            availableDirections.find(
-                              (d) => `ka${d.num}` === activeKa,
-                            )?.label ?? activeKa,
-                          )
+                          availableDirections.find(
+                            (d) => `ka${d.num}` === activeKa,
+                          )?.label ?? activeKa,
+                        )
                         : activeKa.toUpperCase()}
                     </span>
                     <ChevronDown
@@ -520,11 +520,10 @@ function App() {
                       <button
                         key={dir.num}
                         onClick={() => handleChangeDirection(`ka${dir.num}`)}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${
-                          activeKa === `ka${dir.num}`
-                            ? "bg-[#ee6f1f] text-white"
-                            : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
-                        }`}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === `ka${dir.num}`
+                          ? "bg-[#ee6f1f] text-white"
+                          : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                          }`}
                       >
                         {formatDirLabel(dir.label)}
                       </button>
@@ -608,7 +607,7 @@ function App() {
 
       <div className="flex gap-4 p-4 flex-1 min-h-0">
         <div className="flex-[0.65] flex flex-col gap-6">
-          <div className="bg-white dark:bg-gradient-to-r dark:from-slate-900/60 dark:to-slate-800/60 backdrop-blur-sm rounded-[24px] shadow-sm p-6 border border-slate-200 dark:border-slate-800/50 flex flex-col transition-colors">
+          <div className="bg-white dark:bg-gradient-to-r dark:bg-slate-900/40 backdrop-blur-sm rounded-[24px] shadow-sm p-6 border border-slate-200 dark:border-slate-800/50 flex flex-col transition-colors">
             <div className="flex items-center gap-3 text-[#1d2d6a] dark:text-white font-bold text-xl tracking-widest uppercase mb-3">
               <Navigation size={18} className="text-[#ee6f1f]" /> CURRENT
               POSITION
@@ -655,12 +654,12 @@ function App() {
                         {getScheduledTime(nextStation) ||
                           (stations.length > 0
                             ? new Date(currentTime.getTime() + 15 * 60000)
-                                .toLocaleTimeString("id-ID", {
-                                  hour12: false,
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                                .replace(".", ":")
+                              .toLocaleTimeString("id-ID", {
+                                hour12: false,
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                              .replace(".", ":")
                             : "--:--")}
                       </span>
                     </div>
@@ -673,7 +672,7 @@ function App() {
                       const idxInFull = (currentIndex + i + 2) % stations.length;
                       const actualStation = stations[idxInFull];
                       const upcomingStationName = getStationName(actualStation);
-                      
+
                       if (actualStation === stations[currentIndex]) return null;
 
                       return (

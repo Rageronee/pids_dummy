@@ -69,7 +69,7 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = [])
           const rawName = f.properties?.name || f.properties?.Name;
           const name = normalizeName(rawName);
           const master = stationMap.get(name);
-          
+
           if (master) {
             const oldCoordKey = JSON.stringify(f.geometry.coordinates);
             const newCoord = [master.lng, master.lat];
@@ -93,7 +93,7 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = [])
               // Priority: Use arrival if available (typical for ETA), fallback to departure
               const time = stop.arrival || stop.departure || "";
               cleanProps[`schedule_ka${kaNum}`] = time;
-              
+
               if (normalizeName(s.stops[0].name) === name) {
                 cleanProps[`is_origin_ka${kaNum}`] = true;
               }
@@ -181,7 +181,7 @@ export async function initDatabase(retries = 5) {
     } catch (err) {
       console.error(`[PIDS-DB] Connection failed. Retries left: ${retries - 1}. Error: ${err.message}`);
       if (pool) {
-        await pool.end().catch(() => {});
+        await pool.end().catch(() => { });
         pool = null;
       }
       retries--;
@@ -204,7 +204,7 @@ export function startAutoSave(intervalMs = parseInt(process.env.PIDS_AUTOSAVE_IN
         console.error("[PIDS-DB] Initial backup error:", e.message);
       }
     }, 5000); // Run once after 5 seconds
-    return () => {};
+    return () => { };
   } catch (e) {
     console.error('[PIDS-DB] startAutoSave failed:', e.message);
   }
@@ -313,7 +313,7 @@ async function createTables() {
             CONSTRAINT fk_train_service FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE SET NULL
         )
     `);
-  await pool.query(`ALTER TABLE routes ADD CONSTRAINT uq_route_name UNIQUE (name)`).catch(() => {});
+  await pool.query(`ALTER TABLE routes ADD CONSTRAINT uq_route_name UNIQUE (name)`).catch(() => { });
   await pool.query(`
         CREATE TABLE IF NOT EXISTS route_stations (
             id SERIAL PRIMARY KEY,
@@ -785,23 +785,23 @@ export async function seedData() {
     const sumaDiv = await getOne("SELECT id FROM divisions WHERE code = 'SUMA'");
 
     const javaHeuristics = [
-      "malang", "bandung", "surakarta", "solo", "yogya", "semarang", "cirebon", "jakarta", 
-      "blitar", "kediri", "nganjuk", "madiun", "ngawi", "sragen", "klaten", "purworejo", 
-      "kebumen", "cilacap", "banjar", "ciamis", "tasikmalaya", "garut", "purwakarta", 
-      "subang", "karawang", "bekasi", "tangerang", "serang", "cilegon", "banyuwangi", 
-      "jember", "probolinggo", "pasuruan", "sidoarjo", "surabaya", "mojokerto", 
-      "jombang", "bojonegoro", "lamongan", "gresik", "tuban", "brebes", "tegal", 
-      "pemalang", "pekalongan", "batang", "kendal", "demak", "kudus", "pati", 
-      "rembang", "wonogiri", "sukoharjo", "boyolali", "magelang", "temanggung", 
+      "malang", "bandung", "surakarta", "solo", "yogya", "semarang", "cirebon", "jakarta",
+      "blitar", "kediri", "nganjuk", "madiun", "ngawi", "sragen", "klaten", "purworejo",
+      "kebumen", "cilacap", "banjar", "ciamis", "tasikmalaya", "garut", "purwakarta",
+      "subang", "karawang", "bekasi", "tangerang", "serang", "cilegon", "banyuwangi",
+      "jember", "probolinggo", "pasuruan", "sidoarjo", "surabaya", "mojokerto",
+      "jombang", "bojonegoro", "lamongan", "gresik", "tuban", "brebes", "tegal",
+      "pemalang", "pekalongan", "batang", "kendal", "demak", "kudus", "pati",
+      "rembang", "wonogiri", "sukoharjo", "boyolali", "magelang", "temanggung",
       "wonosobo", "banjarnegara", "purbalingga", "banyumas"
     ];
 
     for (const s of masterStations) {
-      const isJava = javaHeuristics.some(city => 
-        (s.city || "").toLowerCase().includes(city) || 
+      const isJava = javaHeuristics.some(city =>
+        (s.city || "").toLowerCase().includes(city) ||
         (s.name || "").toLowerCase().includes(city)
       ) || (s.province || "").toLowerCase().includes("jawa") || (s.province || "").toLowerCase().includes("dki") || (s.code || "").startsWith("JR");
-      
+
       const divId = isJava ? javaDiv.id : sumaDiv.id;
 
       await query(
@@ -866,7 +866,7 @@ export async function seedData() {
         [routeDef.name, train.id, routeDef.direction],
       );
       const routeId = res.rows[0].id;
-      
+
       await query("DELETE FROM route_stations WHERE route_id = $1", [routeId]);
       for (let i = 0; i < routeDef.stations.length; i++) {
         const stationName = routeDef.stations[i];
@@ -943,7 +943,7 @@ export async function seedData() {
         console.warn(`[PIDS-DB] Route not found for schedule: ${schedDef.routeName}`);
         continue;
       }
-      
+
       const tsId = ((parseInt(schedDef.trainNumber) % 4) + 1);
       const firstStop = schedDef.stops[0];
       const lastStop = schedDef.stops[schedDef.stops.length - 1];
@@ -984,7 +984,7 @@ export async function seedData() {
       for (const stop of schedDef.stops) {
         const rs_id = rsMap.get(stop.name.toUpperCase());
         if (!rs_id) continue;
-        
+
         const isFirst = stop === firstStop;
         const isLast = stop === lastStop;
 
@@ -1076,7 +1076,7 @@ export async function getState() {
     let activeRoute = null;
     try {
       activeRoute = JSON.parse(row.active_route_json || "{}");
-    } catch {}
+    } catch { }
     return {
       serviceName: row.service_name,
       currentStation: row.current_station,
@@ -1092,12 +1092,12 @@ export async function getState() {
       stations: await (async () => {
         const rawStations = activeRoute?.stations || [];
         if (rawStations.length === 0) return [];
-        
+
         // Extract IDs or names for lookup
         const lookupValues = rawStations.map(s => (typeof s === "string" ? s : s.id || s.name));
         const placeholders1 = lookupValues.map((_, i) => `$${i + 1}`).join(", ");
         const placeholders2 = lookupValues.map((_, i) => `$${i + 1 + lookupValues.length}`).join(", ");
-        
+
         // Lookup by ID first, then by name if no ID is found
         const dbStations = await getAll(
           `SELECT id, name, city, latitude as lat, longitude as lng FROM stations WHERE id IN (${placeholders1}) OR name IN (${placeholders2})`,
@@ -1108,7 +1108,7 @@ export async function getState() {
         return rawStations.map(raw => {
           const rawId = typeof raw === "string" ? raw : raw.id || raw.name;
           const match = dbStations.find(s => s.id === rawId || s.name === rawId);
-          
+
           if (typeof raw === "string") {
             return match || { id: raw, name: raw };
           } else {
@@ -1594,11 +1594,11 @@ export async function saveRoute(name, stations) {
         typeof s === "object" && s ? s.id || s.station_id || "" : "";
       const station = stationId
         ? await client.query("SELECT id FROM stations WHERE id = $1", [
-            stationId,
-          ])
+          stationId,
+        ])
         : await client.query("SELECT id FROM stations WHERE name = $1", [
-            stationName,
-          ]);
+          stationName,
+        ]);
       const resolvedStation = station.rows[0];
       if (!resolvedStation) {
         throw new Error(
@@ -1623,7 +1623,7 @@ export async function saveRoute(name, stations) {
     await client.query("COMMIT");
     return { success: true, name, stations };
   } catch (e) {
-    await client.query("ROLLBACK").catch(() => {});
+    await client.query("ROLLBACK").catch(() => { });
     console.error("Error saving route:", e);
     return { error: e.message };
   } finally {
@@ -2560,7 +2560,7 @@ export async function restoreBackup(filename) {
       filename: path.basename(String(filename || "")),
     };
   } catch (e) {
-    await client.query("ROLLBACK").catch(() => {});
+    await client.query("ROLLBACK").catch(() => { });
     throw e;
   } finally {
     client.release();
@@ -2696,7 +2696,7 @@ export async function updateRouteGeoJSON(name, geojson, filename = "") {
       }
       await client.query("COMMIT");
     } catch (err) {
-      await client.query("ROLLBACK").catch(() => {});
+      await client.query("ROLLBACK").catch(() => { });
       throw err;
     } finally {
       client.release();
@@ -2953,7 +2953,7 @@ export async function getGpsGerbong(trainServiceId) {
   try {
     const state = await getState();
     const simGps = state.simGps || { lng: 107.6098, lat: -6.9147, heading: 0 };
-    
+
     const coaches = await getAll(
       "SELECT id, name, sequence_number, ip_address FROM coaches WHERE train_service_id = $1 ORDER BY sequence_number",
       [trainServiceId],

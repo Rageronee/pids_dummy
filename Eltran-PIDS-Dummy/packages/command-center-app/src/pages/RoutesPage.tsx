@@ -442,7 +442,7 @@ export default function RoutesPage({
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`h-10 px-6 rounded-lg font-bold text-xs transition-all ${activeCategory === cat ? "bg-[#ee6f1f] dark:bg-slate-950 text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
+                  className={`h-10 px-6 rounded-lg font-bold text-xs transition-all ${activeCategory === cat ? "bg-[#ee6f1f] dark:bg-ee6f1f text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
                 >
                   {cat}
                 </button>

@@ -2,7 +2,7 @@
  * RouteCheckpoints — Section 2: Rute & Checkpoint Navigasi table
  * Extracted from MasterConsolePanel for modularity.
  */
-import { ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { MapPin, Upload, Trash2, Info } from "lucide-react";
 import { SectionAccordion } from "./ui/SectionAccordion";
 
@@ -30,6 +30,32 @@ export function RouteCheckpoints({
   onDeleteClick,
   scheduleData = [],
 }: RouteCheckpointsProps) {
+  const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
+
+  // Reset auto-scroll flag when route changes
+  useEffect(() => {
+    setHasAutoScrolled(false);
+  }, [route?.name]);
+
+  // Handle auto-scroll to current station
+  useEffect(() => {
+    if (navData.length > 0 && !hasAutoScrolled && navTableRef.current) {
+      const currentStationName = getStationName(data?.currentStation).toUpperCase();
+      const currentIdx = navData.findIndex(item =>
+        item.name.toUpperCase() === currentStationName || item.status === "BERHENTI"
+      );
+
+      if (currentIdx !== -1) {
+        setTimeout(() => {
+          const row = navTableRef.current?.querySelector(`tr[data-active="true"]`);
+          if (row) {
+            row.scrollIntoView({ behavior: "smooth", block: "center" });
+            setHasAutoScrolled(true);
+          }
+        }, 500);
+      }
+    }
+  }, [navData, data?.currentStation, hasAutoScrolled, navTableRef, route?.name]);
   // Helper to robustly extract station name from string, JSON string, or object
   const getStationName = (s: any): string => {
     if (!s || s === "-") return "-";
@@ -94,21 +120,23 @@ export function RouteCheckpoints({
       ) : (
         <>
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
-            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                File Aktif:
-              </span>
-              <span className="text-base font-bold text-[#1d2d6a] dark:text-white">
-                {route?.geojson
-                  ? route.geojson_filename ||
-                  `${route.name.replace(/\s+/g, "_")}.geojson`
-                  : "Belum Ada GeoJSON"}
-                {route?.geojson && (
-                  <span className="ml-3 text-xs text-white font-bold bg-[#ee6f1f] px-2 py-1 rounded-lg border border-[#ee6f1f] italic uppercase tracking-widest">
-                    Aktif
-                  </span>
-                )}
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                  File Aktif:
+                </span>
+                <span className="text-base font-bold text-[#1d2d6a] dark:text-white">
+                  {route?.geojson
+                    ? route.geojson_filename ||
+                    `${route.name.replace(/\s+/g, "_")}.geojson`
+                    : "Belum Ada GeoJSON"}
+                  {route?.geojson && (
+                    <span className="ml-3 text-xs text-white font-bold bg-[#ee6f1f] px-2 py-1 rounded-lg border border-[#ee6f1f] italic uppercase tracking-widest">
+                      Aktif
+                    </span>
+                  )}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -220,23 +248,23 @@ export function RouteCheckpoints({
                         const currentStationName = getStationName(data?.currentStation).toUpperCase();
                         const itemName = item.name.toUpperCase();
                         const isBerhenti = item.status === "BERHENTI" || itemName === currentStationName;
-                        
+
                         // Cari waktu di scheduleData
                         let timeStr = "--:--";
-                        const activeSched = scheduleData.find((s: any) => 
-                          (s.train_name?.toUpperCase() === route?.name?.toUpperCase()) || 
+                        const activeSched = scheduleData.find((s: any) =>
+                          (s.train_name?.toUpperCase() === route?.name?.toUpperCase()) ||
                           (s.display_train_name?.toUpperCase() === route?.name?.toUpperCase())
                         );
 
                         if (activeSched?.stops) {
-                          const stop = activeSched.stops.find((st: any) => 
+                          const stop = activeSched.stops.find((st: any) =>
                             st.station_name?.toUpperCase() === itemName ||
                             st.stasiun?.toUpperCase() === itemName
                           );
                           timeStr = stop?.arrival_time || stop?.departure_time || stop?.waktu_kedatangan_penjadwalan || "--:--";
                         } else {
-                          const sched = scheduleData.find((s: any) => 
-                            (s.stasiun_keberangkatan?.toUpperCase() === itemName) || 
+                          const sched = scheduleData.find((s: any) =>
+                            (s.stasiun_keberangkatan?.toUpperCase() === itemName) ||
                             (s.stasiun_tujuan?.toUpperCase() === itemName)
                           );
                           timeStr = sched ? (sched.waktu_keberangkatan_penjadwalan || sched.waktu_kedatangan_penjadwalan || "--:--") : "--:--";
@@ -263,10 +291,10 @@ export function RouteCheckpoints({
                               </div>
                             </td>
                             <td className="py-6 px-4">
-                               <div className="flex flex-col">
-                                 <span className="text-sm font-black text-[#1d2d6a] dark:text-white font-mono">{timeStr}</span>
-                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SCHED</span>
-                               </div>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-black text-[#1d2d6a] dark:text-white font-mono">{timeStr}</span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SCHED</span>
+                              </div>
                             </td>
                             <td
                               className="py-6 px-4 font-bold text-slate-500 dark:text-slate-500 text-[10px] text-center uppercase tracking-wider truncate"
