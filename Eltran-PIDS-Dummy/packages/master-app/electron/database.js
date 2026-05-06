@@ -52,11 +52,11 @@ function normalizeName(name) {
     .replace(/STASIUN\s+/g, "");
 }
 
-function mergeAndOptimizeGeoJSON(geojsonText, masterStations) {
+function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = []) {
   try {
     const geojson = JSON.parse(geojsonText);
     const stationMap = new Map();
-    const coordFixMap = new Map(); // Store [oldLng, oldLat] -> [newLng, newLat]
+    const coordFixMap = new Map();
 
     masterStations.forEach((s) => {
       stationMap.set(normalizeName(s.name), s);
@@ -64,40 +64,52 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations) {
     });
 
     if (geojson.features) {
-      // Phase 1: Update Points and collect coordinate fixes
       geojson.features = geojson.features.map((f) => {
         if (f.geometry?.type === "Point") {
-          const name = normalizeName(f.properties?.name || f.properties?.Name);
+          const rawName = f.properties?.name || f.properties?.Name;
+          const name = normalizeName(rawName);
           const master = stationMap.get(name);
+          
           if (master) {
             const oldCoordKey = JSON.stringify(f.geometry.coordinates);
             const newCoord = [master.lng, master.lat];
             coordFixMap.set(oldCoordKey, newCoord);
             f.geometry.coordinates = newCoord;
           }
-          const cleanProps = {};
-          const essentials = ["name", "isCheckpoint", "role"];
+
+          const cleanProps = {
+            name: rawName
+          };
+          const essentials = ["isCheckpoint", "role"];
           essentials.forEach((p) => {
             if (f.properties[p] !== undefined) cleanProps[p] = f.properties[p];
           });
-          Object.keys(f.properties).forEach((p) => {
-            if (p.startsWith("schedule_") || p.startsWith("is_origin_")) {
-              cleanProps[p] = f.properties[p];
+
+          // Inject real schedule times from parsed KAI data
+          allSchedules.forEach(s => {
+            const kaNum = s.trainNumber.toLowerCase();
+            const stop = s.stops.find(st => normalizeName(st.name) === name);
+            if (stop) {
+              // Priority: Use arrival if available (typical for ETA), fallback to departure
+              const time = stop.arrival || stop.departure || "";
+              cleanProps[`schedule_ka${kaNum}`] = time;
+              
+              if (normalizeName(s.stops[0].name) === name) {
+                cleanProps[`is_origin_ka${kaNum}`] = true;
+              }
             }
           });
+
           f.properties = cleanProps;
         }
         return f;
       });
 
-      // Phase 2: Update LineStrings using the collected fixes
       geojson.features = geojson.features.map((f) => {
         if (f.geometry?.type === "LineString") {
           f.geometry.coordinates = f.geometry.coordinates.map(coord => {
             const key = JSON.stringify(coord);
-            if (coordFixMap.has(key)) {
-              return coordFixMap.get(key);
-            }
+            if (coordFixMap.has(key)) return coordFixMap.get(key);
             return coord;
           });
         }
@@ -292,7 +304,7 @@ async function createTables() {
   await pool.query(`
         CREATE TABLE IF NOT EXISTS routes (
             id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL DEFAULT '',
+            name TEXT NOT NULL UNIQUE DEFAULT '',
             train_service_id INTEGER,
             direction TEXT NOT NULL DEFAULT '',
             svg_path TEXT DEFAULT '',
@@ -301,6 +313,7 @@ async function createTables() {
             CONSTRAINT fk_train_service FOREIGN KEY (train_service_id) REFERENCES train_services(id) ON DELETE SET NULL
         )
     `);
+  await pool.query(`ALTER TABLE routes ADD CONSTRAINT uq_route_name UNIQUE (name)`).catch(() => {});
   await pool.query(`
         CREATE TABLE IF NOT EXISTS route_stations (
             id SERIAL PRIMARY KEY,
@@ -724,257 +737,219 @@ async function createTables() {
 }
 
 export async function seedData() {
-  console.log(
-    "[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...",
-  );
-  await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json, sim_distance, last_sim_time)
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const query = (sql, params) => client.query(sql, params);
+    const getOne = async (sql, params) => (await client.query(sql, params)).rows[0];
+    const getAll = async (sql, params) => (await client.query(sql, params)).rows;
+
+    console.log(
+      "[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...",
+    );
+    await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json, sim_distance, last_sim_time)
                  VALUES (1, 'MALABAR', 'MALANG', '67', 'MALANG KOTA LAMA', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 12, '{"lng": 112.6371, "lat": -7.9772, "heading": 0}', 0, 0)
                  ON CONFLICT (id) DO NOTHING`);
-  const hashedAdminPw = hashPassword("admin123");
-  const hashedOpPw = hashPassword("operator123");
-  await query(
-    "INSERT INTO users (id, username, password, role, full_name, contact, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING",
-    [
-      "USR001",
-      "admin",
-      hashedAdminPw,
-      "Admin",
-      "Administrator",
-      "081100000001",
-      "admin@eltran.co.id",
-    ],
-  );
-  await query(
-    "INSERT INTO users (id, username, password, role, full_name, contact, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING",
-    [
-      "USR002",
-      "operator",
-      hashedOpPw,
-      "Operator",
-      "Operator PIDS",
-      "081100000002",
-      "operator@eltran.co.id",
-    ],
-  );
-  const stationsPath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "shared",
-    "data",
-    "stations_master.json",
-  );
-  const masterStations = JSON.parse(fs.readFileSync(stationsPath, "utf8"));
-
-  await query("INSERT INTO divisions (name, code) VALUES ('Java Division', 'JAVA'), ('Sumatra Division', 'SUMA') ON CONFLICT DO NOTHING");
-  const javaDiv = await getOne("SELECT id FROM divisions WHERE code = 'JAVA'");
-  const sumaDiv = await getOne("SELECT id FROM divisions WHERE code = 'SUMA'");
-
-  const javaHeuristics = [
-    "malang", "bandung", "surakarta", "solo", "yogya", "semarang", "cirebon", "jakarta", 
-    "blitar", "kediri", "nganjuk", "madiun", "ngawi", "sragen", "klaten", "purworejo", 
-    "kebumen", "cilacap", "banjar", "ciamis", "tasikmalaya", "garut", "purwakarta", 
-    "subang", "karawang", "bekasi", "tangerang", "serang", "cilegon", "banyuwangi", 
-    "jember", "probolinggo", "pasuruan", "sidoarjo", "surabaya", "mojokerto", 
-    "jombang", "bojonegoro", "lamongan", "gresik", "tuban", "brebes", "tegal", 
-    "pemalang", "pekalongan", "batang", "kendal", "demak", "kudus", "pati", 
-    "rembang", "wonogiri", "sukoharjo", "boyolali", "magelang", "temanggung", 
-    "wonosobo", "banjarnegara", "purbalingga", "banyumas"
-  ];
-
-  for (const s of masterStations) {
-    const isJava = javaHeuristics.some(city => 
-      (s.city || "").toLowerCase().includes(city) || 
-      (s.name || "").toLowerCase().includes(city)
-    ) || (s.province || "").toLowerCase().includes("jawa") || (s.province || "").toLowerCase().includes("dki") || (s.code || "").startsWith("JR");
-    
-    const divId = isJava ? javaDiv.id : sumaDiv.id;
-
+    const hashedAdminPw = hashPassword("admin123");
+    const hashedOpPw = hashPassword("operator123");
     await query(
-      `INSERT INTO stations (id, name, city, latitude, longitude, city_code, province, regency, district, address, postal_code, media, division_id)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-                     ON CONFLICT (id) DO UPDATE SET
-                        name=EXCLUDED.name, city=EXCLUDED.city,
-                        latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude,
-                        city_code=EXCLUDED.city_code, province=EXCLUDED.province,
-                        regency=EXCLUDED.regency, district=EXCLUDED.district,
-                        address=EXCLUDED.address, postal_code=EXCLUDED.postal_code,
-                        media=EXCLUDED.media, division_id=EXCLUDED.division_id`,
+      "INSERT INTO users (id, username, password, role, full_name, contact, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING",
       [
-        s.code, s.name, s.city, s.lat, s.lng, s.region_code, s.province, s.regency, s.district, s.address, s.postal_code, s.image_url, divId
+        "USR001",
+        "admin",
+        hashedAdminPw,
+        "Admin",
+        "Administrator",
+        "081100000001",
+        "admin@eltran.co.id",
       ],
     );
-  }
-  console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from JSON`);
-  const kaiTrains = [["MALABAR", "EKSEKUTIF/EKONOMI", "67", 12, "ML", "BD"]];
-
-  for (const [name, cls, num, coachCount, start, end] of kaiTrains) {
     await query(
-      `INSERT INTO train_services (name, class, train_number, coach_count, origin_station_id, destination_station_id)
-                     VALUES ($1, $2, $3, $4, $5, $6)
-                     ON CONFLICT (name) DO UPDATE SET
-                        class=EXCLUDED.class, train_number=EXCLUDED.train_number,
-                        coach_count=EXCLUDED.coach_count,
-                        origin_station_id=EXCLUDED.origin_station_id, destination_station_id=EXCLUDED.destination_station_id`,
-      [name, cls, num, coachCount, start, end],
-    );
-  }
-  console.log("[PIDS-DB] ✓ Train services seeded");
-
-  // SEED TRAINSETS
-  const trainsetDefinitions = [
-    { name: "TS-01", description: "Rangkaian Stainless Steel 2024" },
-    { name: "TS-02", description: "Rangkaian Stainless Steel 2024" },
-    { name: "TS-03", description: "Rangkaian Stainless Steel 2024" },
-    { name: "TS-04", description: "Rangkaian Stainless Steel 2024" },
-  ];
-
-  for (const ts of trainsetDefinitions) {
-    await query(
-      "INSERT INTO trainsets (name, description) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING",
-      [ts.name, ts.description]
-    );
-  }
-  console.log("[PIDS-DB] ✓ Trainsets seeded");
-  const routeDefinitions = {
-    MALABAR: {
-      direction: "Malang - Bandung",
-      stations: [
-        "ML", "MLK", "KPN", "BL", "KD", "MN", "SLO", "YK", "KTA", "BTH", "PRB", "KWN", "WNS", "KM", "SRW", "KA", "GB", "IJO", "TBK", "SPH", "KJN", "KYA", "SKP", "MA", "KH", "LBG", "JRL", "KWG", "GDM", "SDR", "CPI", "MLW", "LGN", "BJR", "KNP", "BJG", "CI", "MNJ", "AWP", "TSM", "IDH", "RJP", "CAW", "CHY", "CPD", "BMW", "WNB", "CB", "LWG", "KRA", "C26", "LBJ", "NG", "CCL", "HRP", "RCK", "CMK", "GDB", "KAC", "CTH", "BD"
+      "INSERT INTO users (id, username, password, role, full_name, contact, email) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING",
+      [
+        "USR002",
+        "operator",
+        hashedOpPw,
+        "Operator",
+        "Operator PIDS",
+        "081100000002",
+        "operator@eltran.co.id",
       ],
-    },
-  };
-
-  for (const [trainName, routeDef] of Object.entries(routeDefinitions)) {
-    const train = await getOne(
-      "SELECT id FROM train_services WHERE name = $1",
-      [trainName],
     );
-    if (!train) {
-      console.warn(`[PIDS-DB] Train not found for route: ${trainName}`);
-      continue;
-    }
-    const existingRoute = await getOne(
-      "SELECT id FROM routes WHERE name = $1",
-      [trainName],
-    );
-    let routeId;
-    if (existingRoute) {
-      routeId = existingRoute.id;
-      await query("UPDATE routes SET direction=$1 WHERE id=$2", [
-        routeDef.direction,
-        routeId,
-      ]);
-      // Skip re-seeding if count matches to avoid race conditions/FK errors
-      const stnCount = await getOne("SELECT COUNT(*) FROM route_stations WHERE route_id = $1", [routeId]);
-      if (parseInt(stnCount.count) === routeDef.stations.length) {
-        console.log(`[PIDS-DB] Route stations for ${trainName} already seeded, skipping.`);
-        continue;
-      }
-      await query("DELETE FROM route_stations WHERE route_id = $1", [routeId]);
-    } else {
-      const res = await query(
-        "INSERT INTO routes (name, train_service_id, direction) VALUES ($1, $2, $3) RETURNING id",
-        [trainName, train.id, routeDef.direction],
-      );
-      routeId = res.rows[0].id;
-    }
-    for (let i = 0; i < routeDef.stations.length; i++) {
-      const stationId = routeDef.stations[i];
-      const stExists = await getOne("SELECT id FROM stations WHERE id = $1", [
-        stationId,
-      ]);
-      if (!stExists) {
-        console.warn(`[PIDS-DB] Station ID '${stationId}' not found, skipping`);
-        continue;
-      }
-      await query(
-        "INSERT INTO route_stations (route_id, station_id, sequence_order) VALUES ($1, $2, $3)",
-        [routeId, stationId, i],
-      );
-    }
-    console.log(
-      `[PIDS-DB] ✓ Route ${trainName}: ${routeDef.stations.length} stops`,
-    );
-  }
-  try {
-    const { readFileSync, existsSync } = await import("fs");
-    const { join, dirname } = await import("path");
-    const { fileURLToPath } = await import("url");
-    const __dir = dirname(fileURLToPath(import.meta.url));
+    const seedDataPath = path.join(__dirname, "seed_data.json");
+    const seedData = JSON.parse(fs.readFileSync(seedDataPath, "utf8"));
+    const masterStations = seedData.stations;
 
-    const geojsonMap = {
-      MALABAR: join(
-        __dir,
-        "..",
-        "public",
-        "geojson",
-        "Malabar",
-        "Malabar.geojson",
-      ),
-    };
+    await query("INSERT INTO divisions (name, code) VALUES ('Java Division', 'JAVA'), ('Sumatra Division', 'SUMA') ON CONFLICT DO NOTHING");
+    const javaDiv = await getOne("SELECT id FROM divisions WHERE code = 'JAVA'");
+    const sumaDiv = await getOne("SELECT id FROM divisions WHERE code = 'SUMA'");
 
-    for (const [trainName, filePath] of Object.entries(geojsonMap)) {
-      if (!existsSync(filePath)) {
-        console.warn(`[PIDS-DB] GeoJSON not found: ${filePath}`);
-        continue;
-      }
-      const geojsonText = readFileSync(filePath, "utf-8");
-      const route = await getOne(
-        "SELECT id FROM routes WHERE name = $1",
-        [trainName],
-      );
-      if (!route) continue;
-      const optimizedGeoJSON = mergeAndOptimizeGeoJSON(
-        geojsonText,
-        masterStations,
-      );
-
-      await query(
-        "UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3",
-        [optimizedGeoJSON, filePath.split(/[\\/]/).pop(), route.id],
-      );
-      console.log(
-        `[PIDS-DB] ✓ Optimized GeoJSON attached for ${trainName} (${optimizedGeoJSON.length} bytes)`,
-      );
-    }
-  } catch (e) {
-    console.warn("[PIDS-DB] GeoJSON auto-attach skipped:", e.message);
-  }
-  const today = new Date().toISOString().split("T")[0];
-  // Note: Redundant DELETE removed to prevent foreign key violations during concurrent seeding.
-  // The INSERT ... ON CONFLICT below handles updates correctly.
-
-  const scheduleDefinitions = [
-      ["MALABAR", "67", "MALANG", "MLG", "BANDUNG", "BDG", "16:50", "05:44"],
-      ["MALABAR", "68", "BANDUNG", "BDG", "MALANG", "MLG", "18:09", "06:51"],
-      ["MALABAR", "69", "MALANG", "MLG", "BANDUNG", "BDG", "05:24", "18:04"],
-      ["MALABAR", "70", "BANDUNG", "BDG", "MALANG", "MLG", "09:29", "22:36"],
+    const javaHeuristics = [
+      "malang", "bandung", "surakarta", "solo", "yogya", "semarang", "cirebon", "jakarta", 
+      "blitar", "kediri", "nganjuk", "madiun", "ngawi", "sragen", "klaten", "purworejo", 
+      "kebumen", "cilacap", "banjar", "ciamis", "tasikmalaya", "garut", "purwakarta", 
+      "subang", "karawang", "bekasi", "tangerang", "serang", "cilegon", "banyuwangi", 
+      "jember", "probolinggo", "pasuruan", "sidoarjo", "surabaya", "mojokerto", 
+      "jombang", "bojonegoro", "lamongan", "gresik", "tuban", "brebes", "tegal", 
+      "pemalang", "pekalongan", "batang", "kendal", "demak", "kudus", "pati", 
+      "rembang", "wonogiri", "sukoharjo", "boyolali", "magelang", "temanggung", 
+      "wonosobo", "banjarnegara", "purbalingga", "banyumas"
     ];
 
-    for (const [
-      serviceName,
-      trainNum,
-      dep,
-      depCode,
-      arr,
-      arrCode,
-      depTime,
-      arrTime,
-    ] of scheduleDefinitions) {
+    for (const s of masterStations) {
+      const isJava = javaHeuristics.some(city => 
+        (s.city || "").toLowerCase().includes(city) || 
+        (s.name || "").toLowerCase().includes(city)
+      ) || (s.province || "").toLowerCase().includes("jawa") || (s.province || "").toLowerCase().includes("dki") || (s.code || "").startsWith("JR");
+      
+      const divId = isJava ? javaDiv.id : sumaDiv.id;
+
+      await query(
+        `INSERT INTO stations (id, name, city, latitude, longitude, city_code, province, regency, district, address, postal_code, media, division_id)
+                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                       ON CONFLICT (id) DO UPDATE SET
+                          name=EXCLUDED.name, city=EXCLUDED.city,
+                          latitude=EXCLUDED.latitude, longitude=EXCLUDED.longitude,
+                          city_code=EXCLUDED.city_code, province=EXCLUDED.province,
+                          regency=EXCLUDED.regency, district=EXCLUDED.district,
+                          address=EXCLUDED.address, postal_code=EXCLUDED.postal_code,
+                          media=EXCLUDED.media, division_id=EXCLUDED.division_id`,
+        [
+          s.id, s.name, s.city, s.lat, s.lng, s.region_code || s.code, s.province || "", s.regency || "", s.district || "", s.address || "", s.postal_code || "", s.image_url || "", divId
+        ],
+      );
+    }
+    console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from parsed data`);
+    const kaiTrains = [["MALABAR", "EKSEKUTIF/EKONOMI", "67", 12, "ML", "BD"]];
+
+    for (const [name, cls, num, coachCount, start, end] of kaiTrains) {
+      await query(
+        `INSERT INTO train_services (name, class, train_number, coach_count, origin_station_id, destination_station_id)
+                       VALUES ($1, $2, $3, $4, $5, $6)
+                       ON CONFLICT (name) DO UPDATE SET
+                          class=EXCLUDED.class, train_number=EXCLUDED.train_number,
+                          coach_count=EXCLUDED.coach_count,
+                          origin_station_id=EXCLUDED.origin_station_id, destination_station_id=EXCLUDED.destination_station_id`,
+        [name, cls, num, coachCount, start, end],
+      );
+    }
+    console.log("[PIDS-DB] ✓ Train services seeded");
+
+    // SEED TRAINSETS
+    const trainsetDefinitions = [
+      { name: "TS-01", description: "Rangkaian Stainless Steel 2024" },
+      { name: "TS-02", description: "Rangkaian Stainless Steel 2024" },
+      { name: "TS-03", description: "Rangkaian Stainless Steel 2024" },
+      { name: "TS-04", description: "Rangkaian Stainless Steel 2024" },
+    ];
+
+    for (const ts of trainsetDefinitions) {
+      await query(
+        "INSERT INTO trainsets (name, description) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING",
+        [ts.name, ts.description]
+      );
+    }
+    console.log("[PIDS-DB] ✓ Trainsets seeded");
+    for (const routeDef of seedData.routes) {
       const train = await getOne(
         "SELECT id FROM train_services WHERE name = $1",
-        [serviceName],
+        [routeDef.serviceName],
       );
-      let routeId = null;
-      const route = await getOne(
-        "SELECT id FROM routes WHERE name = $1",
-        [serviceName],
+      if (!train) {
+        console.warn(`[PIDS-DB] Train service not found for route: ${routeDef.serviceName}`);
+        continue;
+      }
+      const res = await query(
+        `INSERT INTO routes (name, train_service_id, direction) VALUES ($1, $2, $3)
+         ON CONFLICT (name) DO UPDATE SET direction = EXCLUDED.direction
+         RETURNING id`,
+        [routeDef.name, train.id, routeDef.direction],
       );
-      if (route) routeId = route.id;
+      const routeId = res.rows[0].id;
+      
+      await query("DELETE FROM route_stations WHERE route_id = $1", [routeId]);
+      for (let i = 0; i < routeDef.stations.length; i++) {
+        const stationName = routeDef.stations[i];
+        const station = await getOne("SELECT id FROM stations WHERE UPPER(name) = UPPER($1)", [stationName]);
+        if (!station) {
+          continue;
+        }
+        await query(
+          `INSERT INTO route_stations (route_id, station_id, sequence_order, stop_type)
+           VALUES ($1, $2, $3, $4)`,
+          [routeId, station.id, i, (i === 0 || i === routeDef.stations.length - 1) ? "terminal" : "intermediate"]
+        );
+      }
+      console.log(`[PIDS-DB] ✓ Route ${routeDef.name}: ${routeDef.stations.length} stops`);
+    }
+    try {
+      const { readFileSync, existsSync } = await import("fs");
+      const { join, dirname } = await import("path");
+      const { fileURLToPath } = await import("url");
+      const __dir = dirname(fileURLToPath(import.meta.url));
 
-      // Pick a trainset (simple rotation for seeding)
-      const tsId = ((parseInt(trainNum) % 4) + 1);
+      const geojsonMap = {
+        MALABAR_GO: join(
+          __dir,
+          "..",
+          "public",
+          "geojson",
+          "Malabar",
+          "Malabar.geojson",
+        ),
+        MALABAR_BACK: join(
+          __dir,
+          "..",
+          "public",
+          "geojson",
+          "Malabar",
+          "Malabar.geojson",
+        ),
+      };
+
+      for (const [trainName, filePath] of Object.entries(geojsonMap)) {
+        if (!existsSync(filePath)) {
+          console.warn(`[PIDS-DB] GeoJSON not found: ${filePath}`);
+          continue;
+        }
+        const geojsonText = readFileSync(filePath, "utf-8");
+        const route = await getOne(
+          "SELECT id FROM routes WHERE name = $1",
+          [trainName],
+        );
+        if (!route) continue;
+        const optimizedGeoJSON = mergeAndOptimizeGeoJSON(
+          geojsonText,
+          masterStations,
+          seedData.schedules
+        );
+
+        await query(
+          "UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3",
+          [optimizedGeoJSON, filePath.split(/[\\/]/).pop(), route.id],
+        );
+        console.log(
+          `[PIDS-DB] ✓ Optimized GeoJSON attached for ${trainName} (${optimizedGeoJSON.length} bytes)`,
+        );
+      }
+    } catch (e) {
+      console.warn("[PIDS-DB] GeoJSON auto-attach skipped:", e.message);
+    }
+    const today = new Date().toISOString().split("T")[0];
+
+    for (const schedDef of seedData.schedules) {
+      const route = await getOne("SELECT id FROM routes WHERE name = $1", [schedDef.routeName]);
+      if (!route) {
+        console.warn(`[PIDS-DB] Route not found for schedule: ${schedDef.routeName}`);
+        continue;
+      }
+      
+      const tsId = ((parseInt(schedDef.trainNumber) % 4) + 1);
+      const firstStop = schedDef.stops[0];
+      const lastStop = schedDef.stops[schedDef.stops.length - 1];
+
+      const depTime = (firstStop.departure || "").substring(0, 5);
+      const arrTime = (lastStop.arrival || "").substring(0, 5);
 
       const res = await query(
         `INSERT INTO schedules (
@@ -986,144 +961,112 @@ export async function seedData() {
               DO UPDATE SET route_id = EXCLUDED.route_id, trainset_id = EXCLUDED.trainset_id
               RETURNING id`,
         [
-          routeId,
-          serviceName,
-          trainNum,
-          today,
-          dep,
-          depCode,
-          depTime,
-          arr,
-          arrCode,
-          arrTime,
+          route.id, schedDef.serviceName, schedDef.trainNumber, today,
+          firstStop.name, firstStop.name.substring(0, 3).toUpperCase(), depTime,
+          lastStop.name, lastStop.name.substring(0, 3).toUpperCase(), arrTime,
           tsId
         ],
       );
-
       const schedId = res.rows[0].id;
+      await query("DELETE FROM schedule_stops WHERE schedule_id = $1", [schedId]);
 
-      if (routeId) {
-        // Clear old stops to ensure we use fresh GeoJSON data
-        await query("DELETE FROM schedule_stops WHERE schedule_id = $1", [schedId]);
+      const routeStations = await getAll(
+        `SELECT rs.id as rs_id, UPPER(s.name) as name, rs.sequence_order
+         FROM route_stations rs
+         JOIN stations s ON rs.station_id = s.id
+         WHERE rs.route_id = $1
+         ORDER BY rs.sequence_order`,
+        [route.id]
+      );
 
-        const routeStations = await getAll(
-          `
-                  SELECT rs.id as rs_id, s.name, rs.sequence_order
-                  FROM route_stations rs
-                  JOIN stations s ON rs.station_id = s.id
-                  WHERE rs.route_id = $1
-                  ORDER BY rs.sequence_order
-              `,
-          [routeId],
+      const rsMap = new Map(routeStations.map(rs => [rs.name, rs.rs_id]));
+
+      for (const stop of schedDef.stops) {
+        const rs_id = rsMap.get(stop.name.toUpperCase());
+        if (!rs_id) continue;
+        
+        const isFirst = stop === firstStop;
+        const isLast = stop === lastStop;
+
+        await query(
+          `INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time, departure_time, platform, stop_status)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [schedId, rs_id, isFirst ? "" : stop.arrival.substring(0, 5), isLast ? "" : stop.departure.substring(0, 5), 1, isFirst ? "DEPARTED" : "SCHEDULED"]
         );
-
-        const dbRoute = await getOne("SELECT geojson FROM routes WHERE id = $1", [
-          routeId,
-        ]);
-        const geojson = JSON.parse(dbRoute?.geojson || "{}");
-        const features = geojson.features || [];
-        const stationPropsMap = new Map();
-        features.forEach((f) => {
-          if (f.properties && f.properties.name) {
-            stationPropsMap.set(normalizeName(f.properties.name), f.properties);
-          }
-        });
-
-        const [depH, depM] = depTime.split(":").map(Number);
-        const [arrH, arrM] = arrTime.split(":").map(Number);
-        let totalMinutes = arrH * 60 + arrM - (depH * 60 + depM);
-        if (totalMinutes <= 0) totalMinutes += 24 * 60;
-        const intervalPerStop =
-          routeStations.length > 1
-            ? Math.floor(totalMinutes / (routeStations.length - 1))
-            : 0;
-
-        for (let i = 0; i < routeStations.length; i++) {
-          const rs = routeStations[i];
-          const stopMinutes = depH * 60 + depM + i * intervalPerStop;
-          const stopH = Math.floor(stopMinutes / 60) % 24;
-          const stopM = stopMinutes % 60;
-          const calcTimeStr = `${String(stopH).padStart(2, "0")}:${String(stopM).padStart(2, "0")}`;
-
-          const props = stationPropsMap.get(normalizeName(rs.name)) || {};
-          const schedKey = `schedule_ka${trainNum}`;
-          const timeStr = props[schedKey] || props[schedKey.toLowerCase()] || calcTimeStr;
-
-          const arrivalStr = i === 0 ? "" : timeStr;
-          const departureStr = i === routeStations.length - 1 ? "" : timeStr;
-          const stopStatus = i === 0 ? "DEPARTED" : "SCHEDULED";
-          await query(
-            `INSERT INTO schedule_stops (schedule_id, route_station_id, arrival_time, departure_time, platform, stop_status)
-                      VALUES ($1, $2, $3, $4, $5, $6)`,
-            [schedId, rs.rs_id, arrivalStr, departureStr, 1, stopStatus],
-          );
-        }
       }
     }
-    console.log("[PIDS-DB] ✓ Schedules + schedule_stops seeded");
-  const coachDefinitions = {
-    MALABAR: [
-      ["MB-L", "LOCOMOTIVE CC206", 1, "10"],
-      ["MB-K1", "EXECUTIVE COACH 1", 2, "11"],
-      ["MB-K2", "EXECUTIVE COACH 2", 3, "12"],
-      ["MB-M", "DINING COACH", 4, "13"],
-      ["MB-E1", "ECONOMY COACH 1", 5, "14"],
-      ["MB-E2", "ECONOMY COACH 2", 6, "15"],
-      ["MB-E3", "ECONOMY COACH 3", 7, "16"],
-      ["MB-B", "BAGGAGE COACH", 8, "17"],
-    ],
-  };
+    console.log("[PIDS-DB] ✓ Schedules + schedule_stops seeded from parsed data");
+    const coachDefinitions = {
+      MALABAR: [
+        ["MB-L", "LOCOMOTIVE CC206", 1, "10"],
+        ["MB-K1", "EXECUTIVE COACH 1", 2, "11"],
+        ["MB-K2", "EXECUTIVE COACH 2", 3, "12"],
+        ["MB-M", "DINING COACH", 4, "13"],
+        ["MB-E1", "ECONOMY COACH 1", 5, "14"],
+        ["MB-E2", "ECONOMY COACH 2", 6, "15"],
+        ["MB-E3", "ECONOMY COACH 3", 7, "16"],
+        ["MB-B", "BAGGAGE COACH", 8, "17"],
+      ],
+    };
 
-  for (const [trainName, coaches] of Object.entries(coachDefinitions)) {
-    const train = await getOne(
-      "SELECT id FROM train_services WHERE name = $1",
-      [trainName],
-    );
-    if (!train) continue;
+    for (const [trainName, coaches] of Object.entries(coachDefinitions)) {
+      const train = await getOne(
+        "SELECT id FROM train_services WHERE name = $1",
+        [trainName],
+      );
+      if (!train) continue;
 
-    for (const [coachId, coachName, seqNum, ipSuffix] of coaches) {
-      await query(
-        `INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id)
-                VALUES ($1, $2, $3, $4, $5)
-                ON CONFLICT (id) DO UPDATE SET
-                    ip_address=EXCLUDED.ip_address, name=EXCLUDED.name,
-                    sequence_number=EXCLUDED.sequence_number, train_service_id=EXCLUDED.train_service_id`,
-        [
-          coachId,
-          `192.168.${train.id}.${ipSuffix}`,
-          coachName,
-          seqNum,
-          train.id,
-        ],
+      for (const [coachId, coachName, seqNum, ipSuffix] of coaches) {
+        await query(
+          `INSERT INTO coaches (id, ip_address, name, sequence_number, train_service_id)
+                  VALUES ($1, $2, $3, $4, $5)
+                  ON CONFLICT (id) DO UPDATE SET
+                      ip_address=EXCLUDED.ip_address, name=EXCLUDED.name,
+                      sequence_number=EXCLUDED.sequence_number, train_service_id=EXCLUDED.train_service_id`,
+          [
+            coachId,
+            `192.168.${train.id}.${ipSuffix}`,
+            coachName,
+            seqNum,
+            train.id,
+          ],
+        );
+      }
+      console.log(
+        `[PIDS-DB] ✓ Coaches seeded for ${trainName}: ${coaches.length} cars`,
       );
     }
-    console.log(
-      `[PIDS-DB] ✓ Coaches seeded for ${trainName}: ${coaches.length} cars`,
+    const lokomotifIds = ["MB-L"];
+    for (const gId of lokomotifIds) {
+      const coach = await getOne("SELECT id FROM coaches WHERE id = $1", [gId]);
+      if (!coach) continue;
+      const sensorId = `SEN-GPS-${gId}`;
+      await query(
+        `INSERT INTO sensors (id, ip_address, device_name, sensor_type, status, is_primary, coach_id)
+              VALUES ($1, $2, $3, 'GPS', 'Active', 1, $4)
+              ON CONFLICT (id) DO NOTHING`,
+        [sensorId, "", `GPS Sensor ${gId}`, gId],
+      );
+    }
+    console.log("[PIDS-DB] ✓ GPS sensors seeded");
+    const existingAnnouncement = await getOne(
+      "SELECT id FROM announcements WHERE type = 'INFO' AND active = 1 LIMIT 1",
     );
-  }
-  const lokomotifIds = ["MB-L"];
-  for (const gId of lokomotifIds) {
-    const coach = await getOne("SELECT id FROM coaches WHERE id = $1", [gId]);
-    if (!coach) continue;
-    const sensorId = `SEN-GPS-${gId}`;
-    await query(
-      `INSERT INTO sensors (id, ip_address, device_name, sensor_type, status, is_primary, coach_id)
-            VALUES ($1, $2, $3, 'GPS', 'Active', 1, $4)
-            ON CONFLICT (id) DO NOTHING`,
-      [sensorId, "", `GPS Sensor ${gId}`, gId],
-    );
-  }
-  console.log("[PIDS-DB] ✓ GPS sensors seeded");
-  const existingAnnouncement = await getOne(
-    "SELECT id FROM announcements WHERE type = 'INFO' AND active = 1 LIMIT 1",
-  );
-  if (!existingAnnouncement) {
-    await query(`INSERT INTO announcements (type, message, priority, active)
-            VALUES ('INFO', 'Selamat datang di sistem PIDS Eltran. Sistem berjalan normal.', 5, 1)`);
-    console.log("[PIDS-DB] ✓ Default announcement seeded");
-  }
+    if (!existingAnnouncement) {
+      await query(`INSERT INTO announcements (type, message, priority, active)
+              VALUES ('INFO', 'Selamat datang di sistem PIDS Eltran. Sistem berjalan normal.', 5, 1)`);
+      console.log("[PIDS-DB] ✓ Default announcement seeded");
+    }
 
-  console.log("[PIDS-DB] ✅ All seed data verified and complete (A-L)");
+    await client.query('COMMIT');
+    console.log("✅ All seed data verified and complete (A-L)");
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error("[PIDS-DB] Seeding failed, rolled back:", err.message);
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 export async function getState() {

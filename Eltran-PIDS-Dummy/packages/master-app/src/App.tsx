@@ -874,16 +874,13 @@ function App() {
                 <div className="bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200 dark:border-[#1e293b]/50">
                   <div className="flex items-center justify-between mb-10">
                     <div className="flex items-center gap-6">
-                      <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-3xl text-[#ee6f1f] shadow-inner">
+                      <div className="text-[#ee6f1f]">
                         <Train size={32} />
                       </div>
                       <div>
-                        <h2 className="text-xl font-black text-[#1d2d6a] dark:text-white tracking-tight">
-                          Fleet Telemetry Status
+                        <h2 className="text-xl font-bold text-[#1d2d6a] dark:text-white tracking-tight">
+                          Fleet Telemetry Realtime Status
                         </h2>
-                        <p className="text-xs text-slate-400 font-bold mt-0.5 uppercase tracking-widest">
-                          Real-time unit subsystem monitoring
-                        </p>
                       </div>
                     </div>
                     <button
@@ -897,11 +894,11 @@ function App() {
                       className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#1d2d6a] dark:text-slate-300 px-6 py-3 rounded-2xl text-sm font-black transition-all border border-slate-200 dark:border-slate-700 shadow-sm ACT:scale-95"
                     >
                       <RefreshCw id="refresh-state-btn" size={18} />
-                      REFRESH TELEMETRY
+                      REFRESH
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-3">
                     {(() => {
                       const coachCount = data.coachCount || 4;
                       const trainNumbers = [
@@ -910,73 +907,69 @@ function App() {
                         "K3 0 19 08", "P 0 18 01"
                       ];
 
-                      const visibleCoaches = Array.from({ length: coachCount });
-                      return visibleCoaches.map((_, i) => {
+                      const rows = Math.ceil(coachCount / 2);
+                      const displayIndices = [];
+                      for (let r = 0; r < rows; r++) {
+                        displayIndices.push(r);
+                        if (r + rows < coachCount) displayIndices.push(r + rows);
+                      }
+
+                      return displayIndices.map((i) => {
                         const trainNumber = trainNumbers[i % trainNumbers.length];
                         const isAktif = true;
                         return (
                           <motion.div
                             key={i}
-                            initial={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.03 }}
-                            className={`relative group bg-slate-50/50 dark:bg-[#111827]/60 backdrop-blur-xl border border-slate-100 dark:border-[#1e293b]/50 rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${isAktif ? 'hover:border-[#ee6f1f]/40' : 'opacity-60 grayscale'}`}
+                            transition={{ delay: i * 0.02 }}
+                            className={`group bg-white dark:bg-[#111827]/60 border border-slate-200 dark:border-[#1e293b]/50 rounded-xl p-3 px-4 transition-all hover:shadow-md hover:border-[#ee6f1f]/30 flex items-center gap-5 ${!isAktif && 'opacity-60 grayscale'}`}
                           >
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Unit {String(i + 1).padStart(2, "0")}</span>
-                                <div className="text-lg font-black text-[#1d2d6a] dark:text-white tracking-tight group-hover:text-[#ee6f1f] transition-colors">
+                            <div className="flex items-center gap-3 w-32 shrink-0">
+                              <div className="relative">
+                                <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[#1d2d6a] dark:text-white border border-slate-200 dark:border-slate-700">
+                                  <span className="text-sm font-bold font-mono">{String(i + 1).padStart(2, "0")}</span>
+                                </div>
+                                <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border border-white dark:border-[#0f172a] ${isAktif ? 'bg-green-500' : 'bg-slate-400'}`} />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Unit</span>
+                                <div className="text-[13px] font-bold text-[#1d2d6a] dark:text-white truncate">
                                   {trainNumber}
                                 </div>
                               </div>
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${isAktif ? 'bg-[#ee6f1f]/10 text-[#ee6f1f]' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                                <Cctv size={24} />
-                              </div>
                             </div>
 
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-white dark:bg-[#0a0f1e]/40 p-2.5 rounded-xl border border-slate-100 dark:border-[#1e293b]/50 shadow-sm">
-                                  <div className="text-[9px] text-slate-400 font-black uppercase mb-1 tracking-wider">Temp</div>
-                                  <div className="text-base font-black text-[#1d2d6a] dark:text-white font-mono flex items-baseline gap-0.5">
-                                    {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"}<span className="text-sm opacity-50">°C</span>
-                                  </div>
+                            <div className="flex-1 flex items-center gap-8 justify-center px-4 border-x border-slate-100 dark:border-slate-800/50">
+                              <div className="flex flex-col items-center">
+                                <span className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">Temp</span>
+                                <div className="flex items-baseline gap-0.5">
+                                  <span className="text-sm font-bold text-[#1d2d6a] dark:text-white font-mono">
+                                    {isAktif ? (22 + Math.random() * 2).toFixed(1) : "28.5"}
+                                  </span>
+                                  <span className="text-[9px] text-slate-400 font-bold">°C</span>
                                 </div>
-                                <div className="bg-white dark:bg-[#0a0f1e]/40 p-2.5 rounded-xl border border-slate-100 dark:border-[#1e293b]/50 shadow-sm">
-                                  <div className="text-[9px] text-slate-400 font-black uppercase mb-1 tracking-wider">Net</div>
-                                  <div className="text-base font-black text-green-500 font-mono flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <span className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">Net</span>
+                                <div className="flex items-center gap-1.5">
+                                  <div className={`w-1 h-1 rounded-full ${isAktif ? 'bg-green-500' : 'bg-slate-300'}`} />
+                                  <span className={`text-[9px] font-bold uppercase ${isAktif ? 'text-green-600' : 'text-slate-400'}`}>
                                     {isAktif ? "LAT" : "OFF"}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-3 gap-1 bg-[#1d2d6a]/5 dark:bg-slate-800/40 p-2 rounded-xl border border-slate-100/50 dark:border-[#1e293b]/30">
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Audio</span>
-                                  <div className={`px-1 py-0.5 rounded text-[8px] font-black ${isAktif ? 'bg-blue-100 dark:bg-blue-900/30 text-[#1d2d6a] dark:text-blue-400' : 'text-slate-400'}`}>
-                                    {isAktif ? 'RDY' : '-'}
-                                  </div>
-                                </div>
-                                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 self-center" />
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Video</span>
-                                  <div className={`px-1 py-0.5 rounded text-[8px] font-black ${isAktif ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'text-slate-400'}`}>
-                                    {isAktif ? 'ACT' : '-'}
-                                  </div>
-                                </div>
-                                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 self-center" />
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">PIDS</span>
-                                  <div className={`px-1 py-0.5 rounded text-[8px] font-black ${isAktif ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'text-slate-400'}`}>
-                                    {isAktif ? 'SYN' : '-'}
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
-                            
-                            <div className="absolute top-4 right-4">
-                               <div className={`w-2 h-2 rounded-full shadow-md ${isAktif ? "bg-green-500 animate-pulse ring-2 ring-green-500/10" : "bg-slate-400"}`} />
+
+                            <div className="flex items-center gap-4 w-36 shrink-0 justify-end">
+                              {['Audio', 'Video', 'PIDS'].map((sys) => (
+                                <div key={sys} className="flex flex-col items-center">
+                                  <span className="text-[7px] font-bold text-slate-400 uppercase">{sys}</span>
+                                  <span className={`text-[9px] font-bold ${isAktif ? 'text-[#1d2d6a] dark:text-slate-300' : 'text-slate-300'}`}>
+                                    {isAktif ? 'OK' : '-'}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           </motion.div>
                         );
@@ -1023,34 +1016,34 @@ function App() {
                   data={data}
                   currentStation={(() => {
                     const s = data?.currentStation;
-                    if (!s || s === "-") return "-";
+                    if (!s || s === "-") return "TIDAK TERIDENTIFIKASI";
                     if (typeof s === "string") {
                       try {
-                        if (s.startsWith("{") && s.endsWith("}")) {
+                        if (s.startsWith("{")) {
                           const parsed = JSON.parse(s);
-                          if (parsed && parsed.name) return parsed.name;
+                          return parsed.name || parsed.id || s;
                         }
                       } catch (e) { }
                       return s;
                     }
-                    return (s as any).name || (s as any).id || "-";
+                    return (s as any).name || (s as any).id || "TIDAK TERIDENTIFIKASI";
                   })()}
                   nextStation={(() => {
                     const s = data?.nextStation;
                     if (!s || s === "-") return "-";
                     if (typeof s === "string") {
                       try {
-                        if (s.startsWith("{") && s.endsWith("}")) {
+                        if (s.startsWith("{")) {
                           const parsed = JSON.parse(s);
-                          if (parsed && parsed.name) return parsed.name;
+                          return parsed.name || parsed.id || s;
                         }
                       } catch (e) { }
                       return s;
                     }
                     return (s as any).name || (s as any).id || "-";
                   })()}
-                  masterSyncedServiceName={data?.serviceName || "BELUM DIKONFIGURASI"}
-                  masterSyncedNumber={data?.trainNumber?.split(" Gerbong")[0].replace("KA ", "") || "000"}
+                  masterSyncedServiceName={ACTTrainName}
+                  masterSyncedNumber={ACTTrainNumber}
                   speed={data?.speed || 0}
                   altitude={data?.altitude || 0}
                   temp={data?.temperature || 24}

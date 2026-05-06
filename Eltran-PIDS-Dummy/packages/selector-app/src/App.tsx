@@ -42,6 +42,7 @@ function App() {
     const saved = localStorage.getItem("selector_theme");
     return saved ? saved === "dark" : false;
   });
+  const lastUserActionRef = useRef<number>(0);
 
   useEffect(() => {
     if (isDark) {
@@ -51,7 +52,10 @@ function App() {
     }
     localStorage.setItem("selector_theme", isDark ? "dark" : "light");
   }, [isDark]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const saved = localStorage.getItem("selector_current_index");
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSystemSettings, setShowSystemSettings] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
@@ -70,7 +74,18 @@ function App() {
   const [trainCategory, setTrainCategory] = useState<
     "EKSEKUTIF" | "EKONOMI PREMIUM"
   >("EKSEKUTIF");
-  const [selectedGerbong, setSelectedGerbong] = useState(1);
+  const [selectedGerbong, setSelectedGerbong] = useState(() => {
+    const saved = localStorage.getItem("selector_selected_gerbong");
+    return saved ? parseInt(saved, 10) : 1;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("selector_current_index", currentIndex.toString());
+  }, [currentIndex]);
+
+  useEffect(() => {
+    localStorage.setItem("selector_selected_gerbong", selectedGerbong.toString());
+  }, [selectedGerbong]);
 
   useEffect(() => {
     const idx = trainNames.indexOf(masterSyncedServiceName);
@@ -95,7 +110,60 @@ function App() {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  const [activeKa, setActiveKa] = useState<string>("ka67");
+  const [activeKa, setActiveKa] = useState<string>(() => {
+    return localStorage.getItem("selector_active_ka") || "ka67";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("selector_active_ka", activeKa);
+  }, [activeKa]);
+
+  useEffect(() => {
+    if (masterSyncedNumber) {
+      // Handle both "ka67" and "KA 67" formats
+      const kaMatch = masterSyncedNumber.replace(/\s+/g, "").match(/ka(\d+)/i);
+      if (kaMatch) {
+        const normalized = `ka${kaMatch[1]}`;
+        if (activeKa !== normalized) {
+          setActiveKa(normalized);
+        }
+      }
+    }
+  }, [masterSyncedNumber, activeKa]);
+
+  useEffect(() => {
+    if (Date.now() - lastUserActionRef.current < 5000) return;
+    
+    if (data?.currentStation && stations.length > 0) {
+      const currentName = String(
+        typeof data.currentStation === "object"
+          ? (data.currentStation as any).name
+          : data.currentStation || ""
+      ).toUpperCase().trim();
+      
+      const idx = stations.findIndex(s => {
+        const sName = String(typeof s === "object" ? (s as any).name : s || "").toUpperCase().trim();
+        return sName === currentName;
+      });
+      
+      if (idx !== -1 && idx !== currentIndex) {
+        setCurrentIndex(idx);
+      }
+    }
+  }, [data?.currentStation, stations, currentIndex]);
+
+
+  const resolveRouteFeatures = useCallback((routeObj: any) => {
+    if (!routeObj) return null;
+    if (routeObj.features) return routeObj.features;
+    if (routeObj.geojson) {
+      try {
+        const parsed = typeof routeObj.geojson === "string" ? JSON.parse(routeObj.geojson) : routeObj.geojson;
+        return parsed?.features || null;
+      } catch { return null; }
+    }
+    return null;
+  }, []);
 
   const getScheduledTime = useCallback(
     (stationName: any) => {
@@ -103,51 +171,83 @@ function App() {
         typeof stationName === "object" && stationName !== null
           ? stationName.name
           : stationName;
-      const nameStr = String(name ?? "").trim();
-      let activeRoute = data?.activeRoute as any;
+      const nameStr = String(name ?? "").trim().toUpperCase();
+      if (!nameStr) return null;
 
-      if (
-        !activeRoute?.features &&
-        masterSyncedServiceName &&
-        routes?.[masterSyncedServiceName]
-      ) {
-        activeRoute = routes[masterSyncedServiceName];
+      const kaId = activeKa.toLowerCase().replace(/\s+/g, "").replace("ka", "");
+      const expectedKey = `schedule_ka${kaId}`;
+
+      const isGoDirection = ["67", "69"].includes(kaId);
+      const routeKey = isGoDirection ? "MALABAR_GO" : "MALABAR_BACK";
+
+      const candidateRoutes = [
+        data?.activeRoute,
+        routes?.[routeKey],
+        routes?.[masterSyncedServiceName],
+      ].filter(Boolean);
+
+      for (const route of candidateRoutes) {
+        const stationsArr = route?.stations;
+        if (Array.isArray(stationsArr)) {
+          const stObj = stationsArr.find((s: any) => {
+            const sName = String(typeof s === "object" ? s.name : s || "").toUpperCase().trim();
+            return sName === nameStr;
+          });
+          if (stObj && typeof stObj === "object") {
+            const key = Object.keys(stObj).find(
+              (k) => k.toLowerCase().replace(/\s+/g, "") === expectedKey,
+            );
+            if (key) {
+              const raw = String(stObj[key] ?? "");
+              if (raw) {
+                const parts = raw.split(":");
+                return parts.length >= 2
+                  ? `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`
+                  : raw;
+              }
+            }
+          }
+        }
+
+        const features = resolveRouteFeatures(route);
+        if (features) {
+          const stationFeature = features.find(
+            (f: any) =>
+              f.geometry?.type === "Point" &&
+              String(f.properties?.name ?? "").toUpperCase().trim() === nameStr,
+          );
+          if (stationFeature) {
+            const props = stationFeature.properties || {};
+            const key = Object.keys(props).find(
+              (k) => k.toLowerCase().replace(/\s+/g, "") === expectedKey,
+            );
+            if (key) {
+              const raw = String(props[key] ?? "");
+              if (raw) {
+                const parts = raw.split(":");
+                return parts.length >= 2
+                  ? `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`
+                  : raw;
+              }
+            }
+          }
+        }
       }
 
-      if (!activeRoute?.features || !nameStr) return null;
-
-      const stationFeature = activeRoute.features.find(
-        (f: any) =>
-          f.geometry?.type === "Point" &&
-          String(f.properties?.name ?? "")
-            .toUpperCase()
-            .trim() === nameStr.toUpperCase(),
-      );
-      if (!stationFeature) return null;
-
-      const expectedKey = `schedule_${activeKa.toLowerCase()}`;
-      const key = Object.keys(stationFeature.properties || {}).find(
-        (k) => k.toLowerCase() === expectedKey,
-      );
-      if (!key) return null;
-      const raw = String(stationFeature.properties[key] ?? "");
-      const parts = raw.split(":");
-      return parts.length >= 2
-        ? `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`
-        : raw;
+      return null;
     },
-    [data?.activeRoute, activeKa, masterSyncedServiceName, routes],
+    [data?.activeRoute, activeKa, masterSyncedServiceName, routes, resolveRouteFeatures],
   );
 
   const getTrainId = useCallback((ka: string) => ka.replace(/\D/g, ""), []);
 
   const getSmallestKa = useCallback((route: any) => {
-    const geo = route?.features ? route : route?.geojson;
-    const directions = geo?.features?.find(
+    const features = resolveRouteFeatures(route);
+    const directions = features?.find(
       (f: any) => f.geometry?.type === "LineString",
     )?.properties?.available_directions;
     if (directions && directions.length > 0) {
-      const sorted = [...directions].sort((a, b) =>
+      const sorted = [...directions].sort((a: any, b: any) =>
         a.num.localeCompare(b.num, undefined, {
           numeric: true,
           sensitivity: "base",
@@ -156,22 +256,38 @@ function App() {
       return sorted[0].num;
     }
     return null;
-  }, []);
+  }, [resolveRouteFeatures]);
 
   const showNotification = useCallback((title: string, message: string) => {
     setToastMsg({ title, message, id: Date.now() });
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = setTimeout(() => setToastMsg(null), 5000);
   }, []);
-  const handlePrev = useCallback(
-    () =>
-      setCurrentIndex((prev) => (prev - 1 + stations.length) % stations.length),
-    [stations.length],
-  );
-  const handleNext = useCallback(
-    () => setCurrentIndex((prev) => (prev + 1) % stations.length),
-    [stations.length],
-  );
+  const handlePrev = useCallback(() => {
+    lastUserActionRef.current = Date.now();
+    setCurrentIndex((prev) => {
+      const nextIdx = (prev - 1 + stations.length) % stations.length;
+      sendData({
+        currentStation: stations[nextIdx],
+        nextStation: stations[(nextIdx + 1) % stations.length],
+        isSyncing: true,
+      });
+      return nextIdx;
+    });
+  }, [stations, sendData]);
+
+  const handleNext = useCallback(() => {
+    lastUserActionRef.current = Date.now();
+    setCurrentIndex((prev) => {
+      const nextIdx = (prev + 1) % stations.length;
+      sendData({
+        currentStation: stations[nextIdx],
+        nextStation: stations[(nextIdx + 1) % stations.length],
+        isSyncing: true,
+      });
+      return nextIdx;
+    });
+  }, [stations, sendData]);
 
   const handleSelectStation = useCallback(() => {
     sendData({
@@ -252,11 +368,9 @@ function App() {
   const nextStation =
     getStationName(stations[(currentIndex + 1) % stations.length]) || "---";
   const activeRouteAny = data?.activeRoute as any;
-  const geojson = activeRouteAny?.features
-    ? activeRouteAny
-    : activeRouteAny?.geojson;
+  const resolvedFeatures = resolveRouteFeatures(activeRouteAny) || resolveRouteFeatures(routes?.MALABAR_GO) || resolveRouteFeatures(routes?.MALABAR_BACK) || [];
   const availableDirections: { num: string; label: string }[] =
-    geojson?.features?.find((f: any) => f.geometry?.type === "LineString")
+    resolvedFeatures?.find((f: any) => f.geometry?.type === "LineString")
       ?.properties?.available_directions || [];
   const formatDirLabel = (label: string) => {
     const cityMap: Record<string, string> = { BANDUNG: "BD", MALANG: "ML" };
@@ -274,79 +388,46 @@ function App() {
 
   const handleChangeDirection = useCallback(
     (newKa: string) => {
-      setActiveKa(newKa);
+      const normalizedKa = newKa.toLowerCase().replace(/\s+/g, "");
+      setActiveKa(normalizedKa);
       setKaDropdownOpen(false);
 
       if (stations.length < 2) return;
 
-      const rawStations = [...stations]; // CRITICAL: Use spread to avoid in-place mutation of state
-      let newStations = rawStations;
+      const isGoDirection = ["ka67", "ka69"].includes(normalizedKa);
+      const targetRouteName = isGoDirection ? "MALABAR_GO" : "MALABAR_BACK";
 
-      let needsReverse = false;
-      const activeRoute = data?.activeRoute || routes?.[masterSyncedServiceName];
-      const routeFeatures = activeRoute?.features || activeRoute?.geojson?.features;
+      let finalRouteData: any = routes?.[targetRouteName] || data?.activeRoute || routes?.[masterSyncedServiceName];
+      let newStations = finalRouteData?.stations ? [...finalRouteData.stations] : [...stations];
 
-      // Robust direction detection: Use GeoJSON origin markers if available
-      let dynamicOriginName = null;
-      if (routeFeatures) {
-        const originFeature = routeFeatures.find(
+      const features = resolveRouteFeatures(finalRouteData);
+      if (features) {
+        const originFeature = features.find(
           (f: any) =>
-            f.properties?.[`is_origin_${newKa.toLowerCase()}`] === true,
+            f.properties?.[`is_origin_${normalizedKa}`] === true,
         );
         if (originFeature) {
-          dynamicOriginName = String(originFeature.properties.name || "")
-            .toUpperCase()
-            .trim();
+          const originName = String(originFeature.properties.name || "").toUpperCase().trim();
+          const firstName = String(getStationName(newStations[0]) || "").toUpperCase().trim();
+          if (firstName !== originName) {
+            newStations.reverse();
+          }
         }
-      }
-
-      if (dynamicOriginName && newStations.length > 0) {
-        const firstSn = getStationName(newStations[0]);
-        const firstStr = String(firstSn || "").toUpperCase().trim();
-        
-        // If the current first station is NOT the origin of the new direction, we need to reverse
-        if (firstStr !== dynamicOriginName) {
-          needsReverse = true;
-        }
-      } else if (newStations.length >= 2) {
-        // Fallback to name-based detection
-        const firstSn = getStationName(newStations[0]);
-        const lastSn = getStationName(newStations[newStations.length - 1]);
-
-        const firstStr = String(firstSn || "").toUpperCase().trim();
-        const lastStr = String(lastSn || "").toUpperCase().trim();
-
-        const isCurrentlyMlToBd = firstStr.includes("MALANG") || lastStr.includes("BANDUNG");
-        const isCurrentlyBdToMl = firstStr.includes("BANDUNG") || lastStr.includes("MALANG");
-
-        const targetIsBdToMl = ["ka68", "ka70"].includes(newKa.toLowerCase());
-        const targetIsMlToBd = ["ka67", "ka69"].includes(newKa.toLowerCase());
-
-        if (targetIsBdToMl && isCurrentlyMlToBd) needsReverse = true;
-        if (targetIsMlToBd && isCurrentlyBdToMl) needsReverse = true;
-      }
-
-      if (needsReverse) {
-        newStations.reverse();
       }
 
       setStations(newStations);
       setCurrentIndex(0);
+
       sendData({
         stations: newStations,
-        activeRoute: {
-          ...(data?.activeRoute || {}),
-          stations: newStations,
-        },
-        currentStation: newStations[0],
-        nextStation: newStations[Math.min(1, newStations.length - 1)],
-        current_station_index: 0,
-        trainNumber: `${getTrainId(newKa)} Gerbong ${selectedGerbong}`,
+        trainNumber: normalizedKa.toUpperCase(),
+        activeRoute: finalRouteData,
         isSyncing: true,
       });
+
       showNotification(
         "Direction Changed",
-        `Route direction set for ${newKa.toUpperCase()} sync.`,
+        `Route direction set for ${normalizedKa.toUpperCase()} sync.`,
       );
     },
     [
@@ -355,8 +436,9 @@ function App() {
       sendData,
       showNotification,
       data?.activeRoute,
-      getTrainId,
-      selectedGerbong,
+      routes,
+      masterSyncedServiceName,
+      resolveRouteFeatures,
     ],
   );
   if (!authUser) {
@@ -450,16 +532,28 @@ function App() {
                   ) : (
                     <>
                       <button
+                        onClick={() => handleChangeDirection("ka67")}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka67" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                      >
+                        KA 67 (ML-BD)
+                      </button>
+                      <button
                         onClick={() => handleChangeDirection("ka68")}
                         className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka68" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                       >
                         KA 68 (BD-ML)
                       </button>
                       <button
-                        onClick={() => handleChangeDirection("ka67")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka67" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                        onClick={() => handleChangeDirection("ka69")}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka69" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                       >
-                        KA 67 (ML-BD)
+                        KA 69 (ML-BD)
+                      </button>
+                      <button
+                        onClick={() => handleChangeDirection("ka70")}
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka70" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                      >
+                        KA 70 (BD-ML)
                       </button>
                     </>
                   )}
@@ -575,15 +669,14 @@ function App() {
 
                 {stations.length > 2 &&
                   (() => {
-                    const renderUpcoming = [];
-                    for (let i = 2; i < stations.length; i++) {
-                      const upcomingStationObj =
-                        stations[(currentIndex + i) % stations.length];
-                      const upcomingStationName =
-                        getStationName(upcomingStationObj);
-                      if (upcomingStationObj === stations[currentIndex]) break;
+                    return stations.slice(2).map((_, i: number) => {
+                      const idxInFull = (currentIndex + i + 2) % stations.length;
+                      const actualStation = stations[idxInFull];
+                      const upcomingStationName = getStationName(actualStation);
+                      
+                      if (actualStation === stations[currentIndex]) return null;
 
-                      renderUpcoming.push(
+                      return (
                         <div
                           key={`upcoming-${i}`}
                           className="flex items-center gap-4 relative z-10 w-full mb-3 shrink-0"
@@ -607,7 +700,7 @@ function App() {
                               <span className="text-xl font-semibold text-slate-600 dark:text-slate-400">
                                 {getScheduledTime(upcomingStationName) ||
                                   new Date(
-                                    currentTime.getTime() + 15 * i * 60000,
+                                    currentTime.getTime() + 15 * (i + 2) * 60000,
                                   )
                                     .toLocaleTimeString("id-ID", {
                                       hour12: false,
@@ -618,10 +711,9 @@ function App() {
                               </span>
                             </div>
                           </div>
-                        </div>,
+                        </div>
                       );
-                    }
-                    return renderUpcoming;
+                    });
                   })()}
               </div>
             </div>

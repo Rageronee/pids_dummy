@@ -94,7 +94,13 @@ export function useSelectorSync() {
           if (s.trainNumber !== undefined) setMasterSyncedNumber(s.trainNumber);
           if (s.coachCount !== undefined) setCoachCount(s.coachCount);
           if (s.ledSpeed !== undefined) setMasterSyncedLedSpeed(s.ledSpeed);
-          if (s.stations) setStations(normalizeStations(s.stations));
+          if (s.stations) {
+            const normalized = normalizeStations(s.stations);
+            setStations((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
+              return normalized;
+            });
+          }
         }
       })
       .catch((e) => {
@@ -117,7 +123,13 @@ export function useSelectorSync() {
       if (parsed.coachCount !== undefined) setCoachCount(parsed.coachCount);
       if (parsed.ledSpeed !== undefined)
         setMasterSyncedLedSpeed(parsed.ledSpeed);
-      if (parsed.stations) setStations(normalizeStations(parsed.stations));
+      if (parsed.stations) {
+        const normalized = normalizeStations(parsed.stations);
+        setStations((prev) => {
+          if (JSON.stringify(prev) === JSON.stringify(normalized)) return prev;
+          return normalized;
+        });
+      }
     });
     socket.on("db:update", (dbUpdate: any) => {
       if (dbUpdate.trainNames) setTrainNames(dbUpdate.trainNames);

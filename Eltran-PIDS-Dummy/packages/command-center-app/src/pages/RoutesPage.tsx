@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { API } from "../config";
 import { useToast } from "../hooks/useToast";
+import { usePidsData } from "../hooks/usePidsData";
 import { ConfirmModal, ToastNotification } from "../components/SharedUI";
 
 
@@ -68,6 +69,30 @@ export default function RoutesPage({
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const { toast, showToast, closeToast } = useToast();
   const stationsListRef = useRef<HTMLDivElement>(null);
+  const { data } = usePidsData();
+  const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
+
+  useEffect(() => {
+    setHasAutoScrolled(false);
+  }, [selectedRouteId]);
+
+  const handleRefocus = useCallback(() => {
+    if (stationsListRef.current) {
+      const activeEl = stationsListRef.current.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedRouteId && !hasAutoScrolled && stationsListRef.current) {
+      setTimeout(() => {
+        handleRefocus();
+        setHasAutoScrolled(true);
+      }, 500);
+    }
+  }, [selectedRouteId, hasAutoScrolled, handleRefocus]);
 
 
   const fetchRoutes = useCallback(async () => {
@@ -84,7 +109,7 @@ export default function RoutesPage({
 
         keys.forEach((key) => {
           const r = d.routes[key];
-          
+
           enhancedRoutes[key] = {
             ...r,
             id: key,
@@ -201,10 +226,10 @@ export default function RoutesPage({
   const handleEditRoute = useCallback(
     (route: any) => {
       setNewRouteName(route.name);
-      
+
       const stations = (route.stations || []).map((s: any) => {
-        return { 
-          id: s.id || s.name, 
+        return {
+          id: s.id || s.name,
           name: s.name,
         };
       });
@@ -308,7 +333,7 @@ export default function RoutesPage({
 
       setSelectedStations([
         ...selectedStations,
-        { 
+        {
           id: station.id,
           name: station.name,
         },
@@ -321,7 +346,7 @@ export default function RoutesPage({
   const routeList = Object.values(routes)
     .filter((r: any) => {
       if (activeCategory === "All Routes") return true;
-      const rType = r.class || "Intercity"; 
+      const rType = r.class || "Intercity";
       return rType === activeCategory;
     })
     .filter(
@@ -539,12 +564,18 @@ export default function RoutesPage({
                 <div className="flex-1 flex flex-col pt-6 pl-8 pr-0 pb-0 overflow-hidden">
                   <div className="flex items-center justify-between mb-6 pr-8">
                     <h4 className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.1em]">
-                      Route Checkpoints
+                      Checkpoints
                     </h4>
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={handleRefocus}
+                        className="px-2.5 py-1 bg-orange-100 text-[#ee6f1f] dark:bg-orange-900/30 dark:text-orange-400 text-[11px] font-bold rounded-md shadow-sm hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                      >
+                        <Navigation size={12} /> Cek Lokasi
+                      </button>
+                      <button
                         onClick={() => setPage("dashboard")}
-                        className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[12px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                        className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
                       >
                         <MapIcon size={12} /> Lihat Peta
                       </button>
@@ -562,24 +593,45 @@ export default function RoutesPage({
                           const isFirst = idx === 0;
                           const isLast = idx === stations.length - 1;
                           const sName = typeof s === "string" ? s : s.name;
+                          const currentStationName = (data?.currentStation || "").toUpperCase();
+
+                          // Handle if currentStation is JSON string
+                          let finalCurrentName = currentStationName;
+                          if (currentStationName.startsWith("{")) {
+                            try {
+                              const parsed = JSON.parse(currentStationName);
+                              finalCurrentName = (parsed.name || "").toUpperCase();
+                            } catch (e) { }
+                          }
+
+                          const isCurrent = sName.toUpperCase() === finalCurrentName;
+
+                          const stationsArr = selectedRoute.stations || [];
+                          const currentIndex = stationsArr.findIndex((st: any) => {
+                            const name = (typeof st === "string" ? st : st.name).toUpperCase();
+                            return name === finalCurrentName;
+                          });
+
+                          const isPassed = currentIndex !== -1 && idx < currentIndex;
 
                           return (
                             <div
                               key={idx}
                               data-station-index={idx}
-                              className="relative pb-5 last:pb-2"
+                              data-active={isCurrent}
+                              className={`relative pb-5 last:pb-2 transition-opacity duration-500 ${isPassed ? "opacity-40 grayscale-[0.5]" : "opacity-100"}`}
                             >
                               {!isLast && (
                                 <div
-                                  className="absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 bg-slate-100 dark:bg-slate-800"
+                                  className={`absolute left-[31px] top-[40px] bottom-[-20px] w-0.5 z-0 ${isPassed ? "bg-orange-200 dark:bg-orange-900/30" : "bg-slate-100 dark:bg-slate-800"}`}
                                 />
                               )}
 
                               <div
-                                className="relative z-10 flex items-center p-5 bg-white dark:bg-slate-900 rounded-[24px] border transition-all duration-300 shadow-sm border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+                                className={`relative z-10 flex items-center p-5 rounded-[24px] border transition-all duration-300 shadow-sm ${isCurrent ? "bg-orange-50 dark:bg-orange-900/20 border-[#ee6f1f] shadow-orange-100 dark:shadow-none" : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"}`}
                               >
                                 <div className="mr-5 flex flex-col items-center justify-center shrink-0">
-                                  <div className="w-8 h-8 rounded-lg bg-[#1d2d6a]/5 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-[#1d2d6a] dark:text-slate-300">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold ${isCurrent ? "bg-[#ee6f1f] text-white" : "bg-[#1d2d6a]/5 dark:bg-slate-700 text-[#1d2d6a] dark:text-slate-300"}`}>
                                     {String(idx + 1).padStart(2, "0")}
                                   </div>
                                 </div>

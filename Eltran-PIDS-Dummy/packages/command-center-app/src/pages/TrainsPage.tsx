@@ -749,7 +749,7 @@ export default function TrainsPage({ token }: { token: string }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 }}
-                onClick={() => setSelectedTrainset(train)}
+                onClick={() => setSelectedTrainset(set)}
                 className={`grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-0 px-8 py-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group items-center cursor-pointer ${selectedTrainset?.name === set.name ? "bg-slate-50 dark:bg-slate-800 ring-2 ring-inset ring-[#ee6f1f]" : ""}`}
               >
                 <div className="flex items-center gap-4">
