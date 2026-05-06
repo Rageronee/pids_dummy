@@ -82,7 +82,7 @@ export function MasterModals({
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-8 z-[70] bg-white dark:bg-slate-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden border border-slate-100 dark:border-slate-800 min-w-[350px] max-w-[420px] transition-colors"
+            className="fixed bottom-24 right-8 z-[70] bg-white dark:bg-slate-900 rounded-2xl shadow-[0_15px_50px_-10px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-200 dark:border-slate-800 min-w-[350px] max-w-[420px] transition-all"
           >
             <div
               className={`absolute left-0 top-0 bottom-0 w-2 ${toast.ok ? "bg-[#1d2d6a] dark:bg-[#ee6f1f]" : "bg-red-600"}`}
