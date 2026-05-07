@@ -288,7 +288,7 @@ export function MasterConsolePanel({
 
   // Fetch gerbong counts from db
   useEffect(() => {
-    fetch("${API}/api/db")
+    fetch(`${API}/api/db`)
       .then((res) => res.json())
       .then((res) => {
         if (res.gerbongCounts) {

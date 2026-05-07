@@ -1463,7 +1463,7 @@ export async function startApiServer() {
   trackInterval(async () => {
     try {
       const state = await getState();
-      if (!state.serviceName || state.serviceName === "Belum Dikonfigurasi") return;
+      if (!state.serviceName || state.serviceName === "Belum Dikonfigurasi" || state.serviceName === "NOT_SELECTED") return;
       if (!state.activeRoute || !state.activeRoute.geojson) return;
 
       const geojson = typeof state.activeRoute.geojson === 'string' 

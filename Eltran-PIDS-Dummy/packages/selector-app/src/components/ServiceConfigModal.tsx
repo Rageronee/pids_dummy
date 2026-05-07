@@ -176,7 +176,7 @@ const ServiceConfigModal = React.memo(function ServiceConfigModal({
                           }}
                           className={`px-5 py-3 text-base font-bold cursor-pointer transition-colors ${trainNameIndex === t.idx ? "bg-[#ee6f1f]/10 text-[#ee6f1f]" : "text-[#1d2d6a] dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
                         >
-                          {t.name}
+                         {t.name.replace(/^KA\s+/i, "")}
                         </div>
                       ))
                     )}

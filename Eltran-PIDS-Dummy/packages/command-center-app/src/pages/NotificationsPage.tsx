@@ -86,7 +86,7 @@ const NotificationsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-full w-full bg-[#f8fafc] dark:bg-slate-950 flex flex-col relative overflow-hidden">
+    <div className="min-h-full w-full bg-[#f8fafc] dark:bg-slate-900 flex flex-col relative overflow-hidden">
       {/* Immersive Background Decorations */}
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-500/5 blur-[120px] rounded-full pointer-events-none" />
@@ -130,7 +130,7 @@ const NotificationsPage: React.FC = () => {
       {/* Toolbar & Content Wrapper */}
       <div className="relative z-10 flex-1 flex flex-col">
         {/* Sticky Toolbar - Compact */}
-        <div className="sticky top-0 z-30 px-6 lg:px-10 py-3 backdrop-blur-xl bg-[#f8fafc]/80 dark:bg-slate-950/80 border-y border-slate-200 dark:border-white/5">
+        <div className="sticky top-0 z-30 px-6 lg:px-10 py-3 backdrop-blur-xl bg-[#f8fafc] dark:bg-slate-900 border-y border-slate-200 dark:border-white/5">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl shadow-sm">
               {[

@@ -748,7 +748,7 @@ export async function seedData() {
       "[PIDS-DB] Seeding integrated KAI data to PostgreSQL (Single Source of Truth)...",
     );
     await query(`INSERT INTO pids_state (id, service_name, current_station, train_number, next_station, status, led_speed, speed, altitude, temperature, air_quality, display_mode, active_route_json, coach_count, sim_gps_json, sim_distance, last_sim_time)
-                 VALUES (1, 'MALABAR', 'MALANG', '67', 'MALANG KOTA LAMA', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 12, '{"lng": 112.6371, "lat": -7.9772, "heading": 0}', 0, 0)
+                 VALUES (1, 'NOT_SELECTED', '---', '---', '---', 'STANDBY', 60, 0, 0, 0, '-', 'pids', '{}', 10, '{"lng": 112.6371, "lat": -7.9772, "heading": 0}', 0, 0)
                  ON CONFLICT (id) DO NOTHING`);
     const hashedAdminPw = hashPassword("admin123");
     const hashedOpPw = hashPassword("operator123");
@@ -820,7 +820,10 @@ export async function seedData() {
       );
     }
     console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from parsed data`);
-    const kaiTrains = [["MALABAR", "EKSEKUTIF/EKONOMI", "67", 12, "ML", "BD"]];
+    const kaiTrains = [
+      ["MALABAR", "EKSEKUTIF/EKONOMI", "67", 12, "ML", "BD"],
+      ["PROGO", "EKONOMI", "257B", 10, "LPN", "PSE"]
+    ];
 
     for (const [name, cls, num, coachCount, start, end] of kaiTrains) {
       await query(
@@ -889,22 +892,10 @@ export async function seedData() {
       const __dir = dirname(fileURLToPath(import.meta.url));
 
       const geojsonMap = {
-        MALABAR_GO: join(
-          __dir,
-          "..",
-          "public",
-          "geojson",
-          "Malabar",
-          "Malabar.geojson",
-        ),
-        MALABAR_BACK: join(
-          __dir,
-          "..",
-          "public",
-          "geojson",
-          "Malabar",
-          "Malabar.geojson",
-        ),
+        MALABAR_GO: join(__dir, "..", "public", "geojson", "Malabar", "Malabar.geojson"),
+        MALABAR_BACK: join(__dir, "..", "public", "geojson", "Malabar", "Malabar.geojson"),
+        PROGO_GO: join(__dir, "..", "public", "geojson", "Progo", "Progo.geojson"),
+        PROGO_BACK: join(__dir, "..", "public", "geojson", "Progo", "Progo.geojson"),
       };
 
       for (const [trainName, filePath] of Object.entries(geojsonMap)) {
@@ -1549,6 +1540,11 @@ export async function getRoutes() {
         geojson: dbRoute.geojson,
         geojson_filename: dbRoute.geojson_filename,
       };
+
+      // Ensure the train service name itself can be used to look up a default route
+      if (dbRoute.train_name && (!routes[dbRoute.train_name] || dbRoute.direction === 'GO')) {
+        routes[dbRoute.train_name] = routes[routeKey];
+      }
     }
     return routes;
   } catch (e) {

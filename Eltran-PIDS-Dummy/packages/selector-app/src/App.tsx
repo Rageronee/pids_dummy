@@ -1,6 +1,6 @@
 /** /selector-app/src/App.tsx — untuk mengubah: komponen PIDS selector LED 5inch; fungsi utama: App Selector */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Train,
   Clock,
@@ -111,7 +111,9 @@ function App() {
     return () => clearInterval(t);
   }, []);
   const [activeKa, setActiveKa] = useState<string>(() => {
-    return localStorage.getItem("selector_active_ka") || "ka67";
+    const saved = localStorage.getItem("selector_active_ka");
+    // Return saved or empty string (kosongan)
+    return saved || "";
   });
 
   useEffect(() => {
@@ -177,12 +179,8 @@ function App() {
       const kaId = activeKa.toLowerCase().replace(/\s+/g, "").replace("ka", "");
       const expectedKey = `schedule_ka${kaId}`;
 
-      const isGoDirection = ["67", "69"].includes(kaId);
-      const routeKey = isGoDirection ? "MALABAR_GO" : "MALABAR_BACK";
-
       const candidateRoutes = [
         data?.activeRoute,
-        routes?.[routeKey],
         routes?.[masterSyncedServiceName],
       ].filter(Boolean);
 
@@ -239,7 +237,7 @@ function App() {
     [data?.activeRoute, activeKa, masterSyncedServiceName, routes, resolveRouteFeatures],
   );
 
-  const getTrainId = useCallback((ka: string) => ka.replace(/\D/g, ""), []);
+  const getTrainId = useCallback((ka: string) => ka.toUpperCase().replace(/^KA\s*/i, ""), []);
 
   const getSmallestKa = useCallback((route: any) => {
     const features = resolveRouteFeatures(route);
@@ -308,8 +306,22 @@ function App() {
       gerbong: number,
     ) => {
       if (newStations.length > 0) {
+        let newIndex = 0;
+        if (data?.currentStation) {
+          const currentName = String(
+            typeof data.currentStation === "object"
+              ? (data.currentStation as any).name
+              : data.currentStation || ""
+          ).toUpperCase().trim();
+          
+          const matchingIdx = newStations.findIndex(s => {
+            const sName = String(typeof s === "object" ? (s as any).name : s || "").toUpperCase().trim();
+            return sName === currentName;
+          });
+          if (matchingIdx !== -1) newIndex = matchingIdx;
+        }
         setStations(newStations);
-        setCurrentIndex(0);
+        setCurrentIndex(newIndex);
       }
       setSelectedGerbong(gerbong);
       const minKa = getSmallestKa(routeData);
@@ -363,18 +375,25 @@ function App() {
 
   const getStationName = (s: any) =>
     typeof s === "object" && s !== null ? s.name : s;
+
   const currentStation =
     getStationName(stations[currentIndex]) || "INITIALIZING SYNC...";
   const nextStation =
     getStationName(stations[(currentIndex + 1) % stations.length]) || "---";
   const activeRouteAny = data?.activeRoute as any;
-  const resolvedFeatures = resolveRouteFeatures(activeRouteAny) || resolveRouteFeatures(routes?.MALABAR_GO) || resolveRouteFeatures(routes?.MALABAR_BACK) || [];
-  const availableDirections: { num: string; label: string }[] =
-    resolvedFeatures?.find((f: any) => f.geometry?.type === "LineString")
+  const isProgo = masterSyncedServiceName?.toUpperCase().includes("PROGO");
+  const fallbackRouteKey = isProgo ? "PROGO_GO" : "MALABAR_GO";
+  const resolvedFeatures = useMemo(() => {
+    return resolveRouteFeatures(activeRouteAny) || resolveRouteFeatures(routes?.[fallbackRouteKey]) || resolveRouteFeatures(routes?.MALABAR_GO) || [];
+  }, [activeRouteAny, routes, fallbackRouteKey, resolveRouteFeatures]);
+
+  const availableDirections: { num: string; label: string }[] = useMemo(() => {
+    return resolvedFeatures?.find((f: any) => f.geometry?.type === "LineString")
       ?.properties?.available_directions || [];
+  }, [resolvedFeatures]);
   const formatDirLabel = (label: string) => {
-    const cityMap: Record<string, string> = { BANDUNG: "BD", MALANG: "ML" };
-    return label.replace(
+    const cityMap: Record<string, string> = { BANDUNG: "BD", MALANG: "ML", LEMPUYANGAN: "LPN", "PASAR SENEN": "PSE" };
+    return label.replace(/^KA\s+/i, "").replace(
       /\(([^)]+?)\s*->?\s*([^)]+?)\)/,
       (_: string, from: string, to: string) => {
         const f = from.trim().toUpperCase();
@@ -394,17 +413,27 @@ function App() {
 
       if (stations.length < 2) return;
 
-      const isGoDirection = ["ka67", "ka69"].includes(normalizedKa);
-      const targetRouteName = isGoDirection ? "MALABAR_GO" : "MALABAR_BACK";
+      const num = normalizedKa.replace("ka", "");
+      
+      // Attempt to find routeKey from availableDirections if available
+      let targetRouteName = "";
+      const dirEntry = availableDirections.find(d => d.num.toLowerCase() === num.toLowerCase());
+      
+      if (dirEntry && (dirEntry as any).routeKey) {
+        targetRouteName = (dirEntry as any).routeKey;
+      } else {
+        targetRouteName = masterSyncedServiceName;
+      }
 
       let finalRouteData: any = routes?.[targetRouteName] || data?.activeRoute || routes?.[masterSyncedServiceName];
       let newStations = finalRouteData?.stations ? [...finalRouteData.stations] : [...stations];
 
       const features = resolveRouteFeatures(finalRouteData);
       if (features) {
+        const kaForFlag = normalizedKa.startsWith("ka") ? normalizedKa : `ka${normalizedKa}`;
         const originFeature = features.find(
           (f: any) =>
-            f.properties?.[`is_origin_${normalizedKa}`] === true,
+            f.properties?.[`is_origin_${kaForFlag}`] === true,
         );
         if (originFeature) {
           const originName = String(originFeature.properties.name || "").toUpperCase().trim();
@@ -415,8 +444,23 @@ function App() {
         }
       }
 
+      let newIndex = 0;
+      if (data?.currentStation) {
+        const currentName = String(
+          typeof data.currentStation === "object"
+            ? (data.currentStation as any).name
+            : data.currentStation || ""
+        ).toUpperCase().trim();
+        
+        const matchingIdx = newStations.findIndex(s => {
+          const sName = String(typeof s === "object" ? (s as any).name : s || "").toUpperCase().trim();
+          return sName === currentName;
+        });
+        if (matchingIdx !== -1) newIndex = matchingIdx;
+      }
+
       setStations(newStations);
-      setCurrentIndex(0);
+      setCurrentIndex(newIndex);
 
       sendData({
         stations: newStations,
@@ -464,7 +508,7 @@ function App() {
               </div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold uppercase tracking-tight text-white group-hover:text-blue-100 transition-colors truncate">
-                  {masterSyncedServiceName || "NOT SET"}
+                  {(masterSyncedServiceName || "NOT SET").replace(/^KA\s+/i, "")}
                 </h1>
                 <ChevronRight
                   className="text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all"
@@ -474,7 +518,7 @@ function App() {
             </div>
           </button>
 
-          {masterSyncedServiceName?.toUpperCase().includes("MALABAR") && (
+          {(masterSyncedServiceName?.toUpperCase().includes("MALABAR") || masterSyncedServiceName?.toUpperCase().includes("PROGO")) && (
             <div className="relative min-w-[200px]" ref={kaDropdownRef}>
               <button
                 onClick={() => setKaDropdownOpen(!kaDropdownOpen)}
@@ -496,13 +540,15 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold text-white uppercase tracking-tight truncate">
-                      {availableDirections.length > 0
-                        ? formatDirLabel(
-                          availableDirections.find(
-                            (d) => `ka${d.num}` === activeKa,
-                          )?.label ?? activeKa,
-                        )
-                        : activeKa.toUpperCase()}
+                      {activeKa ? (
+                        availableDirections.length > 0
+                          ? formatDirLabel(
+                            availableDirections.find(
+                              (d) => `ka${d.num.toLowerCase()}` === activeKa.toLowerCase(),
+                            )?.label ?? activeKa,
+                          )
+                          : activeKa.toUpperCase()
+                      ) : "--- PILIH SERVICE ---"}
                     </span>
                     <ChevronDown
                       size={24}
@@ -520,7 +566,7 @@ function App() {
                       <button
                         key={dir.num}
                         onClick={() => handleChangeDirection(`ka${dir.num}`)}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === `ka${dir.num}`
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}`
                           ? "bg-[#ee6f1f] text-white"
                           : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                           }`}
@@ -529,32 +575,9 @@ function App() {
                       </button>
                     ))
                   ) : (
-                    <>
-                      <button
-                        onClick={() => handleChangeDirection("ka67")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka67" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                      >
-                        KA 67 (ML-BD)
-                      </button>
-                      <button
-                        onClick={() => handleChangeDirection("ka68")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka68" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                      >
-                        KA 68 (BD-ML)
-                      </button>
-                      <button
-                        onClick={() => handleChangeDirection("ka69")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka69" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                      >
-                        KA 69 (ML-BD)
-                      </button>
-                      <button
-                        onClick={() => handleChangeDirection("ka70")}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa === "ka70" ? "bg-[#ee6f1f] text-white" : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                      >
-                        KA 70 (BD-ML)
-                      </button>
-                    </>
+                    <div className="px-5 py-3 text-xs font-semibold text-slate-400 italic">
+                      No directions available
+                    </div>
                   )}
                 </div>
               )}
@@ -595,7 +618,7 @@ function App() {
           <div className="flex items-center gap-4 bg-[#ee6f1f] py-2 px-6 rounded-2xl shadow-lg border border-white/20 max-w-[350px] flex-1">
             <div className="flex flex-col items-end min-w-0 flex-1">
               <span className="text-2xl font-bold text-white tracking-tight uppercase truncate w-full text-right">
-                {["ka68", "ka70"].includes(activeKa) ? "MALANG" : "BANDUNG"}
+                {getStationName(stations[stations.length - 1]) || "---"}
               </span>
             </div>
             <div className="w-[44px] h-[44px] rounded-xl flex items-center justify-center shrink-0">
@@ -642,7 +665,7 @@ function App() {
                       <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
                         Next Station
                       </span>
-                      <span className="text-3xl text-slate-700 dark:text-white font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4">
+                      <span className="text-3xl text-slate-700 dark:text-white font-bold tracking-tight uppercase shrink-0 min-w-0 pr-4 line-clamp-2 break-words">
                         {nextStation}
                       </span>
                     </div>
@@ -688,7 +711,7 @@ function App() {
                               <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">
                                 UPCOMING STATION
                               </span>
-                              <span className="text-lg font-semibold text-slate-700 dark:text-white uppercase tracking-tight">
+                              <span className="text-lg font-semibold text-slate-700 dark:text-white uppercase tracking-tight line-clamp-1 break-words">
                                 {upcomingStationName}
                               </span>
                             </div>

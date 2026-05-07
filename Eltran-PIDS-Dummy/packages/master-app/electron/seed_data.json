@@ -1602,6 +1602,162 @@
         "Malang Kotalama",
         "Malang"
       ]
+    },
+    {
+      "name": "PROGO_GO",
+      "serviceName": "PROGO",
+      "direction": "GO",
+      "stations": [
+        "Lempuyangan",
+        "Yogyakarta",
+        "Patukan",
+        "Rewulu",
+        "Sentolo",
+        "Wates",
+        "Kedundang",
+        "Wojo",
+        "Jenar",
+        "Kutoarjo",
+        "Butuh",
+        "Prembun",
+        "Kutowinangun",
+        "Wonosari",
+        "Kebumen",
+        "Sruweng",
+        "Karanganyar",
+        "Gombong",
+        "Ijo",
+        "Tambak",
+        "Sumpiuh",
+        "Kemranjen",
+        "Kroya",
+        "Randegan",
+        "Kebasen",
+        "Notog",
+        "Purwokerto",
+        "Karanggandul",
+        "Karangsari (Banyumas)",
+        "Patuguran",
+        "Kretek",
+        "Bumiayu",
+        "Linggapura",
+        "Prupuk",
+        "Songgom",
+        "Larangan (Brebes)",
+        "Ketanggungan",
+        "Ciledug",
+        "Sindanglaut",
+        "Luwung",
+        "Cirebon Prujakan",
+        "Cirebon",
+        "Cangkring",
+        "Bangoduwa",
+        "Note: // KA 2509 (KA 2509 =)",
+        "Kertasemaya",
+        "Jatibarang",
+        "Telagasari",
+        "Terisi",
+        "Kadokangabus",
+        "Cilegeh",
+        "Haurgeulis",
+        "Cipunegara",
+        "Pegaden Baru",
+        "Cikaum",
+        "Pasirbungur",
+        "Pringkasap",
+        "Pabuaran",
+        "Tanjungrasa",
+        "Cikampek",
+        "Dawuan",
+        "Kosambi",
+        "Klari",
+        "Karawang",
+        "Kedunggedeh",
+        "Lemahabang",
+        "Cikarang",
+        "Note: // PLB 5179B (PLB 5179B =)",
+        "Bekasi",
+        "Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
+        "Pasar Senen"
+      ]
+    },
+    {
+      "name": "PROGO_BACK",
+      "serviceName": "PROGO",
+      "direction": "BACK",
+      "stations": [
+        "Pasar Senen",
+        "Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
+        "Bekasi",
+        "Note: // PLB 5179B (PLB 5179B =)",
+        "Cikarang",
+        "Lemahabang",
+        "Kedunggedeh",
+        "Karawang",
+        "Klari",
+        "Kosambi",
+        "Dawuan",
+        "Cikampek",
+        "Tanjungrasa",
+        "Pabuaran",
+        "Pringkasap",
+        "Pasirbungur",
+        "Cikaum",
+        "Pegaden Baru",
+        "Cipunegara",
+        "Haurgeulis",
+        "Cilegeh",
+        "Kadokangabus",
+        "Terisi",
+        "Telagasari",
+        "Jatibarang",
+        "Kertasemaya",
+        "Note: // KA 2509 (KA 2509 =)",
+        "Bangoduwa",
+        "Cangkring",
+        "Cirebon",
+        "Cirebon Prujakan",
+        "Luwung",
+        "Sindanglaut",
+        "Ciledug",
+        "Ketanggungan",
+        "Larangan (Brebes)",
+        "Songgom",
+        "Prupuk",
+        "Linggapura",
+        "Bumiayu",
+        "Kretek",
+        "Patuguran",
+        "Karangsari (Banyumas)",
+        "Karanggandul",
+        "Purwokerto",
+        "Notog",
+        "Kebasen",
+        "Randegan",
+        "Kroya",
+        "Kemranjen",
+        "Sumpiuh",
+        "Tambak",
+        "Ijo",
+        "Gombong",
+        "Karanganyar",
+        "Sruweng",
+        "Kebumen",
+        "Wonosari",
+        "Kutowinangun",
+        "Prembun",
+        "Butuh",
+        "Kutoarjo",
+        "Jenar",
+        "Wojo",
+        "Kedundang",
+        "Wates",
+        "Sentolo",
+        "Rewulu",
+        "Patukan",
+        "Yogyakarta",
+        "Lempuyangan"
+      ]
     }
   ],
   "schedules": [
@@ -4414,6 +4570,836 @@
           "type": "Destination",
           "arrival": "06:51:59",
           "departure": ""
+        }
+      ]
+    },
+    {
+      "routeName": "PROGO_GO",
+      "serviceName": "PROGO",
+      "trainNumber": "257B",
+      "stops": [
+        {
+          "name": "Lempuyangan",
+          "type": "Transit station",
+          "arrival": "13:10:00",
+          "departure": "13:10:00"
+        },
+        {
+          "name": "Yogyakarta",
+          "type": "Transit station",
+          "arrival": "13:14:00",
+          "departure": "13:14:00"
+        },
+        {
+          "name": "Patukan",
+          "type": "Transit station",
+          "arrival": "13:19:00",
+          "departure": "13:19:00"
+        },
+        {
+          "name": "Rewulu",
+          "type": "Transit station",
+          "arrival": "13:23:00",
+          "departure": "13:23:00"
+        },
+        {
+          "name": "Sentolo",
+          "type": "Transit station",
+          "arrival": "13:30:00",
+          "departure": "13:30:00"
+        },
+        {
+          "name": "Wates",
+          "type": "Transit station",
+          "arrival": "13:41:00",
+          "departure": "13:41:00"
+        },
+        {
+          "name": "Kedundang",
+          "type": "Transit station",
+          "arrival": "13:47:00",
+          "departure": "13:47:00"
+        },
+        {
+          "name": "Wojo",
+          "type": "Transit station",
+          "arrival": "13:52:00",
+          "departure": "13:52:00"
+        },
+        {
+          "name": "Jenar",
+          "type": "Transit station",
+          "arrival": "13:58:00",
+          "departure": "13:58:00"
+        },
+        {
+          "name": "Kutoarjo",
+          "type": "Transit station",
+          "arrival": "14:14:00",
+          "departure": "14:14:00"
+        },
+        {
+          "name": "Butuh",
+          "type": "Transit station",
+          "arrival": "14:19:00",
+          "departure": "14:19:00"
+        },
+        {
+          "name": "Prembun",
+          "type": "Transit station",
+          "arrival": "14:24:00",
+          "departure": "14:24:00"
+        },
+        {
+          "name": "Kutowinangun",
+          "type": "Transit station",
+          "arrival": "14:32:00",
+          "departure": "14:32:00"
+        },
+        {
+          "name": "Wonosari",
+          "type": "Transit station",
+          "arrival": "14:36:00",
+          "departure": "14:36:00"
+        },
+        {
+          "name": "Kebumen",
+          "type": "Transit station",
+          "arrival": "14:43:00",
+          "departure": "14:43:00"
+        },
+        {
+          "name": "Sruweng",
+          "type": "Transit station",
+          "arrival": "14:51:00",
+          "departure": "14:51:00"
+        },
+        {
+          "name": "Karanganyar",
+          "type": "Transit station",
+          "arrival": "14:57:00",
+          "departure": "14:57:00"
+        },
+        {
+          "name": "Gombong",
+          "type": "Transit station",
+          "arrival": "15:07:00",
+          "departure": "15:07:00"
+        },
+        {
+          "name": "Ijo",
+          "type": "Transit station",
+          "arrival": "15:14:00",
+          "departure": "15:14:00"
+        },
+        {
+          "name": "Tambak",
+          "type": "Transit station",
+          "arrival": "15:17:00",
+          "departure": "15:17:00"
+        },
+        {
+          "name": "Sumpiuh",
+          "type": "Transit station",
+          "arrival": "15:21:00",
+          "departure": "15:21:00"
+        },
+        {
+          "name": "Kemranjen",
+          "type": "Transit station",
+          "arrival": "15:24:00",
+          "departure": "15:24:00"
+        },
+        {
+          "name": "Kroya",
+          "type": "Transit station",
+          "arrival": "15:34:00",
+          "departure": "15:34:00"
+        },
+        {
+          "name": "Randegan",
+          "type": "Transit station",
+          "arrival": "15:41:00",
+          "departure": "15:41:00"
+        },
+        {
+          "name": "Kebasen",
+          "type": "Transit station",
+          "arrival": "15:44:00",
+          "departure": "15:44:00"
+        },
+        {
+          "name": "Notog",
+          "type": "Transit station",
+          "arrival": "15:49:00",
+          "departure": "15:49:00"
+        },
+        {
+          "name": "Purwokerto",
+          "type": "Transit station",
+          "arrival": "16:03:00",
+          "departure": "16:03:00"
+        },
+        {
+          "name": "Karanggandul",
+          "type": "Transit station",
+          "arrival": "16:12:00",
+          "departure": "16:12:00"
+        },
+        {
+          "name": "Karangsari (Banyumas)",
+          "type": "Transit station",
+          "arrival": "16:21:00",
+          "departure": "16:21:00"
+        },
+        {
+          "name": "Patuguran",
+          "type": "Transit station",
+          "arrival": "16:32:00",
+          "departure": "16:32:00"
+        },
+        {
+          "name": "Kretek",
+          "type": "Transit station",
+          "arrival": "16:39:00",
+          "departure": "16:39:00"
+        },
+        {
+          "name": "Bumiayu",
+          "type": "Transit station",
+          "arrival": "16:46:00",
+          "departure": "16:46:00"
+        },
+        {
+          "name": "Linggapura",
+          "type": "Transit station",
+          "arrival": "16:53:00",
+          "departure": "16:53:00"
+        },
+        {
+          "name": "Prupuk",
+          "type": "Transit station",
+          "arrival": "17:06:00",
+          "departure": "17:06:00"
+        },
+        {
+          "name": "Songgom",
+          "type": "Transit station",
+          "arrival": "17:14:00",
+          "departure": "17:14:00"
+        },
+        {
+          "name": "Larangan (Brebes)",
+          "type": "Transit station",
+          "arrival": "17:18:00",
+          "departure": "17:18:00"
+        },
+        {
+          "name": "Ketanggungan",
+          "type": "Transit station",
+          "arrival": "17:27:00",
+          "departure": "17:27:00"
+        },
+        {
+          "name": "Ciledug",
+          "type": "Transit station",
+          "arrival": "17:38:00",
+          "departure": "17:38:00"
+        },
+        {
+          "name": "Sindanglaut",
+          "type": "Transit station",
+          "arrival": "17:47:30",
+          "departure": "17:47:30"
+        },
+        {
+          "name": "Luwung",
+          "type": "Transit station",
+          "arrival": "17:52:00",
+          "departure": "17:52:00"
+        },
+        {
+          "name": "Cirebon Prujakan",
+          "type": "Transit station",
+          "arrival": "18:02:00",
+          "departure": "18:02:00"
+        },
+        {
+          "name": "Cirebon",
+          "type": "Transit station",
+          "arrival": "18:06:00",
+          "departure": "18:06:00"
+        },
+        {
+          "name": "Cangkring",
+          "type": "Transit station",
+          "arrival": "18:11:00",
+          "departure": "18:11:00"
+        },
+        {
+          "name": "Bangoduwa",
+          "type": "Transit station",
+          "arrival": "18:14:00",
+          "departure": "18:14:00"
+        },
+        {
+          "name": "Kertasemaya",
+          "type": "Transit station",
+          "arrival": "18:27:00",
+          "departure": "18:27:00"
+        },
+        {
+          "name": "Jatibarang",
+          "type": "Transit station",
+          "arrival": "18:32:00",
+          "departure": "18:32:00"
+        },
+        {
+          "name": "Telagasari",
+          "type": "Transit station",
+          "arrival": "18:38:00",
+          "departure": "18:38:00"
+        },
+        {
+          "name": "Terisi",
+          "type": "Transit station",
+          "arrival": "18:43:00",
+          "departure": "18:43:00"
+        },
+        {
+          "name": "Kadokangabus",
+          "type": "Transit station",
+          "arrival": "18:47:00",
+          "departure": "18:47:00"
+        },
+        {
+          "name": "Cilegeh",
+          "type": "Transit station",
+          "arrival": "18:52:00",
+          "departure": "18:52:00"
+        },
+        {
+          "name": "Haurgeulis",
+          "type": "Transit station",
+          "arrival": "19:02:00",
+          "departure": "19:02:00"
+        },
+        {
+          "name": "Cipunegara",
+          "type": "Transit station",
+          "arrival": "19:07:00",
+          "departure": "19:07:00"
+        },
+        {
+          "name": "Pegaden Baru",
+          "type": "Transit station",
+          "arrival": "19:12:00",
+          "departure": "19:12:00"
+        },
+        {
+          "name": "Cikaum",
+          "type": "Transit station",
+          "arrival": "19:17:30",
+          "departure": "19:17:30"
+        },
+        {
+          "name": "Pasirbungur",
+          "type": "Transit station",
+          "arrival": "19:21:00",
+          "departure": "19:21:00"
+        },
+        {
+          "name": "Pringkasap",
+          "type": "Transit station",
+          "arrival": "19:24:30",
+          "departure": "19:24:30"
+        },
+        {
+          "name": "Pabuaran",
+          "type": "Transit station",
+          "arrival": "19:28:00",
+          "departure": "19:28:00"
+        },
+        {
+          "name": "Tanjungrasa",
+          "type": "Transit station",
+          "arrival": "19:31:00",
+          "departure": "19:31:00"
+        },
+        {
+          "name": "Cikampek",
+          "type": "Transit station",
+          "arrival": "19:38:00",
+          "departure": "19:38:00"
+        },
+        {
+          "name": "Dawuan",
+          "type": "Transit station",
+          "arrival": "19:41:00",
+          "departure": "19:41:00"
+        },
+        {
+          "name": "Kosambi",
+          "type": "Transit station",
+          "arrival": "19:45:30",
+          "departure": "19:45:30"
+        },
+        {
+          "name": "Klari",
+          "type": "Transit station",
+          "arrival": "19:48:00",
+          "departure": "19:48:00"
+        },
+        {
+          "name": "Karawang",
+          "type": "Transit station",
+          "arrival": "19:52:30",
+          "departure": "19:52:30"
+        },
+        {
+          "name": "Kedunggedeh",
+          "type": "Transit station",
+          "arrival": "19:56:30",
+          "departure": "19:56:30"
+        },
+        {
+          "name": "Lemahabang",
+          "type": "Transit station",
+          "arrival": "20:02:30",
+          "departure": "20:02:30"
+        },
+        {
+          "name": "Cikarang",
+          "type": "Transit station",
+          "arrival": "20:06:00",
+          "departure": "20:06:00"
+        },
+        {
+          "name": "Bekasi",
+          "type": "Transit station",
+          "arrival": "20:22:00",
+          "departure": "20:22:00"
+        },
+        {
+          "name": "Pasar Senen",
+          "type": "Transit station",
+          "arrival": "20:46:00",
+          "departure": "20:46:00"
+        }
+      ]
+    },
+    {
+      "routeName": "PROGO_BACK",
+      "serviceName": "PROGO",
+      "trainNumber": "258B",
+      "stops": [
+        {
+          "name": "Pasar Senen",
+          "type": "Transit station",
+          "arrival": "23:20:00",
+          "departure": "23:20:00"
+        },
+        {
+          "name": "Bekasi",
+          "type": "Transit station",
+          "arrival": "23:45:00",
+          "departure": "23:45:00"
+        },
+        {
+          "name": "Cikarang",
+          "type": "Transit station",
+          "arrival": "23:58:00",
+          "departure": "23:58:00"
+        },
+        {
+          "name": "Lemahabang",
+          "type": "Transit station",
+          "arrival": "00:01:00",
+          "departure": "00:01:00"
+        },
+        {
+          "name": "Kedunggedeh",
+          "type": "Transit station",
+          "arrival": "00:07:00",
+          "departure": "00:07:00"
+        },
+        {
+          "name": "Karawang",
+          "type": "Transit station",
+          "arrival": "00:11:00",
+          "departure": "00:11:00"
+        },
+        {
+          "name": "Klari",
+          "type": "Transit station",
+          "arrival": "00:15:30",
+          "departure": "00:15:30"
+        },
+        {
+          "name": "Kosambi",
+          "type": "Transit station",
+          "arrival": "00:18:00",
+          "departure": "00:18:00"
+        },
+        {
+          "name": "Dawuan",
+          "type": "Transit station",
+          "arrival": "00:22:00",
+          "departure": "00:22:00"
+        },
+        {
+          "name": "Cikampek",
+          "type": "Transit station",
+          "arrival": "00:25:00",
+          "departure": "00:25:00"
+        },
+        {
+          "name": "Tanjungrasa",
+          "type": "Transit station",
+          "arrival": "00:31:30",
+          "departure": "00:31:30"
+        },
+        {
+          "name": "Pabuaran",
+          "type": "Transit station",
+          "arrival": "00:35:00",
+          "departure": "00:35:00"
+        },
+        {
+          "name": "Pringkasap",
+          "type": "Transit station",
+          "arrival": "00:38:30",
+          "departure": "00:38:30"
+        },
+        {
+          "name": "Pasirbungur",
+          "type": "Transit station",
+          "arrival": "00:42:00",
+          "departure": "00:42:00"
+        },
+        {
+          "name": "Cikaum",
+          "type": "Transit station",
+          "arrival": "00:45:30",
+          "departure": "00:45:30"
+        },
+        {
+          "name": "Pegaden Baru",
+          "type": "Transit station",
+          "arrival": "00:51:00",
+          "departure": "00:51:00"
+        },
+        {
+          "name": "Cipunegara",
+          "type": "Transit station",
+          "arrival": "00:55:30",
+          "departure": "00:55:30"
+        },
+        {
+          "name": "Haurgeulis",
+          "type": "Transit station",
+          "arrival": "01:03:00",
+          "departure": "01:03:00"
+        },
+        {
+          "name": "Cilegeh",
+          "type": "Transit station",
+          "arrival": "01:10:00",
+          "departure": "01:10:00"
+        },
+        {
+          "name": "Kadokangabus",
+          "type": "Transit station",
+          "arrival": "01:14:30",
+          "departure": "01:14:30"
+        },
+        {
+          "name": "Terisi",
+          "type": "Transit station",
+          "arrival": "01:18:00",
+          "departure": "01:18:00"
+        },
+        {
+          "name": "Telagasari",
+          "type": "Transit station",
+          "arrival": "01:23:00",
+          "departure": "01:23:00"
+        },
+        {
+          "name": "Jatibarang",
+          "type": "Transit station",
+          "arrival": "01:29:00",
+          "departure": "01:29:00"
+        },
+        {
+          "name": "Kertasemaya",
+          "type": "Transit station",
+          "arrival": "01:34:00",
+          "departure": "01:34:00"
+        },
+        {
+          "name": "Bangoduwa",
+          "type": "Transit station",
+          "arrival": "01:47:00",
+          "departure": "01:47:00"
+        },
+        {
+          "name": "Cangkring",
+          "type": "Transit station",
+          "arrival": "01:51:00",
+          "departure": "01:51:00"
+        },
+        {
+          "name": "Cirebon",
+          "type": "Transit station",
+          "arrival": "01:56:00",
+          "departure": "01:56:00"
+        },
+        {
+          "name": "Cirebon Prujakan",
+          "type": "Transit station",
+          "arrival": "02:05:00",
+          "departure": "02:05:00"
+        },
+        {
+          "name": "Luwung",
+          "type": "Transit station",
+          "arrival": "02:11:00",
+          "departure": "02:11:00"
+        },
+        {
+          "name": "Sindanglaut",
+          "type": "Transit station",
+          "arrival": "02:15:30",
+          "departure": "02:15:30"
+        },
+        {
+          "name": "Ciledug",
+          "type": "Transit station",
+          "arrival": "02:25:00",
+          "departure": "02:25:00"
+        },
+        {
+          "name": "Ketanggungan",
+          "type": "Transit station",
+          "arrival": "02:38:00",
+          "departure": "02:38:00"
+        },
+        {
+          "name": "Larangan (Brebes)",
+          "type": "Transit station",
+          "arrival": "02:45:00",
+          "departure": "02:45:00"
+        },
+        {
+          "name": "Songgom",
+          "type": "Transit station",
+          "arrival": "02:49:00",
+          "departure": "02:49:00"
+        },
+        {
+          "name": "Prupuk",
+          "type": "Transit station",
+          "arrival": "02:59:00",
+          "departure": "02:59:00"
+        },
+        {
+          "name": "Linggapura",
+          "type": "Transit station",
+          "arrival": "03:11:00",
+          "departure": "03:11:00"
+        },
+        {
+          "name": "Bumiayu",
+          "type": "Transit station",
+          "arrival": "03:19:00",
+          "departure": "03:19:00"
+        },
+        {
+          "name": "Kretek",
+          "type": "Transit station",
+          "arrival": "03:26:00",
+          "departure": "03:26:00"
+        },
+        {
+          "name": "Patuguran",
+          "type": "Transit station",
+          "arrival": "03:32:00",
+          "departure": "03:32:00"
+        },
+        {
+          "name": "Karangsari (Banyumas)",
+          "type": "Transit station",
+          "arrival": "03:43:00",
+          "departure": "03:43:00"
+        },
+        {
+          "name": "Karanggandul",
+          "type": "Transit station",
+          "arrival": "03:51:00",
+          "departure": "03:51:00"
+        },
+        {
+          "name": "Purwokerto",
+          "type": "Transit station",
+          "arrival": "04:04:00",
+          "departure": "04:04:00"
+        },
+        {
+          "name": "Notog",
+          "type": "Transit station",
+          "arrival": "04:12:00",
+          "departure": "04:12:00"
+        },
+        {
+          "name": "Kebasen",
+          "type": "Transit station",
+          "arrival": "04:17:00",
+          "departure": "04:17:00"
+        },
+        {
+          "name": "Randegan",
+          "type": "Transit station",
+          "arrival": "04:20:00",
+          "departure": "04:20:00"
+        },
+        {
+          "name": "Kroya",
+          "type": "Transit station",
+          "arrival": "04:29:00",
+          "departure": "04:29:00"
+        },
+        {
+          "name": "Kemranjen",
+          "type": "Transit station",
+          "arrival": "04:35:00",
+          "departure": "04:35:00"
+        },
+        {
+          "name": "Sumpiuh",
+          "type": "Transit station",
+          "arrival": "04:38:00",
+          "departure": "04:38:00"
+        },
+        {
+          "name": "Tambak",
+          "type": "Transit station",
+          "arrival": "04:41:00",
+          "departure": "04:41:00"
+        },
+        {
+          "name": "Ijo",
+          "type": "Transit station",
+          "arrival": "04:44:00",
+          "departure": "04:44:00"
+        },
+        {
+          "name": "Gombong",
+          "type": "Transit station",
+          "arrival": "04:53:00",
+          "departure": "04:53:00"
+        },
+        {
+          "name": "Karanganyar",
+          "type": "Transit station",
+          "arrival": "04:59:30",
+          "departure": "04:59:30"
+        },
+        {
+          "name": "Sruweng",
+          "type": "Transit station",
+          "arrival": "05:02:00",
+          "departure": "05:02:00"
+        },
+        {
+          "name": "Kebumen",
+          "type": "Transit station",
+          "arrival": "05:11:00",
+          "departure": "05:11:00"
+        },
+        {
+          "name": "Wonosari",
+          "type": "Transit station",
+          "arrival": "05:16:00",
+          "departure": "05:16:00"
+        },
+        {
+          "name": "Kutowinangun",
+          "type": "Transit station",
+          "arrival": "05:22:00",
+          "departure": "05:22:00"
+        },
+        {
+          "name": "Prembun",
+          "type": "Transit station",
+          "arrival": "05:28:00",
+          "departure": "05:28:00"
+        },
+        {
+          "name": "Butuh",
+          "type": "Transit station",
+          "arrival": "05:32:00",
+          "departure": "05:32:00"
+        },
+        {
+          "name": "Kutoarjo",
+          "type": "Transit station",
+          "arrival": "05:40:00",
+          "departure": "05:40:00"
+        },
+        {
+          "name": "Jenar",
+          "type": "Transit station",
+          "arrival": "05:50:00",
+          "departure": "05:50:00"
+        },
+        {
+          "name": "Wojo",
+          "type": "Transit station",
+          "arrival": "05:56:00",
+          "departure": "05:56:00"
+        },
+        {
+          "name": "Kedundang",
+          "type": "Transit station",
+          "arrival": "06:01:00",
+          "departure": "06:01:00"
+        },
+        {
+          "name": "Wates",
+          "type": "Transit station",
+          "arrival": "06:10:00",
+          "departure": "06:10:00"
+        },
+        {
+          "name": "Sentolo",
+          "type": "Transit station",
+          "arrival": "06:19:00",
+          "departure": "06:19:00"
+        },
+        {
+          "name": "Rewulu",
+          "type": "Transit station",
+          "arrival": "06:26:00",
+          "departure": "06:26:00"
+        },
+        {
+          "name": "Patukan",
+          "type": "Transit station",
+          "arrival": "06:30:00",
+          "departure": "06:30:00"
+        },
+        {
+          "name": "Yogyakarta",
+          "type": "Transit station",
+          "arrival": "06:35:00",
+          "departure": "06:35:00"
+        },
+        {
+          "name": "Lempuyangan",
+          "type": "Transit station",
+          "arrival": "06:40:00",
+          "departure": "06:40:00"
         }
       ]
     }

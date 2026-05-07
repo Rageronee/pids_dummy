@@ -1,0 +1,1656 @@
+{
+  "type": "FeatureCollection",
+  "stations": [
+    "Lempuyangan",
+    "Yogyakarta",
+    "Patukan",
+    "Rewulu",
+    "Sentolo",
+    "Wates",
+    "Kedundang",
+    "Wojo",
+    "Jenar",
+    "Kutoarjo",
+    "Butuh",
+    "Prembun",
+    "Kutowinangun",
+    "Wonosari",
+    "Kebumen",
+    "Sruweng",
+    "Karanganyar",
+    "Gombong",
+    "Ijo",
+    "Tambak",
+    "Sumpiuh",
+    "Kemranjen",
+    "Kroya",
+    "Randegan",
+    "Kebasen",
+    "Notog",
+    "Purwokerto",
+    "Karanggandul",
+    "Karangsari (Banyumas)",
+    "Patuguran",
+    "Kretek",
+    "Bumiayu",
+    "Linggapura",
+    "Prupuk",
+    "Songgom",
+    "Larangan (Brebes)",
+    "Ketanggungan",
+    "Ciledug",
+    "Sindanglaut",
+    "Luwung",
+    "Cirebon Prujakan",
+    "Cirebon",
+    "Cangkring",
+    "Bangoduwa",
+    "Kertasemaya",
+    "Jatibarang",
+    "Telagasari",
+    "Terisi",
+    "Kadokangabus",
+    "Cilegeh",
+    "Haurgeulis",
+    "Cipunegara",
+    "Pegaden Baru",
+    "Cikaum",
+    "Pasirbungur",
+    "Pringkasap",
+    "Pabuaran",
+    "Tanjungrasa",
+    "Cikampek",
+    "Dawuan",
+    "Kosambi",
+    "Klari",
+    "Karawang",
+    "Kedunggedeh",
+    "Lemahabang",
+    "Cikarang",
+    "Bekasi",
+    "Pasar Senen"
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Progo Route",
+        "ref": "Progo",
+        "from": "Lempuyangan",
+        "to": "Pasar Senen",
+        "colour": "blue",
+        "available_directions": [
+          {
+            "num": "257B",
+            "label": "KA 257B (LPN -> PSE)",
+            "routeKey": "PROGO_GO"
+          },
+          {
+            "num": "258B",
+            "label": "KA 258B (PSE -> LPN)",
+            "routeKey": "PROGO_BACK"
+          }
+        ],
+        "ka257b_active": true,
+        "ka258b_active": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.375556,
+            -7.790278
+          ],
+          [
+            110.363611,
+            -7.789167
+          ],
+          [
+            110.325278,
+            -7.788333
+          ],
+          [
+            110.291389,
+            -7.792778
+          ],
+          [
+            110.220556,
+            -7.828056
+          ],
+          [
+            110.157778,
+            -7.859444
+          ],
+          [
+            110.094167,
+            -7.880833
+          ],
+          [
+            110.060556,
+            -7.888333
+          ],
+          [
+            109.98,
+            -7.895556
+          ],
+          [
+            109.907222,
+            -7.726111
+          ],
+          [
+            109.855833,
+            -7.755556
+          ],
+          [
+            109.776944,
+            -7.724444
+          ],
+          [
+            109.724444,
+            -7.709444
+          ],
+          [
+            109.654167,
+            -7.674444
+          ],
+          [
+            109.661944,
+            -7.681944
+          ],
+          [
+            109.626944,
+            -7.664444
+          ],
+          [
+            109.583333,
+            -7.633333
+          ],
+          [
+            109.516667,
+            -7.608333
+          ],
+          [
+            109.444444,
+            -7.631667
+          ],
+          [
+            109.402778,
+            -7.603889
+          ],
+          [
+            109.358889,
+            -7.61
+          ],
+          [
+            109.311111,
+            -7.61
+          ],
+          [
+            109.245556,
+            -7.63
+          ],
+          [
+            109.273611,
+            -7.575556
+          ],
+          [
+            109.223889,
+            -7.525556
+          ],
+          [
+            109.213611,
+            -7.47
+          ],
+          [
+            109.221944,
+            -7.419167
+          ],
+          [
+            109.13,
+            -7.42
+          ],
+          [
+            109.15,
+            -7.3
+          ],
+          [
+            109.05,
+            -7.2
+          ],
+          [
+            109.013611,
+            -7.153611
+          ],
+          [
+            109.008,
+            -7.235
+          ],
+          [
+            108.983611,
+            -7.15
+          ],
+          [
+            108.989,
+            -7.125
+          ],
+          [
+            108.983611,
+            -7.02
+          ],
+          [
+            108.95,
+            -6.98
+          ],
+          [
+            108.884,
+            -6.938
+          ],
+          [
+            108.777,
+            -6.953
+          ],
+          [
+            108.583,
+            -6.815
+          ],
+          [
+            108.6,
+            -6.78
+          ],
+          [
+            108.558611,
+            -6.719444
+          ],
+          [
+            108.555556,
+            -6.705556
+          ],
+          [
+            108.52,
+            -6.68
+          ],
+          [
+            108.48,
+            -6.65
+          ],
+          [
+            108.35,
+            -6.55
+          ],
+          [
+            108.306,
+            -6.473
+          ],
+          [
+            108.28,
+            -6.45
+          ],
+          [
+            108.213,
+            -6.444
+          ],
+          [
+            108.18,
+            -6.43
+          ],
+          [
+            108.12,
+            -6.42
+          ],
+          [
+            107.953,
+            -6.471
+          ],
+          [
+            107.9,
+            -6.41
+          ],
+          [
+            107.843,
+            -6.406
+          ],
+          [
+            107.8,
+            -6.39
+          ],
+          [
+            107.75,
+            -6.38
+          ],
+          [
+            107.7,
+            -6.37
+          ],
+          [
+            107.65,
+            -6.36
+          ],
+          [
+            107.6,
+            -6.35
+          ],
+          [
+            107.459,
+            -6.406
+          ],
+          [
+            107.4,
+            -6.38
+          ],
+          [
+            107.35,
+            -6.37
+          ],
+          [
+            107.32,
+            -6.36
+          ],
+          [
+            107.3,
+            -6.305
+          ],
+          [
+            107.25,
+            -6.28
+          ],
+          [
+            107.173,
+            -6.273
+          ],
+          [
+            107.145,
+            -6.255
+          ],
+          [
+            107,
+            -6.236
+          ],
+          [
+            106.844,
+            -6.174
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lempuyangan",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:10:00",
+        "schedule_ka258b": "06:40:00",
+        "is_origin_ka257b": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.375556,
+          -7.790278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Yogyakarta",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:14:00",
+        "schedule_ka258b": "06:35:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.363611,
+          -7.789167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Patukan",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:19:00",
+        "schedule_ka258b": "06:30:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.325278,
+          -7.788333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rewulu",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:23:00",
+        "schedule_ka258b": "06:26:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.291389,
+          -7.792778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sentolo",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:30:00",
+        "schedule_ka258b": "06:19:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.220556,
+          -7.828056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wates",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:41:00",
+        "schedule_ka258b": "06:10:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.157778,
+          -7.859444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedundang",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:47:00",
+        "schedule_ka258b": "06:01:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.094167,
+          -7.880833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wojo",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:52:00",
+        "schedule_ka258b": "05:56:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.060556,
+          -7.888333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jenar",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "13:58:00",
+        "schedule_ka258b": "05:50:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.98,
+          -7.895556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kutoarjo",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:14:00",
+        "schedule_ka258b": "05:40:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.907222,
+          -7.726111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Butuh",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:19:00",
+        "schedule_ka258b": "05:32:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.855833,
+          -7.755556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Prembun",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:24:00",
+        "schedule_ka258b": "05:28:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.776944,
+          -7.724444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kutowinangun",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:32:00",
+        "schedule_ka258b": "05:22:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.724444,
+          -7.709444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wonosari",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:36:00",
+        "schedule_ka258b": "05:16:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.654167,
+          -7.674444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebumen",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:43:00",
+        "schedule_ka258b": "05:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.661944,
+          -7.681944
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sruweng",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:51:00",
+        "schedule_ka258b": "05:02:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.626944,
+          -7.664444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karanganyar",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "14:57:00",
+        "schedule_ka258b": "04:59:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.583333,
+          -7.633333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gombong",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:07:00",
+        "schedule_ka258b": "04:53:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.516667,
+          -7.608333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ijo",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:14:00",
+        "schedule_ka258b": "04:44:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.444444,
+          -7.631667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tambak",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:17:00",
+        "schedule_ka258b": "04:41:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.402778,
+          -7.603889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumpiuh",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:21:00",
+        "schedule_ka258b": "04:38:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.358889,
+          -7.61
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kemranjen",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:24:00",
+        "schedule_ka258b": "04:35:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.311111,
+          -7.61
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kroya",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:34:00",
+        "schedule_ka258b": "04:29:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.245556,
+          -7.63
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Randegan",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:41:00",
+        "schedule_ka258b": "04:20:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.273611,
+          -7.575556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebasen",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:44:00",
+        "schedule_ka258b": "04:17:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.223889,
+          -7.525556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Notog",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "15:49:00",
+        "schedule_ka258b": "04:12:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.213611,
+          -7.47
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Purwokerto",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:03:00",
+        "schedule_ka258b": "04:04:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.221944,
+          -7.419167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karanggandul",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:12:00",
+        "schedule_ka258b": "03:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.13,
+          -7.42
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karangsari (Banyumas)",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:21:00",
+        "schedule_ka258b": "03:43:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.15,
+          -7.3
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Patuguran",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:32:00",
+        "schedule_ka258b": "03:32:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.05,
+          -7.2
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kretek",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:39:00",
+        "schedule_ka258b": "03:26:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.013611,
+          -7.153611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bumiayu",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:46:00",
+        "schedule_ka258b": "03:19:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.008,
+          -7.235
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Linggapura",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "16:53:00",
+        "schedule_ka258b": "03:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.983611,
+          -7.15
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Prupuk",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:06:00",
+        "schedule_ka258b": "02:59:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.989,
+          -7.125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Songgom",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:14:00",
+        "schedule_ka258b": "02:49:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.983611,
+          -7.02
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Larangan (Brebes)",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:18:00",
+        "schedule_ka258b": "02:45:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.95,
+          -6.98
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ketanggungan",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:27:00",
+        "schedule_ka258b": "02:38:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.884,
+          -6.938
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ciledug",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:38:00",
+        "schedule_ka258b": "02:25:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.777,
+          -6.953
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sindanglaut",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:47:30",
+        "schedule_ka258b": "02:15:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.583,
+          -6.815
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Luwung",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "17:52:00",
+        "schedule_ka258b": "02:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.6,
+          -6.78
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cirebon Prujakan",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:02:00",
+        "schedule_ka258b": "02:05:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.558611,
+          -6.719444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cirebon",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:06:00",
+        "schedule_ka258b": "01:56:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.555556,
+          -6.705556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cangkring",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:11:00",
+        "schedule_ka258b": "01:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.52,
+          -6.68
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bangoduwa",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:14:00",
+        "schedule_ka258b": "01:47:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.48,
+          -6.65
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Note: // KA 2509 (KA 2509 =)",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:18:00",
+        "schedule_ka258b": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kertasemaya",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:27:00",
+        "schedule_ka258b": "01:34:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.35,
+          -6.55
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jatibarang",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:32:00",
+        "schedule_ka258b": "01:29:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.306,
+          -6.473
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Telagasari",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:38:00",
+        "schedule_ka258b": "01:23:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.28,
+          -6.45
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terisi",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:43:00",
+        "schedule_ka258b": "01:18:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.213,
+          -6.444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kadokangabus",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:47:00",
+        "schedule_ka258b": "01:14:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.18,
+          -6.43
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cilegeh",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "18:52:00",
+        "schedule_ka258b": "01:10:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.12,
+          -6.42
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Haurgeulis",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:02:00",
+        "schedule_ka258b": "01:03:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.953,
+          -6.471
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cipunegara",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:07:00",
+        "schedule_ka258b": "00:55:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.9,
+          -6.41
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pegaden Baru",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:12:00",
+        "schedule_ka258b": "00:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.843,
+          -6.406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikaum",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:17:30",
+        "schedule_ka258b": "00:45:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.8,
+          -6.39
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pasirbungur",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:21:00",
+        "schedule_ka258b": "00:42:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.75,
+          -6.38
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pringkasap",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:24:30",
+        "schedule_ka258b": "00:38:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.7,
+          -6.37
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pabuaran",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:28:00",
+        "schedule_ka258b": "00:35:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.65,
+          -6.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tanjungrasa",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:31:00",
+        "schedule_ka258b": "00:31:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6,
+          -6.35
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikampek",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:38:00",
+        "schedule_ka258b": "00:25:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.459,
+          -6.406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dawuan",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:41:00",
+        "schedule_ka258b": "00:22:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.4,
+          -6.38
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kosambi",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:45:30",
+        "schedule_ka258b": "00:18:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.35,
+          -6.37
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Klari",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:48:00",
+        "schedule_ka258b": "00:15:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.32,
+          -6.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karawang",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:52:30",
+        "schedule_ka258b": "00:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.3,
+          -6.305
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedunggedeh",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "19:56:30",
+        "schedule_ka258b": "00:07:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.25,
+          -6.28
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lemahabang",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "20:02:30",
+        "schedule_ka258b": "00:01:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.173,
+          -6.273
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikarang",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "20:06:00",
+        "schedule_ka258b": "23:58:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.145,
+          -6.255
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Note: // PLB 5179B (PLB 5179B =)",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "20:14:00",
+        "schedule_ka258b": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bekasi",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "20:22:00",
+        "schedule_ka258b": "23:45:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107,
+          -6.236
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "20:36:00",
+        "schedule_ka258b": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pasar Senen",
+        "railway": "stop",
+        "isCheckpoint": true,
+        "role": "stop",
+        "schedule_ka257b": "20:46:00",
+        "schedule_ka258b": "23:20:00",
+        "is_origin_ka258b": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.844,
+          -6.174
+        ]
+      }
+    }
+  ]
+}
