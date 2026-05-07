@@ -106,15 +106,37 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = [])
       });
 
       geojson.features = geojson.features.map((f) => {
-        if (f.geometry?.type === "LineString") {
           f.geometry.coordinates = f.geometry.coordinates.map(coord => {
             const key = JSON.stringify(coord);
             if (coordFixMap.has(key)) return coordFixMap.get(key);
             return coord;
           });
-        }
-        return f;
-      });
+
+          // Inject routeKey into available_directions for better selector app handling
+          if (f.properties && f.properties.available_directions) {
+            f.properties.available_directions = f.properties.available_directions.map(dir => {
+              const num = dir.num.toUpperCase();
+              let routeKey = "";
+              
+              const sched = allSchedules.find(s => s.trainNumber.toUpperCase() === num);
+              if (sched) {
+                routeKey = sched.routeName;
+              } else {
+                // Hardcoded fallback for Malabar and Progo
+                if (num === "67" || num === "69") routeKey = "MALABAR_GO";
+                if (num === "68" || num === "70") routeKey = "MALABAR_BACK";
+                if (num === "257B") routeKey = "PROGO_GO";
+                if (num === "258B") routeKey = "PROGO_BACK";
+              }
+              
+              if (routeKey) {
+                return { ...dir, routeKey };
+              }
+              return dir;
+            });
+          }
+          return f;
+        });
     }
     return JSON.stringify(geojson);
   } catch (e) {
@@ -821,8 +843,8 @@ export async function seedData() {
     }
     console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from parsed data`);
     const kaiTrains = [
-      ["MALABAR", "EKSEKUTIF/EKONOMI", "67", 12, "ML", "BD"],
-      ["PROGO", "EKONOMI", "257B", 10, "LPN", "PSE"]
+      ["MALABAR", "EKSEKUTIF/EKONOMI", "67-70", 12, "ML", "BD"],
+      ["PROGO", "EKONOMI", "257B-258B", 10, "LPN", "PSE"]
     ];
 
     for (const [name, cls, num, coachCount, start, end] of kaiTrains) {
@@ -997,6 +1019,15 @@ export async function seedData() {
         ["MB-E2", "ECONOMY COACH 2", 6, "15"],
         ["MB-E3", "ECONOMY COACH 3", 7, "16"],
         ["MB-B", "BAGGAGE COACH", 8, "17"],
+      ],
+      PROGO: [
+        ["PR-L", "LOCOMOTIVE CC201", 1, "20"],
+        ["PR-E1", "ECONOMY COACH 1", 2, "21"],
+        ["PR-E2", "ECONOMY COACH 2", 3, "22"],
+        ["PR-E3", "ECONOMY COACH 3", 4, "23"],
+        ["PR-E4", "ECONOMY COACH 4", 5, "24"],
+        ["PR-M", "DINING COACH", 6, "25"],
+        ["PR-B", "BAGGAGE COACH", 7, "26"],
       ],
     };
 

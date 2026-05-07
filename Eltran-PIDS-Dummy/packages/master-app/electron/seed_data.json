@@ -1360,7 +1360,7 @@
     {
       "name": "MALABAR_GO",
       "serviceName": "MALABAR",
-      "direction": "Malang - Bandung",
+      "direction": "GO",
       "stations": [
         "Malang",
         "Malang Kotalama",
@@ -1483,7 +1483,7 @@
     {
       "name": "MALABAR_BACK",
       "serviceName": "MALABAR",
-      "direction": "Bandung - Malang",
+      "direction": "BACK",
       "stations": [
         "Bandung",
         "Cikudapateuh",
