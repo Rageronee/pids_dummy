@@ -1,0 +1,15 @@
+[Unit]
+Description=PIDS DB service (docker compose)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory={{COMPOSE_DIR}}
+ExecStart={{DOCKER_BIN}} compose -f {{COMPOSE_FILE}} up -d
+ExecStop={{DOCKER_BIN}} compose -f {{COMPOSE_FILE}} down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
