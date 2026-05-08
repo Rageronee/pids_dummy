@@ -130,6 +130,10 @@ function App() {
   }, [activeKa]);
 
   useEffect(() => {
+    // Only sync from master if auto-sync is ON and user hasn't interacted recently
+    if (!isAutoSync) return;
+    if (Date.now() - lastUserActionRef.current < 5000) return;
+
     if (masterSyncedNumber) {
       const kaMatch = masterSyncedNumber.replace(/\s+/g, "").match(/ka(\d+)/i);
       if (kaMatch) {
@@ -139,7 +143,7 @@ function App() {
         }
       }
     }
-  }, [masterSyncedNumber]);
+  }, [masterSyncedNumber, isAutoSync]);
 
 
   useEffect(() => {
@@ -450,32 +454,40 @@ function App() {
       const normalizedKa = newKa.toLowerCase().replace(/\s+/g, "");
       setActiveKa(normalizedKa);
       setKaDropdownOpen(false);
+      lastUserActionRef.current = Date.now(); // Mark user action to prevent auto-sync override
 
       if (stations.length < 2) return;
 
       const num = normalizedKa.replace("ka", "");
       
-      // Attempt to find routeKey from availableDirections if available
       let targetRouteName = "";
       const dirEntry = availableDirections.find(d => {
         const dNum = d.num.toLowerCase();
         const targetNum = num.toLowerCase();
-        // Handle cases like "257" matching "257b" or vice versa
         return dNum === targetNum || targetNum.startsWith(dNum) || dNum.startsWith(targetNum);
       });
       
       if (dirEntry && (dirEntry as any).routeKey) {
         targetRouteName = (dirEntry as any).routeKey;
       } else {
-        targetRouteName = masterSyncedServiceName;
+        // Fallback: Guess service from number if routeKey is missing
+        const n = parseInt(num);
+        if (n >= 67 && n <= 70) targetRouteName = "MALABAR_GO";
+        else if (n >= 257 && n <= 258) targetRouteName = "PROGO_GO";
+        else targetRouteName = masterSyncedServiceName;
       }
 
       let finalRouteData: any = routes?.[targetRouteName] || data?.activeRoute || routes?.[masterSyncedServiceName];
       let newStations = finalRouteData?.stations ? [...finalRouteData.stations] : [...stations];
+      
+      // Derive display service name (PROGO or MALABAR)
+      const displayService = targetRouteName.toUpperCase().includes("PROGO") ? "PROGO" : 
+                            targetRouteName.toUpperCase().includes("MALABAR") ? "MALABAR" : 
+                            masterSyncedServiceName;
 
       const features = resolveRouteFeatures(finalRouteData);
       if (features) {
-        const kaBase = normalizedKa.replace(/[a-z]/g, ""); // Keep only numbers
+        const kaBase = normalizedKa.replace(/[a-z]/g, "");
         const originFeature = features.find(
           (f: any) =>
             f.properties?.[`is_origin_ka${kaBase}`] === true ||
@@ -490,15 +502,15 @@ function App() {
         }
       }
 
-      // Reset to start of trip when manual direction change
       let newIndex = 0; 
       
       setStations(newStations);
       setCurrentIndex(newIndex);
 
       sendData({
+        serviceName: displayService, // Use derived service name to prevent "PROGO 68"
         stations: newStations,
-        currentStation: getStationName(newStations[0]), // Explicitly reset current station to first station
+        currentStation: getStationName(newStations[0]),
         trainNumber: normalizedKa.toUpperCase(),
         activeRoute: finalRouteData,
         isSyncing: true,
@@ -506,7 +518,7 @@ function App() {
 
       showNotification(
         "Direction Changed",
-        `Route direction set for ${normalizedKa.toUpperCase()} sync.`,
+        `Route direction set for ${normalizedKa.toUpperCase()} (${displayService}) sync.`,
       );
     },
     [
@@ -518,6 +530,7 @@ function App() {
       routes,
       masterSyncedServiceName,
       resolveRouteFeatures,
+      availableDirections
     ],
   );
   if (!authUser) {
