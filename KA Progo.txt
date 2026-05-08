@@ -1,0 +1,664 @@
+Schedule & Stops
+Select a train number to view specific itinerary
+
+
+257
+KA 257B
+LPN-PSE • 13:10:00
+OPERATIONAL
+Train Number
+KA 257B
+Lempuyangan
+Origin
+
+Dep 13:10:00
+Yogyakarta
+Transit station
+
+Dep 13:14:00
+Patukan
+Transit station
+
+Dep 13:19:00
+Rewulu
+Transit station
+
+Dep 13:23:00
+Sentolo
+Transit station
+
+Dep 13:30:00
+Wates
+Transit station
+
+Arr 13:39:00
+Dep 13:41:00
+Kedundang
+Transit station
+
+Dep 13:47:00
+Wojo
+Transit station
+
+Dep 13:52:00
+Jenar
+Transit station
+
+Dep 13:58:00
+Kutoarjo
+Transit station
+
+Arr 14:09:00
+Dep 14:14:00
+Butuh
+Transit station
+
+Dep 14:19:00
+Prembun
+Transit station
+
+Dep 14:24:00
+Kutowinangun
+Transit station
+
+Arr 14:30:00
+Dep 14:32:00
+Wonosari
+Transit station
+
+Dep 14:36:00
+Kebumen
+Transit station
+
+Arr 14:41:00
+Dep 14:43:00
+Sruweng
+Transit station
+
+Dep 14:51:00
+Karanganyar
+Transit station
+
+Arr 14:55:00
+Dep 14:57:00
+Gombong
+Transit station
+
+Arr 15:05:00
+Dep 15:07:00
+Ijo
+Transit station
+
+Dep 15:14:00
+Tambak
+Transit station
+
+Dep 15:17:00
+Sumpiuh
+Transit station
+
+Dep 15:21:00
+Kemranjen
+Transit station
+
+Dep 15:24:00
+Kroya
+Transit station
+
+Arr 15:31:00
+Dep 15:34:00
+Randegan
+Transit station
+
+Dep 15:41:00
+Kebasen
+Transit station
+
+Dep 15:44:00
+Notog
+Transit station
+
+Dep 15:49:00
+Purwokerto
+Transit station
+
+Arr 15:58:00
+Dep 16:03:00
+Karanggandul
+Transit station
+
+Dep 16:12:00
+Karangsari (Banyumas)
+Transit station
+
+Dep 16:21:00
+Legok
+Transit station
+
+Patuguran
+Transit station
+
+Dep 16:32:00
+Kretek
+Transit station
+
+Dep 16:39:00
+Bumiayu
+Transit station
+
+Dep 16:46:00
+Linggapura
+Transit station
+
+Dep 16:53:00
+Prupuk
+Transit station
+
+Arr 17:04:00
+Dep 17:06:00
+Songgom
+Transit station
+
+Dep 17:14:00
+Larangan (Brebes)
+Transit station
+
+Dep 17:18:00
+Ketanggungan
+Transit station
+
+Arr 17:25:00
+Dep 17:27:00
+Ciledug
+Transit station
+
+Dep 17:38:00
+Sindanglaut
+Transit station
+
+Dep 17:47:30
+Luwung
+Transit station
+
+Dep 17:52:00
+Cirebon Prujakan
+Transit station
+
+Arr 17:58:00
+Dep 18:02:00
+Cirebon
+Transit station
+
+Dep 18:06:00
+Cangkring
+Transit station
+
+Dep 18:11:00
+Bangoduwa
+Transit station
+
+Dep 18:14:00
+Arjawinangun
+Transit station
+
+Note: // KA 2509 (KA 2509 =)
+
+Dep 18:18:00
+Kertasemaya
+Transit station
+
+Dep 18:27:00
+Jatibarang
+Transit station
+
+Dep 18:32:00
+Telagasari
+Transit station
+
+Dep 18:38:00
+Terisi
+Transit station
+
+Dep 18:43:00
+Kadokangabus
+Transit station
+
+Dep 18:47:00
+Cilegeh
+Transit station
+
+Dep 18:52:00
+Haurgeulis
+Transit station
+
+Arr 19:00:00
+Dep 19:02:00
+Cipunegara
+Transit station
+
+Dep 19:07:00
+Pegaden Baru
+Transit station
+
+Dep 19:12:00
+Cikaum
+Transit station
+
+Dep 19:17:30
+Pasirbungur
+Transit station
+
+Dep 19:21:00
+Pringkasap
+Transit station
+
+Dep 19:24:30
+Pabuaran
+Transit station
+
+Dep 19:28:00
+Tanjungrasa
+Transit station
+
+Dep 19:31:00
+Cikampek
+Transit station
+
+Dep 19:38:00
+Dawuan
+Transit station
+
+Dep 19:41:00
+Kosambi
+Transit station
+
+Dep 19:45:30
+Klari
+Transit station
+
+Dep 19:48:00
+Karawang
+Transit station
+
+Dep 19:52:30
+Kedunggedeh
+Transit station
+
+Dep 19:56:30
+Lemahabang
+Transit station
+
+Dep 20:02:30
+Cikarang
+Transit station
+
+Dep 20:06:00
+Metland Telaga Murni
+Transit station
+
+Cibitung
+Transit station
+
+Tambun
+Transit station
+
+Note: // PLB 5179B (PLB 5179B =)
+
+Dep 20:14:00
+Bekasi Timur
+Transit station
+
+Bekasi
+Transit station
+
+Arr 20:20:00
+Dep 20:22:00
+Jatinegara
+Transit station
+
+Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA
+
+Arr 20:34:00
+Dep 20:36:00
+Pondok Jati
+Transit station
+
+Kramat
+Transit station
+
+Gang Sentiong
+Transit station
+
+Pasar Senen
+Destination
+
+Arr 20:46:00
+
+
+
+258
+KA 258B
+PSE-LPN • 23:20:00
+OPERATIONAL
+Train Number
+KA 258B
+Pasar Senen
+Origin
+
+Dep 23:20:00
+Gang Sentiong
+Transit station
+
+Kramat
+Transit station
+
+Pondok Jati
+Transit station
+
+Jatinegara
+Transit station
+
+Arr 23:30:00
+Dep 23:32:00
+Bekasi
+Transit station
+
+Arr 23:43:00
+Dep 23:45:00
+Bekasi Timur
+Transit station
+
+Tambun
+Transit station
+
+Note: // KA 6080B
+
+Dep 23:51:00
+Cibitung
+Transit station
+
+Metland Telaga Murni
+Transit station
+
+Cikarang
+Transit station
+
+Dep 23:58:00
+Lemahabang
+Transit station
+
+Dep 00:01:00
+Kedunggedeh
+Transit station
+
+Dep 00:07:00
+Karawang
+Transit station
+
+Dep 00:11:00
+Klari
+Transit station
+
+Dep 00:15:30
+Kosambi
+Transit station
+
+Dep 00:18:00
+Dawuan
+Transit station
+
+Dep 00:22:00
+Cikampek
+Transit station
+
+Dep 00:25:00
+Tanjungrasa
+Transit station
+
+Dep 00:31:30
+Pabuaran
+Transit station
+
+Dep 00:35:00
+Pringkasap
+Transit station
+
+Dep 00:38:30
+Pasirbungur
+Transit station
+
+Dep 00:42:00
+Cikaum
+Transit station
+
+Dep 00:45:30
+Pegaden Baru
+Transit station
+
+Dep 00:51:00
+Cipunegara
+Transit station
+
+Dep 00:55:30
+Haurgeulis
+Transit station
+
+Arr 01:01:00
+Dep 01:03:00
+Cilegeh
+Transit station
+
+Dep 01:10:00
+Kadokangabus
+Transit station
+
+Dep 01:14:30
+Terisi
+Transit station
+
+Dep 01:18:00
+Telagasari
+Transit station
+
+Dep 01:23:00
+Jatibarang
+Transit station
+
+Dep 01:29:00
+Kertasemaya
+Transit station
+
+Dep 01:34:00
+Arjawinangun
+Transit station
+
+Dep 01:43:00
+Bangoduwa
+Transit station
+
+Dep 01:47:00
+Cangkring
+Transit station
+
+Dep 01:51:00
+Cirebon
+Transit station
+
+Dep 01:56:00
+Cirebon Prujakan
+Transit station
+
+Arr 02:00:00
+Dep 02:05:00
+Luwung
+Transit station
+
+Dep 02:11:00
+Sindanglaut
+Transit station
+
+Dep 02:15:30
+Ciledug
+Transit station
+
+Dep 02:25:00
+Ketanggungan
+Transit station
+
+Arr 02:36:00
+Dep 02:38:00
+Larangan (Brebes)
+Transit station
+
+Dep 02:45:00
+Songgom
+Transit station
+
+Dep 02:49:00
+Prupuk
+Transit station
+
+Arr 02:57:00
+Dep 02:59:00
+Linggapura
+Transit station
+
+Dep 03:11:00
+Bumiayu
+Transit station
+
+Dep 03:19:00
+Kretek
+Transit station
+
+Dep 03:26:00
+Patuguran
+Transit station
+
+Dep 03:32:00
+Legok
+Transit station
+
+Karangsari (Banyumas)
+Transit station
+
+Dep 03:43:00
+Karanggandul
+Transit station
+
+Dep 03:51:00
+Purwokerto
+Transit station
+
+Arr 03:59:00
+Dep 04:04:00
+Notog
+Transit station
+
+Dep 04:12:00
+Kebasen
+Transit station
+
+Dep 04:17:00
+Randegan
+Transit station
+
+Dep 04:20:00
+Kroya
+Transit station
+
+Arr 04:27:00
+Dep 04:29:00
+Kemranjen
+Transit station
+
+Dep 04:35:00
+Sumpiuh
+Transit station
+
+Dep 04:38:00
+Tambak
+Transit station
+
+Dep 04:41:00
+Ijo
+Transit station
+
+Dep 04:44:00
+Gombong
+Transit station
+
+Arr 04:51:00
+Dep 04:53:00
+Karanganyar
+Transit station
+
+Dep 04:59:30
+Sruweng
+Transit station
+
+Dep 05:02:00
+Kebumen
+Transit station
+
+Arr 05:09:00
+Dep 05:11:00
+Wonosari
+Transit station
+
+Dep 05:16:00
+Kutowinangun
+Transit station
+
+Arr 05:20:00
+Dep 05:22:00
+Prembun
+Transit station
+
+Dep 05:28:00
+Butuh
+Transit station
+
+Dep 05:32:00
+Kutoarjo
+Transit station
+
+Arr 05:37:00
+Dep 05:40:00
+Jenar
+Transit station
+
+Dep 05:50:00
+Wojo
+Transit station
+
+Dep 05:56:00
+Kedundang
+Transit station
+
+Dep 06:01:00
+Wates
+Transit station
+
+Arr 06:07:00
+Dep 06:10:00
+Sentolo
+Transit station
+
+Dep 06:19:00
+Rewulu
+Transit station
+
+Dep 06:26:00
+Patukan
+Transit station
+
+Dep 06:30:00
+Yogyakarta
+Transit station
+
+Dep 06:35:00
+Lempuyangan
+Destination
+
+Arr 06:40:00

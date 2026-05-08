@@ -81,12 +81,12 @@
         "colour": "blue",
         "available_directions": [
           {
-            "num": "257B",
+            "num": "257",
             "label": "KA 257B (LPN -> PSE)",
             "routeKey": "PROGO_GO"
           },
           {
-            "num": "258B",
+            "num": "258",
             "label": "KA 258B (PSE -> LPN)",
             "routeKey": "PROGO_BACK"
           }
@@ -379,9 +379,9 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:10:00",
-        "schedule_ka258b": "06:40:00",
-        "is_origin_ka257b": true
+        "schedule_ka257": "13:10:00",
+        "schedule_ka258": "06:40:00",
+        "is_origin_ka257": true
       },
       "geometry": {
         "type": "Point",
@@ -398,8 +398,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:14:00",
-        "schedule_ka258b": "06:35:00"
+        "schedule_ka257": "13:14:00",
+        "schedule_ka258": "06:35:00"
       },
       "geometry": {
         "type": "Point",
@@ -416,8 +416,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:19:00",
-        "schedule_ka258b": "06:30:00"
+        "schedule_ka257": "13:19:00",
+        "schedule_ka258": "06:30:00"
       },
       "geometry": {
         "type": "Point",
@@ -434,8 +434,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:23:00",
-        "schedule_ka258b": "06:26:00"
+        "schedule_ka257": "13:23:00",
+        "schedule_ka258": "06:26:00"
       },
       "geometry": {
         "type": "Point",
@@ -452,8 +452,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:30:00",
-        "schedule_ka258b": "06:19:00"
+        "schedule_ka257": "13:30:00",
+        "schedule_ka258": "06:19:00"
       },
       "geometry": {
         "type": "Point",
@@ -470,8 +470,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:41:00",
-        "schedule_ka258b": "06:10:00"
+        "schedule_ka257": "13:39:00",
+        "schedule_ka258": "06:07:00"
       },
       "geometry": {
         "type": "Point",
@@ -488,8 +488,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:47:00",
-        "schedule_ka258b": "06:01:00"
+        "schedule_ka257": "13:47:00",
+        "schedule_ka258": "06:01:00"
       },
       "geometry": {
         "type": "Point",
@@ -506,8 +506,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:52:00",
-        "schedule_ka258b": "05:56:00"
+        "schedule_ka257": "13:52:00",
+        "schedule_ka258": "05:56:00"
       },
       "geometry": {
         "type": "Point",
@@ -524,8 +524,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "13:58:00",
-        "schedule_ka258b": "05:50:00"
+        "schedule_ka257": "13:58:00",
+        "schedule_ka258": "05:50:00"
       },
       "geometry": {
         "type": "Point",
@@ -542,8 +542,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:14:00",
-        "schedule_ka258b": "05:40:00"
+        "schedule_ka257": "14:09:00",
+        "schedule_ka258": "05:37:00"
       },
       "geometry": {
         "type": "Point",
@@ -560,8 +560,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:19:00",
-        "schedule_ka258b": "05:32:00"
+        "schedule_ka257": "14:19:00",
+        "schedule_ka258": "05:32:00"
       },
       "geometry": {
         "type": "Point",
@@ -578,8 +578,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:24:00",
-        "schedule_ka258b": "05:28:00"
+        "schedule_ka257": "14:24:00",
+        "schedule_ka258": "05:28:00"
       },
       "geometry": {
         "type": "Point",
@@ -596,8 +596,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:32:00",
-        "schedule_ka258b": "05:22:00"
+        "schedule_ka257": "14:30:00",
+        "schedule_ka258": "05:20:00"
       },
       "geometry": {
         "type": "Point",
@@ -614,8 +614,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:36:00",
-        "schedule_ka258b": "05:16:00"
+        "schedule_ka257": "14:36:00",
+        "schedule_ka258": "05:16:00"
       },
       "geometry": {
         "type": "Point",
@@ -632,8 +632,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:43:00",
-        "schedule_ka258b": "05:11:00"
+        "schedule_ka257": "14:41:00",
+        "schedule_ka258": "05:09:00"
       },
       "geometry": {
         "type": "Point",
@@ -650,8 +650,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:51:00",
-        "schedule_ka258b": "05:02:00"
+        "schedule_ka257": "14:51:00",
+        "schedule_ka258": "05:02:00"
       },
       "geometry": {
         "type": "Point",
@@ -668,8 +668,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "14:57:00",
-        "schedule_ka258b": "04:59:30"
+        "schedule_ka257": "14:55:00",
+        "schedule_ka258": "04:59:30"
       },
       "geometry": {
         "type": "Point",
@@ -686,8 +686,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:07:00",
-        "schedule_ka258b": "04:53:00"
+        "schedule_ka257": "15:05:00",
+        "schedule_ka258": "04:51:00"
       },
       "geometry": {
         "type": "Point",
@@ -704,8 +704,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:14:00",
-        "schedule_ka258b": "04:44:00"
+        "schedule_ka257": "15:14:00",
+        "schedule_ka258": "04:44:00"
       },
       "geometry": {
         "type": "Point",
@@ -722,8 +722,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:17:00",
-        "schedule_ka258b": "04:41:00"
+        "schedule_ka257": "15:17:00",
+        "schedule_ka258": "04:41:00"
       },
       "geometry": {
         "type": "Point",
@@ -740,8 +740,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:21:00",
-        "schedule_ka258b": "04:38:00"
+        "schedule_ka257": "15:21:00",
+        "schedule_ka258": "04:38:00"
       },
       "geometry": {
         "type": "Point",
@@ -758,8 +758,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:24:00",
-        "schedule_ka258b": "04:35:00"
+        "schedule_ka257": "15:24:00",
+        "schedule_ka258": "04:35:00"
       },
       "geometry": {
         "type": "Point",
@@ -776,8 +776,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:34:00",
-        "schedule_ka258b": "04:29:00"
+        "schedule_ka257": "15:31:00",
+        "schedule_ka258": "04:27:00"
       },
       "geometry": {
         "type": "Point",
@@ -794,8 +794,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:41:00",
-        "schedule_ka258b": "04:20:00"
+        "schedule_ka257": "15:41:00",
+        "schedule_ka258": "04:20:00"
       },
       "geometry": {
         "type": "Point",
@@ -812,8 +812,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:44:00",
-        "schedule_ka258b": "04:17:00"
+        "schedule_ka257": "15:44:00",
+        "schedule_ka258": "04:17:00"
       },
       "geometry": {
         "type": "Point",
@@ -830,8 +830,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "15:49:00",
-        "schedule_ka258b": "04:12:00"
+        "schedule_ka257": "15:49:00",
+        "schedule_ka258": "04:12:00"
       },
       "geometry": {
         "type": "Point",
@@ -848,8 +848,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:03:00",
-        "schedule_ka258b": "04:04:00"
+        "schedule_ka257": "15:58:00",
+        "schedule_ka258": "03:59:00"
       },
       "geometry": {
         "type": "Point",
@@ -866,8 +866,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:12:00",
-        "schedule_ka258b": "03:51:00"
+        "schedule_ka257": "16:12:00",
+        "schedule_ka258": "03:51:00"
       },
       "geometry": {
         "type": "Point",
@@ -884,8 +884,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:21:00",
-        "schedule_ka258b": "03:43:00"
+        "schedule_ka257": "16:21:00",
+        "schedule_ka258": "03:43:00"
       },
       "geometry": {
         "type": "Point",
@@ -897,13 +897,29 @@
     },
     {
       "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.09999444914905,
+          -7.250002731222972
+        ]
+      },
+      "properties": {
+        "id": "LEGOK",
+        "name": "Legok",
+        "is_origin_257B": false,
+        "is_origin_258B": false
+      }
+    },
+    {
+      "type": "Feature",
       "properties": {
         "name": "Patuguran",
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:32:00",
-        "schedule_ka258b": "03:32:00"
+        "schedule_ka257": "16:32:00",
+        "schedule_ka258": "03:32:00"
       },
       "geometry": {
         "type": "Point",
@@ -920,8 +936,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:39:00",
-        "schedule_ka258b": "03:26:00"
+        "schedule_ka257": "16:39:00",
+        "schedule_ka258": "03:26:00"
       },
       "geometry": {
         "type": "Point",
@@ -938,8 +954,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:46:00",
-        "schedule_ka258b": "03:19:00"
+        "schedule_ka257": "16:46:00",
+        "schedule_ka258": "03:19:00"
       },
       "geometry": {
         "type": "Point",
@@ -956,8 +972,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "16:53:00",
-        "schedule_ka258b": "03:11:00"
+        "schedule_ka257": "16:53:00",
+        "schedule_ka258": "03:11:00"
       },
       "geometry": {
         "type": "Point",
@@ -974,8 +990,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:06:00",
-        "schedule_ka258b": "02:59:00"
+        "schedule_ka257": "17:04:00",
+        "schedule_ka258": "02:57:00"
       },
       "geometry": {
         "type": "Point",
@@ -992,8 +1008,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:14:00",
-        "schedule_ka258b": "02:49:00"
+        "schedule_ka257": "17:14:00",
+        "schedule_ka258": "02:49:00"
       },
       "geometry": {
         "type": "Point",
@@ -1010,8 +1026,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:18:00",
-        "schedule_ka258b": "02:45:00"
+        "schedule_ka257": "17:18:00",
+        "schedule_ka258": "02:45:00"
       },
       "geometry": {
         "type": "Point",
@@ -1028,8 +1044,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:27:00",
-        "schedule_ka258b": "02:38:00"
+        "schedule_ka257": "17:25:00",
+        "schedule_ka258": "02:36:00"
       },
       "geometry": {
         "type": "Point",
@@ -1046,8 +1062,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:38:00",
-        "schedule_ka258b": "02:25:00"
+        "schedule_ka257": "17:38:00",
+        "schedule_ka258": "02:25:00"
       },
       "geometry": {
         "type": "Point",
@@ -1064,8 +1080,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:47:30",
-        "schedule_ka258b": "02:15:30"
+        "schedule_ka257": "17:47:30",
+        "schedule_ka258": "02:15:30"
       },
       "geometry": {
         "type": "Point",
@@ -1082,8 +1098,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "17:52:00",
-        "schedule_ka258b": "02:11:00"
+        "schedule_ka257": "17:52:00",
+        "schedule_ka258": "02:11:00"
       },
       "geometry": {
         "type": "Point",
@@ -1100,8 +1116,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:02:00",
-        "schedule_ka258b": "02:05:00"
+        "schedule_ka257": "17:58:00",
+        "schedule_ka258": "02:00:00"
       },
       "geometry": {
         "type": "Point",
@@ -1118,8 +1134,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:06:00",
-        "schedule_ka258b": "01:56:00"
+        "schedule_ka257": "18:06:00",
+        "schedule_ka258": "01:56:00"
       },
       "geometry": {
         "type": "Point",
@@ -1136,8 +1152,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:11:00",
-        "schedule_ka258b": "01:51:00"
+        "schedule_ka257": "18:11:00",
+        "schedule_ka258": "01:51:00"
       },
       "geometry": {
         "type": "Point",
@@ -1154,8 +1170,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:14:00",
-        "schedule_ka258b": "01:47:00"
+        "schedule_ka257": "18:14:00",
+        "schedule_ka258": "01:47:00"
       },
       "geometry": {
         "type": "Point",
@@ -1167,20 +1183,20 @@
     },
     {
       "type": "Feature",
-      "properties": {
-        "name": "Note: // KA 2509 (KA 2509 =)",
-        "railway": "stop",
-        "isCheckpoint": true,
-        "role": "stop",
-        "schedule_ka257b": "18:18:00",
-        "schedule_ka258b": ""
-      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          0,
-          0
+          108.43247556869183,
+          -6.613451339640788
         ]
+      },
+      "properties": {
+        "id": "ARJAWINANGUN",
+        "name": "Arjawinangun",
+        "is_origin_257B": false,
+        "is_origin_258B": false,
+        "schedule_ka257": "18:18:00",
+        "schedule_ka258": "01:43:00"
       }
     },
     {
@@ -1190,8 +1206,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:27:00",
-        "schedule_ka258b": "01:34:00"
+        "schedule_ka257": "18:27:00",
+        "schedule_ka258": "01:34:00"
       },
       "geometry": {
         "type": "Point",
@@ -1208,8 +1224,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:32:00",
-        "schedule_ka258b": "01:29:00"
+        "schedule_ka257": "18:32:00",
+        "schedule_ka258": "01:29:00"
       },
       "geometry": {
         "type": "Point",
@@ -1226,8 +1242,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:38:00",
-        "schedule_ka258b": "01:23:00"
+        "schedule_ka257": "18:38:00",
+        "schedule_ka258": "01:23:00"
       },
       "geometry": {
         "type": "Point",
@@ -1244,8 +1260,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:43:00",
-        "schedule_ka258b": "01:18:00"
+        "schedule_ka257": "18:43:00",
+        "schedule_ka258": "01:18:00"
       },
       "geometry": {
         "type": "Point",
@@ -1262,8 +1278,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:47:00",
-        "schedule_ka258b": "01:14:30"
+        "schedule_ka257": "18:47:00",
+        "schedule_ka258": "01:14:30"
       },
       "geometry": {
         "type": "Point",
@@ -1280,8 +1296,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "18:52:00",
-        "schedule_ka258b": "01:10:00"
+        "schedule_ka257": "18:52:00",
+        "schedule_ka258": "01:10:00"
       },
       "geometry": {
         "type": "Point",
@@ -1298,8 +1314,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:02:00",
-        "schedule_ka258b": "01:03:00"
+        "schedule_ka257": "19:00:00",
+        "schedule_ka258": "01:01:00"
       },
       "geometry": {
         "type": "Point",
@@ -1316,8 +1332,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:07:00",
-        "schedule_ka258b": "00:55:30"
+        "schedule_ka257": "19:07:00",
+        "schedule_ka258": "00:55:30"
       },
       "geometry": {
         "type": "Point",
@@ -1334,8 +1350,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:12:00",
-        "schedule_ka258b": "00:51:00"
+        "schedule_ka257": "19:12:00",
+        "schedule_ka258": "00:51:00"
       },
       "geometry": {
         "type": "Point",
@@ -1352,8 +1368,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:17:30",
-        "schedule_ka258b": "00:45:30"
+        "schedule_ka257": "19:17:30",
+        "schedule_ka258": "00:45:30"
       },
       "geometry": {
         "type": "Point",
@@ -1370,8 +1386,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:21:00",
-        "schedule_ka258b": "00:42:00"
+        "schedule_ka257": "19:21:00",
+        "schedule_ka258": "00:42:00"
       },
       "geometry": {
         "type": "Point",
@@ -1388,8 +1404,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:24:30",
-        "schedule_ka258b": "00:38:30"
+        "schedule_ka257": "19:24:30",
+        "schedule_ka258": "00:38:30"
       },
       "geometry": {
         "type": "Point",
@@ -1406,8 +1422,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:28:00",
-        "schedule_ka258b": "00:35:00"
+        "schedule_ka257": "19:28:00",
+        "schedule_ka258": "00:35:00"
       },
       "geometry": {
         "type": "Point",
@@ -1424,8 +1440,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:31:00",
-        "schedule_ka258b": "00:31:30"
+        "schedule_ka257": "19:31:00",
+        "schedule_ka258": "00:31:30"
       },
       "geometry": {
         "type": "Point",
@@ -1442,8 +1458,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:38:00",
-        "schedule_ka258b": "00:25:00"
+        "schedule_ka257": "19:38:00",
+        "schedule_ka258": "00:25:00"
       },
       "geometry": {
         "type": "Point",
@@ -1460,8 +1476,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:41:00",
-        "schedule_ka258b": "00:22:00"
+        "schedule_ka257": "19:41:00",
+        "schedule_ka258": "00:22:00"
       },
       "geometry": {
         "type": "Point",
@@ -1478,8 +1494,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:45:30",
-        "schedule_ka258b": "00:18:00"
+        "schedule_ka257": "19:45:30",
+        "schedule_ka258": "00:18:00"
       },
       "geometry": {
         "type": "Point",
@@ -1496,8 +1512,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:48:00",
-        "schedule_ka258b": "00:15:30"
+        "schedule_ka257": "19:48:00",
+        "schedule_ka258": "00:15:30"
       },
       "geometry": {
         "type": "Point",
@@ -1514,8 +1530,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:52:30",
-        "schedule_ka258b": "00:11:00"
+        "schedule_ka257": "19:52:30",
+        "schedule_ka258": "00:11:00"
       },
       "geometry": {
         "type": "Point",
@@ -1532,8 +1548,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "19:56:30",
-        "schedule_ka258b": "00:07:00"
+        "schedule_ka257": "19:56:30",
+        "schedule_ka258": "00:07:00"
       },
       "geometry": {
         "type": "Point",
@@ -1550,8 +1566,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "20:02:30",
-        "schedule_ka258b": "00:01:00"
+        "schedule_ka257": "20:02:30",
+        "schedule_ka258": "00:01:00"
       },
       "geometry": {
         "type": "Point",
@@ -1568,8 +1584,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "20:06:00",
-        "schedule_ka258b": "23:58:00"
+        "schedule_ka257": "20:06:00",
+        "schedule_ka258": "23:58:00"
       },
       "geometry": {
         "type": "Point",
@@ -1581,20 +1597,68 @@
     },
     {
       "type": "Feature",
-      "properties": {
-        "name": "Note: // PLB 5179B (PLB 5179B =)",
-        "railway": "stop",
-        "isCheckpoint": true,
-        "role": "stop",
-        "schedule_ka257b": "20:14:00",
-        "schedule_ka258b": ""
-      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          0,
-          0
+          107.11599915795716,
+          -6.251203175695511
         ]
+      },
+      "properties": {
+        "id": "METLAND_TELAGA_MURNI",
+        "name": "Metland Telaga Murni",
+        "is_origin_257B": false,
+        "is_origin_258B": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.07249868444602,
+          -6.245504960467354
+        ]
+      },
+      "properties": {
+        "id": "CIBITUNG",
+        "name": "Cibitung",
+        "is_origin_257B": false,
+        "is_origin_258B": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107,
+          -6.236
+        ]
+      },
+      "properties": {
+        "id": "TAMBUN",
+        "name": "Tambun",
+        "is_origin_257B": false,
+        "is_origin_258B": false,
+        "schedule_ka257": "20:14:00",
+        "schedule_ka258": "23:51:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.86420428507799,
+          -6.182033299320017
+        ]
+      },
+      "properties": {
+        "id": "BEKASI_TIMUR",
+        "name": "Bekasi Timur",
+        "is_origin_257B": false,
+        "is_origin_258B": false
       }
     },
     {
@@ -1604,8 +1668,8 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "20:22:00",
-        "schedule_ka258b": "23:45:00"
+        "schedule_ka257": "20:20:00",
+        "schedule_ka258": "23:43:00"
       },
       "geometry": {
         "type": "Point",
@@ -1617,20 +1681,68 @@
     },
     {
       "type": "Feature",
-      "properties": {
-        "name": "Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
-        "railway": "stop",
-        "isCheckpoint": true,
-        "role": "stop",
-        "schedule_ka257b": "20:36:00",
-        "schedule_ka258b": ""
-      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          0,
-          0
+          106.88063316486011,
+          -6.188564741288815
         ]
+      },
+      "properties": {
+        "id": "JATINEGARA",
+        "name": "Jatinegara",
+        "is_origin_257B": false,
+        "is_origin_258B": false,
+        "schedule_ka257": "20:34:00",
+        "schedule_ka258": "23:30:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.92199541165941,
+          -6.205005704991714
+        ]
+      },
+      "properties": {
+        "id": "PONDOK_JATI",
+        "name": "Pondok Jati",
+        "is_origin_257B": false,
+        "is_origin_258B": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.844,
+          -6.174
+        ]
+      },
+      "properties": {
+        "id": "KRAMAT",
+        "name": "Kramat",
+        "is_origin_257B": false,
+        "is_origin_258B": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.844,
+          -6.174
+        ]
+      },
+      "properties": {
+        "id": "GANG_SENTIONG",
+        "name": "Gang Sentiong",
+        "is_origin_257B": false,
+        "is_origin_258B": false
       }
     },
     {
@@ -1640,9 +1752,9 @@
         "railway": "stop",
         "isCheckpoint": true,
         "role": "stop",
-        "schedule_ka257b": "20:46:00",
-        "schedule_ka258b": "23:20:00",
-        "is_origin_ka258b": true
+        "schedule_ka257": "20:46:00",
+        "schedule_ka258": "23:20:00",
+        "is_origin_ka258": true
       },
       "geometry": {
         "type": "Point",

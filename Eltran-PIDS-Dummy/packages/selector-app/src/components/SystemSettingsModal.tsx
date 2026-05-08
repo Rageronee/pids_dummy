@@ -30,6 +30,8 @@ interface SystemSettingsProps {
   handleLogout: () => void;
   isDark?: boolean;
   setIsDark?: (dark: boolean) => void;
+  isAutoSync: boolean;
+  setIsAutoSync: (val: boolean) => void;
 }
 
 const SystemSettingsModal = React.memo(function SystemSettingsModal({
@@ -46,6 +48,8 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
   handleLogout,
   isDark,
   setIsDark,
+  isAutoSync,
+  setIsAutoSync,
 }: SystemSettingsProps) {
   if (!show) return null;
 
@@ -184,6 +188,30 @@ const SystemSettingsModal = React.memo(function SystemSettingsModal({
                       <div
                         className={`w-6 h-6 rounded-full border-4 ${ledType === "p10_32_16" ? "border-[#ee6f1f] bg-white" : isDark ? "border-slate-700" : "border-slate-200"}`}
                       />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-6">
+                  <div>
+                    <h4 className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-[#1d2d6a]"}`}>
+                      Sync Stability
+                    </h4>
+                    <p className="text-sm font-bold text-slate-400 mt-1">
+                      Prevent automatic station jumping (Auto Refresh)
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <button
+                      onClick={() => setIsAutoSync(!isAutoSync)}
+                      className={`w-full py-8 px-6 rounded-3xl font-bold text-2xl transition-all border-2 flex items-center justify-between ${isAutoSync ? "border-green-500 bg-green-500/5 text-green-500" : "border-red-500 bg-red-500/5 text-red-500"}`}
+                    >
+                      {isAutoSync ? "Auto Sync: Enabled" : "Auto Sync: Disabled (Fixed Mode)"}
+                      <div
+                        className={`w-12 h-6 rounded-full relative transition-colors ${isAutoSync ? "bg-green-500" : "bg-red-500"}`}
+                      >
+                         <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${isAutoSync ? "right-1" : "left-1"}`} />
+                      </div>
                     </button>
                   </div>
                 </div>

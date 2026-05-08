@@ -1652,7 +1652,6 @@
         "Cirebon",
         "Cangkring",
         "Bangoduwa",
-        "Note: // KA 2509 (KA 2509 =)",
         "Kertasemaya",
         "Jatibarang",
         "Telagasari",
@@ -1675,9 +1674,7 @@
         "Kedunggedeh",
         "Lemahabang",
         "Cikarang",
-        "Note: // PLB 5179B (PLB 5179B =)",
         "Bekasi",
-        "Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
         "Pasar Senen"
       ]
     },
@@ -1687,9 +1684,7 @@
       "direction": "BACK",
       "stations": [
         "Pasar Senen",
-        "Note: PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
         "Bekasi",
-        "Note: // PLB 5179B (PLB 5179B =)",
         "Cikarang",
         "Lemahabang",
         "Kedunggedeh",
@@ -1712,7 +1707,6 @@
         "Telagasari",
         "Jatibarang",
         "Kertasemaya",
-        "Note: // KA 2509 (KA 2509 =)",
         "Bangoduwa",
         "Cangkring",
         "Cirebon",
@@ -5401,6 +5395,51 @@
           "arrival": "06:40:00",
           "departure": "06:40:00"
         }
+      ]
+    },
+    {
+      "trainNumber": "257B",
+      "serviceName": "PROGO",
+      "routeName": "PROGO_GO",
+      "stops": [
+        { "name": "Lempuyangan", "type": "Origin", "arrival": "", "departure": "06:40:00" },
+        { "name": "Yogyakarta", "type": "Transit station", "arrival": "06:45:00", "departure": "06:48:00" },
+        { "name": "Wates", "type": "Transit station", "arrival": "07:11:00", "departure": "07:13:00" },
+        { "name": "Kebumen", "type": "Transit station", "arrival": "08:08:00", "departure": "08:10:00" },
+        { "name": "Gombong", "type": "Transit station", "arrival": "08:33:00", "departure": "08:35:00" },
+        { "name": "Kroya", "type": "Transit station", "arrival": "09:03:00", "departure": "09:06:00" },
+        { "name": "Purwokerto", "type": "Transit station", "arrival": "09:32:00", "departure": "09:40:00" },
+        { "name": "Bumiayu", "type": "Transit station", "arrival": "10:19:00", "departure": "10:21:00" },
+        { "name": "Cirebon Prujakan", "type": "Transit station", "arrival": "11:39:00", "departure": "11:47:00" },
+        { "name": "Jatibarang", "type": "Transit station", "arrival": "12:20:00", "departure": "12:22:00" },
+        { "name": "Haurgeulis", "type": "Transit station", "arrival": "12:54:00", "departure": "12:56:00" },
+        { "name": "Bekasi", "type": "Transit station", "arrival": "14:48:00", "departure": "14:50:00" },
+        { "name": "Pasar Senen", "type": "Terminus", "arrival": "15:15:00", "departure": "" }
+      ]
+    },
+    {
+      "trainNumber": "258B",
+      "serviceName": "PROGO",
+      "routeName": "PROGO_BACK",
+      "stops": [
+        { "name": "Pasar Senen", "type": "Origin", "arrival": "", "departure": "22:45:00" },
+        { "name": "Bekasi", "type": "Transit station", "arrival": "23:13:00", "departure": "23:15:00" },
+        { "name": "Karawang", "type": "Transit station", "arrival": "23:44:00", "departure": "23:46:00" },
+        { "name": "Cikampek", "type": "Transit station", "arrival": "00:03:00", "departure": "00:05:00" },
+        { "name": "Haurgeulis", "type": "Transit station", "arrival": "00:54:00", "departure": "00:56:00" },
+        { "name": "Jatibarang", "type": "Transit station", "arrival": "01:27:00", "departure": "01:29:00" },
+        { "name": "Cirebon Prujakan", "type": "Transit station", "arrival": "02:08:00", "departure": "02:16:00" },
+        { "name": "Ciledug", "type": "Transit station", "arrival": "02:37:00", "departure": "02:39:00" },
+        { "name": "Ketanggungan", "type": "Transit station", "arrival": "02:51:00", "departure": "02:53:00" },
+        { "name": "Prupuk", "type": "Transit station", "arrival": "03:13:00", "departure": "03:15:00" },
+        { "name": "Bumiayu", "type": "Transit station", "arrival": "03:34:00", "departure": "03:36:00" },
+        { "name": "Purwokerto", "type": "Transit station", "arrival": "04:21:00", "departure": "04:30:00" },
+        { "name": "Kroya", "type": "Transit station", "arrival": "04:51:00", "departure": "04:54:00" },
+        { "name": "Gombong", "type": "Transit station", "arrival": "05:22:00", "departure": "05:24:00" },
+        { "name": "Kebumen", "type": "Transit station", "arrival": "05:43:00", "departure": "05:45:00" },
+        { "name": "Wates", "type": "Transit station", "arrival": "06:44:00", "departure": "06:46:00" },
+        { "name": "Yogyakarta", "type": "Transit station", "arrival": "07:10:00", "departure": "07:13:00" },
+        { "name": "Lempuyangan", "type": "Terminus", "arrival": "07:16:00", "departure": "" }
       ]
     }
   ]

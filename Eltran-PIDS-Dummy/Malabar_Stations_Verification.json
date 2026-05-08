@@ -1,0 +1,673 @@
+[
+  {
+    "name": "Bandung",
+    "longitude": 107.60981,
+    "latitude": -6.914744,
+    "schedules": {
+      "schedule_ka67": "05:44",
+      "schedule_ka68": "18:09",
+      "schedule_ka69": "18:04",
+      "schedule_ka70": "09:29"
+    }
+  },
+  {
+    "name": "Cikudapateuh",
+    "longitude": 107.623056,
+    "latitude": -6.923889,
+    "schedules": {
+      "schedule_ka67": "05:33",
+      "schedule_ka68": "18:09",
+      "schedule_ka69": "17:51",
+      "schedule_ka70": "09:29"
+    }
+  },
+  {
+    "name": "Kiaracondong",
+    "longitude": 107.641415,
+    "latitude": -6.925393,
+    "schedules": {
+      "schedule_ka67": "05:33",
+      "schedule_ka69": "17:51",
+      "schedule_ka70": "09:38",
+      "schedule_ka68": "18:18"
+    }
+  },
+  {
+    "name": "Gedebage",
+    "longitude": 107.698611,
+    "latitude": -6.949722,
+    "schedules": {
+      "schedule_ka68": "18:33",
+      "schedule_ka70": "09:49",
+      "schedule_ka67": "05:26",
+      "schedule_ka69": "17:44"
+    }
+  },
+  {
+    "name": "Cimekar",
+    "longitude": 107.720278,
+    "latitude": -6.966389,
+    "schedules": {
+      "schedule_ka67": "05:21",
+      "schedule_ka68": "18:33",
+      "schedule_ka69": "17:39",
+      "schedule_ka70": "09:49"
+    }
+  },
+  {
+    "name": "Rancaekek",
+    "longitude": 107.760556,
+    "latitude": -6.973611,
+    "schedules": {
+      "schedule_ka67": "05:21",
+      "schedule_ka69": "17:39",
+      "schedule_ka70": "09:54",
+      "schedule_ka68": "18:38"
+    }
+  },
+  {
+    "name": "Haurpugur",
+    "longitude": 107.781944,
+    "latitude": -6.987222,
+    "schedules": {
+      "schedule_ka67": "05:15",
+      "schedule_ka68": "18:42",
+      "schedule_ka69": "17:32",
+      "schedule_ka70": "09:58"
+    }
+  },
+  {
+    "name": "Cicalengka",
+    "longitude": 107.829167,
+    "latitude": -6.998056,
+    "schedules": {
+      "schedule_ka67": "05:12",
+      "schedule_ka68": "18:45",
+      "schedule_ka69": "17:30",
+      "schedule_ka70": "10:02"
+    }
+  },
+  {
+    "name": "Nagreg",
+    "longitude": 107.886389,
+    "latitude": -7.019722,
+    "schedules": {
+      "schedule_ka67": "04:59",
+      "schedule_ka68": "18:58",
+      "schedule_ka69": "17:17",
+      "schedule_ka70": "10:14"
+    }
+  },
+  {
+    "name": "Lebakjero",
+    "longitude": 107.941667,
+    "latitude": -7.0575,
+    "schedules": {
+      "schedule_ka67": "04:52",
+      "schedule_ka68": "19:07",
+      "schedule_ka69": "17:10",
+      "schedule_ka70": "10:23"
+    }
+  },
+  {
+    "name": "Leles",
+    "longitude": 107.9025,
+    "latitude": -7.115278,
+    "schedules": {
+      "schedule_ka67": "04:36",
+      "schedule_ka68": "19:16",
+      "schedule_ka69": "16:57",
+      "schedule_ka70": "10:32"
+    }
+  },
+  {
+    "name": "Karangsari (Garut)",
+    "longitude": 107.904167,
+    "latitude": -7.143056,
+    "schedules": {
+      "schedule_ka68": "19:27",
+      "schedule_ka70": "10:41",
+      "schedule_ka67": "04:30",
+      "schedule_ka69": "16:52"
+    }
+  },
+  {
+    "name": "Leuwigoong",
+    "longitude": 107.938056,
+    "latitude": -7.180833,
+    "schedules": {
+      "schedule_ka67": "04:21",
+      "schedule_ka68": "19:27",
+      "schedule_ka69": "16:43",
+      "schedule_ka70": "10:41"
+    }
+  },
+  {
+    "name": "Cibatu",
+    "longitude": 107.983611,
+    "latitude": -7.221389,
+    "schedules": {
+      "schedule_ka67": "04:21",
+      "schedule_ka69": "16:43",
+      "schedule_ka70": "10:48",
+      "schedule_ka68": "19:34"
+    }
+  },
+  {
+    "name": "Warungbandrek",
+    "longitude": 108.016389,
+    "latitude": -7.245278,
+    "schedules": {
+      "schedule_ka67": "04:14",
+      "schedule_ka68": "19:41",
+      "schedule_ka69": "16:36",
+      "schedule_ka70": "10:56"
+    }
+  },
+  {
+    "name": "Bumiwaluya",
+    "longitude": 108.060556,
+    "latitude": -7.275278,
+    "schedules": {
+      "schedule_ka67": "04:02",
+      "schedule_ka68": "19:54",
+      "schedule_ka69": "16:23",
+      "schedule_ka70": "11:08"
+    }
+  },
+  {
+    "name": "Cipeundeuy",
+    "longitude": 108.103611,
+    "latitude": -7.3,
+    "schedules": {
+      "schedule_ka67": "03:40",
+      "schedule_ka68": "20:03",
+      "schedule_ka69": "16:03",
+      "schedule_ka70": "11:19"
+    }
+  },
+  {
+    "name": "Cirahayu",
+    "longitude": 108.147778,
+    "latitude": -7.308056,
+    "schedules": {
+      "schedule_ka67": "03:27",
+      "schedule_ka68": "20:26",
+      "schedule_ka69": "15:51",
+      "schedule_ka70": "11:42"
+    }
+  },
+  {
+    "name": "Ciawi",
+    "longitude": 108.186944,
+    "latitude": -7.316944,
+    "schedules": {
+      "schedule_ka67": "03:18",
+      "schedule_ka68": "20:35",
+      "schedule_ka69": "15:42",
+      "schedule_ka70": "11:50"
+    }
+  },
+  {
+    "name": "Rajapolah",
+    "longitude": 108.213333,
+    "latitude": -7.323611,
+    "schedules": {
+      "schedule_ka67": "03:09",
+      "schedule_ka68": "20:42",
+      "schedule_ka69": "15:33",
+      "schedule_ka70": "11:57"
+    }
+  },
+  {
+    "name": "Indihiang",
+    "longitude": 108.229722,
+    "latitude": -7.325833,
+    "schedules": {
+      "schedule_ka67": "03:02",
+      "schedule_ka68": "20:48",
+      "schedule_ka69": "15:27",
+      "schedule_ka70": "12:04"
+    }
+  },
+  {
+    "name": "Tasikmalaya",
+    "longitude": 108.220909,
+    "latitude": -7.327466,
+    "schedules": {
+      "schedule_ka67": "02:53",
+      "schedule_ka68": "20:53",
+      "schedule_ka69": "15:18",
+      "schedule_ka70": "12:09"
+    }
+  },
+  {
+    "name": "Awipari",
+    "longitude": 108.252778,
+    "latitude": -7.339167,
+    "schedules": {
+      "schedule_ka67": "02:46",
+      "schedule_ka68": "21:02",
+      "schedule_ka69": "15:13",
+      "schedule_ka70": "12:18"
+    }
+  },
+  {
+    "name": "Manonjaya",
+    "longitude": 108.287778,
+    "latitude": -7.351111,
+    "schedules": {
+      "schedule_ka67": "02:42",
+      "schedule_ka68": "21:06",
+      "schedule_ka69": "15:09",
+      "schedule_ka70": "12:22"
+    }
+  },
+  {
+    "name": "Ciamis",
+    "longitude": 108.353991,
+    "latitude": -7.325873,
+    "schedules": {
+      "schedule_ka67": "02:26",
+      "schedule_ka68": "21:17",
+      "schedule_ka69": "14:53",
+      "schedule_ka70": "12:33"
+    }
+  },
+  {
+    "name": "Bojong",
+    "longitude": 108.401111,
+    "latitude": -7.339722,
+    "schedules": {
+      "schedule_ka67": "02:17",
+      "schedule_ka68": "21:27",
+      "schedule_ka69": "14:44",
+      "schedule_ka70": "12:42"
+    }
+  },
+  {
+    "name": "Karangpucung",
+    "longitude": 108.448333,
+    "latitude": -7.351667,
+    "schedules": {
+      "schedule_ka67": "02:10",
+      "schedule_ka68": "21:33",
+      "schedule_ka69": "14:37",
+      "schedule_ka70": "12:49"
+    }
+  },
+  {
+    "name": "Banjar",
+    "longitude": 108.533333,
+    "latitude": -7.366667,
+    "schedules": {
+      "schedule_ka67": "01:59",
+      "schedule_ka68": "21:40",
+      "schedule_ka69": "14:26",
+      "schedule_ka70": "12:56"
+    }
+  },
+  {
+    "name": "Langen",
+    "longitude": 108.585833,
+    "latitude": -7.400278,
+    "schedules": {
+      "schedule_ka67": "01:50",
+      "schedule_ka68": "21:51",
+      "schedule_ka69": "14:17",
+      "schedule_ka70": "13:09"
+    }
+  },
+  {
+    "name": "Meluwung",
+    "longitude": 108.640556,
+    "latitude": -7.43,
+    "schedules": {
+      "schedule_ka67": "01:45",
+      "schedule_ka68": "21:56",
+      "schedule_ka69": "14:12",
+      "schedule_ka70": "13:14"
+    }
+  },
+  {
+    "name": "Cipari",
+    "longitude": 108.703056,
+    "latitude": -7.458611,
+    "schedules": {
+      "schedule_ka67": "01:39",
+      "schedule_ka68": "22:02",
+      "schedule_ka69": "14:06",
+      "schedule_ka70": "13:18"
+    }
+  },
+  {
+    "name": "Sidareja",
+    "longitude": 108.792778,
+    "latitude": -7.480833,
+    "schedules": {
+      "schedule_ka67": "01:30",
+      "schedule_ka68": "22:07",
+      "schedule_ka69": "13:59",
+      "schedule_ka70": "13:25"
+    }
+  },
+  {
+    "name": "Gandrungmangun",
+    "longitude": 108.845833,
+    "latitude": -7.504167,
+    "schedules": {
+      "schedule_ka67": "01:23",
+      "schedule_ka68": "22:16",
+      "schedule_ka69": "13:52",
+      "schedule_ka70": "13:34"
+    }
+  },
+  {
+    "name": "Kawunganten",
+    "longitude": 108.9125,
+    "latitude": -7.523333,
+    "schedules": {
+      "schedule_ka67": "01:18",
+      "schedule_ka68": "22:21",
+      "schedule_ka69": "13:48",
+      "schedule_ka70": "13:41"
+    }
+  },
+  {
+    "name": "Jeruklegi",
+    "longitude": 109.02,
+    "latitude": -7.579167,
+    "schedules": {
+      "schedule_ka67": "01:07",
+      "schedule_ka68": "22:32",
+      "schedule_ka69": "13:36",
+      "schedule_ka70": "14:03"
+    }
+  },
+  {
+    "name": "Lebeng",
+    "longitude": 109.083333,
+    "latitude": -7.6,
+    "schedules": {
+      "schedule_ka67": "01:03",
+      "schedule_ka68": "22:36",
+      "schedule_ka69": "13:32",
+      "schedule_ka70": "14:15"
+    }
+  },
+  {
+    "name": "Kasugihan",
+    "longitude": 109.15,
+    "latitude": -7.62,
+    "schedules": {
+      "schedule_ka67": "01:00",
+      "schedule_ka68": "22:39",
+      "schedule_ka69": "13:30",
+      "schedule_ka70": "14:19"
+    }
+  },
+  {
+    "name": "Maos",
+    "longitude": 109.186667,
+    "latitude": -7.633056,
+    "schedules": {
+      "schedule_ka67": "00:54",
+      "schedule_ka68": "22:41",
+      "schedule_ka69": "13:29",
+      "schedule_ka70": "14:21"
+    }
+  },
+  {
+    "name": "Sikampuh",
+    "longitude": 109.215,
+    "latitude": -7.64,
+    "schedules": {
+      "schedule_ka67": "00:49",
+      "schedule_ka68": "22:50",
+      "schedule_ka69": "13:25",
+      "schedule_ka70": "14:30"
+    }
+  },
+  {
+    "name": "Kroya",
+    "longitude": 109.246111,
+    "latitude": -7.633056,
+    "schedules": {
+      "schedule_ka67": "00:36",
+      "schedule_ka68": "22:56",
+      "schedule_ka69": "13:16",
+      "schedule_ka70": "14:35"
+    }
+  },
+  {
+    "name": "Kemranjen",
+    "longitude": 109.3075,
+    "latitude": -7.665278,
+    "schedules": {
+      "schedule_ka67": "00:29",
+      "schedule_ka68": "23:05",
+      "schedule_ka69": "13:09",
+      "schedule_ka70": "14:44"
+    }
+  },
+  {
+    "name": "Sumpiuh",
+    "longitude": 109.364444,
+    "latitude": -7.690278,
+    "schedules": {
+      "schedule_ka67": "00:27",
+      "schedule_ka68": "23:08",
+      "schedule_ka69": "13:05",
+      "schedule_ka70": "14:48"
+    }
+  },
+  {
+    "name": "Tambak",
+    "longitude": 109.402222,
+    "latitude": -7.705556,
+    "schedules": {
+      "schedule_ka67": "00:24",
+      "schedule_ka68": "23:10",
+      "schedule_ka69": "13:03",
+      "schedule_ka70": "14:51"
+    }
+  },
+  {
+    "name": "Ijo",
+    "longitude": 109.44,
+    "latitude": -7.72,
+    "schedules": {
+      "schedule_ka67": "00:20",
+      "schedule_ka68": "23:14",
+      "schedule_ka69": "13:00",
+      "schedule_ka70": "14:53"
+    }
+  },
+  {
+    "name": "Gombong",
+    "longitude": 109.514444,
+    "latitude": -7.728889,
+    "schedules": {
+      "schedule_ka67": "00:11",
+      "schedule_ka68": "23:21",
+      "schedule_ka69": "12:56",
+      "schedule_ka70": "15:00"
+    }
+  },
+  {
+    "name": "Karanganyar",
+    "longitude": 109.58,
+    "latitude": -7.75,
+    "schedules": {
+      "schedule_ka67": "00:04",
+      "schedule_ka68": "23:30",
+      "schedule_ka69": "12:51",
+      "schedule_ka70": "15:09"
+    }
+  },
+  {
+    "name": "Sruweng",
+    "longitude": 109.64,
+    "latitude": -7.77,
+    "schedules": {
+      "schedule_ka67": "00:02",
+      "schedule_ka68": "23:33",
+      "schedule_ka69": "12:49",
+      "schedule_ka70": "15:11"
+    }
+  },
+  {
+    "name": "Kebumen",
+    "longitude": 109.653889,
+    "latitude": -7.678611,
+    "schedules": {
+      "schedule_ka67": "23:53",
+      "schedule_ka68": "23:39",
+      "schedule_ka69": "12:40",
+      "schedule_ka70": "15:20"
+    }
+  },
+  {
+    "name": "Wonosari",
+    "longitude": 109.7,
+    "latitude": -7.7,
+    "schedules": {
+      "schedule_ka67": "23:48",
+      "schedule_ka68": "23:46",
+      "schedule_ka69": "12:36",
+      "schedule_ka70": "15:27"
+    }
+  },
+  {
+    "name": "Kutowinangun",
+    "longitude": 109.77,
+    "latitude": -7.72,
+    "schedules": {
+      "schedule_ka67": "23:46",
+      "schedule_ka68": "23:48",
+      "schedule_ka69": "12:33",
+      "schedule_ka70": "15:29"
+    }
+  },
+  {
+    "name": "Prembun",
+    "longitude": 109.8,
+    "latitude": -7.73,
+    "schedules": {
+      "schedule_ka67": "23:42",
+      "schedule_ka68": "23:53",
+      "schedule_ka69": "12:29",
+      "schedule_ka70": "15:33"
+    }
+  },
+  {
+    "name": "Butuh",
+    "longitude": 109.84,
+    "latitude": -7.735,
+    "schedules": {
+      "schedule_ka67": "23:39",
+      "schedule_ka68": "23:57",
+      "schedule_ka69": "12:26",
+      "schedule_ka70": "15:36"
+    }
+  },
+  {
+    "name": "Kutoarjo",
+    "longitude": 109.907222,
+    "latitude": -7.718333,
+    "schedules": {
+      "schedule_ka67": "23:28",
+      "schedule_ka68": "00:02",
+      "schedule_ka69": "12:18",
+      "schedule_ka70": "15:42"
+    }
+  },
+  {
+    "name": "Yogyakarta",
+    "longitude": 110.363889,
+    "latitude": -7.789167,
+    "schedules": {
+      "schedule_ka67": "22:36",
+      "schedule_ka68": "00:51",
+      "schedule_ka69": "11:26",
+      "schedule_ka70": "16:30"
+    }
+  },
+  {
+    "name": "Solo Balapan",
+    "longitude": 110.821667,
+    "latitude": -7.556111,
+    "schedules": {
+      "schedule_ka67": "21:51",
+      "schedule_ka68": "01:41",
+      "schedule_ka69": "10:41",
+      "schedule_ka70": "17:19"
+    }
+  },
+  {
+    "name": "Madiun",
+    "longitude": 111.523889,
+    "latitude": -7.618889,
+    "schedules": {
+      "schedule_ka67": "20:28",
+      "schedule_ka68": "03:00",
+      "schedule_ka69": "09:24",
+      "schedule_ka70": "18:38"
+    }
+  },
+  {
+    "name": "Kediri",
+    "longitude": 112.016667,
+    "latitude": -7.816667,
+    "schedules": {
+      "schedule_ka67": "19:12",
+      "schedule_ka68": "04:20",
+      "schedule_ka69": "08:06",
+      "schedule_ka70": "20:03"
+    }
+  },
+  {
+    "name": "Blitar",
+    "longitude": 112.164444,
+    "latitude": -8.095556,
+    "schedules": {
+      "schedule_ka67": "18:26",
+      "schedule_ka68": "05:08",
+      "schedule_ka69": "07:18",
+      "schedule_ka70": "20:55"
+    }
+  },
+  {
+    "name": "Kepanjen",
+    "longitude": 112.573889,
+    "latitude": -8.135278,
+    "schedules": {
+      "schedule_ka67": "17:19",
+      "schedule_ka68": "06:20",
+      "schedule_ka69": "05:53",
+      "schedule_ka70": "22:00"
+    }
+  },
+  {
+    "name": "Malang Kotalama",
+    "longitude": 112.626944,
+    "latitude": -7.981667,
+    "schedules": {
+      "schedule_ka67": "16:56",
+      "schedule_ka68": "06:44",
+      "schedule_ka69": "05:30",
+      "schedule_ka70": "22:23"
+    }
+  },
+  {
+    "name": "Malang",
+    "longitude": 112.632632,
+    "latitude": -7.96662,
+    "schedules": {
+      "schedule_ka67": "16:50",
+      "schedule_ka68": "06:51",
+      "schedule_ka69": "05:24",
+      "schedule_ka70": "22:36"
+    }
+  }
+]

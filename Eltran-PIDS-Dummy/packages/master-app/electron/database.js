@@ -105,7 +105,15 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = [])
         return f;
       });
 
-      geojson.features = geojson.features.map((f) => {
+      geojson.features = geojson.features.filter(f => {
+        const name = String(f.properties?.name || "").trim();
+        // Ignore technical notes, comments, and non-station markers
+        return !name.startsWith("Note:") && 
+               !name.startsWith("//") && 
+               !name.includes("=") && 
+               !name.toLowerCase().includes("ka6080b") &&
+               name.length > 0;
+      }).map((f) => {
           f.geometry.coordinates = f.geometry.coordinates.map(coord => {
             const key = JSON.stringify(coord);
             if (coordFixMap.has(key)) return coordFixMap.get(key);
@@ -118,15 +126,20 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = [])
               const num = dir.num.toUpperCase();
               let routeKey = "";
               
-              const sched = allSchedules.find(s => s.trainNumber.toUpperCase() === num);
+              const sched = allSchedules.find(s => {
+                const sNum = s.trainNumber.toUpperCase().replace(/\s+/g, "");
+                const dNum = num.toUpperCase().replace(/\s+/g, "");
+                return sNum === dNum || sNum === `${dNum}B` || dNum === `${sNum}B`;
+              });
+              
               if (sched) {
                 routeKey = sched.routeName;
               } else {
-                // Hardcoded fallback for Malabar and Progo
-                if (num === "67" || num === "69") routeKey = "MALABAR_GO";
-                if (num === "68" || num === "70") routeKey = "MALABAR_BACK";
-                if (num === "257B") routeKey = "PROGO_GO";
-                if (num === "258B") routeKey = "PROGO_BACK";
+                // Precise fallback for Malabar and Progo
+                if (num.match(/^(67|69)$/)) routeKey = "MALABAR_GO";
+                if (num.match(/^(68|70)$/)) routeKey = "MALABAR_BACK";
+                if (num.match(/^(257|257B)$/i)) routeKey = "PROGO_GO";
+                if (num.match(/^(258|258B)$/i)) routeKey = "PROGO_BACK";
               }
               
               if (routeKey) {
@@ -844,7 +857,7 @@ export async function seedData() {
     console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from parsed data`);
     const kaiTrains = [
       ["MALABAR", "EKSEKUTIF/EKONOMI", "67-70", 12, "ML", "BD"],
-      ["PROGO", "EKONOMI", "257B-258B", 10, "LPN", "PSE"]
+      ["PROGO", "EKONOMI", "257-258", 10, "LPN", "PSE"]
     ];
 
     for (const [name, cls, num, coachCount, start, end] of kaiTrains) {

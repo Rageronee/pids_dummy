@@ -88,7 +88,8 @@ function App() {
   }, [selectedGerbong]);
 
   useEffect(() => {
-    const idx = trainNames.indexOf(masterSyncedServiceName);
+    const normalizedMaster = masterSyncedServiceName?.toUpperCase();
+    const idx = trainNames.findIndex(n => n.toUpperCase() === normalizedMaster);
     if (idx !== -1) setTrainNameIndex(idx);
   }, [masterSyncedServiceName, trainNames]);
   useEffect(() => {
@@ -110,9 +111,17 @@ function App() {
     const t = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
+  const [isAutoSync, setIsAutoSync] = useState(() => {
+    const saved = localStorage.getItem("selector_auto_sync");
+    return saved ? saved === "true" : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("selector_auto_sync", isAutoSync.toString());
+  }, [isAutoSync]);
+
   const [activeKa, setActiveKa] = useState<string>(() => {
     const saved = localStorage.getItem("selector_active_ka");
-    // Return saved or empty string (kosongan)
     return saved || "";
   });
 
@@ -122,7 +131,6 @@ function App() {
 
   useEffect(() => {
     if (masterSyncedNumber) {
-      // Handle both "ka67" and "KA 67" formats
       const kaMatch = masterSyncedNumber.replace(/\s+/g, "").match(/ka(\d+)/i);
       if (kaMatch) {
         const normalized = `ka${kaMatch[1]}`;
@@ -131,10 +139,12 @@ function App() {
         }
       }
     }
-  }, [masterSyncedNumber, activeKa]);
+  }, [masterSyncedNumber]);
+
 
   useEffect(() => {
-    if (Date.now() - lastUserActionRef.current < 5000) return;
+    if (!isAutoSync) return;
+    if (Date.now() - lastUserActionRef.current < 10000) return;
 
     if (data?.currentStation && stations.length > 0) {
       const currentName = String(
@@ -177,7 +187,11 @@ function App() {
       if (!nameStr) return null;
 
       const kaId = activeKa.toLowerCase().replace(/\s+/g, "").replace("ka", "");
+      // Remove trailing letters like 'b' in '257b' to match 'schedule_ka257'
+      const kaIdNum = kaId.replace(/[a-z]/gi, "");
+      
       const expectedKey = `schedule_ka${kaId}`;
+      const expectedKeyNum = `schedule_ka${kaIdNum}`;
 
       const candidateRoutes = [
         data?.activeRoute,
@@ -193,7 +207,10 @@ function App() {
           });
           if (stObj && typeof stObj === "object") {
             const key = Object.keys(stObj).find(
-              (k) => k.toLowerCase().replace(/\s+/g, "") === expectedKey,
+              (k) => {
+                const normalized = k.toLowerCase().replace(/\s+/g, "");
+                return normalized === expectedKey || normalized === expectedKeyNum;
+              }
             );
             if (key) {
               const raw = String(stObj[key] ?? "");
@@ -217,7 +234,10 @@ function App() {
           if (stationFeature) {
             const props = stationFeature.properties || {};
             const key = Object.keys(props).find(
-              (k) => k.toLowerCase().replace(/\s+/g, "") === expectedKey,
+              (k) => {
+                const normalized = k.toLowerCase().replace(/\s+/g, "");
+                return normalized === expectedKey || normalized === expectedKeyNum;
+              }
             );
             if (key) {
               const raw = String(props[key] ?? "");
@@ -306,20 +326,7 @@ function App() {
       gerbong: number,
     ) => {
       if (newStations.length > 0) {
-        let newIndex = 0;
-        if (data?.currentStation) {
-          const currentName = String(
-            typeof data.currentStation === "object"
-              ? (data.currentStation as any).name
-              : data.currentStation || ""
-          ).toUpperCase().trim();
-          
-          const matchingIdx = newStations.findIndex(s => {
-            const sName = String(typeof s === "object" ? (s as any).name : s || "").toUpperCase().trim();
-            return sName === currentName;
-          });
-          if (matchingIdx !== -1) newIndex = matchingIdx;
-        }
+        const newIndex = 0;
         setStations(newStations);
         setCurrentIndex(newIndex);
       }
@@ -331,6 +338,8 @@ function App() {
       sendData({
         serviceName,
         stations: newStations,
+        currentStation: getStationName(newStations[0]),
+        nextStation: getStationName(newStations[1]),
         activeRoute: routeData,
         trainNumber: `${getTrainId(resolvedKa)} Gerbong ${gerbong}`,
       });
@@ -391,15 +400,46 @@ function App() {
     return resolvedFeatures?.find((f: any) => f.geometry?.type === "LineString")
       ?.properties?.available_directions || [];
   }, [resolvedFeatures]);
+
+  // Auto-switch direction when service changes to prevent "stuck" state
+  useEffect(() => {
+    if (!masterSyncedServiceName) return;
+    
+    const currentSvc = masterSyncedServiceName.toUpperCase();
+    const activeRouteSvc = (data?.activeRoute as any)?.service_name?.toUpperCase() || "";
+    
+    // If service changed and active route is from different service, reset activeKa
+    if (activeRouteSvc && currentSvc !== activeRouteSvc) {
+      if (availableDirections.length > 0) {
+        const firstDir = availableDirections[0];
+        setActiveKa(`ka${firstDir.num}`);
+      }
+    }
+  }, [masterSyncedServiceName, availableDirections, data?.activeRoute]);
   const formatDirLabel = (label: string) => {
-    const cityMap: Record<string, string> = { BANDUNG: "BD", MALANG: "ML", LEMPUYANGAN: "LPN", "PASAR SENEN": "PSE" };
-    return label.replace(/^KA\s+/i, "").replace(
+    const cityMap: Record<string, string> = { 
+      BANDUNG: "BD", 
+      MALANG: "ML", 
+      LEMPUYANGAN: "LPN", 
+      "PASAR SENEN": "PSE",
+      "YOGYAKARTA": "YK",
+      "SURABAYA": "SBY",
+      "PASARSENEN": "PSE"
+    };
+    
+    // If it's a direction object, try to construct a nicer label if it's still GO/BACK
+    if (label === "GO" || label === "BACK") {
+       const dir = availableDirections.find(d => d.label === label);
+       if (dir) return `KA ${dir.num}`;
+    }
+
+    return label.replace(/^KA\s+/i, "KA ").replace(
       /\(([^)]+?)\s*->?\s*([^)]+?)\)/,
       (_: string, from: string, to: string) => {
         const f = from.trim().toUpperCase();
         const t = to.trim().toUpperCase();
         const abbr = (s: string) =>
-          cityMap[s] || s.substring(0, 2).toUpperCase();
+          cityMap[s] || s.substring(0, 3).toUpperCase();
         return `(${abbr(f)}-${abbr(t)})`;
       },
     );
@@ -417,7 +457,12 @@ function App() {
       
       // Attempt to find routeKey from availableDirections if available
       let targetRouteName = "";
-      const dirEntry = availableDirections.find(d => d.num.toLowerCase() === num.toLowerCase());
+      const dirEntry = availableDirections.find(d => {
+        const dNum = d.num.toLowerCase();
+        const targetNum = num.toLowerCase();
+        // Handle cases like "257" matching "257b" or vice versa
+        return dNum === targetNum || targetNum.startsWith(dNum) || dNum.startsWith(targetNum);
+      });
       
       if (dirEntry && (dirEntry as any).routeKey) {
         targetRouteName = (dirEntry as any).routeKey;
@@ -430,10 +475,11 @@ function App() {
 
       const features = resolveRouteFeatures(finalRouteData);
       if (features) {
-        const kaForFlag = normalizedKa.startsWith("ka") ? normalizedKa : `ka${normalizedKa}`;
+        const kaBase = normalizedKa.replace(/[a-z]/g, ""); // Keep only numbers
         const originFeature = features.find(
           (f: any) =>
-            f.properties?.[`is_origin_${kaForFlag}`] === true,
+            f.properties?.[`is_origin_ka${kaBase}`] === true ||
+            f.properties?.[`is_origin_${normalizedKa}`] === true,
         );
         if (originFeature) {
           const originName = String(originFeature.properties.name || "").toUpperCase().trim();
@@ -444,26 +490,15 @@ function App() {
         }
       }
 
-      let newIndex = 0;
-      if (data?.currentStation) {
-        const currentName = String(
-          typeof data.currentStation === "object"
-            ? (data.currentStation as any).name
-            : data.currentStation || ""
-        ).toUpperCase().trim();
-        
-        const matchingIdx = newStations.findIndex(s => {
-          const sName = String(typeof s === "object" ? (s as any).name : s || "").toUpperCase().trim();
-          return sName === currentName;
-        });
-        if (matchingIdx !== -1) newIndex = matchingIdx;
-      }
-
+      // Reset to start of trip when manual direction change
+      let newIndex = 0; 
+      
       setStations(newStations);
       setCurrentIndex(newIndex);
 
       sendData({
         stations: newStations,
+        currentStation: getStationName(newStations[0]), // Explicitly reset current station to first station
         trainNumber: normalizedKa.toUpperCase(),
         activeRoute: finalRouteData,
         isSyncing: true,
@@ -544,7 +579,11 @@ function App() {
                         availableDirections.length > 0
                           ? formatDirLabel(
                             availableDirections.find(
-                              (d) => `ka${d.num.toLowerCase()}` === activeKa.toLowerCase(),
+                              (d) => {
+                                const dNum = d.num.toLowerCase();
+                                const actKa = activeKa.toLowerCase().replace("ka", "");
+                                return dNum === actKa || actKa.startsWith(dNum);
+                              }
                             )?.label ?? activeKa,
                           )
                           : activeKa.toUpperCase()
@@ -566,7 +605,9 @@ function App() {
                       <button
                         key={dir.num}
                         onClick={() => handleChangeDirection(`ka${dir.num}`)}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}`
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${
+                          activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}` ||
+                          activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}b`
                           ? "bg-[#ee6f1f] text-white"
                           : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                           }`}
@@ -583,6 +624,20 @@ function App() {
               )}
             </div>
           )}
+          
+          <button
+            onClick={() => setIsAutoSync(!isAutoSync)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all active:scale-95 ${
+              isAutoSync 
+                ? "bg-green-500/20 border-green-500/50 text-green-100" 
+                : "bg-red-500/20 border-red-500/50 text-red-100"
+            }`}
+          >
+            <RefreshCcw size={18} className={isAutoSync ? "animate-spin-slow" : ""} />
+            <span className="text-xs font-bold uppercase tracking-widest">
+              {isAutoSync ? "Sync ON" : "Sync OFF"}
+            </span>
+          </button>
         </div>
 
         <div className="flex items-center gap-6">
@@ -844,6 +899,8 @@ function App() {
           handleLogout={handleLogout}
           isDark={isDark}
           setIsDark={setIsDark}
+          isAutoSync={isAutoSync}
+          setIsAutoSync={setIsAutoSync}
         />
 
         <SelectorToast toast={toastMsg} onClose={() => setToastMsg(null)} />
