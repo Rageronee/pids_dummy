@@ -5,7 +5,19 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "PROGO_BACK"
+        "name": "PROGO_BACK",
+        "available_directions": [
+          {
+            "num": "257B",
+            "label": "KA 257B (LEMPUYANGAN - PASARSENEN)",
+            "routeKey": "PROGO"
+          },
+          {
+            "num": "258B",
+            "label": "KA 258B (PASARSENEN - LEMPUYANGAN)",
+            "routeKey": "PROGO"
+          }
+        ]
       },
       "geometry": {
         "type": "LineString",

@@ -42,7 +42,7 @@ services:
       - "3001:3001"
     volumes:
       - ./runtime:/app/runtime
-      - ./public/geojson:/app/public/geojson
+      - ./packages/master-app/public/geojson:/app/public/geojson
 
   # Frontend Web
   web:

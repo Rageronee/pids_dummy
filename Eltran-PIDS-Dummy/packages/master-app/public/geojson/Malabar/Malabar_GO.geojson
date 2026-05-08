@@ -5,7 +5,29 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "MALABAR"
+        "name": "MALABAR",
+        "available_directions": [
+          {
+            "num": "67",
+            "label": "KA 67 (MALANG - BANDUNG)",
+            "routeKey": "MALABAR"
+          },
+          {
+            "num": "68",
+            "label": "KA 68 (BANDUNG - MALANG)",
+            "routeKey": "MALABAR"
+          },
+          {
+            "num": "69",
+            "label": "KA 69 (MALANG - BANDUNG)",
+            "routeKey": "MALABAR"
+          },
+          {
+            "num": "70",
+            "label": "KA 70 (BANDUNG - MALANG)",
+            "routeKey": "MALABAR"
+          }
+        ]
       },
       "geometry": {
         "type": "LineString",
