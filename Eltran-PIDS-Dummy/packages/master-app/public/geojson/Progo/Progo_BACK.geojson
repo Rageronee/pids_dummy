@@ -1,266 +1,34 @@
 {
   "type": "FeatureCollection",
-  "name": "PROGO_GO",
+  "name": "PROGO_BACK",
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "name": "PROGO"
+        "name": "PROGO_BACK"
       },
       "geometry": {
         "type": "LineString",
         "coordinates": [
           [
-            110.37556,
-            -7.790278
+            106.844444,
+            -6.174444
           ],
           [
-            110.36361,
-            -7.789167
+            106.844,
+            -6.174
           ],
           [
-            110.32528,
-            -7.788333
+            106.922,
+            -6.2050056
           ],
           [
-            110.29139,
-            -7.792778
-          ],
-          [
-            110.157776,
-            -7.859444
-          ],
-          [
-            110.11417,
-            -7.876111
-          ],
-          [
-            110.060555,
-            -7.888333
-          ],
-          [
-            109.98,
-            -7.895556
-          ],
-          [
-            109.90722,
-            -7.718333
-          ],
-          [
-            109.84,
-            -7.735
-          ],
-          [
-            109.8,
-            -7.73
-          ],
-          [
-            109.77,
-            -7.72
-          ],
-          [
-            109.7,
-            -7.7
-          ],
-          [
-            109.65389,
-            -7.678611
-          ],
-          [
-            109.64,
-            -7.77
-          ],
-          [
-            109.58,
-            -7.75
-          ],
-          [
-            109.51444,
-            -7.728889
-          ],
-          [
-            109.44,
-            -7.72
-          ],
-          [
-            109.40222,
-            -7.705556
-          ],
-          [
-            109.36444,
-            -7.690278
-          ],
-          [
-            109.3075,
-            -7.665278
-          ],
-          [
-            109.24611,
-            -7.633056
-          ],
-          [
-            109.27361,
-            -7.575556
-          ],
-          [
-            109.22389,
-            -7.525556
-          ],
-          [
-            109.21361,
-            -7.47
-          ],
-          [
-            109.22195,
-            -7.419167
-          ],
-          [
-            109.13,
-            -7.42
-          ],
-          [
-            109.15,
-            -7.3
-          ],
-          [
-            109.05,
-            -7.2
-          ],
-          [
-            109.01361,
-            -7.153611
-          ],
-          [
-            109.008,
-            -7.235
-          ],
-          [
-            108.98361,
-            -7.15
-          ],
-          [
-            108.989,
-            -7.125
-          ],
-          [
-            108.98361,
-            -7.02
-          ],
-          [
-            108.95,
-            -6.98
-          ],
-          [
-            108.884,
-            -6.938
-          ],
-          [
-            108.777,
-            -6.953
-          ],
-          [
-            108.583,
-            -6.815
-          ],
-          [
-            108.6,
-            -6.78
-          ],
-          [
-            108.55556,
-            -6.705556
-          ],
-          [
-            108.52,
-            -6.68
-          ],
-          [
-            108.48,
-            -6.65
-          ],
-          [
-            108.411,
-            -6.641
-          ],
-          [
-            108.35,
-            -6.55
-          ],
-          [
-            108.306,
-            -6.473
-          ],
-          [
-            108.28,
-            -6.45
-          ],
-          [
-            108.213,
-            -6.444
-          ],
-          [
-            108.18,
-            -6.43
-          ],
-          [
-            108.12,
-            -6.42
-          ],
-          [
-            107.953,
-            -6.471
-          ],
-          [
-            107.9,
-            -6.41
-          ],
-          [
-            107.843,
-            -6.406
-          ],
-          [
-            107.8,
-            -6.39
-          ],
-          [
-            107.6,
-            -6.35
-          ],
-          [
-            107.459,
-            -6.406
-          ],
-          [
-            107.4,
-            -6.38
-          ],
-          [
-            107.35,
-            -6.37
-          ],
-          [
-            107.32,
-            -6.36
-          ],
-          [
-            107.3,
-            -6.305
-          ],
-          [
-            107.25,
-            -6.28
-          ],
-          [
-            107.173,
-            -6.273
-          ],
-          [
-            107.145,
-            -6.255
+            106.87,
+            -6.215
           ],
           [
             107,
-            -6.236
+            -6.236111
           ],
           [
             106.864204,
@@ -268,23 +36,255 @@
           ],
           [
             107,
-            -6.236111
+            -6.236
           ],
           [
-            106.87,
-            -6.215
+            107.145,
+            -6.255
           ],
           [
-            106.922,
-            -6.2050056
+            107.173,
+            -6.273
           ],
           [
-            106.844,
-            -6.174
+            107.25,
+            -6.28
           ],
           [
-            106.844444,
-            -6.174444
+            107.3,
+            -6.305
+          ],
+          [
+            107.32,
+            -6.36
+          ],
+          [
+            107.35,
+            -6.37
+          ],
+          [
+            107.4,
+            -6.38
+          ],
+          [
+            107.459,
+            -6.406
+          ],
+          [
+            107.6,
+            -6.35
+          ],
+          [
+            107.8,
+            -6.39
+          ],
+          [
+            107.843,
+            -6.406
+          ],
+          [
+            107.9,
+            -6.41
+          ],
+          [
+            107.953,
+            -6.471
+          ],
+          [
+            108.12,
+            -6.42
+          ],
+          [
+            108.18,
+            -6.43
+          ],
+          [
+            108.213,
+            -6.444
+          ],
+          [
+            108.28,
+            -6.45
+          ],
+          [
+            108.306,
+            -6.473
+          ],
+          [
+            108.35,
+            -6.55
+          ],
+          [
+            108.411,
+            -6.641
+          ],
+          [
+            108.48,
+            -6.65
+          ],
+          [
+            108.52,
+            -6.68
+          ],
+          [
+            108.55556,
+            -6.705556
+          ],
+          [
+            108.6,
+            -6.78
+          ],
+          [
+            108.583,
+            -6.815
+          ],
+          [
+            108.777,
+            -6.953
+          ],
+          [
+            108.884,
+            -6.938
+          ],
+          [
+            108.95,
+            -6.98
+          ],
+          [
+            108.98361,
+            -7.02
+          ],
+          [
+            108.989,
+            -7.125
+          ],
+          [
+            108.98361,
+            -7.15
+          ],
+          [
+            109.008,
+            -7.235
+          ],
+          [
+            109.01361,
+            -7.153611
+          ],
+          [
+            109.05,
+            -7.2
+          ],
+          [
+            109.15,
+            -7.3
+          ],
+          [
+            109.13,
+            -7.42
+          ],
+          [
+            109.22195,
+            -7.419167
+          ],
+          [
+            109.21361,
+            -7.47
+          ],
+          [
+            109.22389,
+            -7.525556
+          ],
+          [
+            109.27361,
+            -7.575556
+          ],
+          [
+            109.24611,
+            -7.633056
+          ],
+          [
+            109.3075,
+            -7.665278
+          ],
+          [
+            109.36444,
+            -7.690278
+          ],
+          [
+            109.40222,
+            -7.705556
+          ],
+          [
+            109.44,
+            -7.72
+          ],
+          [
+            109.51444,
+            -7.728889
+          ],
+          [
+            109.58,
+            -7.75
+          ],
+          [
+            109.64,
+            -7.77
+          ],
+          [
+            109.65389,
+            -7.678611
+          ],
+          [
+            109.7,
+            -7.7
+          ],
+          [
+            109.77,
+            -7.72
+          ],
+          [
+            109.8,
+            -7.73
+          ],
+          [
+            109.84,
+            -7.735
+          ],
+          [
+            109.90722,
+            -7.718333
+          ],
+          [
+            109.98,
+            -7.895556
+          ],
+          [
+            110.060555,
+            -7.888333
+          ],
+          [
+            110.11417,
+            -7.876111
+          ],
+          [
+            110.157776,
+            -7.859444
+          ],
+          [
+            110.29139,
+            -7.792778
+          ],
+          [
+            110.32528,
+            -7.788333
+          ],
+          [
+            110.36361,
+            -7.789167
+          ],
+          [
+            110.37556,
+            -7.790278
           ]
         ]
       }
@@ -292,1292 +292,17 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Lempuyangan",
+        "name": "Pasar Senen",
         "stop_status": "STOP",
         "notes": "",
-        "schedule_ka257B": "13:10:00",
-        "schedule_ka258B": "06:40:00"
+        "schedule_ka257B": "20:46:00",
+        "schedule_ka258B": "23:20:00"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          110.37556,
-          -7.790278
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Yogyakarta",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:14:00",
-        "schedule_ka258B": "06:35:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.36361,
-          -7.789167
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Patukan",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:19:00",
-        "schedule_ka258B": "06:30:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.32528,
-          -7.788333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Rewulu",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:23:00",
-        "schedule_ka258B": "06:26:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.29139,
-          -7.792778
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Sentolo",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:30:00",
-        "schedule_ka258B": "06:19:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.22056,
-          -7.828056
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Wates",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:39:00",
-        "schedule_ka258B": "06:07:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.157776,
-          -7.859444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kedundang",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:47:00",
-        "schedule_ka258B": "06:01:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.11417,
-          -7.876111
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Wojo",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:52:00",
-        "schedule_ka258B": "05:56:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          110.060555,
-          -7.888333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Jenar",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "13:58:00",
-        "schedule_ka258B": "05:50:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.98,
-          -7.895556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kutoarjo",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:09:00",
-        "schedule_ka258B": "05:37:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.90722,
-          -7.718333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Butuh",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:19:00",
-        "schedule_ka258B": "05:32:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.84,
-          -7.735
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Prembun",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:24:00",
-        "schedule_ka258B": "05:28:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.8,
-          -7.73
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kutowinangun",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:30:00",
-        "schedule_ka258B": "05:20:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.77,
-          -7.72
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Wonosari",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:36:00",
-        "schedule_ka258B": "05:16:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.7,
-          -7.7
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kebumen",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:41:00",
-        "schedule_ka258B": "05:09:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.65389,
-          -7.678611
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Sruweng",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:51:00",
-        "schedule_ka258B": "05:02:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.64,
-          -7.77
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Karanganyar",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "14:55:00",
-        "schedule_ka258B": "04:59:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.58,
-          -7.75
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Gombong",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:05:00",
-        "schedule_ka258B": "04:51:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.51444,
-          -7.728889
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Ijo",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:14:00",
-        "schedule_ka258B": "04:44:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.44,
-          -7.72
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Tambak",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:17:00",
-        "schedule_ka258B": "04:41:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.40222,
-          -7.705556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Sumpiuh",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:21:00",
-        "schedule_ka258B": "04:38:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.36444,
-          -7.690278
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kemranjen",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:24:00",
-        "schedule_ka258B": "04:35:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.3075,
-          -7.665278
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kroya",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:31:00",
-        "schedule_ka258B": "04:27:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.24611,
-          -7.633056
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Randegan",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:41:00",
-        "schedule_ka258B": "04:20:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.27361,
-          -7.575556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kebasen",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:44:00",
-        "schedule_ka258B": "04:17:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.22389,
-          -7.525556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Notog",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:49:00",
-        "schedule_ka258B": "04:12:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.21361,
-          -7.47
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Purwokerto",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "15:58:00",
-        "schedule_ka258B": "03:59:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.22195,
-          -7.419167
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Karanggandul",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "16:12:00",
-        "schedule_ka258B": "03:51:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.13,
-          -7.42
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Karangsari (Banyumas)",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "16:21:00",
-        "schedule_ka258B": "03:43:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.15,
-          -7.3
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Legok",
-        "stop_status": "PASS",
-        "notes": "",
-        "schedule_ka257B": "",
-        "schedule_ka258B": ""
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.09999,
-          -7.250003
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Patuguran",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "16:32:00",
-        "schedule_ka258B": "03:32:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.05,
-          -7.2
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kretek",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "16:39:00",
-        "schedule_ka258B": "03:26:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.01361,
-          -7.153611
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Bumiayu",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "16:46:00",
-        "schedule_ka258B": "03:19:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          109.008,
-          -7.235
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Linggapura",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "16:53:00",
-        "schedule_ka258B": "03:11:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.98361,
-          -7.15
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Prupuk",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:04:00",
-        "schedule_ka258B": "02:57:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.989,
-          -7.125
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Songgom",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:14:00",
-        "schedule_ka258B": "02:49:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.98361,
-          -7.02
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Larangan (Brebes)",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:18:00",
-        "schedule_ka258B": "02:45:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.95,
-          -6.98
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Ketanggungan",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:25:00",
-        "schedule_ka258B": "02:36:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.884,
-          -6.938
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Ciledug",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:38:00",
-        "schedule_ka258B": "02:25:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.777,
-          -6.953
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Sindanglaut",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:47:30",
-        "schedule_ka258B": "02:15:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.583,
-          -6.815
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Luwung",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:52:00",
-        "schedule_ka258B": "02:11:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.6,
-          -6.78
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cirebon Prujakan",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "17:58:00",
-        "schedule_ka258B": "02:00:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.55556,
-          -6.705556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cirebon",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:06:00",
-        "schedule_ka258B": "01:56:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.55556,
-          -6.705556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cangkring",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:11:00",
-        "schedule_ka258B": "01:51:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.52,
-          -6.68
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Bangoduwa",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:14:00",
-        "schedule_ka258B": "01:47:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.48,
-          -6.65
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Arjawinangun",
-        "stop_status": "STOP",
-        "notes": "// KA 2509 (KA 2509 =)",
-        "schedule_ka257B": "18:18:00",
-        "schedule_ka258B": "01:43:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.411,
-          -6.641
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kertasemaya",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:27:00",
-        "schedule_ka258B": "01:34:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.35,
-          -6.55
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Jatibarang",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:32:00",
-        "schedule_ka258B": "01:29:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.306,
-          -6.473
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Telagasari",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:38:00",
-        "schedule_ka258B": "01:23:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.28,
-          -6.45
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Terisi",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:43:00",
-        "schedule_ka258B": "01:18:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.213,
-          -6.444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kadokangabus",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:47:00",
-        "schedule_ka258B": "01:14:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.18,
-          -6.43
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cilegeh",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "18:52:00",
-        "schedule_ka258B": "01:10:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          108.12,
-          -6.42
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Haurgeulis",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:00:00",
-        "schedule_ka258B": "01:01:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.953,
-          -6.471
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cipunegara",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:07:00",
-        "schedule_ka258B": "00:55:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.9,
-          -6.41
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Pegaden Baru",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:12:00",
-        "schedule_ka258B": "00:51:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.843,
-          -6.406
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cikaum",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:17:30",
-        "schedule_ka258B": "00:45:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.8,
-          -6.39
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Pasirbungur",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:21:00",
-        "schedule_ka258B": "00:42:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.75,
-          -6.38
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Pringkasap",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:24:30",
-        "schedule_ka258B": "00:38:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.7,
-          -6.37
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Pabuaran",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:28:00",
-        "schedule_ka258B": "00:35:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.65,
-          -6.36
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Tanjungrasa",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:31:00",
-        "schedule_ka258B": "00:31:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.6,
-          -6.35
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cikampek",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:38:00",
-        "schedule_ka258B": "00:25:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.459,
-          -6.406
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Dawuan",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:41:00",
-        "schedule_ka258B": "00:22:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.4,
-          -6.38
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kosambi",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:45:30",
-        "schedule_ka258B": "00:18:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.35,
-          -6.37
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Klari",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:48:00",
-        "schedule_ka258B": "00:15:30"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.32,
-          -6.36
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Karawang",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:52:30",
-        "schedule_ka258B": "00:11:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.3,
-          -6.305
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kedunggedeh",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "19:56:30",
-        "schedule_ka258B": "00:07:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.25,
-          -6.28
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Lemahabang",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "20:02:30",
-        "schedule_ka258B": "00:01:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.173,
-          -6.273
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cikarang",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "20:06:00",
-        "schedule_ka258B": "23:58:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.145,
-          -6.255
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Metland Telaga Murni",
-        "stop_status": "PASS",
-        "notes": "",
-        "schedule_ka257B": "",
-        "schedule_ka258B": ""
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.116,
-          -6.251203
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Cibitung",
-        "stop_status": "PASS",
-        "notes": "",
-        "schedule_ka257B": "",
-        "schedule_ka258B": ""
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107.0725,
-          -6.245505
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Tambun",
-        "stop_status": "STOP",
-        "notes": "// PLB 5179B (PLB 5179B =)",
-        "schedule_ka257B": "20:14:00",
-        "schedule_ka258B": "23:51:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107,
-          -6.236
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Bekasi Timur",
-        "stop_status": "PASS",
-        "notes": "",
-        "schedule_ka257B": "",
-        "schedule_ka258B": ""
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          106.864204,
-          -6.182033
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Bekasi",
-        "stop_status": "STOP",
-        "notes": "",
-        "schedule_ka257B": "20:20:00",
-        "schedule_ka258B": "23:43:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          107,
-          -6.236111
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Jatinegara",
-        "stop_status": "STOP",
-        "notes": "PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
-        "schedule_ka257B": "20:34:00",
-        "schedule_ka258B": "23:30:00"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          106.87,
-          -6.215
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Pondok Jati",
-        "stop_status": "PASS",
-        "notes": "",
-        "schedule_ka257B": "",
-        "schedule_ka258B": ""
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          106.922,
-          -6.2050056
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Kramat",
-        "stop_status": "PASS",
-        "notes": "",
-        "schedule_ka257B": "",
-        "schedule_ka258B": ""
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          106.844,
-          -6.174
+          106.844444,
+          -6.174444
         ]
       }
     },
@@ -1601,17 +326,1292 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Pasar Senen",
-        "stop_status": "STOP",
+        "name": "Kramat",
+        "stop_status": "PASS",
         "notes": "",
-        "schedule_ka257B": "20:46:00",
-        "schedule_ka258B": "23:20:00"
+        "schedule_ka257B": "",
+        "schedule_ka258B": ""
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          106.844444,
-          -6.174444
+          106.844,
+          -6.174
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pondok Jati",
+        "stop_status": "PASS",
+        "notes": "",
+        "schedule_ka257B": "",
+        "schedule_ka258B": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.922,
+          -6.2050056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jatinegara",
+        "stop_status": "STOP",
+        "notes": "PPKA JNG TAHAN KA 6073 DI STA NYA BERANGKATKAN SETELAH PLB 257B MASUK DUA PETAK BLOK MUKA NYA",
+        "schedule_ka257B": "20:34:00",
+        "schedule_ka258B": "23:30:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.87,
+          -6.215
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bekasi",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "20:20:00",
+        "schedule_ka258B": "23:43:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107,
+          -6.236111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bekasi Timur",
+        "stop_status": "PASS",
+        "notes": "",
+        "schedule_ka257B": "",
+        "schedule_ka258B": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.864204,
+          -6.182033
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tambun",
+        "stop_status": "STOP",
+        "notes": "// PLB 5179B (PLB 5179B =)",
+        "schedule_ka257B": "20:14:00",
+        "schedule_ka258B": "23:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107,
+          -6.236
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cibitung",
+        "stop_status": "PASS",
+        "notes": "",
+        "schedule_ka257B": "",
+        "schedule_ka258B": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.0725,
+          -6.245505
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Metland Telaga Murni",
+        "stop_status": "PASS",
+        "notes": "",
+        "schedule_ka257B": "",
+        "schedule_ka258B": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.116,
+          -6.251203
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikarang",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "20:06:00",
+        "schedule_ka258B": "23:58:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.145,
+          -6.255
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lemahabang",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "20:02:30",
+        "schedule_ka258B": "00:01:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.173,
+          -6.273
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedunggedeh",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:56:30",
+        "schedule_ka258B": "00:07:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.25,
+          -6.28
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karawang",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:52:30",
+        "schedule_ka258B": "00:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.3,
+          -6.305
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Klari",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:48:00",
+        "schedule_ka258B": "00:15:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.32,
+          -6.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kosambi",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:45:30",
+        "schedule_ka258B": "00:18:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.35,
+          -6.37
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dawuan",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:41:00",
+        "schedule_ka258B": "00:22:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.4,
+          -6.38
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikampek",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:38:00",
+        "schedule_ka258B": "00:25:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.459,
+          -6.406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tanjungrasa",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:31:00",
+        "schedule_ka258B": "00:31:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.6,
+          -6.35
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pabuaran",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:28:00",
+        "schedule_ka258B": "00:35:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.65,
+          -6.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pringkasap",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:24:30",
+        "schedule_ka258B": "00:38:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.7,
+          -6.37
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pasirbungur",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:21:00",
+        "schedule_ka258B": "00:42:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.75,
+          -6.38
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cikaum",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:17:30",
+        "schedule_ka258B": "00:45:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.8,
+          -6.39
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pegaden Baru",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:12:00",
+        "schedule_ka258B": "00:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.843,
+          -6.406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cipunegara",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:07:00",
+        "schedule_ka258B": "00:55:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.9,
+          -6.41
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Haurgeulis",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "19:00:00",
+        "schedule_ka258B": "01:01:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.953,
+          -6.471
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cilegeh",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:52:00",
+        "schedule_ka258B": "01:10:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.12,
+          -6.42
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kadokangabus",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:47:00",
+        "schedule_ka258B": "01:14:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.18,
+          -6.43
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terisi",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:43:00",
+        "schedule_ka258B": "01:18:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.213,
+          -6.444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Telagasari",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:38:00",
+        "schedule_ka258B": "01:23:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.28,
+          -6.45
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jatibarang",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:32:00",
+        "schedule_ka258B": "01:29:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.306,
+          -6.473
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kertasemaya",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:27:00",
+        "schedule_ka258B": "01:34:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.35,
+          -6.55
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Arjawinangun",
+        "stop_status": "STOP",
+        "notes": "// KA 2509 (KA 2509 =)",
+        "schedule_ka257B": "18:18:00",
+        "schedule_ka258B": "01:43:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.411,
+          -6.641
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bangoduwa",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:14:00",
+        "schedule_ka258B": "01:47:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.48,
+          -6.65
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cangkring",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:11:00",
+        "schedule_ka258B": "01:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.52,
+          -6.68
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cirebon",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "18:06:00",
+        "schedule_ka258B": "01:56:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.55556,
+          -6.705556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cirebon Prujakan",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:58:00",
+        "schedule_ka258B": "02:00:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.55556,
+          -6.705556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Luwung",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:52:00",
+        "schedule_ka258B": "02:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.6,
+          -6.78
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sindanglaut",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:47:30",
+        "schedule_ka258B": "02:15:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.583,
+          -6.815
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ciledug",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:38:00",
+        "schedule_ka258B": "02:25:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.777,
+          -6.953
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ketanggungan",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:25:00",
+        "schedule_ka258B": "02:36:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.884,
+          -6.938
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Larangan (Brebes)",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:18:00",
+        "schedule_ka258B": "02:45:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.95,
+          -6.98
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Songgom",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:14:00",
+        "schedule_ka258B": "02:49:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.98361,
+          -7.02
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Prupuk",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "17:04:00",
+        "schedule_ka258B": "02:57:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.989,
+          -7.125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Linggapura",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "16:53:00",
+        "schedule_ka258B": "03:11:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.98361,
+          -7.15
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bumiayu",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "16:46:00",
+        "schedule_ka258B": "03:19:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.008,
+          -7.235
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kretek",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "16:39:00",
+        "schedule_ka258B": "03:26:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.01361,
+          -7.153611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Patuguran",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "16:32:00",
+        "schedule_ka258B": "03:32:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.05,
+          -7.2
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Legok",
+        "stop_status": "PASS",
+        "notes": "",
+        "schedule_ka257B": "",
+        "schedule_ka258B": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.09999,
+          -7.250003
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karangsari (Banyumas)",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "16:21:00",
+        "schedule_ka258B": "03:43:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.15,
+          -7.3
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karanggandul",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "16:12:00",
+        "schedule_ka258B": "03:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.13,
+          -7.42
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Purwokerto",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:58:00",
+        "schedule_ka258B": "03:59:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.22195,
+          -7.419167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Notog",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:49:00",
+        "schedule_ka258B": "04:12:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.21361,
+          -7.47
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebasen",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:44:00",
+        "schedule_ka258B": "04:17:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.22389,
+          -7.525556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Randegan",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:41:00",
+        "schedule_ka258B": "04:20:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.27361,
+          -7.575556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kroya",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:31:00",
+        "schedule_ka258B": "04:27:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.24611,
+          -7.633056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kemranjen",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:24:00",
+        "schedule_ka258B": "04:35:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.3075,
+          -7.665278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumpiuh",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:21:00",
+        "schedule_ka258B": "04:38:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.36444,
+          -7.690278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tambak",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:17:00",
+        "schedule_ka258B": "04:41:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.40222,
+          -7.705556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ijo",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:14:00",
+        "schedule_ka258B": "04:44:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.44,
+          -7.72
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gombong",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "15:05:00",
+        "schedule_ka258B": "04:51:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.51444,
+          -7.728889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Karanganyar",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:55:00",
+        "schedule_ka258B": "04:59:30"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.58,
+          -7.75
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sruweng",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:51:00",
+        "schedule_ka258B": "05:02:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.64,
+          -7.77
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kebumen",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:41:00",
+        "schedule_ka258B": "05:09:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.65389,
+          -7.678611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wonosari",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:36:00",
+        "schedule_ka258B": "05:16:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.7,
+          -7.7
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kutowinangun",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:30:00",
+        "schedule_ka258B": "05:20:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.77,
+          -7.72
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Prembun",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:24:00",
+        "schedule_ka258B": "05:28:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.8,
+          -7.73
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Butuh",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:19:00",
+        "schedule_ka258B": "05:32:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.84,
+          -7.735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kutoarjo",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "14:09:00",
+        "schedule_ka258B": "05:37:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.90722,
+          -7.718333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jenar",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:58:00",
+        "schedule_ka258B": "05:50:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.98,
+          -7.895556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wojo",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:52:00",
+        "schedule_ka258B": "05:56:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.060555,
+          -7.888333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kedundang",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:47:00",
+        "schedule_ka258B": "06:01:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.11417,
+          -7.876111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wates",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:39:00",
+        "schedule_ka258B": "06:07:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.157776,
+          -7.859444
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sentolo",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:30:00",
+        "schedule_ka258B": "06:19:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.22056,
+          -7.828056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rewulu",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:23:00",
+        "schedule_ka258B": "06:26:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.29139,
+          -7.792778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Patukan",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:19:00",
+        "schedule_ka258B": "06:30:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.32528,
+          -7.788333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Yogyakarta",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:14:00",
+        "schedule_ka258B": "06:35:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.36361,
+          -7.789167
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lempuyangan",
+        "stop_status": "STOP",
+        "notes": "",
+        "schedule_ka257B": "13:10:00",
+        "schedule_ka258B": "06:40:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.37556,
+          -7.790278
         ]
       }
     }
