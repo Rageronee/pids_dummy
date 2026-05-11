@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Database
   db:
@@ -14,6 +12,11 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis for state/cache
   redis:
@@ -22,6 +25,11 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Backend API
   api:
@@ -31,8 +39,10 @@ services:
     container_name: pids-api
     restart: always
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://postgres:eltran123@db:5432/eltran_pids
       - REDIS_URL=redis://redis:6379
