@@ -1,5 +1,5 @@
 services:
-  # Database
+  # Database (Unified)
   db:
     image: postgres:15-alpine
     container_name: pids-db
@@ -9,14 +9,14 @@ services:
       - POSTGRES_PASSWORD=eltran123
       - POSTGRES_DB=eltran_pids
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # Redis for state/cache
   redis:
@@ -30,6 +30,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Database Management (Added from root)
+  adminer:
+    image: adminer
+    container_name: pids-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
 
   # Backend API
   api:
