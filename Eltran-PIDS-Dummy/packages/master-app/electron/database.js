@@ -108,48 +108,48 @@ function mergeAndOptimizeGeoJSON(geojsonText, masterStations, allSchedules = [])
       geojson.features = geojson.features.filter(f => {
         const name = String(f.properties?.name || "").trim();
         // Ignore technical notes, comments, and non-station markers
-        return !name.startsWith("Note:") && 
-               !name.startsWith("//") && 
-               !name.includes("=") && 
-               !name.toLowerCase().includes("ka6080b") &&
-               name.length > 0;
+        return !name.startsWith("Note:") &&
+          !name.startsWith("//") &&
+          !name.includes("=") &&
+          !name.toLowerCase().includes("ka6080b") &&
+          name.length > 0;
       }).map((f) => {
-          f.geometry.coordinates = f.geometry.coordinates.map(coord => {
-            const key = JSON.stringify(coord);
-            if (coordFixMap.has(key)) return coordFixMap.get(key);
-            return coord;
-          });
-
-          // Inject routeKey into available_directions for better selector app handling
-          if (f.properties && f.properties.available_directions) {
-            f.properties.available_directions = f.properties.available_directions.map(dir => {
-              const num = dir.num.toUpperCase();
-              let routeKey = "";
-              
-              const sched = allSchedules.find(s => {
-                const sNum = s.trainNumber.toUpperCase().replace(/\s+/g, "");
-                const dNum = num.toUpperCase().replace(/\s+/g, "");
-                return sNum === dNum || sNum === `${dNum}B` || dNum === `${sNum}B`;
-              });
-              
-              if (sched) {
-                routeKey = sched.routeName;
-              } else {
-                // Precise fallback for Malabar and Progo
-                if (num.match(/^(67|69)$/)) routeKey = "MALABAR_GO";
-                if (num.match(/^(68|70)$/)) routeKey = "MALABAR_BACK";
-                if (num.match(/^(257|257B)$/i)) routeKey = "PROGO_GO";
-                if (num.match(/^(258|258B)$/i)) routeKey = "PROGO_BACK";
-              }
-              
-              if (routeKey) {
-                return { ...dir, routeKey };
-              }
-              return dir;
-            });
-          }
-          return f;
+        f.geometry.coordinates = f.geometry.coordinates.map(coord => {
+          const key = JSON.stringify(coord);
+          if (coordFixMap.has(key)) return coordFixMap.get(key);
+          return coord;
         });
+
+        if (f.properties && f.properties.available_directions) {
+          f.properties.available_directions = f.properties.available_directions.map(dir => {
+            const num = dir.num.toUpperCase();
+            let routeKey = "";
+
+            const sched = allSchedules.find(s => {
+              const sNum = s.trainNumber.toUpperCase().replace(/\s+/g, "");
+              const dNum = num.toUpperCase().replace(/\s+/g, "");
+              return sNum === dNum || 
+                     sNum === `${dNum}B` || 
+                     dNum === `${sNum}B` || 
+                     dNum.includes(sNum) || 
+                     sNum.includes(dNum) ||
+                     (dNum.split("-").length === 2 && 
+                      parseInt(sNum) >= parseInt(dNum.split("-")[0]) && 
+                      parseInt(sNum) <= parseInt(dNum.split("-")[1]));
+            });
+
+            if (sched) {
+              routeKey = sched.routeName;
+            }
+
+            if (routeKey) {
+              return { ...dir, routeKey };
+            }
+            return dir;
+          });
+        }
+        return f;
+      });
     }
     return JSON.stringify(geojson);
   } catch (e) {
@@ -818,6 +818,62 @@ export async function seedData() {
     const seedData = JSON.parse(fs.readFileSync(seedDataPath, "utf8"));
     const masterStations = seedData.stations;
 
+    const geojsonFiles = [
+      path.join(__dirname, "..", "public", "geojson", "Argo_Parahyangan", "Argo_Parahyangan.geojson"),
+      path.join(__dirname, "..", "public", "geojson", "Malabar", "Malabar.geojson"),
+      path.join(__dirname, "..", "public", "geojson", "Progo", "Progo.geojson")
+    ];
+
+    const geojsonCoords = {};
+    for (const file of geojsonFiles) {
+      if (fs.existsSync(file)) {
+        try {
+          const geojsonData = JSON.parse(fs.readFileSync(file, "utf8"));
+          if (geojsonData && geojsonData.features) {
+            for (const feature of geojsonData.features) {
+              if (feature.geometry && feature.geometry.type === "Point" && feature.properties && feature.properties.name) {
+                const key = normalizeName(feature.properties.name);
+                const coords = feature.geometry.coordinates;
+                if (coords && coords.length >= 2) {
+                  geojsonCoords[key] = {
+                    lat: coords[1],
+                    lng: coords[0]
+                  };
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("[PIDS-DB] Error reading GeoJSON:", err.message);
+        }
+      }
+    }
+
+    const staticCoords = {
+      [normalizeName("Pakisaji")]: { lat: -8.066068, lng: 112.597711 },
+      [normalizeName("Ngebruk")]: { lat: -8.148111, lng: 112.511211 },
+      [normalizeName("Sumberpucung")]: { lat: -8.156689, lng: 112.483133 },
+      [normalizeName("Pogajih")]: { lat: -8.155319, lng: 112.385831 },
+      [normalizeName("Kesamben")]: { lat: -8.136872, lng: 112.348633 },
+      [normalizeName("Wlingi")]: { lat: -8.089886, lng: 112.321306 },
+      [normalizeName("Talun")]: { lat: -8.092497, lng: 112.285819 },
+      [normalizeName("Garum")]: { lat: -8.079450, lng: 112.189556 },
+      [normalizeName("Rejotangan")]: { lat: -8.123611, lng: 112.046944 }
+    };
+
+    for (const s of masterStations) {
+      const key = normalizeName(s.name);
+      if (s.lat === 0 && s.lng === 0) {
+        if (geojsonCoords[key]) {
+          s.lat = geojsonCoords[key].lat;
+          s.lng = geojsonCoords[key].lng;
+        } else if (staticCoords[key]) {
+          s.lat = staticCoords[key].lat;
+          s.lng = staticCoords[key].lng;
+        }
+      }
+    }
+
     await query("INSERT INTO divisions (name, code) VALUES ('Java Division', 'JAVA'), ('Sumatra Division', 'SUMA') ON CONFLICT DO NOTHING");
     const javaDiv = await getOne("SELECT id FROM divisions WHERE code = 'JAVA'");
     const sumaDiv = await getOne("SELECT id FROM divisions WHERE code = 'SUMA'");
@@ -924,49 +980,73 @@ export async function seedData() {
       console.log(`[PIDS-DB] ✓ Route ${routeDef.name}: ${routeDef.stations.length} stops`);
     }
     try {
-      const { readFileSync, existsSync } = await import("fs");
+      const { readFileSync, existsSync, readdirSync } = await import("fs");
       const { join, dirname } = await import("path");
       const { fileURLToPath } = await import("url");
       const __dir = dirname(fileURLToPath(import.meta.url));
 
-      const geojsonMap = {
-        MALABAR_GO: join(__dir, "..", "public", "geojson", "Malabar", "Malabar.geojson"),
-        MALABAR_BACK: join(__dir, "..", "public", "geojson", "Malabar", "Malabar.geojson"),
-        PROGO_GO: join(__dir, "..", "public", "geojson", "Progo", "Progo.geojson"),
-        PROGO_BACK: join(__dir, "..", "public", "geojson", "Progo", "Progo.geojson"),
-      };
-
-      for (const [trainName, filePath] of Object.entries(geojsonMap)) {
-        if (!existsSync(filePath)) {
-          console.warn(`[PIDS-DB] GeoJSON not found: ${filePath}`);
-          continue;
+      const routesList = await getAll("SELECT r.id, r.name, ts.name as service_name FROM routes r JOIN train_services ts ON r.train_service_id = ts.id");
+      for (const r of routesList) {
+        const folderName = r.service_name.replace(/\s+/g, "_");
+        const possibleFolders = [
+          folderName,
+          folderName.toLowerCase(),
+          folderName.toUpperCase(),
+          folderName.charAt(0).toUpperCase() + folderName.slice(1).toLowerCase()
+        ];
+        
+        let filePath = "";
+        for (const fld of possibleFolders) {
+          const checkPath = join(__dir, "..", "public", "geojson", fld, `${fld}.geojson`);
+          if (existsSync(checkPath)) {
+            filePath = checkPath;
+            break;
+          }
         }
-        const geojsonText = readFileSync(filePath, "utf-8");
-        const route = await getOne(
-          "SELECT id FROM routes WHERE name = $1",
-          [trainName],
-        );
-        if (!route) continue;
-        const optimizedGeoJSON = mergeAndOptimizeGeoJSON(
-          geojsonText,
-          masterStations,
-          seedData.schedules
-        );
+        
+        if (!filePath) {
+          const parentDir = join(__dir, "..", "public", "geojson");
+          if (existsSync(parentDir)) {
+            const dirs = readdirSync(parentDir);
+            const matchedDir = dirs.find(d => d.toLowerCase() === folderName.toLowerCase());
+            if (matchedDir) {
+              const checkPath = join(parentDir, matchedDir, `${matchedDir}.geojson`);
+              if (existsSync(checkPath)) {
+                filePath = checkPath;
+              }
+            }
+          }
+        }
 
-        await query(
-          "UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3",
-          [optimizedGeoJSON, filePath.split(/[\\/]/).pop(), route.id],
-        );
-        console.log(
-          `[PIDS-DB] ✓ Optimized GeoJSON attached for ${trainName} (${optimizedGeoJSON.length} bytes)`,
-        );
+        if (filePath && existsSync(filePath)) {
+          const geojsonText = readFileSync(filePath, "utf-8");
+          const optimizedGeoJSON = mergeAndOptimizeGeoJSON(
+            geojsonText,
+            masterStations,
+            seedData.schedules
+          );
+
+          await query(
+            "UPDATE routes SET geojson = $1, geojson_filename = $2 WHERE id = $3",
+            [optimizedGeoJSON, filePath.split(/[\\/]/).pop(), r.id],
+          );
+          console.log(
+            `[PIDS-DB] ✓ Optimized GeoJSON attached for ${r.name} (${optimizedGeoJSON.length} bytes)`,
+          );
+        } else {
+          console.warn(`[PIDS-DB] GeoJSON not found for route: ${r.name}`);
+        }
       }
     } catch (e) {
       console.warn("[PIDS-DB] GeoJSON auto-attach skipped:", e.message);
     }
     const today = new Date().toISOString().split("T")[0];
+    await query("DELETE FROM schedules WHERE service_name = 'PROGO' AND id IN (SELECT schedule_id FROM schedule_stops GROUP BY schedule_id HAVING COUNT(*) > 30)");
 
     for (const schedDef of seedData.schedules) {
+      if (schedDef.serviceName === "PROGO" && schedDef.stops.length > 30) {
+        continue;
+      }
       const route = await getOne("SELECT id FROM routes WHERE name = $1", [schedDef.routeName]);
       if (!route) {
         console.warn(`[PIDS-DB] Route not found for schedule: ${schedDef.routeName}`);

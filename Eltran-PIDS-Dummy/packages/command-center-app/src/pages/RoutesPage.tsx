@@ -1,6 +1,4 @@
-/** /command-center-app/src/pages/RoutesPage.tsx — untuk mengubah: komponen PIDS; fungsi utama: RoutesPage */
-
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -35,6 +33,33 @@ interface Route {
   direction?: string;
 }
 
+const getTrainNumbersForService = (serviceName: string) => {
+  const name = serviceName.toUpperCase();
+  if (name.includes("MALABAR")) {
+    return [
+      { num: "67", dir: "GO" },
+      { num: "68", dir: "BACK" },
+      { num: "69", dir: "GO" },
+      { num: "70", dir: "BACK" }
+    ];
+  } else if (name.includes("PROGO")) {
+    return [
+      { num: "257B", dir: "GO" },
+      { num: "258B", dir: "BACK" }
+    ];
+  } else if (name.includes("PARAHYANGAN") || name.includes("ARGO")) {
+    return [
+      { num: "39", dir: "GO" },
+      { num: "40", dir: "BACK" }
+    ];
+  } else {
+    return [
+      { num: "GO", dir: "GO" },
+      { num: "BACK", dir: "BACK" }
+    ];
+  }
+};
+
 export default function RoutesPage({
   token,
   setHeader,
@@ -50,6 +75,19 @@ export default function RoutesPage({
   const [showForm, setShowForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All Routes");
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const [selectedDirection, setSelectedDirection] = useState("GO");
+  const [selectedKaNum, setSelectedKaNum] = useState<string | null>(null);
+
+  const activeKaNum = useMemo(() => {
+    if (!selectedRouteId) return null;
+    const kas = getTrainNumbersForService(selectedRouteId);
+    const matched = kas.find(k => k.num === selectedKaNum && k.dir === selectedDirection);
+    if (matched) return matched.num;
+    const firstMatchingDir = kas.find(k => k.dir === selectedDirection);
+    return firstMatchingDir ? firstMatchingDir.num : (kas[0]?.num || null);
+  }, [selectedRouteId, selectedDirection, selectedKaNum]);
+
+  const [formDirection, setFormDirection] = useState("GO");
   const [searchQuery, setSearchQuery] = useState("");
   const [newRouteName, setNewRouteName] = useState("");
   const [selectedStations, setSelectedStations] = useState<
@@ -71,6 +109,28 @@ export default function RoutesPage({
   const stationsListRef = useRef<HTMLDivElement>(null);
   const { data } = usePidsData();
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
+
+  interface UnifiedRoute {
+    train_name: string;
+    train_class?: string;
+    directions: Record<string, Route>;
+  }
+
+  const unifiedRoutes = useMemo(() => {
+    return Object.values(routes).reduce<Record<string, UnifiedRoute>>((acc, r) => {
+      const baseName = r.train_name || r.name.replace(/_(GO|BACK)$/i, "");
+      if (!acc[baseName]) {
+        acc[baseName] = {
+          train_name: baseName,
+          train_class: r.train_class || "Intercity",
+          directions: {},
+        };
+      }
+      const dirKey = r.direction || (r.name.endsWith("_BACK") ? "BACK" : "GO");
+      acc[baseName].directions[dirKey] = r;
+      return acc;
+    }, {});
+  }, [routes]);
 
   useEffect(() => {
     setHasAutoScrolled(false);
@@ -94,6 +154,14 @@ export default function RoutesPage({
     }
   }, [selectedRouteId, hasAutoScrolled, handleRefocus]);
 
+  useEffect(() => {
+    if (selectedRouteId && unifiedRoutes[selectedRouteId]) {
+      const dirs = Object.keys(unifiedRoutes[selectedRouteId].directions);
+      if (dirs.length > 0 && !dirs.includes(selectedDirection)) {
+        setSelectedDirection(dirs[0]);
+      }
+    }
+  }, [selectedRouteId, unifiedRoutes, selectedDirection]);
 
   const fetchRoutes = useCallback(async () => {
     try {
@@ -119,7 +187,10 @@ export default function RoutesPage({
         });
         setRoutes(enhancedRoutes);
         if (!selectedRouteId && keys.length > 0) {
-          setSelectedRouteId(keys[0]);
+          const firstKey = keys[0];
+          const firstRoute = enhancedRoutes[firstKey];
+          const firstBaseName = firstRoute.train_name || firstRoute.name.replace(/_(GO|BACK)$/i, "");
+          setSelectedRouteId(firstBaseName);
         }
       }
     } catch (error) {
@@ -168,15 +239,18 @@ export default function RoutesPage({
 
   const handleSaveRoute = useCallback(
     async (autoName?: string, autoStations?: any[]) => {
-      const nameToSave = autoName || newRouteName;
+      const baseName = autoName || newRouteName;
       const stationsToSave = autoStations || selectedStations;
 
-      if (!nameToSave.trim() || stationsToSave.length < 2) {
+      if (!baseName.trim() || stationsToSave.length < 2) {
         showToast("Nama rute dan minimal 2 stasiun diperlukan", false);
         return;
       }
 
-
+      let finalName = baseName.trim().toUpperCase();
+      if (!finalName.endsWith("_GO") && !finalName.endsWith("_BACK")) {
+        finalName = `${finalName}_${formDirection}`;
+      }
 
       setSaving(true);
       try {
@@ -187,7 +261,7 @@ export default function RoutesPage({
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            name: nameToSave.trim(),
+            name: finalName,
             stations: stationsToSave,
           }),
         });
@@ -214,7 +288,7 @@ export default function RoutesPage({
     [
       newRouteName,
       selectedStations,
-      routes,
+      formDirection,
       token,
       fetchRoutes,
       resetForm,
@@ -225,7 +299,11 @@ export default function RoutesPage({
 
   const handleEditRoute = useCallback(
     (route: any) => {
-      setNewRouteName(route.name);
+      const baseName = route.train_name || route.name.replace(/_(GO|BACK)$/i, "");
+      setNewRouteName(baseName);
+
+      const dir = route.direction || (route.name.endsWith("_BACK") ? "BACK" : "GO");
+      setFormDirection(dir);
 
       const stations = (route.stations || []).map((s: any) => {
         return {
@@ -238,7 +316,7 @@ export default function RoutesPage({
       setIsEditing(true);
       setShowForm(true);
     },
-    [showToast],
+    [],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -264,7 +342,7 @@ export default function RoutesPage({
       setSaving(false);
       setDeleteTarget(null);
     }
-  }, [deleteTarget, routes, token, fetchRoutes, showToast]);
+  }, [deleteTarget, token, fetchRoutes, showToast]);
 
   const handleImportGeoJSON = useCallback(() => {
     const input = document.createElement("input");
@@ -343,24 +421,23 @@ export default function RoutesPage({
     [selectedStations],
   );
 
-  const routeList = Object.values(routes)
-    .filter((r: any) => {
+  const unifiedRouteList = Object.values(unifiedRoutes)
+    .filter((ur: any) => {
       if (activeCategory === "All Routes") return true;
-      const rType = r.class || "Intercity";
-      return rType === activeCategory;
+      return ur.train_class === activeCategory;
     })
-    .filter(
-      (r) =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter((ur) =>
+      ur.train_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-  const totalPages = Math.ceil(routeList.length / itemsPerPage);
-  const paginatedRoutes = routeList.slice(
+  const totalPages = Math.ceil(unifiedRouteList.length / itemsPerPage);
+  const paginatedRoutes = unifiedRouteList.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
-  const selectedRoute = selectedRouteId ? routes[selectedRouteId] : null;
+  const selectedUnifiedRoute = selectedRouteId ? unifiedRoutes[selectedRouteId] : null;
+  const selectedRoute = selectedUnifiedRoute ? selectedUnifiedRoute.directions[selectedDirection] || Object.values(selectedUnifiedRoute.directions)[0] : null;
 
   useEffect(() => {
     setHeader(
@@ -409,8 +486,9 @@ export default function RoutesPage({
     isEditing,
     showForm,
     setHeader,
-    routeList.length,
+    unifiedRouteList.length,
     resetForm,
+    loading,
   ]);
   useEffect(() => {
     setCurrentPage(1);
@@ -454,67 +532,92 @@ export default function RoutesPage({
                   Memuat rute...
                 </div>
               ) : (
-                routeList.map((route, i) => (
-                  <motion.div
-                    key={route.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.03 }}
-                    onClick={() => setSelectedRouteId(route.name)}
-                    className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${selectedRouteId === route.name
-                      ? "bg-white dark:bg-slate-800 border-slate-200 hover:border-[#ee6f1f] dark:border-slate-700 dark:hover:border-[#ee6f1f] shadow-lg"
-                      : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 shadow-sm"
-                      }`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.1em]">
-                          {route.train_class || "Intercity"} Route
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-slate-400 dark:text-slate-500 text-[10px] font-bold mt-0.5">
-                          {route.stations?.length || 0} Stops
+                paginatedRoutes.map((ur, i) => {
+                  const activeDir = selectedDirection || "GO";
+                  const route = ur.directions[activeDir] || Object.values(ur.directions)[0];
+                  const stopsSummary = Object.keys(ur.directions).map(d => `${d}: ${ur.directions[d].stations?.length || 0}`).join(" | ");
+
+                  return (
+                    <motion.div
+                      key={ur.train_name}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      onClick={() => setSelectedRouteId(ur.train_name)}
+                      className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${selectedRouteId === ur.train_name
+                        ? "bg-white dark:bg-slate-800 border-slate-200 hover:border-[#ee6f1f] dark:border-slate-700 dark:hover:border-[#ee6f1f] shadow-lg"
+                        : "bg-white dark:bg-slate-800 border-transparent hover:border-slate-200 shadow-sm"
+                        }`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.1em]">
+                            {ur.train_class || "Intercity"} Route
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-slate-400 dark:text-slate-500 text-[10px] font-bold mt-0.5">
+                            {stopsSummary} Stops
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mb-3">
-                      <h3 className="text-lg font-bold text-[#1d2d6a] dark:text-white tracking-tight truncate">
-                        {route.name}
-                      </h3>
-                      <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-bold text-[11px] mt-0.5 truncate">
-                        {route.stations?.[0]?.name || "Origin"}
-                        <ChevronRight size={12} className="shrink-0" />
-                        {route.stations?.[route.stations.length - 1]?.name ||
-                          "Destination"}
+                      <div className="flex items-end justify-between gap-4 mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold text-[#1d2d6a] dark:text-white tracking-tight truncate">
+                            {ur.train_name}
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-bold text-[11px] mt-0.5 truncate">
+                            {(ur.directions.GO || Object.values(ur.directions)[0])?.stations?.[0]?.name || "Origin"}
+                            <ChevronRight size={12} className="shrink-0" />
+                            {(ur.directions.GO || Object.values(ur.directions)[0])?.stations?.[(ur.directions.GO || Object.values(ur.directions)[0]).stations.length - 1]?.name || "Destination"}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-1 shrink-0 bg-slate-50 dark:bg-slate-900/50 p-0.5 rounded-lg border border-slate-100 dark:border-slate-800 shadow-inner">
+                          {getTrainNumbersForService(ur.train_name).map((ka) => {
+                            const isKaSelected = selectedRouteId === ur.train_name && activeKaNum === ka.num;
+                            return (
+                              <button
+                                key={ka.num}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedRouteId(ur.train_name);
+                                  setSelectedDirection(ka.dir);
+                                  setSelectedKaNum(ka.num);
+                                }}
+                                className={`h-6 px-2 rounded-md font-bold text-[9px] transition-all tracking-wider ${isKaSelected ? "bg-[#ee6f1f] text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
+                              >
+                                KA {ka.num}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
 
-
-
-                    <div className="absolute top-5 right-5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditRoute(route);
-                        }}
-                        className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-[#1d2d6a] dark:text-slate-400 dark:hover:text-white rounded-md transition-all"
-                      >
-                        <Pencil size={12} />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteTarget({ id: route.name });
-                        }}
-                        className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-300 hover:text-red-500 rounded-md transition-all"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))
+                      <div className="absolute top-5 right-5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditRoute(route);
+                          }}
+                          className="p-1.5 bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-[#1d2d6a] dark:text-slate-400 dark:hover:text-white rounded-md transition-all"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget({ id: route.name });
+                          }}
+                          className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-300 hover:text-red-500 rounded-md transition-all"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })
               )}
             </AnimatePresence>
 
@@ -562,24 +665,48 @@ export default function RoutesPage({
 
 
                 <div className="flex-1 flex flex-col pt-6 pl-8 pr-0 pb-0 overflow-hidden">
-                  <div className="flex items-center justify-between mb-6 pr-8">
-                    <h4 className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.1em]">
-                      Checkpoints
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleRefocus}
-                        className="px-2.5 py-1 bg-orange-100 text-[#ee6f1f] dark:bg-orange-900/30 dark:text-orange-400 text-[11px] font-bold rounded-md shadow-sm hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
-                      >
-                        <Navigation size={12} /> Cek Lokasi
-                      </button>
-                      <button
-                        onClick={() => setPage("dashboard")}
-                        className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
-                      >
-                        <MapIcon size={12} /> Lihat Peta
-                      </button>
+                  <div className="mb-6 pr-8">
+                    <div className="flex items-center justify-between mb-3.5">
+                      <div>
+                        <h3 className="text-lg font-bold text-[#1d2d6a] dark:text-white">
+                          {selectedUnifiedRoute?.train_name}
+                        </h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5">
+                          {selectedUnifiedRoute?.train_class || "Intercity"} • {selectedRoute.stations?.length || 0} Stops
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={handleRefocus}
+                          className="px-2.5 py-1 bg-orange-100 text-[#ee6f1f] dark:bg-orange-900/30 dark:text-orange-400 text-[11px] font-bold rounded-md shadow-sm hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                        >
+                          <Navigation size={12} /> Cek Lokasi
+                        </button>
+                        <button
+                          onClick={() => setPage("dashboard")}
+                          className="px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-bold rounded-md shadow-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all uppercase tracking-tighter flex items-center gap-1 active:scale-95"
+                        >
+                          <MapIcon size={12} /> Lihat Peta
+                        </button>
+                      </div>
                     </div>
+
+                    {selectedUnifiedRoute && (
+                      <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm w-fit">
+                        {getTrainNumbersForService(selectedUnifiedRoute.train_name).map((ka) => (
+                          <button
+                            key={ka.num}
+                            onClick={() => {
+                              setSelectedDirection(ka.dir);
+                              setSelectedKaNum(ka.num);
+                            }}
+                            className={`h-7 px-3 rounded-md font-bold text-[10px] transition-all uppercase tracking-wider ${activeKaNum === ka.num ? "bg-[#ee6f1f] text-white shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
+                          >
+                            KA {ka.num}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 overflow-hidden relative flex flex-col">
@@ -731,6 +858,19 @@ export default function RoutesPage({
                           placeholder="e.g. ARGO WILIS"
                           className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#1d2d6a] font-semibold focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm"
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700 uppercase tracking-[0.1em] ml-1">
+                          Direction
+                        </label>
+                        <select
+                          value={formDirection}
+                          onChange={(e) => setFormDirection(e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#1d2d6a] font-semibold focus:border-[#ee6f1f] focus:ring-4 focus:ring-orange-500/5 transition-all outline-none shadow-sm"
+                        >
+                          <option value="GO">GO (Pergi)</option>
+                          <option value="BACK">BACK (Pulang)</option>
+                        </select>
                       </div>
                       <div className="space-y-3">
                         <label className="text-sm font-semibold text-slate-700 uppercase tracking-[0.1em] ml-1">

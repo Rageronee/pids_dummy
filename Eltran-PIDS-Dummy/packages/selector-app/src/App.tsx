@@ -193,7 +193,7 @@ function App() {
       const kaId = activeKa.toLowerCase().replace(/\s+/g, "").replace("ka", "");
       // Remove trailing letters like 'b' in '257b' to match 'schedule_ka257'
       const kaIdNum = kaId.replace(/[a-z]/gi, "");
-      
+
       const expectedKey = `schedule_ka${kaId}`;
       const expectedKeyNum = `schedule_ka${kaIdNum}`;
 
@@ -287,6 +287,7 @@ function App() {
   }, []);
   const handlePrev = useCallback(() => {
     lastUserActionRef.current = Date.now();
+    setIsAutoSync(false);
     setCurrentIndex((prev) => {
       const nextIdx = (prev - 1 + stations.length) % stations.length;
       sendData({
@@ -296,10 +297,11 @@ function App() {
       });
       return nextIdx;
     });
-  }, [stations, sendData]);
+  }, [stations, sendData, setIsAutoSync]);
 
   const handleNext = useCallback(() => {
     lastUserActionRef.current = Date.now();
+    setIsAutoSync(false);
     setCurrentIndex((prev) => {
       const nextIdx = (prev + 1) % stations.length;
       sendData({
@@ -309,16 +311,17 @@ function App() {
       });
       return nextIdx;
     });
-  }, [stations, sendData]);
+  }, [stations, sendData, setIsAutoSync]);
 
   const handleSelectStation = useCallback(() => {
+    setIsAutoSync(false);
     sendData({
       currentStation: stations[currentIndex],
       nextStation: stations[(currentIndex + 1) % stations.length],
       isSyncing: true,
     });
     showNotification("Sync Completed", "Station display status updated.");
-  }, [stations, currentIndex, sendData, showNotification]);
+  }, [stations, currentIndex, sendData, showNotification, setIsAutoSync]);
 
 
 
@@ -329,6 +332,7 @@ function App() {
       newStations: string[],
       gerbong: number,
     ) => {
+      setIsAutoSync(false);
       if (newStations.length > 0) {
         const newIndex = 0;
         setStations(newStations);
@@ -359,11 +363,13 @@ function App() {
       getSmallestKa,
       activeKa,
       getTrainId,
+      setIsAutoSync,
     ],
   );
 
   const handleSetGerbong = useCallback(
     (gerbong: number) => {
+      setIsAutoSync(false);
       setSelectedGerbong(gerbong);
       sendData({ trainNumber: `${getTrainId(activeKa)} Gerbong ${gerbong}` });
       showNotification(
@@ -371,7 +377,7 @@ function App() {
         `Unit configuration set to Gerbong ${gerbong}`,
       );
     },
-    [sendData, showNotification, getTrainId, activeKa],
+    [sendData, showNotification, getTrainId, activeKa, setIsAutoSync],
   );
 
   const handleSetLedSpeed = useCallback(
@@ -408,10 +414,10 @@ function App() {
   // Auto-switch direction when service changes to prevent "stuck" state
   useEffect(() => {
     if (!masterSyncedServiceName) return;
-    
+
     const currentSvc = masterSyncedServiceName.toUpperCase();
     const activeRouteSvc = (data?.activeRoute as any)?.service_name?.toUpperCase() || "";
-    
+
     // If service changed and active route is from different service, reset activeKa
     if (activeRouteSvc && currentSvc !== activeRouteSvc) {
       if (availableDirections.length > 0) {
@@ -421,20 +427,20 @@ function App() {
     }
   }, [masterSyncedServiceName, availableDirections, data?.activeRoute]);
   const formatDirLabel = (label: string) => {
-    const cityMap: Record<string, string> = { 
-      BANDUNG: "BD", 
-      MALANG: "ML", 
-      LEMPUYANGAN: "LPN", 
+    const cityMap: Record<string, string> = {
+      BANDUNG: "BD",
+      MALANG: "ML",
+      LEMPUYANGAN: "LPN",
       "PASAR SENEN": "PSE",
       "YOGYAKARTA": "YK",
       "SURABAYA": "SBY",
       "PASARSENEN": "PSE"
     };
-    
+
     // If it's a direction object, try to construct a nicer label if it's still GO/BACK
     if (label === "GO" || label === "BACK") {
-       const dir = availableDirections.find(d => d.label === label);
-       if (dir) return `KA ${dir.num}`;
+      const dir = availableDirections.find(d => d.label === label);
+      if (dir) return `KA ${dir.num}`;
     }
 
     return label.replace(/^KA\s+/i, "KA ").replace(
@@ -455,18 +461,19 @@ function App() {
       setActiveKa(normalizedKa);
       setKaDropdownOpen(false);
       lastUserActionRef.current = Date.now(); // Mark user action to prevent auto-sync override
+      setIsAutoSync(false);
 
       if (stations.length < 2) return;
 
       const num = normalizedKa.replace("ka", "");
-      
+
       let targetRouteName = "";
       const dirEntry = availableDirections.find(d => {
         const dNum = d.num.toLowerCase();
         const targetNum = num.toLowerCase();
         return dNum === targetNum || targetNum.startsWith(dNum) || dNum.startsWith(targetNum);
       });
-      
+
       if (dirEntry && (dirEntry as any).routeKey) {
         targetRouteName = (dirEntry as any).routeKey;
       } else {
@@ -479,11 +486,11 @@ function App() {
 
       let finalRouteData: any = routes?.[targetRouteName] || data?.activeRoute || routes?.[masterSyncedServiceName];
       let newStations = finalRouteData?.stations ? [...finalRouteData.stations] : [...stations];
-      
+
       // Derive display service name (PROGO or MALABAR)
-      const displayService = targetRouteName.toUpperCase().includes("PROGO") ? "PROGO" : 
-                            targetRouteName.toUpperCase().includes("MALABAR") ? "MALABAR" : 
-                            masterSyncedServiceName;
+      const displayService = targetRouteName.toUpperCase().includes("PROGO") ? "PROGO" :
+        targetRouteName.toUpperCase().includes("MALABAR") ? "MALABAR" :
+          masterSyncedServiceName;
 
       const features = resolveRouteFeatures(finalRouteData);
       if (features) {
@@ -502,8 +509,8 @@ function App() {
         }
       }
 
-      let newIndex = 0; 
-      
+      let newIndex = 0;
+
       setStations(newStations);
       setCurrentIndex(newIndex);
 
@@ -530,7 +537,8 @@ function App() {
       routes,
       masterSyncedServiceName,
       resolveRouteFeatures,
-      availableDirections
+      availableDirections,
+      setIsAutoSync
     ],
   );
   if (!authUser) {
@@ -618,11 +626,10 @@ function App() {
                       <button
                         key={dir.num}
                         onClick={() => handleChangeDirection(`ka${dir.num}`)}
-                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${
-                          activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}` ||
-                          activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}b`
-                          ? "bg-[#ee6f1f] text-white"
-                          : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className={`w-full text-left px-5 py-3 text-sm font-bold uppercase transition-colors ${activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}` ||
+                            activeKa.toLowerCase() === `ka${dir.num.toLowerCase()}b`
+                            ? "bg-[#ee6f1f] text-white"
+                            : "text-[#1d2d6a] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                           }`}
                       >
                         {formatDirLabel(dir.label)}
@@ -637,20 +644,8 @@ function App() {
               )}
             </div>
           )}
-          
-          <button
-            onClick={() => setIsAutoSync(!isAutoSync)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all active:scale-95 ${
-              isAutoSync 
-                ? "bg-green-500/20 border-green-500/50 text-green-100" 
-                : "bg-red-500/20 border-red-500/50 text-red-100"
-            }`}
-          >
-            <RefreshCcw size={18} className={isAutoSync ? "animate-spin-slow" : ""} />
-            <span className="text-xs font-bold uppercase tracking-widest">
-              {isAutoSync ? "Sync ON" : "Sync OFF"}
-            </span>
-          </button>
+
+
         </div>
 
         <div className="flex items-center gap-6">
@@ -880,7 +875,7 @@ function App() {
                 size={32}
                 className="group-hover:rotate-180 transition-transform duration-500"
               />{" "}
-              SYNC DATA TO DISPLAY
+              SYNC DISPLAY
             </button>
           </div>
         </div>

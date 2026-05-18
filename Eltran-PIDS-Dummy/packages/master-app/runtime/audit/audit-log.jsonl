@@ -286,3 +286,13 @@
 {"id":"b64c4241-284a-4206-9549-7ca286922387","timestamp":"2026-05-08T08:04:15.692Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"2eab2f3e-0bb0-4cf5-b7e9-cffec61cfa0b","timestamp":"2026-05-08T08:07:20.177Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
 {"id":"f3023778-35f7-4655-99c4-b063b2b900a3","timestamp":"2026-05-08T08:07:33.427Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"f103bf0e-bb75-4d1b-899b-aa60a1340e5e","timestamp":"2026-05-18T02:22:32.108Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"7c4a3763-b4d7-4d71-92b1-fdd41ed5d03c","timestamp":"2026-05-18T02:23:14.104Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"dbd3ec0c-f8cd-40d0-8cb3-738d68cdd234","timestamp":"2026-05-18T02:31:40.230Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"d5b4e909-1200-4aeb-a267-2afc45d9cd39","timestamp":"2026-05-18T03:00:43.774Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"54cf5c56-5cd3-4fb4-b9a8-17e437741355","timestamp":"2026-05-18T03:02:11.931Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: PROGO","data":null}
+{"id":"c3027b66-606b-49e6-a3ab-41d11358820a","timestamp":"2026-05-18T03:34:02.797Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"c6f9cccd-2374-4080-9410-a5005a46d83f","timestamp":"2026-05-18T03:34:42.314Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"1f380a97-9a7e-4bd3-91c4-4c03898099f9","timestamp":"2026-05-18T03:57:48.735Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"e2a190cd-005c-4f9b-b7aa-6c64e29e0cba","timestamp":"2026-05-18T03:57:54.453Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"e0b87b03-81c9-4925-bf1c-0749a7cddadd","timestamp":"2026-05-18T03:57:57.524Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
