@@ -65,21 +65,34 @@ const getStationTime = (s: any, trainNum: string | null) => {
   if (!s) return "";
   if (typeof s === "string") return "";
   
+  let rawTime = "";
   if (trainNum) {
     const cleanNum = trainNum.toLowerCase();
     const trainKeys = [`schedule_ka${cleanNum}`, `schedule_${cleanNum}`];
     for (const key of trainKeys) {
       if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
-        return s[key].trim();
+        rawTime = s[key].trim();
+        break;
       }
     }
   }
   
-  const fallbackKeys = ["arrival_time", "arrival", "departure_time", "departure"];
-  for (const key of fallbackKeys) {
-    if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
-      return s[key].trim();
+  if (!rawTime) {
+    const fallbackKeys = ["arrival_time", "arrival", "departure_time", "departure"];
+    for (const key of fallbackKeys) {
+      if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
+        rawTime = s[key].trim();
+        break;
+      }
     }
+  }
+  
+  if (rawTime) {
+    const parts = rawTime.split(":");
+    if (parts.length >= 2) {
+      return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
+    }
+    return rawTime;
   }
   
   return "";

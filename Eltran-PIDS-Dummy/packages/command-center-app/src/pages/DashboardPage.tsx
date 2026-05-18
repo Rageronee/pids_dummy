@@ -136,14 +136,23 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     const getTime = (obj: any, isArr: boolean) => {
       if (!obj) return null;
       
-      // Keys to check for arrival/departure
       const arrKeys = [
-        "scheduled_arrival", "waktu_kedatangan_penjadwalan", "waktu_kedatangan", 
-        "arrival_time", "arrival", "actual_arrival", "waktu_kedatangan_realisasi"
+        "scheduled_arrival",
+        "waktu_kedatangan_penjadwalan",
+        "waktu_kedatangan",
+        "arrival_time",
+        "arrival",
+        "actual_arrival",
+        "waktu_kedatangan_realisasi"
       ];
       const depKeys = [
-        "scheduled_departure", "waktu_keberangkatan_penjadwalan", "waktu_keberangkatan", 
-        "departure_time", "departure", "actual_departure", "waktu_keberangkatan_realisasi"
+        "scheduled_departure",
+        "waktu_keberangkatan_penjadwalan",
+        "waktu_keberangkatan",
+        "departure_time",
+        "departure",
+        "actual_departure",
+        "waktu_keberangkatan_realisasi"
       ];
       
       const trainKeys = [`schedule_ka${trainNum}`, `schedule_ka${trainNum}`.toLowerCase()];
@@ -151,7 +160,12 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       
       for (const key of keys) {
         if (obj[key] && typeof obj[key] === "string" && obj[key].trim() !== "") {
-          return obj[key].trim();
+          const raw = obj[key].trim();
+          const parts = raw.split(":");
+          if (parts.length >= 2) {
+            return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
+          }
+          return raw;
         }
       }
       
@@ -166,9 +180,24 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
                     (activeSched?.stops && activeSched.stops.length > 0 ? getTime(activeSched.stops[activeSched.stops.length - 1], true) : null) || 
                     "--:--";
 
+    const nextStnName = (pidsState.nextStation || "").toUpperCase().trim();
+    let nextStnEta = null;
+    if (activeSched?.stops && nextStnName && nextStnName !== "-") {
+      const nextStnStop = activeSched.stops.find((st: any) => {
+        const name = (st.station_name || "").toUpperCase().trim();
+        const code = (st.station_id || st.station_code || "").toUpperCase().trim();
+        return name === nextStnName || code === nextStnName;
+      });
+      if (nextStnStop) {
+        nextStnEta = getTime(nextStnStop, true) || getTime(nextStnStop, false);
+      }
+    }
+
+    const etaTime = nextStnEta || arrTime || "--:--";
+
     return [{
       id: pidsState.trainNumber || (activeSched?.display_train_number || activeSched?.train_number) || "KA-LIVE",
-      name: `${serviceName} ${displayTrainNum}`.trim(), // Combined label for consistency
+      name: `${serviceName} ${displayTrainNum}`.trim(),
       trainNum: displayTrainNum,
       status: pidsState.status || "Normal",
       progress: progress,
@@ -181,7 +210,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
       speed: pidsState.speed || 0,
       location: location,
       heading: pidsState.simGps?.heading || 0,
-      eta: arrTime, // Use arrTime as ETA fallback
+      eta: etaTime,
     }];
   }, [pidsState, schedules, stations]);
 
