@@ -249,25 +249,70 @@ export function RouteCheckpoints({
                         const itemName = item.name.toUpperCase();
                         const isBerhenti = item.status === "BERHENTI" || itemName === currentStationName;
 
-                        // Cari waktu di scheduleData
+                        // SSOT: Coba ambil dari state (data.activeRoute.stations) terlebih dahulu
                         let timeStr = "--:--";
-                        const activeSched = scheduleData.find((s: any) =>
-                          (s.train_name?.toUpperCase() === route?.name?.toUpperCase()) ||
-                          (s.display_train_name?.toUpperCase() === route?.name?.toUpperCase())
-                        );
+                        const originalStation = data?.activeRoute?.stations?.[idx];
+                        
+                        if (originalStation) {
+                          const trainNumMatch = data?.trainNumber ? data.trainNumber.match(/(?:KA\s*)?(\d+)/i) : null;
+                          const kaNum = trainNumMatch ? trainNumMatch[1] : null;
 
-                        if (activeSched?.stops) {
-                          const stop = activeSched.stops.find((st: any) =>
-                            st.station_name?.toUpperCase() === itemName ||
-                            st.stasiun?.toUpperCase() === itemName
+                          let rawTime = "";
+                          if (kaNum) {
+                            const keys = [`schedule_ka${kaNum}`, `schedule_${kaNum}`];
+                            for (const key of keys) {
+                              if (originalStation[key] && originalStation[key] !== "-") {
+                                rawTime = originalStation[key];
+                                break;
+                              }
+                            }
+                          }
+
+                          if (!rawTime) {
+                            const fallbackKeys = ["arrival_time", "arrival", "departure_time", "departure"];
+                            for (const key of fallbackKeys) {
+                              if (originalStation[key] && originalStation[key] !== "-") {
+                                rawTime = originalStation[key];
+                                break;
+                              }
+                            }
+                          }
+
+                          if (rawTime) {
+                            const parts = rawTime.split(":");
+                            timeStr = parts.length >= 2 ? `${parts[0]}:${parts[1]}` : rawTime;
+                          }
+                        }
+
+                        // Fallback ke scheduleData jika masih kosong
+                        if (timeStr === "--:--") {
+                          const activeSched = scheduleData.find((s: any) =>
+                            (s.train_name?.toUpperCase() === route?.name?.toUpperCase()) ||
+                            (s.display_train_name?.toUpperCase() === route?.name?.toUpperCase())
                           );
-                          timeStr = stop?.arrival_time || stop?.departure_time || stop?.waktu_kedatangan_penjadwalan || "--:--";
-                        } else {
-                          const sched = scheduleData.find((s: any) =>
-                            (s.stasiun_keberangkatan?.toUpperCase() === itemName) ||
-                            (s.stasiun_tujuan?.toUpperCase() === itemName)
-                          );
-                          timeStr = sched ? (sched.waktu_keberangkatan_penjadwalan || sched.waktu_kedatangan_penjadwalan || "--:--") : "--:--";
+
+                          if (activeSched?.stops && activeSched.stops.length > 0) {
+                            const stop = activeSched.stops.find((st: any) =>
+                              st.station_name?.toUpperCase() === itemName ||
+                              st.stasiun?.toUpperCase() === itemName
+                            );
+                            if (stop) {
+                              timeStr = stop.arrival_time || stop.departure_time || stop.waktu_kedatangan_penjadwalan || "--:--";
+                            }
+                          } else {
+                            const sched = scheduleData.find((s: any) =>
+                              (s.stasiun_keberangkatan?.toUpperCase() === itemName) ||
+                              (s.stasiun_tujuan?.toUpperCase() === itemName)
+                            );
+                            if (sched) {
+                              timeStr = sched.waktu_keberangkatan_penjadwalan || sched.waktu_kedatangan_penjadwalan || "--:--";
+                            }
+                          }
+                          
+                          if (timeStr && timeStr !== "--:--") {
+                            const parts = timeStr.split(":");
+                            timeStr = parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeStr;
+                          }
                         }
 
                         return (

@@ -30,13 +30,13 @@ import {
   VolumeX,
   MapPin,
   X,
+  Save,
 } from "lucide-react";
 import { StateToggle } from "./ui/StateToggle";
 import { TextToggle } from "./ui/TextToggle";
 import { SectionAccordion } from "./ui/SectionAccordion";
 import { useVideoSystem } from "../hooks/useVideoSystem";
 import { RouteCheckpoints } from "./RouteCheckpoints";
-import { MasterToolbar } from "./MasterToolbar";
 import { MasterModals } from "./MasterModals";
 import { API } from "@eltran/shared";
 
@@ -1055,7 +1055,7 @@ export function MasterConsolePanel({
 
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full pb-32">
+    <div className="flex flex-col gap-6 w-full max-w-full pb-12">
       {/* INFO RANGKAIAN & TELEMETRI HEADER */}
       <div className="bg-white dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800/50 shadow-sm overflow-hidden flex flex-col xl:flex-row">
         <div className="p-8 xl:w-[38%] bg-white dark:bg-slate-900/60 border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800/50 flex flex-col">
@@ -1394,28 +1394,44 @@ export function MasterConsolePanel({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1">
-                Jumlah Kereta
-              </span>
-              <div className="flex items-center gap-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/50 rounded-lg px-2.5 py-1.5 shadow-sm backdrop-blur-sm">
-                <Train size={14} className="text-slate-400 dark:text-slate-500" />
-                <select
-                  className="text-xs font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent cursor-pointer focus:outline-none min-w-[150px]"
-                  value={coachCount}
-                  onChange={(e) => sendData({ coachCount: Number(e.target.value) })}
-                >
-                  {[
-                    ...Array(
-                      Math.min(gerbongCounts[activeTrainName] || 15, 15),
-                    ),
-                  ].map((_, i) => (
-                    <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-950">
-                      {i + 1} Gerbong
-                    </option>
-                  ))}
-                </select>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full xl:w-auto">
+              <div className="flex flex-col flex-1 sm:flex-initial">
+                <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                  Jumlah Kereta
+                </span>
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/50 rounded-lg px-2.5 py-1.5 shadow-sm backdrop-blur-sm h-[38px]">
+                  <Train size={14} className="text-slate-400 dark:text-slate-500" />
+                  <select
+                    className="text-xs font-bold text-[#1d2d6a] dark:text-slate-200 bg-transparent cursor-pointer focus:outline-none min-w-[120px]"
+                    value={coachCount}
+                    onChange={(e) => sendData({ coachCount: Number(e.target.value) })}
+                  >
+                    {[
+                      ...Array(
+                        Math.min(gerbongCounts[activeTrainName] || 15, 15),
+                      ),
+                    ].map((_, i) => (
+                      <option key={i + 1} value={i + 1} className="bg-white dark:bg-slate-950">
+                        {i + 1} Gerbong
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              <button
+                onClick={async () => {
+                  await sendData({
+                    coachCount,
+                    geofencingInnerRadius: innerRadius,
+                    geofencingOuterRadius: outerRadius,
+                  });
+                  showToast("Konfigurasi baru berhasil disimpan");
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-[#ee6f1f] hover:bg-[#f87a2c] text-xs font-bold text-white transition-all shadow-md hover:shadow-[0_4px_12px_rgba(238,111,31,0.2)] focus:outline-none focus:ring-2 focus:ring-[#ee6f1f]/50 h-[38px] active:scale-95 w-full sm:w-auto shrink-0"
+              >
+                <Save size={16} /> Simpan Konfigurasi
+              </button>
             </div>
           </div>
 
@@ -2098,14 +2114,6 @@ export function MasterConsolePanel({
         </div>
       </SectionAccordion>
 
-      {/* FIXED BOTTOM TOOLBAR */}
-      <MasterToolbar
-        coachCount={coachCount}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        sendData={sendData}
-        showToast={showToast}
-      />
 
       {/* ALL MODALS & TOAST */}
       <MasterModals
