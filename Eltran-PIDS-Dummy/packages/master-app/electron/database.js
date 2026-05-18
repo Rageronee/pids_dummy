@@ -915,8 +915,8 @@ export async function seedData() {
     }
     console.log(`[PIDS-DB] ✓ ${masterStations.length} stations seeded from parsed data`);
     const kaiTrains = [
-      ["MALABAR", "EKSEKUTIF/EKONOMI", "67-70", 12, "ML", "BD"],
-      ["PROGO", "EKONOMI", "257-258", 10, "LPN", "PSE"]
+      ["MALABAR", "Intercity", "67-70", 12, "ML", "BD"],
+      ["PROGO", "Intercity", "257-258", 10, "LPN", "PSE"]
     ];
 
     for (const [name, cls, num, coachCount, start, end] of kaiTrains) {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
+  Clock,
   Plus,
   Trash2,
   Pencil,
@@ -58,6 +59,30 @@ const getTrainNumbersForService = (serviceName: string) => {
       { num: "BACK", dir: "BACK" }
     ];
   }
+};
+
+const getStationTime = (s: any, trainNum: string | null) => {
+  if (!s) return "";
+  if (typeof s === "string") return "";
+  
+  if (trainNum) {
+    const cleanNum = trainNum.toLowerCase();
+    const trainKeys = [`schedule_ka${cleanNum}`, `schedule_${cleanNum}`];
+    for (const key of trainKeys) {
+      if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
+        return s[key].trim();
+      }
+    }
+  }
+  
+  const fallbackKeys = ["arrival_time", "arrival", "departure_time", "departure"];
+  for (const key of fallbackKeys) {
+    if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
+      return s[key].trim();
+    }
+  }
+  
+  return "";
 };
 
 export default function RoutesPage({
@@ -535,7 +560,7 @@ export default function RoutesPage({
                 paginatedRoutes.map((ur, i) => {
                   const activeDir = selectedDirection || "GO";
                   const route = ur.directions[activeDir] || Object.values(ur.directions)[0];
-                  const stopsSummary = Object.keys(ur.directions).map(d => `${d}: ${ur.directions[d].stations?.length || 0}`).join(" | ");
+                  const stopsCount = route?.stations?.length || 0;
 
                   return (
                     <motion.div
@@ -557,7 +582,7 @@ export default function RoutesPage({
                         </div>
                         <div className="text-right">
                           <div className="text-slate-400 dark:text-slate-500 text-[10px] font-bold mt-0.5">
-                            {stopsSummary} Stops
+                            {stopsCount} Stops
                           </div>
                         </div>
                       </div>
@@ -763,7 +788,7 @@ export default function RoutesPage({
                                   </div>
                                 </div>
 
-                                <div className="flex-1 flex justify-between items-center min-w-0">
+                                <div className="flex-1 flex justify-between items-center min-w-0 gap-4">
                                   <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
                                       <span
@@ -777,11 +802,21 @@ export default function RoutesPage({
                                       </span>
                                     </div>
                                     <h5
-                                      className="text-base font-semibold leading-tight truncate text-[#1d2d6a] dark:text-white"
+                                      className="text-base font-semibold leading-tight truncate text-[#1d2d6a] dark:text-white flex items-center gap-2"
                                     >
+                                      <MapPin size={14} className="text-[#ee6f1f] shrink-0" />
                                       {sName}
                                     </h5>
                                   </div>
+
+                                  {getStationTime(s, activeKaNum) && (
+                                    <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-inner shrink-0">
+                                      <Clock size={12} className="text-[#ee6f1f]" />
+                                      <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">
+                                        {getStationTime(s, activeKaNum)}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
