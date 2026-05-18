@@ -1635,9 +1635,26 @@ export async function getRoutes() {
         }
       });
 
+      const dbSchedules = await getAll(
+        `SELECT id, train_number FROM schedules WHERE route_id = $1`,
+        [dbRoute.id]
+      );
+      
+      const scheduleTimesMap = new Map();
+      for (const sched of dbSchedules) {
+        const stops = await getAll(
+          `SELECT route_station_id, arrival_time, departure_time FROM schedule_stops WHERE schedule_id = $1`,
+          [sched.id]
+        );
+        for (const stop of stops) {
+          const time = stop.arrival_time || stop.departure_time || "";
+          scheduleTimesMap.set(`${stop.route_station_id}_${sched.train_number.toLowerCase()}`, time);
+        }
+      }
+
       const routeStations = stationRows.map((r) => {
         const props = stationPropsMap.get(normalizeName(r.name)) || {};
-        return {
+        const stationObj = {
           id: r.station_id,
           rs_id: r.rs_id,
           name: r.name,
@@ -1645,13 +1662,39 @@ export async function getRoutes() {
           sequence_order: r.sequence_order,
           ...props,
         };
+
+        dbSchedules.forEach((sched) => {
+          const kaNum = sched.train_number.toLowerCase();
+          const key = `${r.rs_id}_${kaNum}`;
+          if (scheduleTimesMap.has(key)) {
+            const time = scheduleTimesMap.get(key);
+            if (time) {
+              stationObj[`schedule_ka${kaNum}`] = time;
+            }
+          }
+        });
+
+        return stationObj;
       });
 
       if (routeStations.length === 0 && parsed.stations) {
         parsed.stations.forEach((s) => {
           const sName = typeof s === "string" ? s : s.name;
           const props = stationPropsMap.get(normalizeName(sName)) || {};
-          routeStations.push({ name: sName, ...props });
+          const stationObj = { name: sName, ...props };
+          
+          dbSchedules.forEach((sched) => {
+            const kaNum = sched.train_number.toLowerCase();
+            const key = `${sName}_${kaNum}`;
+            if (scheduleTimesMap.has(key)) {
+              const time = scheduleTimesMap.get(key);
+              if (time) {
+                stationObj[`schedule_ka${kaNum}`] = time;
+              }
+            }
+          });
+
+          routeStations.push(stationObj);
         });
       }
 
@@ -1668,7 +1711,6 @@ export async function getRoutes() {
         geojson_filename: dbRoute.geojson_filename,
       };
 
-      // Ensure the train service name itself can be used to look up a default route
       if (dbRoute.train_name && (!routes[dbRoute.train_name] || dbRoute.direction === 'GO')) {
         routes[dbRoute.train_name] = routes[routeKey];
       }

@@ -291,83 +291,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
     */
 
     validTrains.forEach(train => {
-      // If marker already exists, just update position
-      if (markers.current[train.id]) {
-        markers.current[train.id].setLngLat(train.location);
-        return;
-      }
-
-      // Sanitize ID for safe DOM usage (remove spaces/special chars)
       const safeId = train.id.replace(/[^a-zA-Z0-9]/g, '-');
-
-      const el = document.createElement("div");
-      // Use pointer-events-none on the container so only the pin responds to hover/click
-      el.className = "relative pointer-events-none flex flex-col items-center justify-end";
-      el.style.width = '120px';
-      el.style.height = '120px';
-
-      el.innerHTML = `
-        <div class="relative flex flex-col items-center justify-end w-full h-full">
-          <!-- Premium Label (Targeted Reveal) -->
-          <div id="label-${safeId}" class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-4 py-2 rounded-xl border border-white/20 font-bold text-white whitespace-nowrap shadow-[0_15px_40px_rgba(0,0,0,0.4)] z-50 uppercase tracking-tighter opacity-0 scale-90 pointer-events-none transition-all duration-300" style="bottom: var(--map-label-offset, -40px); font-size: var(--map-label-font-size, 10px);">
-            <div>${train.name}</div>
-          </div>
-          
-          <!-- Modern Marker (The only part with pointer-events-auto) -->
-          <div id="marker-pin-${safeId}" class="relative flex flex-col items-center pointer-events-auto cursor-pointer" style="transform: scale(var(--map-marker-scale, 1)); transform-origin: center bottom;">
-            <div id="pin-icon-${safeId}" class="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 transition-all duration-500">
-              <div class="transition-all duration-500 text-white">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/>
-                </svg>
-              </div>
-            </div>
-            
-            <!-- Pin Tail -->
-            <div class="w-2 h-4 bg-[#1d2d6a] dark:bg-blue-600 -mt-1.5 rounded-full relative z-0"></div>
-          </div>
-        </div>
-      `;
-
-      // Manual hover listeners for absolute precision
-      const pinEl = el.querySelector(`#marker-pin-${safeId}`) as HTMLElement;
-      const labelEl = el.querySelector(`#label-${safeId}`) as HTMLElement;
-      const iconEl = el.querySelector(`#pin-icon-${safeId}`) as HTMLElement;
-
-      if (pinEl && labelEl && iconEl) {
-        pinEl.onmouseenter = () => {
-          labelEl.classList.remove('opacity-0', 'scale-90');
-          labelEl.classList.add('opacity-100', 'scale-110');
-          iconEl.classList.add('scale-110');
-        };
-        pinEl.onmouseleave = () => {
-          labelEl.classList.remove('opacity-100', 'scale-110');
-          labelEl.classList.add('opacity-0', 'scale-90');
-          iconEl.classList.remove('scale-110');
-        };
-      }
-
-      el.addEventListener('click', (e) => {
-        // Stop propagation to prevent map click from firing and immediately closing the route
-        e.stopPropagation();
-
-        // Auto zoom on click
-        map.current?.flyTo({
-          center: train.location,
-          zoom: 14,
-          speed: 1.2,
-          curve: 1.42,
-          essential: true
-        });
-
-        // Explicitly open the popup
-        if (markers.current[train.id] && !markers.current[train.id].getPopup().isOpen()) {
-          markers.current[train.id].togglePopup();
-        }
-
-        onTrainClick?.(train.id, train.location);
-      });
-
       const popupContent = `
         <div id="popup-${train.id}" class="p-0 overflow-hidden rounded-[2rem] bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800 font-sans min-w-[220px] max-w-[260px] pointer-events-auto">
           <div class="bg-[#1d2d6a] dark:bg-[#020617] px-4 py-3 text-white relative">
@@ -409,6 +333,94 @@ const MapComponent: React.FC<MapComponentProps> = ({ trains = [], onAnalyze, foc
           </div>
         </div>
       `;
+
+      if (markers.current[train.id]) {
+        const marker = markers.current[train.id];
+        marker.setLngLat(train.location);
+        const popup = marker.getPopup();
+        if (popup) {
+          popup.setHTML(popupContent);
+          if (popup.isOpen()) {
+            const analyzeBtn = document.getElementById(`btn-analyze-${train.id}`);
+            const closeBtn = document.getElementById(`close-popup-${train.id}`);
+            if (analyzeBtn) {
+              analyzeBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAnalyze?.(train.id);
+              };
+            }
+            if (closeBtn) {
+              closeBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                marker.getPopup().remove();
+              };
+            }
+          }
+        }
+        return;
+      }
+
+      const el = document.createElement("div");
+      el.className = "relative pointer-events-none flex flex-col items-center justify-end";
+      el.style.width = '120px';
+      el.style.height = '120px';
+
+      el.innerHTML = `
+        <div class="relative flex flex-col items-center justify-end w-full h-full">
+          <div id="label-${safeId}" class="absolute left-1/2 -translate-x-1/2 bg-[#1d2d6a] dark:bg-slate-950 px-4 py-2 rounded-xl border border-white/20 font-bold text-white whitespace-nowrap shadow-[0_15px_40px_rgba(0,0,0,0.4)] z-50 uppercase tracking-tighter opacity-0 scale-90 pointer-events-none transition-all duration-300" style="bottom: var(--map-label-offset, -40px); font-size: var(--map-label-font-size, 10px);">
+            <div>${train.name}</div>
+          </div>
+          
+          <div id="marker-pin-${safeId}" class="relative flex flex-col items-center pointer-events-auto cursor-pointer" style="transform: scale(var(--map-marker-scale, 1)); transform-origin: center bottom;">
+            <div id="pin-icon-${safeId}" class="w-10 h-10 bg-[#1d2d6a] dark:bg-blue-600 rounded-2xl border-[3px] border-white dark:border-slate-800 shadow-2xl flex items-center justify-center relative z-10 transition-all duration-500">
+              <div class="transition-all duration-500 text-white">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h.01"/><path d="M16 15h.01"/>
+                </svg>
+              </div>
+            </div>
+            
+            <div class="w-2 h-4 bg-[#1d2d6a] dark:bg-blue-600 -mt-1.5 rounded-full relative z-0"></div>
+          </div>
+        </div>
+      `;
+
+      const pinEl = el.querySelector(`#marker-pin-${safeId}`) as HTMLElement;
+      const labelEl = el.querySelector(`#label-${safeId}`) as HTMLElement;
+      const iconEl = el.querySelector(`#pin-icon-${safeId}`) as HTMLElement;
+
+      if (pinEl && labelEl && iconEl) {
+        pinEl.onmouseenter = () => {
+          labelEl.classList.remove('opacity-0', 'scale-90');
+          labelEl.classList.add('opacity-100', 'scale-110');
+          iconEl.classList.add('scale-110');
+        };
+        pinEl.onmouseleave = () => {
+          labelEl.classList.remove('opacity-100', 'scale-110');
+          labelEl.classList.add('opacity-0', 'scale-90');
+          iconEl.classList.remove('scale-110');
+        };
+      }
+
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        map.current?.flyTo({
+          center: train.location,
+          zoom: 14,
+          speed: 1.2,
+          curve: 1.42,
+          essential: true
+        });
+
+        if (markers.current[train.id] && !markers.current[train.id].getPopup().isOpen()) {
+          markers.current[train.id].togglePopup();
+        }
+
+        onTrainClick?.(train.id, train.location);
+      });
 
       const popup = new maplibregl.Popup({
         offset: 25,

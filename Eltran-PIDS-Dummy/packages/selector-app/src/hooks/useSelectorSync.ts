@@ -15,6 +15,7 @@ function normalizeStations(value: unknown): string[] {
 export function useSelectorSync() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authToken, setAuthToken] = useState("");
+  const [isVerifying, setIsVerifying] = useState(!!sessionStorage.getItem("pids_token"));
   const [data, setData] = useState<PidsState | null>(null);
   const [stations, setStations] = useState<string[]>([]);
   const [masterSyncedServiceName, setMasterSyncedServiceName] = useState("");
@@ -62,14 +63,20 @@ export function useSelectorSync() {
           } else {
             sessionStorage.removeItem("pids_token");
             sessionStorage.removeItem("pids_user");
+            setAuthToken("");
+            setAuthUser(null);
           }
+          setIsVerifying(false);
         })
         .catch(() => {
           sessionStorage.removeItem("pids_token");
           sessionStorage.removeItem("pids_user");
           setAuthToken("");
           setAuthUser(null);
+          setIsVerifying(false);
         });
+    } else {
+      setIsVerifying(false);
     }
   }, []);
   useEffect(() => {
@@ -201,8 +208,10 @@ export function useSelectorSync() {
     trainNames,
     routes,
     speed,
-    altitude,
+    setAltitude,
     temp,
+    setTemp,
     sendData,
+    isVerifying,
   };
 }

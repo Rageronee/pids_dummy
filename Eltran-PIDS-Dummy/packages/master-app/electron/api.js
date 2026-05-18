@@ -215,7 +215,7 @@ export async function startApiServer() {
 
   const sessions = new Map(); // fallback in-memory
 
-  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || crypto.randomBytes(64).toString('hex');
+  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "pids_development_secret_key_12345";
   const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15m';
   const REFRESH_TOKEN_TTL_DAYS = parseInt(process.env.REFRESH_TOKEN_TTL_DAYS || '7', 10);
   const REFRESH_TOKEN_TTL_MS = REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;

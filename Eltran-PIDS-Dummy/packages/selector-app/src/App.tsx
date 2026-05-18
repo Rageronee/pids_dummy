@@ -36,6 +36,7 @@ function App() {
     trainNames,
     routes,
     sendData,
+    isVerifying,
   } = sync;
 
   const [isDark, setIsDark] = useState(() => {
@@ -541,6 +542,14 @@ function App() {
       setIsAutoSync
     ],
   );
+  if (isVerifying) {
+    return (
+      <div className={`flex h-[100dvh] items-center justify-center bg-slate-50 dark:bg-slate-950 ${isDark ? "dark" : ""}`}>
+        <div className="text-slate-500 dark:text-slate-400 font-medium tracking-widest uppercase text-sm">Memverifikasi Sesi...</div>
+      </div>
+    );
+  }
+
   if (!authUser) {
     return <LoginScreen onLogin={handleLogin} title="PIDS Selector App" isDark={isDark} />;
   }

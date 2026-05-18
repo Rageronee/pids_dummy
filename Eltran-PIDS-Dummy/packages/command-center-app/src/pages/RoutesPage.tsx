@@ -64,29 +64,29 @@ const getTrainNumbersForService = (serviceName: string) => {
 const getStationTime = (s: any, trainNum: string | null) => {
   if (!s) return "";
   if (typeof s === "string") return "";
-  
+
   let rawTime = "";
   if (trainNum) {
     const cleanNum = trainNum.toLowerCase();
     const trainKeys = [`schedule_ka${cleanNum}`, `schedule_${cleanNum}`];
     for (const key of trainKeys) {
-      if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
+      if (s[key] && typeof s[key] === "string" && s[key].trim() !== "" && s[key].trim() !== "-") {
         rawTime = s[key].trim();
         break;
       }
     }
   }
-  
+
   if (!rawTime) {
     const fallbackKeys = ["arrival_time", "arrival", "departure_time", "departure"];
     for (const key of fallbackKeys) {
-      if (s[key] && typeof s[key] === "string" && s[key].trim() !== "") {
+      if (s[key] && typeof s[key] === "string" && s[key].trim() !== "" && s[key].trim() !== "-") {
         rawTime = s[key].trim();
         break;
       }
     }
   }
-  
+
   if (rawTime) {
     const parts = rawTime.split(":");
     if (parts.length >= 2) {
@@ -94,7 +94,7 @@ const getStationTime = (s: any, trainNum: string | null) => {
     }
     return rawTime;
   }
-  
+
   return "";
 };
 
@@ -823,7 +823,7 @@ export default function RoutesPage({
                                   </div>
 
                                   {getStationTime(s, activeKaNum) && (
-                                    <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-inner shrink-0">
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl shadow-inner shrink-0">
                                       <Clock size={12} className="text-[#ee6f1f]" />
                                       <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">
                                         {getStationTime(s, activeKaNum)}

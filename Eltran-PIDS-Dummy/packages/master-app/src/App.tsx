@@ -710,10 +710,10 @@ function App() {
             className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 ACT:scale-95 group"
           >
             <LogOut
-              size={16}
+              size={20}
               className="text-white/20 group-hover:text-red-400 transition-colors"
             />
-            <span>Logout dari Sistem</span>
+            <span>LOGOUT</span>
           </button>
         </div>
       </aside>

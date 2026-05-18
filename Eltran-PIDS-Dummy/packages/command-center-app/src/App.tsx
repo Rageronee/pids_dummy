@@ -244,7 +244,7 @@ export default function App() {
               size={18}
               className="text-white/20 group-hover:text-red-400 transition-colors"
             />
-            <span>SYSTEM LOGOUT</span>
+            <span>LOGOUT</span>
           </button>
         </div>
       </aside>

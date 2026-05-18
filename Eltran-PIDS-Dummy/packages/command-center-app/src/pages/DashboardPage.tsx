@@ -180,7 +180,7 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
                     (activeSched?.stops && activeSched.stops.length > 0 ? getTime(activeSched.stops[activeSched.stops.length - 1], true) : null) || 
                     "--:--";
 
-    const nextStnName = (pidsState.nextStation || "").toUpperCase().trim();
+    const nextStnName = getStationName(pidsState.nextStation).toUpperCase().trim();
     let nextStnEta = null;
     if (activeSched?.stops && nextStnName && nextStnName !== "-") {
       const nextStnStop = activeSched.stops.find((st: any) => {
