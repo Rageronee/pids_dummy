@@ -131,7 +131,6 @@ export async function stopApiServer() {
 export async function startApiServer() {
   const port = 3001;
 
-  // First, check if already running with a bit more patience
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const healthCheck = await fetch(`http://localhost:${port}/api/health`, {
@@ -145,16 +144,12 @@ export async function startApiServer() {
         }
       }
     } catch (e) {
-      // If error is NOT 'fetch failed' (like connection refused), it might be warming up
       if (e.name !== 'TypeError' && e.name !== 'AbortError') {
          await new Promise(r => setTimeout(r, 1000));
          continue;
       }
     }
   }
-
-  await initDatabase();
-  startAutoSave();
 
   const apiApp = express();
   const httpServer = createServer(apiApp);
@@ -1564,15 +1559,22 @@ export async function startApiServer() {
 
   return new Promise((resolve, reject) => {
     httpServer
-      .listen(port, () => {
+      .listen(port, async () => {
         console.log(
           `[PIDS-CORE] PostgreSQL API Gateway running on http://localhost:${port}`,
         );
-        resolve(httpServer);
+        try {
+          await initDatabase();
+          startAutoSave();
+          resolve(httpServer);
+        } catch (dbErr) {
+          console.error(`[ERROR] Database initialization failed:`, dbErr);
+          reject(dbErr);
+        }
       })
       .on("error", (err) => {
         if (err.code === "EADDRINUSE") {
-          console.log(`[PIDS-CORE] Port ${port} was taken between check and listen. Assuming success.`);
+          console.log(`[PIDS-CORE] Port ${port} was taken. Assuming success.`);
           resolve(null);
         } else {
           console.error(`[ERROR] Server failed to start:`, err);
