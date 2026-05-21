@@ -220,6 +220,9 @@ export async function startApiServer() {
   if (REDIS_URL) {
     try {
       redisClient = createClient({ url: REDIS_URL });
+      redisClient.on("error", (err) => {
+        console.error("[API] Redis client error:", err);
+      });
       await redisClient.connect();
       usingRedis = true;
       console.log("[API] Connected to Redis for session storage");

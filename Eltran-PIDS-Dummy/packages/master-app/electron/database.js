@@ -198,7 +198,7 @@ function verifyPassword(password, storedHash) {
 
 let pool = null;
 
-export async function initDatabase(retries = 3) {
+export async function initDatabase(retries = 10) {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
@@ -224,7 +224,7 @@ export async function initDatabase(retries = 3) {
       }
       retries--;
       if (retries === 0) throw err;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
   return pool;
