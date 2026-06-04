@@ -198,36 +198,57 @@ function verifyPassword(password, storedHash) {
 
 let pool = null;
 
-export async function initDatabase(retries = 10) {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
+export async function initDatabase() {
+  const primaryConnectionString = process.env.DATABASE_URL;
+  if (!primaryConnectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const dbHost = new URL(connectionString).hostname;
-  console.log(`[PIDS-DB] Attempting to connect to database at ${dbHost}...`);
+  const fallbacks = [
+    primaryConnectionString,
+    "postgresql://postgres:eltran123@localhost:5433/eltran_pids",
+    "postgresql://postgres:eltran123@localhost:5432/eltran_pids",
+    "postgresql://postgres:postgres@localhost:5432/eltran_pids"
+  ];
 
-  while (retries > 0) {
-    pool = new Pool({ connectionString, ...POOL_CONFIG });
-    try {
-      await pool.query("SELECT NOW()");
-      console.log("[PIDS-DB] PostgreSQL connected successfully");
-      await createTables();
-      await seedData();
-      console.log("[PIDS-DB] Database schema is ready.");
-      return pool;
-    } catch (err) {
-      console.error(`[PIDS-DB] Connection failed to ${dbHost}. Retries left: ${retries - 1}. Error: ${err.message}`);
-      if (pool) {
-        await pool.end().catch(() => { });
-        pool = null;
-      }
-      retries--;
-      if (retries === 0) throw err;
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+  const uniqueUrls = [];
+  for (const url of fallbacks) {
+    if (!uniqueUrls.includes(url)) {
+      uniqueUrls.push(url);
     }
   }
-  return pool;
+
+  for (const connectionString of uniqueUrls) {
+    const parsedUrl = new URL(connectionString);
+    const dbHost = parsedUrl.hostname;
+    const dbPort = parsedUrl.port || "5432";
+    console.log(`[PIDS-DB] Attempting to connect to database at ${dbHost}:${dbPort}...`);
+
+    let attempts = 2;
+    while (attempts > 0) {
+      pool = new Pool({ connectionString, ...POOL_CONFIG });
+      try {
+        await pool.query("SELECT NOW()");
+        console.log(`[PIDS-DB] PostgreSQL connected successfully to ${dbHost}:${dbPort}`);
+        await createTables();
+        await seedData();
+        console.log("[PIDS-DB] Database schema is ready.");
+        return pool;
+      } catch (err) {
+        console.error(`[PIDS-DB] Connection failed to ${dbHost}:${dbPort}. Error: ${err.message}`);
+        if (pool) {
+          await pool.end().catch(() => { });
+          pool = null;
+        }
+        attempts--;
+        if (attempts > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+    }
+  }
+
+  throw new Error("All database connection attempts failed.");
 }
 
 let _autoSaveTimer = null;

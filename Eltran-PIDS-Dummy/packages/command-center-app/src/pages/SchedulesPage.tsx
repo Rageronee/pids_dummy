@@ -379,7 +379,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                         <div className="text-right">
                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Arrival</p>
                           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 font-mono">
-                            {stop.arrival_time || "--:--"}
+                            {stop.arrival_time || stop.departure_time || "--:--"}
                           </p>
                         </div>
                         <div className="text-right">
@@ -540,11 +540,10 @@ export default function SchedulesPage({ token }: { token: string }) {
                               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-2">Route Checkpoints</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {route.stations.map((s: any, idx: number) => (
-                                  <span key={idx} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                                    idx === 0 ? "bg-green-50 dark:bg-green-900/20 text-green-600 border-green-200 dark:border-green-800" :
+                                  <span key={idx} className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${idx === 0 ? "bg-green-50 dark:bg-green-900/20 text-green-600 border-green-200 dark:border-green-800" :
                                     idx === route.stations.length - 1 ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 border-orange-200 dark:border-orange-800" :
-                                    "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600"
-                                  }`}>{s.name}</span>
+                                      "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600"
+                                    }`}>{s.name}</span>
                                 ))}
                               </div>
                             </div>
@@ -677,7 +676,7 @@ export default function SchedulesPage({ token }: { token: string }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    className={`bg-white dark:bg-slate-950 border ${isActive ? "border-slate-200 hover:border-[#ee6f1f]" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
+                    className={`bg-white dark:bg-slate-950 border ${isActive ? "border-slate-200/30 hover:border-[#ee6f1f]" : "border-slate-200 dark:border-slate-800"} shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group`}
                   >
                     <div className="flex items-center gap-4 px-6 py-5 cursor-pointer" onClick={() => setSelectedSchedule(sched)}>
                       <div className={`w-12 h-12 ${isActive ? "bg-orange-50 dark:bg-orange-950/30" : "bg-[#f8fafc] dark:bg-slate-800"} border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center shadow-sm`}>

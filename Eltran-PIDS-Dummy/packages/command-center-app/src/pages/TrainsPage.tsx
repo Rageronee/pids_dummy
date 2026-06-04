@@ -106,7 +106,7 @@ export default function TrainsPage({ token }: { token: string }) {
       });
       const d = await res.json();
       if (d.success) setStations(d.stations || []);
-    } catch {}
+    } catch { }
   }, [token]);
 
   useEffect(() => {
@@ -753,7 +753,7 @@ export default function TrainsPage({ token }: { token: string }) {
                 className={`grid grid-cols-[1.5fr_1fr_1fr_1fr_80px] gap-0 px-8 py-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group items-center cursor-pointer ${selectedTrainset?.name === set.name ? "bg-slate-50 dark:bg-slate-800 ring-2 ring-inset ring-[#ee6f1f]" : ""}`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-12 h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                     <Train size={22} className="text-[#1d2d6a] dark:text-[#ee6f1f]" />
                   </div>
                   <div className="flex flex-col">

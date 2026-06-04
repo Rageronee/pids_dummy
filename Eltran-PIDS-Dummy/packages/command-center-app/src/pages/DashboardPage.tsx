@@ -97,14 +97,16 @@ const DashboardPage: React.FC<{ setPage?: (page: string) => void }> = ({
     // Prioritize high-accuracy simGps if available and valid, otherwise snap to station coordinates
     let location: [number, number];
 
+    const lngNum = Number(pidsState.simGps?.lng);
+    const latNum = Number(pidsState.simGps?.lat);
     const isValidGps = pidsState.simGps &&
-      pidsState.simGps.lng !== 0 &&
-      pidsState.simGps.lat !== 0 &&
-      !isNaN(Number(pidsState.simGps.lng)) &&
-      !isNaN(Number(pidsState.simGps.lat));
+      lngNum !== 0 &&
+      latNum !== 0 &&
+      !isNaN(lngNum) &&
+      !isNaN(latNum);
 
     if (isValidGps) {
-      location = [Number(pidsState.simGps!.lng), Number(pidsState.simGps!.lat)];
+      location = [lngNum, latNum];
       lastLocRef.current = location;
     } else if (stnInfo && stnInfo.longitude && stnInfo.latitude) {
       location = [Number(stnInfo.longitude), Number(stnInfo.latitude)];

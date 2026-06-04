@@ -42,7 +42,7 @@
 
 @layer components {
     .kai-card {
-        @apply rounded-[2.5rem] border border-slate-200 bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm dark:border-slate-800/50 shadow-md overflow-hidden;
+        @apply rounded-kai-card border border-slate-200 bg-white dark:bg-[#0f172a]/40 backdrop-blur-sm dark:border-slate-800/50 shadow-md overflow-hidden;
     }
 
     .kai-sidebar-item {
@@ -50,7 +50,7 @@
     }
 
     .kai-sidebar-item.active {
-        @apply text-white bg-orange-600 shadow-lg scale-[1.02];
+        @apply text-white bg-kai-orange shadow-lg scale-[1.02];
     }
 
     .kai-table-row {
@@ -68,8 +68,8 @@ body {
 
 /* Custom Scrollbar Styling (Premium & Subtle) */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -77,12 +77,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 dark:bg-slate-800;
-    border-radius: 10px;
+    @apply bg-slate-300 dark:bg-slate-700;
+    border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300 dark:bg-slate-600;
+    @apply bg-slate-400 dark:bg-slate-600;
 }
 
 /* Custom Scrollbar Utility */
@@ -96,12 +96,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 dark:bg-slate-800;
-    border-radius: 10px;
+    @apply bg-slate-300 dark:bg-slate-700;
+    border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300 dark:bg-slate-700;
+    @apply bg-slate-400 dark:bg-slate-600;
 }
 
 /* For Firefox */

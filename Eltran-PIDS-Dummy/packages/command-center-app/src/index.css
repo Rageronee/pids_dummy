@@ -5,8 +5,12 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --kai-blue: 29 45 106;
+    --kai-orange: 238 111 31;
+  }
   .dark body {
-    @apply bg-slate-950 text-slate-100;
+    @apply bg-[#0a0f1e] text-slate-100;
   }
 }
 
@@ -53,12 +57,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 dark:bg-slate-800;
-    border-radius: 10px;
+    @apply bg-slate-300 dark:bg-slate-700;
+    border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300 dark:bg-slate-700;
+    @apply bg-slate-400 dark:bg-slate-600;
 }
 
 .thin-scrollbar::-webkit-scrollbar {
@@ -71,18 +75,18 @@ body {
 }
 
 .thin-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 dark:bg-slate-800;
-    border-radius: 10px;
+    @apply bg-slate-300 dark:bg-slate-700;
+    border-radius: 9999px;
 }
 
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300 dark:bg-slate-700;
+    @apply bg-slate-400 dark:bg-slate-600;
 }
 
 /* Global scrollbar for body/main */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -90,20 +94,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 dark:bg-slate-800;
-    border-radius: 10px;
+    @apply bg-slate-300 dark:bg-slate-700;
+    border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300 dark:bg-slate-700;
+    @apply bg-slate-400 dark:bg-slate-600;
 }
 
 /* For Firefox */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #e2e8f0 transparent;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
 .dark * {
-    scrollbar-color: #1e293b transparent;
+    scrollbar-color: #334155 transparent;
 }

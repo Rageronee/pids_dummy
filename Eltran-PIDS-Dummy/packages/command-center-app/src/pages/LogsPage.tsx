@@ -149,7 +149,7 @@ export default function LogsPage({ token }: { token: string }) {
         ))}
       </div>
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
-        <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em] transition-colors">
+        <div className="grid grid-cols-[140px_120px_110px_80px_1fr] gap-0 px-6 py-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em] transition-colors">
           <span>Waktu</span>
           <span>Aksi</span>
           <span>Pengguna</span>

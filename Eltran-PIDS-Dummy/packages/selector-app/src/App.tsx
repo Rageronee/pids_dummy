@@ -198,9 +198,16 @@ function App() {
       const expectedKey = `schedule_ka${kaId}`;
       const expectedKeyNum = `schedule_ka${kaIdNum}`;
 
+      const activeRouteSvc = (data?.activeRoute as any)?.service_name?.toUpperCase() || "";
+      const currentSvc = masterSyncedServiceName?.toUpperCase() || activeRouteSvc;
+      
+      let targetRouteName = currentSvc;
+      if (currentSvc.includes("PROGO")) targetRouteName = "PROGO_GO";
+      else if (currentSvc.includes("MALABAR")) targetRouteName = "MALABAR_GO";
+
       const candidateRoutes = [
         data?.activeRoute,
-        routes?.[masterSyncedServiceName],
+        routes?.[targetRouteName],
       ].filter(Boolean);
 
       for (const route of candidateRoutes) {
@@ -400,12 +407,17 @@ function App() {
     getStationName(stations[currentIndex]) || "INITIALIZING SYNC...";
   const nextStation =
     getStationName(stations[(currentIndex + 1) % stations.length]) || "---";
-  const activeRouteAny = data?.activeRoute as any;
-  const isProgo = masterSyncedServiceName?.toUpperCase().includes("PROGO");
-  const fallbackRouteKey = isProgo ? "PROGO_GO" : "MALABAR_GO";
   const resolvedFeatures = useMemo(() => {
-    return resolveRouteFeatures(activeRouteAny) || resolveRouteFeatures(routes?.[fallbackRouteKey]) || resolveRouteFeatures(routes?.MALABAR_GO) || [];
-  }, [activeRouteAny, routes, fallbackRouteKey, resolveRouteFeatures]);
+    const activeRouteAny = data?.activeRoute as any;
+    const activeRouteSvc = activeRouteAny?.service_name?.toUpperCase() || "";
+    const currentSvc = masterSyncedServiceName?.toUpperCase() || activeRouteSvc;
+    
+    let targetRouteName = currentSvc;
+    if (currentSvc.includes("PROGO")) targetRouteName = "PROGO_GO";
+    else if (currentSvc.includes("MALABAR")) targetRouteName = "MALABAR_GO";
+
+    return resolveRouteFeatures(routes?.[targetRouteName]) || resolveRouteFeatures(activeRouteAny) || [];
+  }, [masterSyncedServiceName, routes, data?.activeRoute, resolveRouteFeatures]);
 
   const availableDirections: { num: string; label: string }[] = useMemo(() => {
     return resolvedFeatures?.find((f: any) => f.geometry?.type === "LineString")

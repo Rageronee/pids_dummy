@@ -672,45 +672,44 @@ function App() {
   return (
     <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-[#0a0f1e] text-slate-900 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Sidebar */}
-      <aside className="w-72 bg-[#1d2d6a] dark:bg-[#0f172a] border-r border-blue-900 dark:border-[#1e293b] flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20 shrink-0">
+      <aside className="w-80 bg-[#1d2d6a] dark:bg-[#0f172a] border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-20 shrink-0">
 
-        <div className="p-6 lg:p-8 pb-4 lg:pb-6">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
-            alt="KAI Logo"
-            className="h-12 w-auto mb-6 brightness-0 invert"
-          />
-          <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">
-            PIDS Master
-          </h1>
-          <p className="text-[15px] font-bold text-blue-200/40 mt-1">
-            Kereta Makan
-          </p>
+        <div className="p-8 pb-10 flex justify-between items-start">
+          <div>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
+              alt="KAI Logo"
+              className="h-10 w-auto mb-6 brightness-0 invert"
+            />
+            <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
+              PIDS Master
+            </h1>
+            <p className="font-bold text-white/40 mt-1">
+              Kereta Makan
+            </p>
+          </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
-          <ul className="space-y-2">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => setACTTab(item.id)}
-                  className={`w-full flex items-center gap-4 px-6 lg:px-8 py-4 lg:py-5 rounded-2xl transition-all duration-300 font-bold text-base lg:text-lg ${ACTTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_12px_24px_rgba(238,111,31,0.3)] scale-[1.02]" : "text-white/60 dark:text-slate-500 hover:text-white dark:hover:text-slate-300 hover:bg-white/5 dark:hover:bg-white/5"}`}
-                >
-                  <item.icon size={28} strokeWidth={2.5} />
-                  <span>{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setACTTab(item.id)}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-semibold text-base ${ACTTab === item.id ? "bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+            >
+              <item.icon size={22} strokeWidth={2.5} />
+              {item.label}
+            </button>
+          ))}
         </nav>
 
-        <div className="p-6 space-y-3 mt-auto border-t border-white/5 bg-[#0a0f1e]/20">
+        <div className="p-6 border-t border-white/5 space-y-4">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-[10px] border border-white/5 ACT:scale-95 group"
+            className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs border border-white/5 active:scale-95 group"
           >
             <LogOut
-              size={20}
+              size={18}
               className="text-white/20 group-hover:text-red-400 transition-colors"
             />
             <span>LOGOUT</span>

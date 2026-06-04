@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Info,
   Settings,
+  CheckCircle2,
 } from "lucide-react";
 import { API } from "./config";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -40,6 +41,17 @@ interface AuthUser {
   role: string;
   nama: string;
 }
+
+export interface NotificationItem {
+  id: number;
+  type: "danger" | "warning" | "info" | "success";
+  title: string;
+  msg: string;
+  time: string;
+  status: "read" | "unread";
+  category: string;
+}
+
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -74,15 +86,40 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const bellButtonRef = useRef<HTMLButtonElement>(null);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: "warning", msg: "Koneksi GPS KA Malabar tidak stabil", time: "15 menit lalu" },
-    { id: 2, type: "info", msg: "Update jadwal KA Parahyangan berhasil", time: "1 jam lalu" },
+  const [selectedNotifId, setSelectedNotifId] = useState<number | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: 1,
+      type: "danger",
+      title: "KA Argo Wilis Emergency Stop",
+      msg: "CRITICAL: KA Argo Wilis detected stopping outside station boundaries (KM 102). Immediate operator intervention required.",
+      time: "2026-05-26 09:05:12",
+      status: "unread",
+      category: "Operational"
+    },
+    {
+      id: 3,
+      type: "info",
+      title: "Schedule Sync Complete",
+      msg: "KA Parahyangan updated schedules have been successfully propagated to all gerbong units.",
+      time: "2026-05-26 08:12:30",
+      status: "read",
+      category: "Update"
+    }
   ]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setNotifications(prev => [
-        { id: Date.now(), type: "danger", msg: "DARURAT: KA Argo Wilis Terdeteksi Berhenti di Luar Stasiun (KM 102)", time: "Baru saja" },
+        {
+          id: Date.now(),
+          type: "danger",
+          title: "KA Argo Wilis Emergency Stop",
+          msg: "CRITICAL: KA Argo Wilis detected stopping outside station boundaries (KM 102). Immediate operator intervention required.",
+          time: "Baru saja",
+          status: "unread",
+          category: "Operational"
+        },
         ...prev
       ]);
     }, 8000);
@@ -187,7 +224,7 @@ export default function App() {
   });
 
   return (
-    <div className={`flex h-screen w-full bg-[#f8fafc] dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
+    <div className={`flex h-screen w-full bg-slate-50 dark:bg-kai-slate-bg text-slate-800 dark:text-slate-200 font-sans overflow-hidden ${isDark ? "dark" : ""}`}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -201,7 +238,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <aside className={`fixed lg:relative inset-y-0 left-0 w-80 bg-[#1d2d6a] dark:bg-slate-900 border-r border-blue-900 dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-[50] transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <aside className={`fixed lg:relative inset-y-0 left-0 w-80 bg-kai-blue dark:bg-[#0f172a] border-r border-kai-blue-dark dark:border-slate-800 flex flex-col shadow-[8px_0_40px_-10px_rgba(0,0,0,0.2)] z-[50] transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="p-8 pb-10 flex justify-between items-start">
           <div>
             <img
@@ -212,7 +249,7 @@ export default function App() {
             <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">
               Command Center
             </h1>
-            <p className="text-base font-semibold text-blue-200/40 mt-1 font-mono tracking-[0.1em]">
+            <p className="font-bold text-white/40">
               Control Panel
             </p>
           </div>
@@ -228,7 +265,7 @@ export default function App() {
                 setActivePage(item.id);
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-semibold text-base ${activePage === item.id ? "bg-[#ee6f1f] text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all font-semibold text-base ${activePage === item.id ? "bg-kai-orange text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)]" : "text-white/60 hover:text-white hover:bg-white/5"}`}
             >
               <item.icon size={22} strokeWidth={2.5} />
               {item.label}
@@ -249,10 +286,10 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto flex flex-col relative bg-[#f8fafc] dark:bg-slate-900">
-        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
+      <main className="flex-1 overflow-auto flex flex-col relative bg-slate-50 dark:bg-kai-slate-bg">
+        <header className="h-20 bg-white dark:bg-kai-slate-bg border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-20 shrink-0">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-[#1d2d6a] dark:text-slate-300">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-kai-blue dark:text-slate-300">
               <Menu size={24} />
             </button>
             <div className="hidden sm:flex bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
@@ -261,7 +298,7 @@ export default function App() {
                   NAV.find((n) => n.id === activePage)?.icon || Shield;
                 return (
                   <Icon
-                    className="text-[#1d2d6a] dark:text-slate-300"
+                    className="text-kai-blue dark:text-slate-300"
                     size={20}
                     strokeWidth={2.5}
                   />
@@ -273,7 +310,7 @@ export default function App() {
                 {headerTitle ? (
                   <div className="flex items-center gap-2">{headerTitle}</div>
                 ) : (
-                  <span className="text-lg lg:text-xl font-bold text-[#1d2d6a] dark:text-white uppercase tracking-normal">
+                  <span className="text-lg lg:text-xl font-bold text-kai-blue dark:text-white uppercase tracking-normal">
                     {NAV.find((n) => n.id === activePage)?.label}
                   </span>
                 )}
@@ -286,7 +323,7 @@ export default function App() {
                 <button
                   ref={bellButtonRef}
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className={`p-2.5 rounded-xl transition-all relative ${showNotifications ? "bg-[#ee6f1f] text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white"}`}
+                  className={`p-2.5 rounded-xl transition-all relative ${showNotifications ? "bg-kai-orange text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-kai-blue dark:hover:text-white"}`}
                 >
                   <Bell size={20} />
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
@@ -302,19 +339,46 @@ export default function App() {
                     >
                       <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
                         <span className="font-semibold text-sm dark:text-white">Notifications</span>
-                        <span className="text-[10px] font-bold text-blue-500 uppercase cursor-pointer">Mark all as read</span>
+                        <button
+                          onClick={() => setNotifications(prev => prev.map(n => ({ ...n, status: "read" })))}
+                          className="text-[10px] font-bold text-blue-500 uppercase cursor-pointer hover:text-blue-600 transition-colors bg-transparent border-none outline-none"
+                        >
+                          Mark all as read
+                        </button>
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.map((n) => (
-                          <div key={n.id} className="p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors flex gap-3">
-                            <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${n.type === 'danger' ? 'bg-red-50 text-red-500' : n.type === 'warning' ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-500'}`}>
-                              {n.type === 'danger' ? <AlertTriangle size={16} /> : <Info size={16} />}
+                          <button
+                            key={n.id}
+                            onClick={() => {
+                              setActivePage("notifications");
+                              setSelectedNotifId(n.id);
+                              setShowNotifications(false);
+                              setNotifications(prev =>
+                                prev.map(item =>
+                                  item.id === n.id ? { ...item, status: "read" } : item
+                                )
+                              );
+                            }}
+                            className="w-full text-left p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors flex gap-3 focus:outline-none"
+                          >
+                            <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${n.type === 'danger' ? 'bg-red-50 text-red-500' : n.type === 'warning' ? 'bg-amber-50 text-amber-500' : n.type === 'success' ? 'bg-green-50 text-green-500' : 'bg-blue-50 text-blue-500'}`}>
+                              {n.type === 'danger' ? <AlertTriangle size={16} /> : n.type === 'success' ? <CheckCircle2 size={16} /> : <Info size={16} />}
                             </div>
-                            <div>
-                              <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-tight mb-1">{n.msg}</p>
-                              <p className="text-[10px] font-medium text-slate-400">{n.time}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1 mb-0.5">
+                                <span className={`text-[9px] font-extrabold uppercase tracking-wider ${n.status === 'unread' ? 'text-kai-orange' : 'text-slate-400'}`}>
+                                  {n.category}
+                                </span>
+                                {n.status === 'unread' && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                                )}
+                              </div>
+                              <p className={`text-xs font-bold leading-tight mb-1 truncate ${n.status === 'unread' ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>{n.title}</p>
+                              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 truncate">{n.msg}</p>
+                              <p className="text-[9px] font-medium text-slate-400 mt-1">{n.time}</p>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
                       <button
@@ -322,7 +386,7 @@ export default function App() {
                           setActivePage("notifications");
                           setShowNotifications(false);
                         }}
-                        className="w-full py-3 text-[10px] font-bold uppercase text-slate-400 hover:text-[#1d2d6a] dark:hover:text-white transition-colors border-t border-slate-50 dark:border-slate-700/50"
+                        className="w-full py-3 text-[10px] font-bold uppercase text-slate-400 hover:text-kai-blue dark:hover:text-white transition-colors border-t border-slate-50 dark:border-slate-700/50"
                       >
                         View History
                       </button>
@@ -332,7 +396,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 lg:gap-3 text-[#1d2d6a] dark:text-white">
+            <div className="flex items-center gap-2 lg:gap-3 text-kai-blue dark:text-white">
               <div className="bg-slate-50 dark:bg-slate-800 p-2 lg:p-2.5 rounded-xl text-slate-400">
                 <Clock size={20} />
               </div>
@@ -343,7 +407,7 @@ export default function App() {
           </div>
         </header>
         <div
-          className={`flex-1 overflow-auto ${(activePage === "dashboard" || activePage === "routes" || activePage === "stations" || activePage === "notifications") ? "p-0" : "p-6 lg:p-10"} bg-[#f8fafc] dark:bg-slate-900`}
+          className={`flex-1 overflow-auto ${(activePage === "dashboard" || activePage === "routes" || activePage === "stations" || activePage === "notifications") ? "p-0" : "p-6 lg:p-10"} bg-slate-50 dark:bg-kai-slate-bg`}
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -362,6 +426,10 @@ export default function App() {
                   setPage={setActivePage}
                   isDark={isDark}
                   setIsDark={setIsDark}
+                  notifications={notifications}
+                  setNotifications={setNotifications}
+                  selectedNotifId={selectedNotifId}
+                  setSelectedNotifId={setSelectedNotifId}
                 />
               </Suspense>
             </motion.div>

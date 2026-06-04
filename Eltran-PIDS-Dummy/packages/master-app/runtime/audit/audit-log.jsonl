@@ -296,3 +296,44 @@
 {"id":"1f380a97-9a7e-4bd3-91c4-4c03898099f9","timestamp":"2026-05-18T03:57:48.735Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
 {"id":"e2a190cd-005c-4f9b-b7aa-6c64e29e0cba","timestamp":"2026-05-18T03:57:54.453Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
 {"id":"e0b87b03-81c9-4925-bf1c-0749a7cddadd","timestamp":"2026-05-18T03:57:57.524Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"a3bfd07f-80e9-4214-b1b4-baf07f8c3ed5","timestamp":"2026-05-18T04:19:37.886Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"20316371-42f3-4ec2-867c-d9e07f02d5ea","timestamp":"2026-05-18T04:22:30.040Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"df3be0c1-125c-4c38-92a8-4af15fb22b56","timestamp":"2026-05-18T04:22:35.956Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"711d8751-ec63-4d95-9589-04f7adc16b4a","timestamp":"2026-05-18T06:38:50.628Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"d19ebf4f-04c7-47e0-bcc3-a0d8692ca9d1","timestamp":"2026-05-18T06:43:20.463Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"409cb2a6-8520-4300-89c6-5021cc43edc1","timestamp":"2026-05-18T06:43:32.261Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"0a48547b-b71e-4eca-bef6-dec1ff6117ef","timestamp":"2026-05-20T07:37:29.353Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"17db37be-08e4-4f3d-8fef-4793c1624661","timestamp":"2026-05-20T07:37:44.839Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"ecdd5ac0-741f-48d6-bfd6-6b7f3709e12b","timestamp":"2026-05-20T07:38:46.450Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"48fd0296-9237-4108-87d3-07cd705a2c7d","timestamp":"2026-05-20T07:38:47.495Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: PROGO","data":null}
+{"id":"1018d01a-c41e-4c8e-b06b-bd51c0386eb1","timestamp":"2026-05-20T07:39:10.903Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"ebbf8551-fc8b-4152-a6d2-81729aca7e25","timestamp":"2026-05-21T02:45:44.452Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"237f06ef-8b84-4e6d-9a15-f139d9b02f43","timestamp":"2026-05-21T02:46:06.589Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: PROGO","data":null}
+{"id":"0056d846-7e3c-45b3-b4fd-3f6d68f5b8d6","timestamp":"2026-05-21T02:47:25.887Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"13ec1aad-170b-411d-929d-467e5693017c","timestamp":"2026-05-21T02:47:36.509Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"6e35a369-50a3-49b7-b08c-60c19d1a4e4e","timestamp":"2026-05-21T02:47:38.572Z","action":"LOGOUT","user":"admin","role":"Admin","details":"Administrator logout","data":null}
+{"id":"17b237ce-f913-4941-b996-b48d2fbc5e2e","timestamp":"2026-05-25T08:44:06.144Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"95c5a096-c430-4787-ae45-36084995a7e4","timestamp":"2026-05-25T08:44:11.849Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"f7f4774e-92f4-484d-a9af-9546c70157aa","timestamp":"2026-05-25T08:44:17.445Z","action":"LOGIN_FAILED","user":"admin","role":"-","details":"Percobaan login gagal untuk username: admin","data":null}
+{"id":"951a11f7-0ec0-4dde-8795-bd5a42d83d29","timestamp":"2026-05-25T08:44:21.950Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"8063adf2-5db9-45b4-a6e2-2da48d23b810","timestamp":"2026-05-25T08:52:28.300Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"35e8d19f-99b4-4667-ac5f-11579e763f30","timestamp":"2026-05-26T01:33:49.186Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"13a0cc1d-a2a4-4b96-9d64-4fdd8e695860","timestamp":"2026-05-26T01:34:34.051Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"51024559-fbe2-4777-977f-4353f64775b0","timestamp":"2026-05-26T01:38:44.765Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"a8599c94-88e9-44fa-a469-9340879f78e0","timestamp":"2026-05-26T03:11:20.627Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"d2031b1d-490a-4485-8e09-42a5ec31cc53","timestamp":"2026-05-26T03:15:31.740Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"617c9854-6125-4ec3-8d35-e00ac08a2f00","timestamp":"2026-05-26T03:15:46.228Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"ac752ef1-1718-4f2b-8b22-2d848bfb92c6","timestamp":"2026-05-26T04:40:44.676Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"185138c7-545c-423a-945c-ac60702b16cd","timestamp":"2026-05-26T05:04:40.999Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"73df830c-89a1-414c-a9c9-d6ff2dbfa341","timestamp":"2026-05-26T05:10:07.218Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"4823d980-bca8-4e27-854b-e94320249422","timestamp":"2026-06-04T02:39:08.421Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"d9365120-ae31-4fd6-ac1f-f8ba338cf787","timestamp":"2026-06-04T02:39:30.652Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"7f4318b9-fb24-4da2-bf83-6fdc92f8bf09","timestamp":"2026-06-04T02:40:16.372Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"783633e8-13c3-4f3c-82ba-7e5f288f72c8","timestamp":"2026-06-04T02:54:04.058Z","action":"LOGIN_FAILED","user":"admin","role":"-","details":"Percobaan login gagal untuk username: admin","data":null}
+{"id":"90e9b130-e5eb-45cf-853f-627fb65db5b0","timestamp":"2026-06-04T02:54:07.394Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"67460102-48f9-4cab-ae87-1085f8202a6b","timestamp":"2026-06-04T02:54:15.761Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"a373e624-a020-4600-8b70-21b44bb8ec5c","timestamp":"2026-06-04T03:02:56.316Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"d5e7ff81-7e59-4ca3-8470-7618ec8e8224","timestamp":"2026-06-04T03:03:24.966Z","action":"STATE_UPDATE","user":"system","role":"System","details":"Service diubah: MALABAR","data":null}
+{"id":"deb37ccb-71d7-44dd-a8ad-5464114d42c7","timestamp":"2026-06-04T04:09:04.654Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"6775c447-035f-4d52-847a-e158a6185cbb","timestamp":"2026-06-04T04:09:12.751Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}
+{"id":"f5a65038-02a9-4b4b-bdf8-e84e005b5103","timestamp":"2026-06-04T04:09:20.275Z","action":"LOGIN","user":"admin","role":"Admin","details":"Administrator (Admin) berhasil login","data":null}

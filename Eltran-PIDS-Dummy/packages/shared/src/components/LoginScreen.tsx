@@ -80,17 +80,17 @@ export function LoginScreen({
         >
           <div className="mb-10 flex flex-col items-center text-center">
             <div className="relative mb-5">
-              <div className="absolute inset-0 bg-white/40 dark:bg-[#ee6f1f]/20 blur-2xl rounded-full scale-150" />
+              <div className="absolute inset-0 bg-white/40 dark:bg-kai-orange/20 blur-2xl rounded-full scale-150" />
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_PT_Kereta_Api_Indonesia_%28Persero%29_2020.svg"
                 alt="KAI Logo"
                 className="relative h-16 drop-shadow-xl"
               />
             </div>
-            <h1 className="text-3xl leading-tight font-bold tracking-tight text-[#1d2d6a] dark:text-white drop-shadow-sm">
+            <h1 className="text-3xl leading-tight font-bold tracking-tight text-kai-blue dark:text-white drop-shadow-sm">
               {title}
             </h1>
-            <p className="mt-2 text-[16px] font-bold text-[#1d2d6a] dark:text-slate-300 opacity-90">
+            <p className="mt-2 text-[16px] font-bold text-kai-blue dark:text-slate-300 opacity-90">
               {subtitle}
             </p>
           </div>
@@ -105,7 +105,7 @@ export function LoginScreen({
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-kai-orange focus:outline-none transition-colors"
                 disabled={isLoading}
                 autoComplete="username"
               />
@@ -117,7 +117,7 @@ export function LoginScreen({
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#ee6f1f] focus:outline-none transition-colors"
+                className="w-full border-b-[1.5px] border-slate-200 dark:border-slate-700 bg-transparent py-2.5 pr-10 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-kai-orange focus:outline-none transition-colors"
                 disabled={isLoading}
                 autoComplete="current-password"
               />
@@ -134,7 +134,7 @@ export function LoginScreen({
             <AnimatePresence>
               {error && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
+                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className="flex w-full items-center gap-2 text-red-500 dark:text-red-400 text-xs font-semibold pt-1"
@@ -148,7 +148,7 @@ export function LoginScreen({
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-8 w-full rounded-full bg-[#ee6f1f] py-3.5 text-xs font-bold tracking-wider text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-[#d45d15] hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
+              className="mt-8 w-full rounded-full bg-kai-orange py-3.5 text-xs font-bold tracking-wider text-white shadow-[0_8px_20px_rgba(238,111,31,0.25)] transition-all hover:bg-kai-orange-dark hover:shadow-[0_4px_12px_rgba(238,111,31,0.3)] active:scale-[0.98] disabled:opacity-70 flex justify-center items-center"
             >
               {isLoading ? "Memproses..." : "Masuk Ke Sistem"}
             </button>

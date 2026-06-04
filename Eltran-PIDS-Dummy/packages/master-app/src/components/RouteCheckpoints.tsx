@@ -252,19 +252,24 @@ export function RouteCheckpoints({
                         // SSOT: Coba ambil dari state (data.activeRoute.stations) terlebih dahulu
                         let timeStr = "--:--";
                         const originalStation = data?.activeRoute?.stations?.[idx];
-                        
+
                         if (originalStation) {
-                          const trainNumMatch = data?.trainNumber ? data.trainNumber.match(/(?:KA\s*)?(\d+)/i) : null;
-                          const kaNum = trainNumMatch ? trainNumMatch[1] : null;
+                          const trainNumMatch = data?.trainNumber ? data.trainNumber.match(/(?:KA\s*)?([a-zA-Z0-9]+)/i) : null;
+                          const kaNumRaw = trainNumMatch ? trainNumMatch[1].toLowerCase() : null;
 
                           let rawTime = "";
-                          if (kaNum) {
-                            const keys = [`schedule_ka${kaNum}`, `schedule_${kaNum}`];
-                            for (const key of keys) {
-                              if (originalStation[key] && originalStation[key] !== "-") {
-                                rawTime = originalStation[key];
-                                break;
-                              }
+                          if (kaNumRaw) {
+                            const kaNumDigits = kaNumRaw.replace(/[a-z]/g, '');
+                            const expectedKey1 = `schedule_ka${kaNumRaw}`;
+                            const expectedKey2 = `schedule_ka${kaNumDigits}`;
+                            
+                            const foundKey = Object.keys(originalStation).find(k => {
+                               const norm = k.toLowerCase().replace(/\s+/g, "");
+                               return norm === expectedKey1 || norm === expectedKey2;
+                            });
+
+                            if (foundKey && originalStation[foundKey] && originalStation[foundKey] !== "-") {
+                               rawTime = originalStation[foundKey];
                             }
                           }
 
@@ -308,7 +313,7 @@ export function RouteCheckpoints({
                               timeStr = sched.waktu_keberangkatan_penjadwalan || sched.waktu_kedatangan_penjadwalan || "--:--";
                             }
                           }
-                          
+
                           if (timeStr && timeStr !== "--:--") {
                             const parts = timeStr.split(":");
                             timeStr = parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeStr;

@@ -1,12 +1,43 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const { Pool } = pg;
 
-const pool = new Pool({
-  connectionString: 'postgresql://postgres:eltran123@172.16.0.200:5432/eltran_pids'
-});
+async function getPool() {
+  const primaryConnectionString = process.env.DATABASE_URL;
+  const fallbacks = [
+    primaryConnectionString || 'postgresql://postgres:eltran123@localhost:5433/eltran_pids',
+    "postgresql://postgres:eltran123@localhost:5433/eltran_pids",
+    "postgresql://postgres:eltran123@localhost:5432/eltran_pids",
+    "postgresql://postgres:postgres@localhost:5432/eltran_pids"
+  ];
+  const uniqueUrls = [];
+  for (const url of fallbacks) {
+    if (url && !uniqueUrls.includes(url)) {
+      uniqueUrls.push(url);
+    }
+  }
+  for (const connectionString of uniqueUrls) {
+    const pool = new Pool({ connectionString, connectionTimeoutMillis: 2000 });
+    try {
+      await pool.query("SELECT NOW()");
+      return pool;
+    } catch (e) {
+      await pool.end().catch(() => {});
+    }
+  }
+  throw new Error("Could not connect to any database");
+}
 
 async function main() {
   try {
+    const pool = await getPool();
     const routeRes = await pool.query(
       `SELECT rs.id as rs_id, s.name as station_name, rs.sequence_order
        FROM route_stations rs
@@ -34,10 +65,9 @@ async function main() {
     stopRes.rows.forEach(r => {
       console.log(`KA: ${r.train_number}, Station: ${r.station_name}, A: ${r.arrival_time}, D: ${r.departure_time}`);
     });
-  } catch(e) {
-    console.error(e);
-  } finally {
     await pool.end();
+  } catch(e) {
+    console.error("Test database failed:", e.message);
   }
 }
 
