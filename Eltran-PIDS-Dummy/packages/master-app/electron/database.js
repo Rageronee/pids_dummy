@@ -227,6 +227,9 @@ export async function initDatabase() {
     let attempts = 2;
     while (attempts > 0) {
       pool = new Pool({ connectionString, ...POOL_CONFIG });
+      pool.on("error", (err) => {
+        console.error("[PIDS-DB] Unexpected database pool error:", err.message);
+      });
       try {
         await pool.query("SELECT NOW()");
         console.log(`[PIDS-DB] PostgreSQL connected successfully to ${dbHost}:${dbPort}`);
@@ -2817,6 +2820,7 @@ function extractStationsFromGeoJSON(geojson) {
 export async function updateRouteGeoJSON(name, geojson, filename = "") {
   try {
     const client = await pool.connect();
+    let extractedStations = [];
     try {
       await client.query("BEGIN");
       let service = await getOne(
@@ -2831,7 +2835,7 @@ export async function updateRouteGeoJSON(name, geojson, filename = "") {
         service = result.rows[0];
       }
 
-      const extractedStations = extractStationsFromGeoJSON(geojson);
+      extractedStations = extractStationsFromGeoJSON(geojson);
       let routeRes = await client.query(
         "SELECT id FROM routes WHERE name = $1",
         [name],
